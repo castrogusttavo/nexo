@@ -1,20 +1,26 @@
 'use client'
 
-import Image from 'next/image'
 import Link from 'next/link'
-import { useState } from 'react'
 import { useRouter } from 'next/navigation'
+import { useState } from 'react'
+import { GitHubLoginButton } from '@/components/github-login-button'
+import { GoogleLoginButton } from '@/components/google-login-button'
+import { HeaderLogin } from '@/components/header-login'
 import { Button } from '@/components/ui/button'
 import { Field, FieldError, FieldLabel } from '@/components/ui/field'
 import { Input } from '@/components/ui/input'
+import { authClient } from '@/src/lib/auth-client'
 import { H4 } from '../_components/typography/heading/h4'
 import { Muted } from '../_components/typography/text/muted'
-import { authClient } from '@/src/lib/auth-client'
 
 export default function SignUp() {
   const router = useRouter()
   const [error, setError] = useState<string | null>(null)
-  const [fieldErrors, setFieldErrors] = useState<{ name?: string; email?: string; password?: string }>({})
+  const [fieldErrors, setFieldErrors] = useState<{
+    name?: string
+    email?: string
+    password?: string
+  }>({})
   const [isPending, setIsPending] = useState(false)
 
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
@@ -29,9 +35,11 @@ export default function SignUp() {
     const password = formData.get('password') as string
 
     const errors: { name?: string; email?: string; password?: string } = {}
-    if (!name || name.length < 2) errors.name = 'Nome deve ter ao menos 2 caracteres'
+    if (!name || name.length < 2)
+      errors.name = 'Nome deve ter ao menos 2 caracteres'
     if (!email) errors.email = 'E-mail é obrigatório'
-    if (!password || password.length < 6) errors.password = 'Senha deve ter ao menos 6 caracteres'
+    if (!password || password.length < 6)
+      errors.password = 'Senha deve ter ao menos 6 caracteres'
 
     if (Object.keys(errors).length > 0) {
       setFieldErrors(errors)
@@ -54,42 +62,18 @@ export default function SignUp() {
     router.push('/')
   }
 
-  async function handleSocialSignIn(provider: 'google' | 'github') {
-    await authClient.signIn.social({ provider, callbackURL: '/' })
-  }
-
   return (
     <div className='min-h-screen flex flex-col items-center justiyf-center p-4 pb-12'>
-      <div className='w-full flex items-center justify-between'>
-        <Link href='/'>
-          <Image src='logo.svg' alt='elo-logo' width={75} height={10} />
-        </Link>
-      </div>
+      <HeaderLogin path='sign-in' pathname='Entre' />
       <div className='flex-1 w-full flex flex-col justify-center space-y-6 max-w-90'>
         <div>
-          <H4>Crie sua conta.</H4>
-          <H4 className='text-muted-foreground'>Comece a usar o Elo.</H4>
+          <H4>Trabalhe em todas as dimensões.</H4>
+          <H4 className='text-muted-foreground'>Crie sua conta do Elo.</H4>
         </div>
 
         <div className='flex flex-col gap-3'>
-          <Button
-            type='button'
-            variant='outline'
-            className='w-full'
-            onClick={() => handleSocialSignIn('google')}
-            disabled={isPending}
-          >
-            Continuar com Google
-          </Button>
-          <Button
-            type='button'
-            variant='outline'
-            className='w-full'
-            onClick={() => handleSocialSignIn('github')}
-            disabled={isPending}
-          >
-            Continuar com GitHub
-          </Button>
+          <GoogleLoginButton isPending={isPending} />
+          <GitHubLoginButton isPending={isPending} />
         </div>
 
         <div className='relative'>
@@ -115,9 +99,7 @@ export default function SignUp() {
               placeholder='Seu nome'
               disabled={isPending}
             />
-            {fieldErrors.name && (
-              <FieldError>{fieldErrors.name}</FieldError>
-            )}
+            {fieldErrors.name && <FieldError>{fieldErrors.name}</FieldError>}
           </Field>
           <Field data-invalid={!!fieldErrors.email || undefined}>
             <FieldLabel>E-mail</FieldLabel>
@@ -127,9 +109,7 @@ export default function SignUp() {
               placeholder='nome@empresa.com'
               disabled={isPending}
             />
-            {fieldErrors.email && (
-              <FieldError>{fieldErrors.email}</FieldError>
-            )}
+            {fieldErrors.email && <FieldError>{fieldErrors.email}</FieldError>}
           </Field>
           <Field data-invalid={!!fieldErrors.password || undefined}>
             <FieldLabel>Senha</FieldLabel>

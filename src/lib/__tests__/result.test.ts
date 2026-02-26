@@ -1,5 +1,5 @@
-import { describe, it, expect } from 'vitest'
-import { ok, err } from '@/src/lib/result'
+import { describe, expect, it } from 'vitest'
+import { err, ok } from '@/src/lib/result'
 
 describe('Result', () => {
   describe('ok()', () => {

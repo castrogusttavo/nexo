@@ -49,7 +49,13 @@
       "Bash(cd /c/Users/gusttavo/apps/nexo && node -e \"try { const v = require\\('vitest/node'\\); console.log\\(Object.keys\\(v\\).filter\\(k => k.includes\\('Work'\\) || k.includes\\('work'\\)\\)\\); } catch\\(e\\) { console.log\\(e.message\\); }\" 2>&1)",
       "Bash(cd /c/Users/gusttavo/apps/nexo && node -e \"try { const v = require\\('vitest/node'\\); console.log\\(Object.keys\\(v\\).filter\\(k => k.toLowerCase\\(\\).includes\\('defin'\\)\\)\\); } catch\\(e\\) { console.log\\(e.message\\); }\" 2>&1)",
       "WebFetch(domain:vitest.dev)",
-      "Bash(cd /c/Users/gusttavo/apps/nexo && pnpm test:unit --run 2>&1)"
+      "Bash(cd /c/Users/gusttavo/apps/nexo && pnpm test:unit --run 2>&1)",
+      "Bash(cd /c/Users/gusttavo/apps/nexo && pnpm lint 2>&1)",
+      "Bash(cd /c/Users/gusttavo/apps/nexo && pnpm format:check 2>&1)",
+      "Bash(tail:*)",
+      "Bash(cd /c/Users/gusttavo/apps/nexo && pnpm format 2>&1)",
+      "Bash(cd /c/Users/gusttavo/apps/nexo && pnpm check 2>&1)",
+      "Bash(cd /c/Users/gusttavo/apps/nexo && pnpm check:ci 2>&1)"
     ]
   }
 }

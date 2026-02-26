@@ -7,7 +7,7 @@
 	},
 	"files": {
 		"ignoreUnknown": false,
-		"includes": ["app/**/*", "tests/**/*"],
+		"includes": ["app/**/*", "src/**/*"],
 		"experimentalScannerIgnores": [
 			".next/**",
 			"node_modules/**",

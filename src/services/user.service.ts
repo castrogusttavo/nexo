@@ -1,8 +1,8 @@
-import { conflict } from '@/src/errors'
-import { type Result, ok, err } from '@/src/lib/result'
-import { UserRepository } from '@/src/repositories/user.repository'
 import { UserCache } from '@/src/cache/user.cache'
+import { conflict } from '@/src/errors'
+import { err, ok, type Result } from '@/src/lib/result'
 import { toUserDTO } from '@/src/mappers/user.mapper'
+import { UserRepository } from '@/src/repositories/user.repository'
 import type { UpdateUserDTO } from '@/src/schemas/user.schema'
 import type { UserDTO } from '@/types/user'
 

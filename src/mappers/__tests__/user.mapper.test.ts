@@ -1,6 +1,6 @@
-import { describe, it, expect } from 'vitest'
-import { toUserDTO } from '@/src/mappers/user.mapper'
+import { describe, expect, it } from 'vitest'
 import { createFakeUser } from '@/src/__tests__/factories/user.factory'
+import { toUserDTO } from '@/src/mappers/user.mapper'
 
 describe('toUserDTO()', () => {
   it('should map all fields correctly', () => {

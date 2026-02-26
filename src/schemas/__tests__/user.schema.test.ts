@@ -1,4 +1,4 @@
-import { describe, it, expect } from 'vitest'
+import { describe, expect, it } from 'vitest'
 import { UpdateUserSchema } from '@/src/schemas/user.schema'
 
 describe('UpdateUserSchema', () => {

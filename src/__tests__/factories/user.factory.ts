@@ -1,7 +1,7 @@
 import { createId } from '@paralleldrive/cuid2'
 import type { User } from '@prisma/client'
-import type { UserDTO } from '@/types/user'
 import { prisma } from '@/src/lib/prisma'
+import type { UserDTO } from '@/types/user'
 
 export function createFakeUser(overrides?: Partial<User>): User {
   const now = new Date()
@@ -33,7 +33,9 @@ export function createFakeUserDTO(overrides?: Partial<UserDTO>): UserDTO {
   }
 }
 
-export async function seedUser(overrides?: Partial<Pick<User, 'name' | 'email' | 'role' | 'workspaceId'>>) {
+export async function seedUser(
+  overrides?: Partial<Pick<User, 'name' | 'email' | 'role' | 'workspaceId'>>,
+) {
   return prisma.user.create({
     data: {
       name: 'Seed User',

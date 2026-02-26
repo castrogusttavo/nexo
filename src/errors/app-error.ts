@@ -19,8 +19,9 @@ export const appError = (
 export const unauthorized = (message = 'Não autorizado'): AppError =>
   appError('UNAUTHORIZED', message)
 
-export const invalidCredentials = (message = 'Credenciais inválidas'): AppError =>
-  appError('INVALID_CREDENTIALS', message)
+export const invalidCredentials = (
+  message = 'Credenciais inválidas',
+): AppError => appError('INVALID_CREDENTIALS', message)
 
 export const forbidden = (message = 'Permissão insuficiente'): AppError =>
   appError('FORBIDDEN', message)

@@ -1,4 +1,4 @@
-import { describe, it, expect } from 'vitest'
+import { describe, expect, it } from 'vitest'
 import { BASE_URL } from '@/src/__tests__/setup.e2e'
 
 const defaultHeaders = {
@@ -6,7 +6,10 @@ const defaultHeaders = {
   Origin: BASE_URL,
 }
 
-async function createAuthenticatedUser(overrides?: { name?: string; email?: string }) {
+async function createAuthenticatedUser(overrides?: {
+  name?: string
+  email?: string
+}) {
   const name = overrides?.name ?? 'E2E User'
   const email = overrides?.email ?? `e2e-${Date.now()}@example.com`
   const password = 'Test@12345678'
@@ -18,7 +21,9 @@ async function createAuthenticatedUser(overrides?: { name?: string; email?: stri
   })
 
   if (!signUpRes.ok) {
-    throw new Error(`Sign-up failed: ${signUpRes.status} ${await signUpRes.text()}`)
+    throw new Error(
+      `Sign-up failed: ${signUpRes.status} ${await signUpRes.text()}`,
+    )
   }
 
   const setCookie = signUpRes.headers.get('set-cookie')

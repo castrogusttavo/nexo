@@ -1,7 +1,7 @@
 import type { Role, User } from '@prisma/client'
-import { prisma } from '@/src/lib/prisma'
-import { type Result, ok, err } from '@/src/lib/result'
 import { conflict, databaseError, notFound } from '@/src/errors'
+import { prisma } from '@/src/lib/prisma'
+import { err, ok, type Result } from '@/src/lib/result'
 
 export const UserRepository = {
   async findById(id: string): Promise<Result<User>> {
@@ -37,11 +37,7 @@ export const UserRepository = {
       const user = await prisma.user.create({ data })
       return ok(user)
     } catch (error) {
-      if (
-        error instanceof Error &&
-        'code' in error &&
-        error.code === 'P2002'
-      ) {
+      if (error instanceof Error && 'code' in error && error.code === 'P2002') {
         return err(conflict('E-mail já está em uso'))
       }
       return err(databaseError('Failed to create user'))

@@ -34,7 +34,10 @@ export async function PATCH(request: NextRequest) {
     )
   }
 
-  const result = await UserService.updateProfile(auth.value.user.id, parsed.data)
+  const result = await UserService.updateProfile(
+    auth.value.user.id,
+    parsed.data,
+  )
 
   if (!result.ok) return handleError(result.error)
 
