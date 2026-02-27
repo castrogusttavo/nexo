@@ -1,3 +1,2 @@
-npx tsx --noEmit
 pnpm check
 pnpm test:all
