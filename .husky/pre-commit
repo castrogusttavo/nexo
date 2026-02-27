@@ -1,2 +1,3 @@
+npx tsx --noEmit
 pnpm check
-pnpm test:coverage
+pnpm test:all
