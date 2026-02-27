@@ -47,7 +47,7 @@ export const WelcomeEmail = ({
           <Section className="text-center">
             <Button
               className="bg-[#5F51E8] rounded-[3px] text-white text-[16px] no-underline text-center block p-3"
-              href="https://stratustelecom.com.br"
+              href={baseUrl}
             >
               Get started
             </Button>
