@@ -1,11 +1,11 @@
 import { Resend } from 'resend'
 import InviteUserEmail from '@/components/emails/invite-user'
 
-const resend = new Resend(process.env.RESEND_API_KEY)
 const baseUrl = 'http://localhost:3000'
 
 export async function POST(request: Request) {
   try {
+    const resend = new Resend(process.env.RESEND_API_KEY)
     const { email } = await request.json()
 
     const { data } = await resend.emails.send({
