@@ -1,60 +1,16 @@
-name: CD (Continuous Deployment)
+name: CD
+
 on:
   push:
-    branches:
-      - main
+    branches: [main]
+
 env:
   REGISTRY: ghcr.io
-  IMAGE_NAME: stratusti/steelelo
+  IMAGE_NAME: castrogusttavo/nexo
+
 jobs:
-  integration-tests:
-    name: Run Integration Tests
-    runs-on: ubuntu-latest
-    services:
-      postgres:
-        image: postgres:16
-        env:
-          POSTGRES_USER: test
-          POSTGRES_PASSWORD: test
-          POSTGRES_DB: nexo_test
-        ports:
-          - 5432:5432
-        options: >-
-          --health-cmd="pg_isready -U test"
-          --health-interval=10s
-          --health-timeout=5s
-          --health-retries=5
-    env:
-      DATABASE_URL: postgresql://test:test@localhost:5432/nexo_test
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
-
-      - name: Setup pnpm
-        uses: pnpm/action-setup@v3
-        with:
-          version: 9
-
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: 20
-          cache: 'pnpm'
-
-      - name: Install dependencies
-        run: pnpm install --frozen-lockfile
-
-      - name: Generate Prisma Client
-        run: pnpm prisma:generate
-
-      - name: Push database schema
-        run: pnpm prisma db push
-
-      - name: Run integration tests
-        run: pnpm test:integration
-
   build-and-push:
-    needs: integration-tests
+    name: Build & Push Image
     runs-on: self-hosted
     permissions:
       contents: read
@@ -62,20 +18,23 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
+
       - name: Log in to Container Registry
         uses: docker/login-action@v3
         with:
           registry: ${{ env.REGISTRY }}
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
+
       - name: Extract metadata
         id: meta
         uses: docker/metadata-action@v5
         with:
           images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
           tags: |
-            type=sha,prefix={{branch}}-
+            type=sha,prefix=
             type=raw,value=latest
+
       - name: Build and push Docker image
         uses: docker/build-push-action@v5
         with:
@@ -89,6 +48,7 @@ jobs:
             hugeicons_token=${{ secrets.HUGEICONS_TOKEN }}
 
   deploy:
+    name: Deploy to Production
     needs: build-and-push
     runs-on: self-hosted
     environment:
@@ -97,12 +57,13 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
+
       - name: Deploy to server
         run: |
-            cp docker-compose.yml /var/www/SteelElo/docker-compose.yml
-            cd /var/www/SteelElo/
-            echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u ${{ github.actor }} --password-stdin
-            docker compose down
-            docker compose pull
-            docker compose up -d --remove-orphans
-            docker image prune -f
+          cp docker-compose.yml /var/www/nexo/docker-compose.yml
+          cd /var/www/nexo/
+          echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u ${{ github.actor }} --password-stdin
+          docker compose down
+          docker compose pull
+          docker compose up -d --remove-orphans
+          docker image prune -f

@@ -1,12 +1,74 @@
-name: CI (Continuous Integration)
+name: CI
+
 on:
   push:
-    branches: [develop]
+    branches: [main]
   pull_request:
 
 jobs:
-  tests:
-    name: Run tests
+  lint:
+    name: Lint & Type Check
+    runs-on: ubuntu-latest
+    env:
+      DATABASE_URL: postgresql://dummy:dummy@localhost:5432/dummy
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v3
+        with:
+          version: 9
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'pnpm'
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Generate Prisma Client
+        run: pnpm prisma:generate
+
+      - name: Type check
+        run: pnpm tsc --noEmit
+
+      - name: Lint
+        run: pnpm biome lint
+
+  unit-tests:
+    name: Unit Tests
+    runs-on: ubuntu-latest
+    env:
+      DATABASE_URL: postgresql://dummy:dummy@localhost:5432/dummy
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v3
+        with:
+          version: 9
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'pnpm'
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Generate Prisma Client
+        run: pnpm prisma:generate
+
+      - name: Run unit tests
+        run: pnpm test:unit
+
+  integration-tests:
+    name: Integration Tests
     runs-on: ubuntu-latest
     services:
       postgres:
@@ -47,15 +109,6 @@ jobs:
 
       - name: Push database schema
         run: pnpm prisma db push
-
-      - name: Type check
-        run: pnpm tsc --noEmit
-
-      - name: Lint
-        run: pnpm biome lint
-
-      - name: Run unit tests
-        run: pnpm test:unit
 
       - name: Run integration tests
         run: pnpm test:integration
