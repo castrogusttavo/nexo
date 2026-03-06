@@ -6,7 +6,9 @@ export function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl
 
   const isPublic = PUBLIC_ROUTES.some((route) => pathname.startsWith(route))
-  const sessionToken = request.cookies.get('better-auth.session_token')?.value
+  const sessionToken =
+    request.cookies.get('better-auth.session_token')?.value ||
+    request.cookies.get('__Secure-better-auth.session_token')?.value
 
   if (isPublic) {
     if (sessionToken && (pathname === '/sign-in' || pathname === '/sign-up')) {
