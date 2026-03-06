@@ -15,6 +15,7 @@ export function useUser() {
     queryKey: ['user', session?.user.id],
     queryFn: getUser,
     enabled: !!session?.user.id,
+    staleTime: 5 * 60 * 1000,
   })
 
   return query

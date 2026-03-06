@@ -16,7 +16,7 @@ export default function ContactPage() {
 
   if (status === 'error') return <div>Erro: {error.message}</div>
 
-  async function handleSubmit(e: React.FormEvent) {
+  async function handleSubmit(e: React.ChangeEvent) {
     e.preventDefault()
     setLoading(true)
 

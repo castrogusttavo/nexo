@@ -1,2 +1,2 @@
 pnpm check
-pnpm test:all
+pnpm test:unit

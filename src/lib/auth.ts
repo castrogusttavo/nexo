@@ -36,6 +36,12 @@ export const auth = betterAuth({
       workspaceId: { type: 'string', required: false, input: false },
     },
   },
+  session: {
+    cookieCache: {
+      enabled: true,
+      maxAge: 5 * 60,
+    },
+  },
   databaseHooks: {
     user: {
       create: {
