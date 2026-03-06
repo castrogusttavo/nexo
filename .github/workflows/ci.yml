@@ -45,8 +45,8 @@ jobs:
       - name: Generate Prisma Client
         run: pnpm prisma:generate
 
-      - name: Apply database migrations
-        run: pnpm prisma migrate deploy
+      - name: Push database schema
+        run: pnpm prisma db push --skip-generate
 
       - name: Type check
         run: pnpm tsc --noEmit
