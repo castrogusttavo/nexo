@@ -1,6 +1,6 @@
 services:
   nexo-app:
-    image: ghcr.io/stratusti/steelelo:latest
+    image: ghcr.io/castrogusttavo/nexo:latest
     container_name: nextjs-app
     restart: unless-stopped
     ports:
