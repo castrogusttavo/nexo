@@ -5,7 +5,7 @@ import { Resend } from 'resend'
 import { WelcomeEmail } from '@/components/emails/welcome'
 import { prisma } from './prisma'
 
-const resend = new Resend(process.env.RESEND_API_KEY)
+const getResend = () => new Resend(process.env.RESEND_API_KEY)
 
 export const auth = betterAuth({
   database: prismaAdapter(prisma, { provider: 'postgresql' }),
@@ -46,7 +46,7 @@ export const auth = betterAuth({
     user: {
       create: {
         after: async (user) => {
-          await resend.emails.send({
+          await getResend().emails.send({
             from: 'stratustelecom <suporte@stratustelecom.com.br>',
             to: [user.email],
             subject: 'Hello world',
