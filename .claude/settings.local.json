@@ -55,7 +55,16 @@
       "Bash(tail:*)",
       "Bash(cd /c/Users/gusttavo/apps/nexo && pnpm format 2>&1)",
       "Bash(cd /c/Users/gusttavo/apps/nexo && pnpm check 2>&1)",
-      "Bash(cd /c/Users/gusttavo/apps/nexo && pnpm check:ci 2>&1)"
+      "Bash(cd /c/Users/gusttavo/apps/nexo && pnpm check:ci 2>&1)",
+      "Bash(grep:*)",
+      "Bash(cd /c/Users/gusttavo/apps/nexo && pnpm build 2>&1)",
+      "Bash(cd /c/Users/gusttavo/apps/nexo && pnpm outdated 2>&1)",
+      "Bash(cd /c/Users/gusttavo/apps/nexo && pnpm update --latest 2>&1)",
+      "mcp__claude_ai_Excalidraw__read_me",
+      "mcp__claude_ai_Excalidraw__create_view",
+      "mcp__claude_ai_Excalidraw__export_to_excalidraw",
+      "Bash(cd /c/Users/gusttavo/apps/nexo && npx biome migrate 2>&1)",
+      "Bash(cd /c/Users/gusttavo/apps/nexo && npx biome migrate --write 2>&1)"
     ]
   }
 }
