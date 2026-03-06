@@ -23,4 +23,4 @@ services:
 networks:
   app-network:
     external: true
-    name: nexo-infra_app-network
+    name: nexo_default
