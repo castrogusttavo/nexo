@@ -16,6 +16,8 @@ services:
       interval: 5s
       timeout: 5s
       retries: 5
+    networks:
+      - app-network
 
   nexo-cache:
     image: redis:7-alpine
@@ -30,6 +32,8 @@ services:
       interval: 5s
       timeout: 5s
       retries: 5
+    networks:
+      - app-network
 
   nexo-queue:
     image: rabbitmq:4-management-alpine
@@ -49,6 +53,8 @@ services:
       interval: 5s
       timeout: 5s
       retries: 5
+    networks:
+      - app-network
 
   nexo-storage:
     image: minio/minio:latest
@@ -67,9 +73,15 @@ services:
       interval: 5s
       timeout: 5s
       retries: 5
+    networks:
+      - app-network
 
 volumes:
   pgdata:
   redisdata:
   rabbitmqdata:
   miniodata:
+
+networks:
+  app-network:
+    name: nexo-infra_app-network
