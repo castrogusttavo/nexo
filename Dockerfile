@@ -31,7 +31,9 @@ ENV NEXT_TELEMETRY_DISABLED=1
 ARG NEXT_PUBLIC_APP_URL=http://localhost:3000
 ENV NEXT_PUBLIC_APP_URL=$NEXT_PUBLIC_APP_URL
 
-# MODIFICAÇÃO CRÍTICA: Gerar Prisma Client antes do build
+# Dummy DATABASE_URL for prisma generate (no connection needed)
+ENV DATABASE_URL="postgresql://dummy:dummy@localhost:5432/dummy"
+
 RUN corepack enable pnpm && \
     pnpm prisma:generate && \
     pnpm build
