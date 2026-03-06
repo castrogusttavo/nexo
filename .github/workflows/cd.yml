@@ -48,7 +48,7 @@ jobs:
         run: pnpm prisma:generate
 
       - name: Push database schema
-        run: pnpm prisma db push --skip-generate
+        run: pnpm prisma db push
 
       - name: Run integration tests
         run: pnpm test:integration

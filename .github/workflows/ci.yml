@@ -46,7 +46,7 @@ jobs:
         run: pnpm prisma:generate
 
       - name: Push database schema
-        run: pnpm prisma db push --skip-generate
+        run: pnpm prisma db push
 
       - name: Type check
         run: pnpm tsc --noEmit
