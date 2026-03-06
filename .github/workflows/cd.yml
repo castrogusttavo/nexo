@@ -27,7 +27,6 @@ jobs:
         run: pnpm install --frozen-lockfile
         env:
           HUGEICONS_TOKEN: ${{ secrets.HUGEICONS_TOKEN }}
-          DATABASE_URL: ${{ secrets.DATABASE_URL }}
 
       - name: Run migrations
         run: pnpm prisma:deploy
