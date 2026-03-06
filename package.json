@@ -27,7 +27,8 @@
     "docker:create": "docker compose -f docker-compose.infra.yml up -d",
     "docker:start": "docker compose -f docker-compose.infra.yml start",
     "docker:stop": "docker compose -f docker-compose.infra.yml stop",
-    "prepare": "husky"
+    "prepare": "husky",
+    "postinstall": "prisma generate"
   },
   "dependencies": {
     "@base-ui/react": "^1.2.0",

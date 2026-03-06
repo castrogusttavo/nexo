@@ -4,66 +4,29 @@ on:
   push:
     branches: [main]
 
-env:
-  REGISTRY: ghcr.io
-  IMAGE_NAME: castrogusttavo/nexo
-
 jobs:
-  build-and-push:
-    name: Build & Push Image
+  migrate:
+    name: Run Database Migrations
     runs-on: self-hosted
-    permissions:
-      contents: read
-      packages: write
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Log in to Container Registry
-        uses: docker/login-action@v3
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
         with:
-          registry: ${{ env.REGISTRY }}
-          username: ${{ github.actor }}
-          password: ${{ secrets.GITHUB_TOKEN }}
+          node-version: 20
+          cache: pnpm
 
-      - name: Extract metadata
-        id: meta
-        uses: docker/metadata-action@v5
-        with:
-          images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
-          tags: |
-            type=sha,prefix=
-            type=raw,value=latest
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+        env:
+          HUGEICONS_TOKEN: ${{ secrets.HUGEICONS_TOKEN }}
 
-      - name: Build and push Docker image
-        uses: docker/build-push-action@v5
-        with:
-          context: .
-          push: true
-          tags: ${{ steps.meta.outputs.tags }}
-          labels: ${{ steps.meta.outputs.labels }}
-          build-args: |
-            NEXT_PUBLIC_APP_URL=https://elo.stratustelecom.com.br:44385
-          secrets: |
-            hugeicons_token=${{ secrets.HUGEICONS_TOKEN }}
-
-  deploy:
-    name: Deploy to Production
-    needs: build-and-push
-    runs-on: self-hosted
-    environment:
-      name: production
-      url: https://elo.stratustelecom.com.br:44385
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
-
-      - name: Deploy to server
-        run: |
-          cp docker-compose.yml /var/www/nexo/docker-compose.yml
-          cd /var/www/nexo/
-          echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u ${{ github.actor }} --password-stdin
-          docker compose down
-          docker compose pull
-          docker compose up -d --remove-orphans
-          docker image prune -f
+      - name: Run migrations
+        run: pnpm prisma:deploy
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}

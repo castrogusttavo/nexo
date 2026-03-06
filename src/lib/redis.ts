@@ -1,11 +1,16 @@
 import { createClient } from 'redis'
 
-const globalForRedis = globalThis as unknown as {
-  redis: ReturnType<typeof createClient> | undefined
-}
-
 function createRedisClient() {
-  const client = createClient({ url: process.env.REDIS_URL })
+  const client = createClient({
+    url: process.env.REDIS_URL,
+    socket: {
+      connectTimeout: 5000,
+      reconnectStrategy(retries) {
+        if (retries > 10) return false
+        return Math.min(retries * 100, 3000)
+      },
+    },
+  })
 
   client.on('error', (err) => {
     console.error('[Redis] Connection error:', err)
@@ -14,11 +19,7 @@ function createRedisClient() {
   return client
 }
 
-export const redis = globalForRedis.redis ?? createRedisClient()
-
-if (process.env.NODE_ENV !== 'production') {
-  globalForRedis.redis = redis
-}
+export const redis = createRedisClient()
 
 export async function ensureRedisConnected() {
   if (!redis.isOpen) {
