@@ -67,3 +67,8 @@ jobs:
           docker compose pull
           docker compose up -d --remove-orphans
           docker image prune -f
+
+      - name: Run database migrations
+        run: |
+          cd /var/www/nexo/
+          docker compose exec -T nexo-app npx prisma migrate deploy
