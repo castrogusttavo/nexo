@@ -71,4 +71,4 @@ jobs:
       - name: Run database migrations
         run: |
           cd /var/www/nexo/
-          docker compose exec -T nexo-app npx prisma migrate deploy
+          docker compose exec -T nexo-app npx prisma migrate deploy --schema=./prisma/schema.prisma
