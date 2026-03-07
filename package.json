@@ -3,7 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev": "next dev --turbopack",
+    "dev": "node scripts/dev-banner.js && next dev --turbopack",
     "infra": "pnpm docker:start && pnpm prisma:migrate:dev",
     "build": "prisma generate && next build",
     "start": "next start -H 0.0.0.0 -p 44385",

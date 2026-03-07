@@ -1,270 +1,52 @@
 {
   "openapi": "3.1.0",
   "info": {
-    "title": "Elo API - Gestão Ágil",
+    "title": "Nexo API",
     "version": "1.0.0",
-    "description": "API completa para gestão ágil de projetos com suporte a Kanban, Scrum e SAFe",
+    "description": "API do Nexo — gestão ágil de projetos",
     "contact": {
-      "name": "Stratus Telecom",
-      "email": "contato@stratustelecom.com.br"
+      "name": "Coodee",
+      "email": "suporte@coodee.dev"
     }
   },
   "servers": [
     {
-      "url": "https://elo.stratustelecom.com.br:44385/api",
-      "description": "Produção"
-    },
-    {
       "url": "http://localhost:3000/api",
       "description": "Desenvolvimento Local"
+    },
+    {
+      "url": "https://nexo.coodee.dev/api",
+      "description": "Produção"
     }
   ],
   "paths": {
-    "/auth/me": {
-      "get": {
-        "tags": ["Autenticação"],
-        "summary": "Retorna dados do usuário autenticado",
-        "description": "Endpoint que retorna as informações completas do usuário atualmente autenticado através do token JWT armazenado nos cookies",
-        "security": [
-          {
-            "cookieAuth": []
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "Dados do usuário retornados com sucesso",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/UserResponse"
-                }
-              }
-            }
-          },
-          "401": {
-            "$ref": "#/components/responses/UnauthorizedError"
-          }
-        }
-      }
-    },
-    "/auth/logout": {
+    "/auth/sign-up/email": {
       "post": {
         "tags": ["Autenticação"],
-        "summary": "Fazer logout do usuário",
-        "description": "Remove o token de autenticação e encerra a sessão do usuário",
-        "security": [
-          {
-            "cookieAuth": []
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "Logout realizado com sucesso",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "success": {
-                      "type": "boolean",
-                      "example": true
-                    },
-                    "statusCode": {
-                      "type": "integer",
-                      "example": 200
-                    },
-                    "message": {
-                      "type": "string",
-                      "example": "User logged out successfully"
-                    },
-                    "data": {
-                      "type": "object",
-                      "properties": {
-                        "message": {
-                          "type": "string",
-                          "example": "Logout successful"
-                        }
-                      }
-                    }
-                  }
-                }
-              }
-            }
-          }
-        }
-      }
-    },
-    "/projects": {
-      "get": {
-        "tags": ["Projetos"],
-        "summary": "Listar projetos",
-        "description": "Retorna lista paginada de projetos com suporte a filtros e ordenação. Apenas projetos da empresa do usuário autenticado são retornados.",
-        "security": [
-          {
-            "cookieAuth": []
-          }
-        ],
-        "parameters": [
-          {
-            "name": "search",
-            "in": "query",
-            "description": "Busca por nome ou descrição do projeto",
-            "required": false,
-            "schema": {
-              "type": "string",
-              "example": "Sistema de Gestão"
-            }
-          },
-          {
-            "name": "status",
-            "in": "query",
-            "description": "Filtrar por status (múltiplos valores separados por vírgula)",
-            "required": false,
-            "schema": {
-              "type": "array",
-              "items": {
-                "type": "string",
-                "enum": ["draft", "planning", "execution", "monitoring", "completed", "cancelled"]
-              }
-            },
-            "explode": false,
-            "example": "planning,execution"
-          },
-          {
-            "name": "prioridade",
-            "in": "query",
-            "description": "Filtrar por prioridade (múltiplos valores separados por vírgula)",
-            "required": false,
-            "schema": {
-              "type": "array",
-              "items": {
-                "type": "string",
-                "enum": ["urgent", "high", "medium", "low", "none"]
-              }
-            },
-            "explode": false,
-            "example": "high,urgent"
-          },
-          {
-            "name": "ownerId",
-            "in": "query",
-            "description": "Filtrar por ID do proprietário",
-            "required": false,
-            "schema": {
-              "type": "integer",
-              "example": 1
-            }
-          },
-          {
-            "name": "memberId",
-            "in": "query",
-            "description": "Filtrar projetos onde o usuário é membro",
-            "required": false,
-            "schema": {
-              "type": "integer",
-              "example": 1
-            }
-          },
-          {
-            "name": "orderBy",
-            "in": "query",
-            "description": "Campo para ordenação",
-            "required": false,
-            "schema": {
-              "type": "string",
-              "enum": ["nome", "createdAt", "updatedAt", "dataInicio", "dataFim"],
-              "default": "updatedAt"
-            }
-          },
-          {
-            "name": "orderDirection",
-            "in": "query",
-            "description": "Direção da ordenação",
-            "required": false,
-            "schema": {
-              "type": "string",
-              "enum": ["asc", "desc"],
-              "default": "desc"
-            }
-          },
-          {
-            "name": "page",
-            "in": "query",
-            "description": "Página atual (inicia em 1)",
-            "required": false,
-            "schema": {
-              "type": "integer",
-              "minimum": 1,
-              "default": 1
-            }
-          },
-          {
-            "name": "limit",
-            "in": "query",
-            "description": "Quantidade de itens por página",
-            "required": false,
-            "schema": {
-              "type": "integer",
-              "minimum": 1,
-              "maximum": 100,
-              "default": 20
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "Lista de projetos retornada com sucesso",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ProjectsListResponse"
-                }
-              }
-            }
-          },
-          "401": {
-            "$ref": "#/components/responses/UnauthorizedError"
-          }
-        }
-      }
-    },
-    "/projects/create": {
-      "post": {
-        "tags": ["Projetos"],
-        "summary": "Criar novo projeto",
-        "description": "Cria um novo projeto e automaticamente adiciona o usuário autenticado como owner (proprietário) do projeto",
-        "security": [
-          {
-            "cookieAuth": []
-          }
-        ],
+        "summary": "Criar conta com e-mail e senha",
+        "description": "Cria uma nova conta de usuário usando e-mail e senha. Retorna sessão autenticada.",
         "requestBody": {
           "required": true,
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/CreateProjectInput"
-              },
-              "examples": {
-                "minimal": {
-                  "summary": "Projeto mínimo",
-                  "value": {
-                    "nome": "Projeto Teste"
-                  }
-                },
-                "complete": {
-                  "summary": "Projeto completo",
-                  "value": {
-                    "nome": "Sistema de Gestão Empresarial",
-                    "projectId": "SGE-001",
-                    "descricao": "Sistema completo de gestão empresarial com módulos financeiro, RH e vendas",
-                    "icone": "📊",
-                    "backgroundUrl": "https://exemplo.com/bg.jpg",
-                    "status": "planning",
-                    "prioridade": "high",
-                    "dataInicio": "2024-01-20T00:00:00.000Z",
-                    "dataFim": "2024-06-30T00:00:00.000Z",
-                    "acesso": true
+                "type": "object",
+                "required": ["name", "email", "password"],
+                "properties": {
+                  "name": {
+                    "type": "string",
+                    "minLength": 2,
+                    "example": "João Silva"
+                  },
+                  "email": {
+                    "type": "string",
+                    "format": "email",
+                    "example": "joao@exemplo.com"
+                  },
+                  "password": {
+                    "type": "string",
+                    "minLength": 6,
+                    "example": "senha123"
                   }
                 }
               }
@@ -272,266 +54,328 @@
           }
         },
         "responses": {
-          "201": {
-            "description": "Projeto criado com sucesso",
+          "200": {
+            "description": "Conta criada e sessão iniciada",
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/ProjectResponse"
+                  "$ref": "#/components/schemas/AuthSessionResponse"
                 }
               }
             }
-          },
-          "401": {
-            "$ref": "#/components/responses/UnauthorizedError"
-          },
-          "409": {
-            "description": "Conflito - Nome do projeto já existe",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                },
-                "example": {
-                  "success": false,
-                  "statusCode": 409,
-                  "message": "Project name already exists in this company",
-                  "error": {
-                    "code": "CONFLICT"
-                  }
-                }
-              }
-            }
-          },
-          "422": {
-            "$ref": "#/components/responses/ValidationError"
           }
         }
       }
     },
-    "/projects/{id}": {
-      "get": {
-        "tags": ["Projetos"],
-        "summary": "Buscar projeto por ID",
-        "description": "Retorna os detalhes completos de um projeto específico. Usuário deve ter acesso ao projeto.",
-        "security": [
-          {
-            "cookieAuth": []
-          }
-        ],
-        "parameters": [
-          {
-            "name": "id",
-            "in": "path",
-            "description": "ID do projeto",
-            "required": true,
-            "schema": {
-              "type": "integer",
-              "example": 1
+    "/auth/sign-in/email": {
+      "post": {
+        "tags": ["Autenticação"],
+        "summary": "Login com e-mail e senha",
+        "description": "Autentica o usuário e retorna sessão com cookie.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["email", "password"],
+                "properties": {
+                  "email": {
+                    "type": "string",
+                    "format": "email",
+                    "example": "joao@exemplo.com"
+                  },
+                  "password": {
+                    "type": "string",
+                    "example": "senha123"
+                  }
+                }
+              }
             }
           }
-        ],
+        },
         "responses": {
           "200": {
-            "description": "Projeto encontrado",
+            "description": "Login realizado com sucesso",
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/ProjectResponse"
+                  "$ref": "#/components/schemas/AuthSessionResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Credenciais inválidas"
+          }
+        }
+      }
+    },
+    "/auth/sign-out": {
+      "post": {
+        "tags": ["Autenticação"],
+        "summary": "Encerrar sessão",
+        "description": "Remove a sessão e limpa o cookie de autenticação.",
+        "security": [{ "cookieAuth": [] }],
+        "responses": {
+          "200": {
+            "description": "Sessão encerrada com sucesso"
+          }
+        }
+      }
+    },
+    "/auth/sign-in/social": {
+      "post": {
+        "tags": ["Autenticação"],
+        "summary": "Login com provedor social (Google/GitHub)",
+        "description": "Inicia o fluxo OAuth com o provedor especificado.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["provider", "callbackURL"],
+                "properties": {
+                  "provider": {
+                    "type": "string",
+                    "enum": ["google", "github"],
+                    "example": "google"
+                  },
+                  "callbackURL": {
+                    "type": "string",
+                    "format": "uri",
+                    "example": "https://nexo.coodee.dev"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Retorna URL de redirect para o provedor OAuth"
+          }
+        }
+      }
+    },
+    "/auth/get-session": {
+      "get": {
+        "tags": ["Autenticação"],
+        "summary": "Obter sessão atual",
+        "description": "Retorna os dados da sessão e do usuário autenticado via cookie.",
+        "security": [{ "cookieAuth": [] }],
+        "responses": {
+          "200": {
+            "description": "Sessão ativa encontrada",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AuthSessionResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Nenhuma sessão ativa"
+          }
+        }
+      }
+    },
+    "/auth/me": {
+      "get": {
+        "tags": ["Usuário"],
+        "summary": "Obter perfil do usuário autenticado",
+        "description": "Retorna os dados do perfil do usuário logado.",
+        "security": [{ "cookieAuth": [] }],
+        "responses": {
+          "200": {
+            "description": "Perfil retornado com sucesso",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SuccessResponse"
+                },
+                "example": {
+                  "success": true,
+                  "statusCode": 200,
+                  "data": {
+                    "id": "clx1abc123",
+                    "name": "João Silva",
+                    "email": "joao@exemplo.com",
+                    "emailVerified": true,
+                    "image": null,
+                    "role": "MEMBER",
+                    "workspaceId": null,
+                    "createdAt": "2026-01-01T00:00:00.000Z"
+                  }
                 }
               }
             }
           },
           "401": {
             "$ref": "#/components/responses/UnauthorizedError"
-          },
-          "403": {
-            "$ref": "#/components/responses/ForbiddenError"
-          },
-          "404": {
-            "description": "Projeto não encontrado",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                },
-                "example": {
-                  "success": false,
-                  "statusCode": 404,
-                  "message": "Project not found",
-                  "error": {
-                    "code": "RESOURCE_NOT_FOUND"
-                  }
-                }
-              }
-            }
           }
         }
       },
       "patch": {
-        "tags": ["Projetos"],
-        "summary": "Atualizar projeto",
-        "description": "Atualiza os dados de um projeto existente. Apenas o owner (proprietário) pode atualizar o projeto.",
-        "security": [
-          {
-            "cookieAuth": []
-          }
-        ],
-        "parameters": [
-          {
-            "name": "id",
-            "in": "path",
-            "description": "ID do projeto",
-            "required": true,
-            "schema": {
-              "type": "integer",
-              "example": 1
-            }
-          }
-        ],
+        "tags": ["Usuário"],
+        "summary": "Atualizar perfil do usuário",
+        "description": "Atualiza nome e/ou e-mail do usuário autenticado.",
+        "security": [{ "cookieAuth": [] }],
         "requestBody": {
           "required": true,
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/UpdateProjectInput"
-              },
-              "example": {
-                "nome": "Sistema de Gestão Atualizado",
-                "status": "execution",
-                "prioridade": "urgent",
-                "descricao": "Descrição atualizada do projeto"
+                "$ref": "#/components/schemas/UpdateUserInput"
               }
             }
           }
         },
         "responses": {
           "200": {
-            "description": "Projeto atualizado com sucesso",
+            "description": "Perfil atualizado com sucesso",
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/ProjectResponse"
+                  "$ref": "#/components/schemas/SuccessResponse"
                 }
               }
             }
           },
           "401": {
             "$ref": "#/components/responses/UnauthorizedError"
-          },
-          "403": {
-            "description": "Permissão negada - Apenas owner pode atualizar",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                },
-                "example": {
-                  "success": false,
-                  "statusCode": 403,
-                  "message": "Only project owner can update the project",
-                  "error": {
-                    "code": "INSUFFICIENT_PERMISSIONS"
-                  }
-                }
-              }
-            }
-          },
-          "404": {
-            "$ref": "#/components/responses/NotFoundError"
-          },
-          "409": {
-            "description": "Conflito - Nome já existe",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                },
-                "example": {
-                  "success": false,
-                  "statusCode": 409,
-                  "message": "Project name already exists in this company",
-                  "error": {
-                    "code": "CONFLICT"
-                  }
-                }
-              }
-            }
           },
           "422": {
             "$ref": "#/components/responses/ValidationError"
           }
         }
-      },
-      "delete": {
-        "tags": ["Projetos"],
-        "summary": "Arquivar projeto",
-        "description": "Arquiva um projeto (soft delete). Apenas o owner (proprietário) pode arquivar o projeto.",
-        "security": [
-          {
-            "cookieAuth": []
-          }
-        ],
-        "parameters": [
-          {
-            "name": "id",
-            "in": "path",
-            "description": "ID do projeto",
-            "required": true,
-            "schema": {
-              "type": "integer",
-              "example": 1
+      }
+    },
+    "/send/welcome": {
+      "post": {
+        "tags": ["E-mails"],
+        "summary": "Enviar e-mail de boas-vindas",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["email", "username"],
+                "properties": {
+                  "email": {
+                    "type": "string",
+                    "format": "email"
+                  },
+                  "username": {
+                    "type": "string"
+                  }
+                }
+              }
             }
           }
-        ],
+        },
         "responses": {
           "200": {
-            "description": "Projeto arquivado com sucesso",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "success": {
-                      "type": "boolean",
-                      "example": true
-                    },
-                    "statusCode": {
-                      "type": "integer",
-                      "example": 200
-                    },
-                    "message": {
-                      "type": "string",
-                      "example": "Project archived successfully"
-                    }
+            "description": "E-mail enviado"
+          },
+          "500": {
+            "description": "Falha no envio"
+          }
+        }
+      }
+    },
+    "/send/confirm-email": {
+      "post": {
+        "tags": ["E-mails"],
+        "summary": "Enviar e-mail de confirmação",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["email"],
+                "properties": {
+                  "email": {
+                    "type": "string",
+                    "format": "email"
                   }
                 }
               }
             }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "E-mail enviado"
           },
-          "401": {
-            "$ref": "#/components/responses/UnauthorizedError"
-          },
-          "403": {
-            "description": "Permissão negada - Apenas owner pode arquivar",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                },
-                "example": {
-                  "success": false,
-                  "statusCode": 403,
-                  "message": "Only project owner can archive the project",
-                  "error": {
-                    "code": "INSUFFICIENT_PERMISSIONS"
+          "500": {
+            "description": "Falha no envio"
+          }
+        }
+      }
+    },
+    "/send/reset-password": {
+      "post": {
+        "tags": ["E-mails"],
+        "summary": "Enviar e-mail de redefinição de senha",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["email"],
+                "properties": {
+                  "email": {
+                    "type": "string",
+                    "format": "email"
                   }
                 }
               }
             }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "E-mail enviado"
           },
-          "404": {
-            "$ref": "#/components/responses/NotFoundError"
+          "500": {
+            "description": "Falha no envio"
+          }
+        }
+      }
+    },
+    "/send/invite-user": {
+      "post": {
+        "tags": ["E-mails"],
+        "summary": "Enviar convite para usuário",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["email"],
+                "properties": {
+                  "email": {
+                    "type": "string",
+                    "format": "email"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Convite enviado"
+          },
+          "500": {
+            "description": "Falha no envio"
           }
         }
       }
@@ -542,8 +386,8 @@
       "cookieAuth": {
         "type": "apiKey",
         "in": "cookie",
-        "name": "auth_token",
-        "description": "Token JWT de autenticação armazenado em cookie HttpOnly"
+        "name": "better-auth.session_token",
+        "description": "Token de sessão gerenciado pelo Better Auth (cookie HttpOnly)"
       }
     },
     "schemas": {
@@ -551,374 +395,79 @@
         "type": "object",
         "properties": {
           "id": {
-            "type": "integer",
-            "description": "ID único do usuário",
-            "example": 1
-          },
-          "nome": {
             "type": "string",
-            "description": "Primeiro nome do usuário",
-            "example": "João"
+            "description": "CUID do usuário",
+            "example": "clx1abc123"
           },
-          "sobrenome": {
+          "name": {
             "type": "string",
-            "description": "Sobrenome do usuário",
-            "example": "Silva"
-          },
-          "nomeCompleto": {
-            "type": "string",
-            "description": "Nome completo do usuário",
             "example": "João Silva"
           },
           "email": {
             "type": "string",
             "format": "email",
-            "description": "E-mail do usuário",
-            "example": "joao.silva@exemplo.com"
+            "example": "joao@exemplo.com"
           },
-          "foto": {
-            "type": "string",
-            "description": "URL da foto de perfil",
-            "example": "https://exemplo.com/fotos/joao.jpg"
-          },
-          "telefone": {
-            "type": "string",
-            "description": "Telefone do usuário",
-            "example": "(11) 98765-4321"
-          },
-          "admin": {
+          "emailVerified": {
             "type": "boolean",
-            "description": "Indica se é administrador",
-            "example": false
-          },
-          "superadmin": {
-            "type": "boolean",
-            "description": "Indica se é super administrador",
-            "example": false
-          },
-          "idempresa": {
-            "type": "integer",
-            "nullable": true,
-            "description": "ID da empresa",
-            "example": 1
-          },
-          "departamento": {
-            "type": "string",
-            "nullable": true,
-            "description": "Departamento do usuário",
-            "example": "TI"
-          },
-          "time": {
-            "type": "string",
-            "description": "Time/equipe",
-            "example": "Desenvolvimento"
-          },
-          "online": {
-            "type": "boolean",
-            "description": "Status online",
-            "example": true
-          }
-        }
-      },
-      "Project": {
-        "type": "object",
-        "properties": {
-          "id": {
-            "type": "integer",
-            "description": "ID único do projeto",
-            "example": 1
-          },
-          "nome": {
-            "type": "string",
-            "description": "Nome do projeto",
-            "example": "Sistema de Gestão"
-          },
-          "projectId": {
-            "type": "string",
-            "nullable": true,
-            "description": "Código identificador do projeto",
-            "maxLength": 10,
-            "example": "SGE-001"
-          },
-          "descricao": {
-            "type": "string",
-            "nullable": true,
-            "description": "Descrição detalhada do projeto",
-            "example": "Sistema completo de gestão empresarial"
-          },
-          "icone": {
-            "type": "string",
-            "nullable": true,
-            "description": "Ícone/emoji do projeto",
-            "maxLength": 50,
-            "example": "📊"
-          },
-          "backgroundUrl": {
-            "type": "string",
-            "nullable": true,
-            "format": "uri",
-            "description": "URL da imagem de fundo",
-            "example": "https://exemplo.com/bg.jpg"
-          },
-          "dataInicio": {
-            "type": "string",
-            "format": "date-time",
-            "nullable": true,
-            "description": "Data de início planejada",
-            "example": "2024-01-20T00:00:00.000Z"
-          },
-          "dataFim": {
-            "type": "string",
-            "format": "date-time",
-            "nullable": true,
-            "description": "Data de término planejada",
-            "example": "2024-06-30T00:00:00.000Z"
-          },
-          "status": {
-            "type": "string",
-            "enum": ["draft", "planning", "execution", "monitoring", "completed", "cancelled"],
-            "description": "Status atual do projeto",
-            "example": "planning"
-          },
-          "prioridade": {
-            "type": "string",
-            "enum": ["urgent", "high", "medium", "low", "none"],
-            "description": "Prioridade do projeto",
-            "example": "high"
-          },
-          "acesso": {
-            "type": "boolean",
-            "description": "Define se o projeto é público ou privado",
             "example": true
           },
-          "ownerId": {
-            "type": "integer",
-            "description": "ID do proprietário do projeto",
-            "example": 1
+          "image": {
+            "type": "string",
+            "nullable": true,
+            "example": null
           },
-          "idempresa": {
-            "type": "integer",
-            "description": "ID da empresa dona do projeto",
-            "example": 1
+          "role": {
+            "type": "string",
+            "enum": ["MEMBER", "ADMIN"],
+            "example": "MEMBER"
+          },
+          "workspaceId": {
+            "type": "string",
+            "nullable": true,
+            "example": null
           },
           "createdAt": {
             "type": "string",
             "format": "date-time",
-            "description": "Data de criação",
-            "example": "2024-01-19T20:00:00.000Z"
-          },
-          "updatedAt": {
-            "type": "string",
-            "format": "date-time",
-            "description": "Data da última atualização",
-            "example": "2024-01-19T20:00:00.000Z"
-          }
-        },
-        "required": ["id", "nome", "status", "prioridade", "ownerId", "idempresa"]
-      },
-      "CreateProjectInput": {
-        "type": "object",
-        "required": ["nome"],
-        "properties": {
-          "nome": {
-            "type": "string",
-            "minLength": 3,
-            "maxLength": 255,
-            "description": "Nome do projeto (obrigatório)",
-            "example": "Sistema de Gestão"
-          },
-          "projectId": {
-            "type": "string",
-            "maxLength": 10,
-            "description": "Código identificador do projeto",
-            "example": "SGE-001"
-          },
-          "descricao": {
-            "type": "string",
-            "description": "Descrição do projeto",
-            "example": "Sistema completo de gestão empresarial"
-          },
-          "icone": {
-            "type": "string",
-            "maxLength": 50,
-            "description": "Ícone/emoji do projeto",
-            "example": "📊"
-          },
-          "backgroundUrl": {
-            "type": "string",
-            "format": "uri",
-            "description": "URL da imagem de fundo",
-            "example": "https://exemplo.com/bg.jpg"
-          },
-          "status": {
-            "type": "string",
-            "enum": ["draft", "planning", "execution", "monitoring", "completed", "cancelled"],
-            "default": "draft",
-            "description": "Status inicial do projeto",
-            "example": "planning"
-          },
-          "prioridade": {
-            "type": "string",
-            "enum": ["urgent", "high", "medium", "low", "none"],
-            "default": "medium",
-            "description": "Prioridade do projeto",
-            "example": "high"
-          },
-          "dataInicio": {
-            "type": "string",
-            "format": "date-time",
-            "description": "Data de início planejada",
-            "example": "2024-01-20T00:00:00.000Z"
-          },
-          "dataFim": {
-            "type": "string",
-            "format": "date-time",
-            "description": "Data de término planejada",
-            "example": "2024-06-30T00:00:00.000Z"
-          },
-          "acesso": {
-            "type": "boolean",
-            "default": true,
-            "description": "Define se o projeto é público",
-            "example": true
+            "example": "2026-01-01T00:00:00.000Z"
           }
         }
       },
-      "UpdateProjectInput": {
+      "UpdateUserInput": {
         "type": "object",
         "properties": {
-          "nome": {
+          "name": {
             "type": "string",
-            "minLength": 3,
-            "maxLength": 255,
-            "description": "Nome do projeto",
-            "example": "Sistema de Gestão Atualizado"
+            "minLength": 2,
+            "maxLength": 100,
+            "example": "João Santos"
           },
-          "projectId": {
+          "email": {
             "type": "string",
-            "maxLength": 10,
-            "description": "Código identificador",
-            "example": "SGE-002"
-          },
-          "descricao": {
-            "type": "string",
-            "description": "Descrição do projeto",
-            "example": "Descrição atualizada"
-          },
-          "icone": {
-            "type": "string",
-            "maxLength": 50,
-            "description": "Ícone do projeto",
-            "example": "🚀"
-          },
-          "backgroundUrl": {
-            "type": "string",
-            "format": "uri",
-            "description": "URL da imagem de fundo",
-            "example": "https://exemplo.com/bg2.jpg"
-          },
-          "status": {
-            "type": "string",
-            "enum": ["draft", "planning", "execution", "monitoring", "completed", "cancelled"],
-            "description": "Status do projeto",
-            "example": "execution"
-          },
-          "prioridade": {
-            "type": "string",
-            "enum": ["urgent", "high", "medium", "low", "none"],
-            "description": "Prioridade",
-            "example": "urgent"
-          },
-          "dataInicio": {
-            "type": "string",
-            "format": "date-time",
-            "description": "Data de início",
-            "example": "2024-02-01T00:00:00.000Z"
-          },
-          "dataFim": {
-            "type": "string",
-            "format": "date-time",
-            "description": "Data de término",
-            "example": "2024-07-31T00:00:00.000Z"
-          },
-          "acesso": {
-            "type": "boolean",
-            "description": "Acesso público/privado",
-            "example": false
+            "format": "email",
+            "example": "joao.santos@exemplo.com"
           }
         }
       },
-      "Pagination": {
+      "AuthSessionResponse": {
         "type": "object",
         "properties": {
-          "page": {
-            "type": "integer",
-            "description": "Página atual",
-            "example": 1
+          "session": {
+            "type": "object",
+            "properties": {
+              "id": { "type": "string" },
+              "userId": { "type": "string" },
+              "token": { "type": "string" },
+              "expiresAt": { "type": "string", "format": "date-time" }
+            }
           },
-          "limit": {
-            "type": "integer",
-            "description": "Itens por página",
-            "example": 20
-          },
-          "total": {
-            "type": "integer",
-            "description": "Total de itens",
-            "example": 50
-          },
-          "totalPages": {
-            "type": "integer",
-            "description": "Total de páginas",
-            "example": 3
-          }
-        }
-      },
-      "UserResponse": {
-        "type": "object",
-        "properties": {
-          "success": {
-            "type": "boolean",
-            "example": true
-          },
-          "statusCode": {
-            "type": "integer",
-            "example": 200
-          },
-          "message": {
-            "type": "string",
-            "example": "User data retrieved successfully"
-          },
-          "data": {
+          "user": {
             "$ref": "#/components/schemas/User"
           }
         }
       },
-      "ProjectResponse": {
-        "type": "object",
-        "properties": {
-          "success": {
-            "type": "boolean",
-            "example": true
-          },
-          "statusCode": {
-            "type": "integer",
-            "example": 200
-          },
-          "message": {
-            "type": "string",
-            "example": "Project created successfully"
-          },
-          "data": {
-            "type": "object",
-            "properties": {
-              "project": {
-                "$ref": "#/components/schemas/Project"
-              }
-            }
-          }
-        }
-      },
-      "ProjectsListResponse": {
+      "SuccessResponse": {
         "type": "object",
         "properties": {
           "success": {
@@ -930,18 +479,7 @@
             "example": 200
           },
           "data": {
-            "type": "object",
-            "properties": {
-              "projects": {
-                "type": "array",
-                "items": {
-                  "$ref": "#/components/schemas/Project"
-                }
-              },
-              "pagination": {
-                "$ref": "#/components/schemas/Pagination"
-              }
-            }
+            "type": "object"
           }
         }
       },
@@ -957,25 +495,18 @@
             "example": 400
           },
           "message": {
-            "type": "string",
-            "example": "Error message"
+            "type": "string"
           },
           "error": {
             "type": "object",
             "properties": {
-              "code": {
-                "type": "string",
-                "example": "ERROR_CODE"
-              },
-              "details": {
-                "type": "object",
-                "description": "Detalhes adicionais do erro"
-              }
+              "code": { "type": "string" },
+              "details": { "type": "object" }
             }
           }
         }
       },
-      "ValidationError": {
+      "ValidationErrorResponse": {
         "type": "object",
         "properties": {
           "success": {
@@ -988,7 +519,7 @@
           },
           "message": {
             "type": "string",
-            "example": "Invalid request data"
+            "example": "Dados inválidos"
           },
           "error": {
             "type": "object",
@@ -998,26 +529,15 @@
                 "example": "VALIDATION_ERROR"
               },
               "details": {
-                "type": "object",
-                "properties": {
-                  "errors": {
-                    "type": "array",
-                    "items": {
-                      "type": "object",
-                      "properties": {
-                        "path": {
-                          "type": "array",
-                          "items": {
-                            "type": "string"
-                          },
-                          "example": ["nome"]
-                        },
-                        "message": {
-                          "type": "string",
-                          "example": "String must contain at least 3 character(s)"
-                        }
-                      }
-                    }
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "path": {
+                      "type": "array",
+                      "items": { "type": "string" }
+                    },
+                    "message": { "type": "string" }
                   }
                 }
               }
@@ -1028,41 +548,7 @@
     },
     "responses": {
       "UnauthorizedError": {
-        "description": "Não autenticado - Token ausente ou inválido",
-        "content": {
-          "application/json": {
-            "schema": {
-              "$ref": "#/components/schemas/ErrorResponse"
-            },
-            "examples": {
-              "unauthorized": {
-                "summary": "Token não encontrado",
-                "value": {
-                  "success": false,
-                  "statusCode": 401,
-                  "message": "Authentication token not found",
-                  "error": {
-                    "code": "UNAUTHORIZED"
-                  }
-                }
-              },
-              "invalidToken": {
-                "summary": "Token inválido",
-                "value": {
-                  "success": false,
-                  "statusCode": 401,
-                  "message": "Invalid or expired token",
-                  "error": {
-                    "code": "INVALID_TOKEN"
-                  }
-                }
-              }
-            }
-          }
-        }
-      },
-      "ForbiddenError": {
-        "description": "Acesso negado - Sem permissão para acessar este recurso",
+        "description": "Não autenticado — sessão ausente ou expirada",
         "content": {
           "application/json": {
             "schema": {
@@ -1070,28 +556,10 @@
             },
             "example": {
               "success": false,
-              "statusCode": 403,
-              "message": "You do not have permission to access this project",
+              "statusCode": 401,
+              "message": "Nao autenticado",
               "error": {
-                "code": "INSUFFICIENT_PERMISSIONS"
-              }
-            }
-          }
-        }
-      },
-      "NotFoundError": {
-        "description": "Recurso não encontrado",
-        "content": {
-          "application/json": {
-            "schema": {
-              "$ref": "#/components/schemas/ErrorResponse"
-            },
-            "example": {
-              "success": false,
-              "statusCode": 404,
-              "message": "Resource not found",
-              "error": {
-                "code": "RESOURCE_NOT_FOUND"
+                "code": "UNAUTHORIZED"
               }
             }
           }
@@ -1102,7 +570,7 @@
         "content": {
           "application/json": {
             "schema": {
-              "$ref": "#/components/schemas/ValidationError"
+              "$ref": "#/components/schemas/ValidationErrorResponse"
             }
           }
         }
@@ -1112,11 +580,15 @@
   "tags": [
     {
       "name": "Autenticação",
-      "description": "Endpoints relacionados à autenticação e gerenciamento de sessão"
+      "description": "Sign-up, sign-in, sign-out e sessão (Better Auth)"
     },
     {
-      "name": "Projetos",
-      "description": "CRUD completo de projetos com suporte a filtros, paginação e controle de permissões"
+      "name": "Usuário",
+      "description": "Perfil do usuário autenticado"
+    },
+    {
+      "name": "E-mails",
+      "description": "Envio de e-mails transacionais via Resend"
     }
   ]
 }
