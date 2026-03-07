@@ -43,7 +43,7 @@ jobs:
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
           build-args: |
-            NEXT_PUBLIC_APP_URL=https://elo.stratustelecom.com.br:44385
+            NEXT_PUBLIC_APP_URL=https://nexo.coodee.dev
           secrets: |
             hugeicons_token=${{ secrets.HUGEICONS_TOKEN }}
 
