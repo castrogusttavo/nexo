@@ -1,13 +1,13 @@
 services:
   nexo-app:
-    image: ghcr.io/stratusti/steelelo:latest
+    image: ghcr.io/castrogusttavo/nexo:latest
     container_name: nextjs-app
     restart: unless-stopped
     ports:
       - "44385:3000"
     environment:
       NODE_ENV: production
-      NEXT_PUBLIC_APP_URL: https://elo.stratustelecom.com.br:44385
+      NEXT_PUBLIC_APP_URL: https://nexo.coodee.dev
       JWT_SECRET: ${JWT_SECRET}
       POSTGRES_USER: ${POSTGRES_USER}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
