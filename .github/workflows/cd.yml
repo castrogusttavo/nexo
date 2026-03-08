@@ -15,16 +15,21 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
-
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v3
+        with:
+          version: 9
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: pnpm
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
       - name: Run migrations
-        run: |
-          docker run --rm \
-            --network nexo_default \
-            -e DATABASE_URL="postgresql://${{ secrets.POSTGRES_USER }}:${{ secrets.POSTGRES_PASSWORD }}@nexo-db-1:5432/${{ secrets.POSTGRES_DB }}" \
-            -v ${{ github.workspace }}/prisma:/app/prisma \
-            -w /app \
-            node:20-alpine \
-            sh -c "npm i -g prisma && prisma migrate deploy --schema=/app/prisma/schema.prisma"
+        run: pnpm prisma:deploy
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
 
   deploy:
     name: Build & Deploy
