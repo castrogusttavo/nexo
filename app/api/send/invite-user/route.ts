@@ -9,7 +9,7 @@ export async function POST(request: Request) {
     const { email } = await request.json()
 
     const { data, error } = await resend.emails.send({
-      from: 'nexo <suporte@coodee.dev>',
+      from: 'nexo <suporte@nexo.coodee.dev>',
       to: [email],
       subject: 'Received your invitation',
       react: InviteUserEmail({

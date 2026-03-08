@@ -49,7 +49,7 @@ export const auth = betterAuth({
         after: async (user) => {
           try {
             await getResend().emails.send({
-              from: 'nexo <suporte@coodee.dev>',
+              from: 'nexo <suporte@nexo.coodee.dev>',
               to: [user.email],
               subject: 'Welcome Nexo',
               react: WelcomeEmail({ userFirstname: user.name ?? 'there' }),
