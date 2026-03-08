@@ -8,7 +8,7 @@ export async function POST(request: Request) {
     const resend = new Resend(process.env.RESEND_API_KEY)
     const { email } = await request.json()
 
-    const { data } = await resend.emails.send({
+    const { data, error } = await resend.emails.send({
       from: 'nexo <suporte@coodee.dev>',
       to: [email],
       subject: 'Received your invitation',
@@ -24,6 +24,10 @@ export async function POST(request: Request) {
         inviteFromLocation: 'São Paulo, Brazil',
       }),
     })
+
+    if (error) {
+      return Response.json({ error }, { status: 400 })
+    }
 
     return Response.json(data)
   } catch (error) {
