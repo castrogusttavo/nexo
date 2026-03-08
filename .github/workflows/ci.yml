@@ -157,7 +157,7 @@ jobs:
         run: pnpm prisma db push
 
       - name: Run coverage tests
-        run: pnpm test:ci
+        run: pnpm test:coverage
 
       - name: Upload results to Codecov
         uses: codecov/codecov-action@v5
