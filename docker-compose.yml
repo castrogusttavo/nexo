@@ -5,16 +5,8 @@ services:
     restart: unless-stopped
     ports:
       - "3000:3000"
-    environment:
-      NODE_ENV: production
-      NEXT_PUBLIC_APP_URL: https://nexo.coodee.dev
-      BETTER_AUTH_SECRET: ${BETTER_AUTH_SECRET}
-      BETTER_AUTH_URL: https://nexo.coodee.dev
-      POSTGRES_USER: ${POSTGRES_USER}
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
-      POSTGRES_DB: ${POSTGRES_DB}
-      DATABASE_URL: postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@187.75.185.171:5432/${POSTGRES_DB}
-      REDIS_URL: redis://187.75.185.171:6379
+    env_file:
+      - .env
     networks:
       - app-network
 
