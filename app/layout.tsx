@@ -5,6 +5,7 @@ import { Analytics } from '@vercel/analytics/next'
 import { SpeedInsights } from '@vercel/speed-insights/next'
 import { Toaster } from '@/components/ui/sonner'
 import { TooltipProvider } from '@/components/ui/tooltip'
+import { WebVitals } from '@/lib/axiom/client'
 import { cn } from '@/lib/utils'
 
 const inter = Inter({ subsets: ['latin'], variable: '--font-sans' })
@@ -26,6 +27,7 @@ export default function RootLayout({
           {children}
           <Toaster />
         </TooltipProvider>
+        <WebVitals />
         <Analytics />
         <SpeedInsights />
       </body>

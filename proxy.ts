@@ -1,8 +1,18 @@
-import { NextResponse, type NextRequest } from 'next/server'
+import {
+  NextResponse,
+  type NextRequest,
+  type NextFetchEvent
+} from 'next/server'
+import { logger } from "@/lib/axiom/server";
+import { transformMiddlewareRequest } from "@axiomhq/nextjs";
 
 const PUBLIC_ROUTES = ['/sign-in', '/sign-up', '/api/auth']
 
-export function proxy(request: NextRequest) {
+export function proxy(request: NextRequest, event: NextFetchEvent) {
+  logger.info(...transformMiddlewareRequest(request));
+
+  event.waitUntil(logger.flush());
+
   const { pathname } = request.nextUrl
 
   const isPublic = PUBLIC_ROUTES.some((route) => pathname.startsWith(route))

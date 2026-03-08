@@ -30,6 +30,10 @@
     "prepare": "husky"
   },
   "dependencies": {
+    "@axiomhq/js": "^1.4.0",
+    "@axiomhq/logging": "^0.2.0",
+    "@axiomhq/nextjs": "^0.2.0",
+    "@axiomhq/react": "^0.2.0",
     "@base-ui/react": "^1.2.0",
     "@hugeicons/core-free-icons": "^3.3.0",
     "@hugeicons/react": "^1.1.5",
