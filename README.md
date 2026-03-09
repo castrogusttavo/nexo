@@ -160,7 +160,7 @@ pnpm test:all
 flowchart LR
     Internet([Internet])
 
-    subgraph Docker Network — nexo_default
+    subgraph Docker Network
         App["nexo-app\nNext.js 16\n:3000"]
         DB[("nexo-db\nPostgreSQL 17\n:5432")]
         Cache[("nexo-cache\nRedis 7\n:6379")]
