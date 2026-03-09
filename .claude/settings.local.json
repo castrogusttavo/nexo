@@ -68,7 +68,9 @@
       "Bash(cd /c/Users/gusttavo/apps/nexo && gh repo edit --enable-auto-merge 2>&1)",
       "Bash(cd /c/Users/gusttavo/apps/nexo && gh api repos/{owner}/{repo}/branches/main/protection \\\\\n  --method PUT \\\\\n  --input - <<'EOF'\n{\n  \"required_status_checks\": {\n    \"strict\": true,\n    \"contexts\": [\"Lint & Type Check\", \"Unit Tests\", \"Integration Tests\"]\n  },\n  \"enforce_admins\": false,\n  \"required_pull_request_reviews\": null,\n  \"restrictions\": null\n}\nEOF)",
       "mcp__claude_ai_Linear__list_teams",
-      "mcp__claude_ai_Linear__save_issue"
+      "mcp__claude_ai_Linear__save_issue",
+      "WebFetch(domain:raw.githubusercontent.com)",
+      "Bash(gh api:*)"
     ]
   }
 }
