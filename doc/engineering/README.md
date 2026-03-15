@@ -19,6 +19,7 @@ Architecture Decision Records (ADRs) for key trade-offs.
 - [ADR-001: Redis Cache-Aside with DTO Storage](decisions/adr-001-redis-cache-aside.md)
 - [ADR-002: Redis Sentinel over Cluster](decisions/adr-002-redis-sentinel.md)
 - [ADR-003: SOPS + age for Secrets](decisions/adr-003-sops-age-secrets.md)
+- [ADR-004: Prisma Types at the Repository–Service Boundary](decisions/adr-004-prisma-types-at-boundary.md)
 - [ADR Template](decisions/adr-template.md)
 
 ### [Infrastructure](infrastructure/)
