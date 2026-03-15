@@ -15,7 +15,9 @@ afterEach(async () => {
 })
 
 afterAll(async () => {
-  await redis.disconnect()
+  if (redis.isOpen) {
+    await redis.disconnect()
+  }
 })
 
 describe('UserCache', () => {
@@ -50,14 +52,6 @@ describe('UserCache', () => {
       const cached = await UserCache.get('cache-user-2')
 
       expect(cached).toEqual(dto)
-      expect(cached!.id).toBe('cache-user-2')
-      expect(cached!.name).toBe('Test User')
-      expect(cached!.email).toBe('test@example.com')
-      expect(cached!.emailVerified).toBe(true)
-      expect(cached!.image).toBe('https://example.com/photo.jpg')
-      expect(cached!.role).toBe('ADMIN')
-      expect(cached!.workspaceId).toBe('workspace-1')
-      expect(cached!.createdAt).toBe(dto.createdAt)
     })
   })
 
