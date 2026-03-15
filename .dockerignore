@@ -1,13 +1,58 @@
+# Dependencies
 node_modules
+.pnp
+.pnp.js
+
+# Build outputs
 .next
+out
+build
+coverage
+storybook-static
+tsconfig.tsbuildinfo
+build-storybook.log
+
+# Tests
+**/__tests__
+**/*.test.*
+**/*.spec.*
+vite.config.ts
+
+# Git & CI
 .git
+.github
+.husky
+.gitignore
+
+# Environment
 .env
-.env.local
-.env*.local
-npm-debug.log*
-yarn-debug.log*
-yarn-error.log*
-.DS_Store
-*.pem
-.agents/*
+.env.*
+!.env.example
+
+# Dev tools & config
+.agents
 .claude
+biome.json
+commitlint.config.js
+proxy.ts
+scripts
+
+# Docs
+docs
+doc
+README.md
+CLAUDE.md
+
+# IDE
+.vscode
+.idea
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Misc
+*.pem
+*.log
