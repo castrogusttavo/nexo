@@ -29,6 +29,9 @@ vite.config.ts
 .env.*
 !.env.example
 
+# Secrets (SOPS + age)
+secrets/
+
 # Dev tools & config
 .agents
 .claude

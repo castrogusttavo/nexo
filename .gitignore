@@ -32,6 +32,10 @@ yarn-error.log*
 .env
 !.env.example
 
+# secrets (SOPS + age)
+secrets/*.env
+!secrets/*.enc.env
+
 # vercel
 .vercel
 

@@ -81,6 +81,12 @@ jobs:
           secrets: |
             hugeicons_token=${{ secrets.HUGEICONS_TOKEN }}
 
+      - name: Decrypt production secrets
+        run: |
+          sops --decrypt secrets/production.enc.env > /var/www/nexo/.env
+        env:
+          SOPS_AGE_KEY: ${{ secrets.SOPS_AGE_KEY }}
+
       - name: Deploy to server
         run: |
           cp docker-compose.yml /var/www/nexo/docker-compose.yml
