@@ -33,3 +33,28 @@ jobs:
         with:
           name: zap-report
           path: report_html.html
+
+  headers-check:
+    name: Security Headers Validation
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check security headers
+        run: |
+          RESPONSE=$(curl -sI https://nexo.coodee.dev)
+          echo "$RESPONSE"
+
+          check_header() {
+            if echo "$RESPONSE" | grep -qi "$1"; then
+              echo "OK: $1"
+            else
+              echo "MISSING: $1" && exit 1
+            fi
+          }
+
+          check_header "x-frame-options"
+          check_header "x-content-type-options"
+          check_header "strict-transport-security"
+          check_header "content-security-policy"
+          check_header "referrer-policy"
+
+          echo "All security headers present."

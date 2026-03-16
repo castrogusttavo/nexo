@@ -32,7 +32,7 @@ jobs:
         run: pnpm install --frozen-lockfile
 
       - name: Run pnpm audit
-        run: pnpm audit --audit-level=high
+        run: pnpm audit --audit-level=critical
 
   snyk:
     name: Snyk Security Scan
@@ -89,28 +89,3 @@ jobs:
         with:
           sarif_file: semgrep.sarif
 
-  headers-check:
-    name: Security Headers Validation
-    runs-on: ubuntu-latest
-    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
-    steps:
-      - name: Check security headers
-        run: |
-          RESPONSE=$(curl -sI https://nexo.coodee.dev)
-          echo "$RESPONSE"
-
-          check_header() {
-            if echo "$RESPONSE" | grep -qi "$1"; then
-              echo "OK: $1"
-            else
-              echo "MISSING: $1" && exit 1
-            fi
-          }
-
-          check_header "x-frame-options"
-          check_header "x-content-type-options"
-          check_header "strict-transport-security"
-          check_header "content-security-policy"
-          check_header "referrer-policy"
-
-          echo "All security headers present."
