@@ -1,4 +1,5 @@
 import { createId } from '@paralleldrive/cuid2'
+import { hash, verify } from 'argon2'
 import { betterAuth } from 'better-auth'
 import { prismaAdapter } from 'better-auth/adapters/prisma'
 import { Resend } from 'resend'
@@ -15,9 +16,15 @@ export const auth = betterAuth({
     },
   },
   baseURL: process.env.BETTER_AUTH_URL,
-  trustedOrigins: [process.env.BETTER_AUTH_URL!],
+  trustedOrigins: [process.env.BETTER_AUTH_URL ?? 'http://nexo.coodee.dev'],
   secret: process.env.BETTER_AUTH_SECRET,
-  emailAndPassword: { enabled: true },
+  emailAndPassword: {
+    enabled: true,
+    password: {
+      hash: async (password) => hash(password),
+      verify: async ({ hash: hashed, password }) => verify(hashed, password),
+    },
+  },
   socialProviders: {
     google: {
       clientId: process.env.GOOGLE_CLIENT_ID ?? '',
