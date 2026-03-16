@@ -1,17 +1,47 @@
 import {
   NextResponse,
   type NextRequest,
-  type NextFetchEvent
+  type NextFetchEvent,
 } from 'next/server'
-import { logger } from "@/lib/axiom/server";
-import { transformMiddlewareRequest } from "@axiomhq/nextjs";
+import { logger } from '@/lib/axiom/server'
+import { transformMiddlewareRequest } from '@axiomhq/nextjs'
 
 const PUBLIC_ROUTES = ['/sign-in', '/sign-up', '/api/auth']
 
-export function proxy(request: NextRequest, event: NextFetchEvent) {
-  logger.info(...transformMiddlewareRequest(request));
+function buildCspHeader(nonce: string): string {
+  return `
+    default-src 'self';
+    script-src 'self' 'nonce-${nonce}' 'strict-dynamic';
+    style-src 'self' 'unsafe-inline' https://fonts.googleapis.com;
+    img-src 'self' blob: data: https:;
+    font-src 'self' https://fonts.gstatic.com;
+    connect-src 'self' https://*.axiom.co https://va.vercel-scripts.com;
+    frame-ancestors 'none';
+    form-action 'self';
+    base-uri 'self';
+    object-src 'none';
+    upgrade-insecure-requests;
+  `
+    .replace(/\s{2,}/g, ' ')
+    .trim()
+}
 
-  event.waitUntil(logger.flush());
+function withSecurityHeaders(
+  response: NextResponse,
+  nonce: string,
+): NextResponse {
+  response.headers.set('Content-Security-Policy', buildCspHeader(nonce))
+  return response
+}
+
+export function proxy(request: NextRequest, event: NextFetchEvent) {
+  logger.info(...transformMiddlewareRequest(request))
+
+  event.waitUntil(logger.flush())
+
+  const nonce = Buffer.from(crypto.randomUUID()).toString('base64')
+  const requestHeaders = new Headers(request.headers)
+  requestHeaders.set('x-nonce', nonce)
 
   const { pathname } = request.nextUrl
 
@@ -24,15 +54,20 @@ export function proxy(request: NextRequest, event: NextFetchEvent) {
     if (sessionToken && (pathname === '/sign-in' || pathname === '/sign-up')) {
       return NextResponse.redirect(new URL('/', request.url))
     }
-    return NextResponse.next()
+    return withSecurityHeaders(
+      NextResponse.next({ request: { headers: requestHeaders } }),
+      nonce,
+    )
   }
 
   if (!sessionToken) {
-    const signInUrl = new URL('/sign-in', request.url)
-    return NextResponse.redirect(signInUrl)
+    return NextResponse.redirect(new URL('/sign-in', request.url))
   }
 
-  return NextResponse.next()
+  return withSecurityHeaders(
+    NextResponse.next({ request: { headers: requestHeaders } }),
+    nonce,
+  )
 }
 
 export const config = {
