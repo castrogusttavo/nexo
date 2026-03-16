@@ -25,7 +25,10 @@ export default function () {
   const signInRes = http.post(
     `${BASE_URL}/api/auth/sign-in/email`,
     JSON.stringify({ email: '', password: '' }),
-    { headers: { 'Content-Type': 'application/json' } },
+    {
+      headers: { 'Content-Type': 'application/json' },
+      responseCallback: http.expectedStatuses(400, 401, 403, 422),
+    },
   );
   check(signInRes, {
     'POST /api/auth/sign-in/email returns 4xx': (r) => r.status >= 400 && r.status < 500,
