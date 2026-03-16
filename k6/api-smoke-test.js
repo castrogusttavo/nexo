@@ -3,6 +3,10 @@ import { check, sleep } from 'k6';
 
 const BASE_URL = __ENV.BASE_URL || 'http://localhost:3000';
 
+// Accept 2xx-4xx as expected — this test intentionally hits unauthenticated endpoints.
+// Only 5xx and connection errors should count as failures.
+http.setResponseCallback(http.expectedStatuses({ min: 200, max: 499 }));
+
 export const options = {
   vus: 1,
   duration: '15s',
@@ -25,10 +29,7 @@ export default function () {
   const signInRes = http.post(
     `${BASE_URL}/api/auth/sign-in/email`,
     JSON.stringify({ email: '', password: '' }),
-    {
-      headers: { 'Content-Type': 'application/json' },
-      responseCallback: http.expectedStatuses(400, 401, 403, 422),
-    },
+    { headers: { 'Content-Type': 'application/json' } },
   );
   check(signInRes, {
     'POST /api/auth/sign-in/email returns 4xx': (r) => r.status >= 400 && r.status < 500,
