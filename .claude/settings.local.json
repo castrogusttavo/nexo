@@ -75,7 +75,17 @@
       "mcp__claude_ai_Linear__list_issue_statuses",
       "mcp__claude_ai_Linear__get_user",
       "mcp__claude_ai_Linear__create_issue_label",
-      "mcp__claude_ai_Linear__get_issue"
+      "mcp__claude_ai_Linear__get_issue",
+      "Bash(git:*)",
+      "Bash(gh run:*)",
+      "Bash(rm:*)",
+      "WebFetch(domain:x.com)",
+      "WebFetch(domain:nyxui.com)",
+      "WebFetch(domain:github.com)",
+      "WebFetch(domain:dev.to)",
+      "WebFetch(domain:nitter.net)",
+      "WebFetch(domain:xcancel.com)",
+      "WebFetch(domain:fixupx.com)"
     ]
   }
 }

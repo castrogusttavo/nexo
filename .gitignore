@@ -50,4 +50,3 @@ storybook-static
 # AI Agents & Skills
 .agents*
 /docs
-.claude
