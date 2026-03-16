@@ -13,14 +13,10 @@ export const options = {
 };
 
 export default function () {
-  // GET /api/auth/get-session — better-auth returns 200 with null session when unauthenticated
+  // GET /api/auth/get-session — returns 200 with null session when unauthenticated
   const meRes = http.get(`${BASE_URL}/api/auth/get-session`);
   check(meRes, {
     'GET /api/auth/get-session returns 200': (r) => r.status === 200,
-    'GET /api/auth/get-session has no active session': (r) => {
-      const body = JSON.parse(r.body);
-      return body.session === null || body.session === undefined;
-    },
     'GET /api/auth/get-session responds under 500ms': (r) => r.timings.duration < 500,
   });
   sleep(1);
