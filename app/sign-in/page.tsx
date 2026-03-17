@@ -62,7 +62,9 @@ export default function SignIn() {
       <div className='flex-1 w-full flex flex-col justify-center space-y-6 max-w-90'>
         <div>
           <H4>Trabalhe em todas as dimensões.</H4>
-          <H4 className='text-muted-foreground'>Bem-vindo de volta ao Elo.</H4>
+          <H4 className='text-muted-foreground'>
+            Bem-vindo de volta ao Nexo.
+          </H4>
         </div>
 
         <div className='flex flex-col gap-3'>

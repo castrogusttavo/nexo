@@ -68,7 +68,9 @@ export default function SignUp() {
       <div className='flex-1 w-full flex flex-col justify-center space-y-6 max-w-90'>
         <div>
           <H4>Trabalhe em todas as dimensões.</H4>
-          <H4 className='text-muted-foreground'>Crie sua conta do Elo.</H4>
+          <H4 className='text-muted-foreground'>
+            Crie sua conta do Nexo.
+          </H4>
         </div>
 
         <div className='flex flex-col gap-3'>

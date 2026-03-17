@@ -11,7 +11,7 @@ export function HeaderLogin({ path, pathname }: PathProps) {
   return (
     <div className='w-full flex items-center justify-between'>
       <Link href='/'>
-        <Image src='logo.svg' alt='elo-logo' width={75} height={10} />
+        <Image src='logo.svg' alt='nexo-logo' width={75} height={10} />
       </Link>
       <div className='text-center text-sm'>
         <Muted>
