@@ -4,7 +4,7 @@ import { useRender } from "@base-ui/react/use-render"
 
 import { cn } from "@/lib/utils"
 import { HugeiconsIcon } from "@hugeicons/react"
-import { ArrowRight01Icon, MoreHorizontalCircle01Icon } from "@hugeicons/core-free-icons"
+import { ArrowRight01Icon, MoreHorizontalCircle01Icon } from "@hugeicons-pro/core-stroke-rounded"
 
 function Breadcrumb({ className, ...props }: React.ComponentProps<"nav">) {
   return (

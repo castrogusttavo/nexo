@@ -23,9 +23,9 @@ importers:
       '@base-ui/react':
         specifier: ^1.2.0
         version: 1.2.0(@types/react@19.2.14)(react-dom@19.2.4(react@19.2.4))(react@19.2.4)
-      '@hugeicons/core-free-icons':
-        specifier: ^3.3.0
-        version: 3.3.0
+      '@hugeicons-pro/core-stroke-rounded':
+        specifier: ^3.1.0
+        version: 3.1.0
       '@hugeicons/react':
         specifier: ^1.1.5
         version: 1.1.5(react@19.2.4)
@@ -798,8 +798,8 @@ packages:
     peerDependencies:
       hono: ^4
 
-  '@hugeicons/core-free-icons@3.3.0':
-    resolution: {integrity: sha512-qYyr4JQ2eQIHTSTbITvnJvs6ERNK64D9gpwZnf2IyuG0exzqfyABLO/oTB71FB3RZPfu1GbwycdiGSo46apjMQ==}
+  '@hugeicons-pro/core-stroke-rounded@3.1.0':
+    resolution: {integrity: sha512-Bid2s2di9M5nQqdvBi66zTZquWGIfyp5BWE3BhTGFzV50t5Noe07ylu2RFn6zB7VXFV9nrlEbTQmtF1Nm8H78g==}
 
   '@hugeicons/react@1.1.5':
     resolution: {integrity: sha512-JX/iDz3oO7hWdVqbjwFwRrAjHk8h2vI+mBkNzp4JcXG3t4idoupfjon73nLOA7cr27m0M8hrRC1Q2h6nEBGKVA==}
@@ -4972,7 +4972,7 @@ snapshots:
     dependencies:
       hono: 4.12.3
 
-  '@hugeicons/core-free-icons@3.3.0': {}
+  '@hugeicons-pro/core-stroke-rounded@3.1.0': {}
 
   '@hugeicons/react@1.1.5(react@19.2.4)':
     dependencies:

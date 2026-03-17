@@ -3,7 +3,7 @@ import { OTPInput, OTPInputContext } from "input-otp"
 
 import { cn } from "@/lib/utils"
 import { HugeiconsIcon } from "@hugeicons/react"
-import { MinusSignIcon } from "@hugeicons/core-free-icons"
+import { MinusSignIcon } from "@hugeicons-pro/core-stroke-rounded"
 
 function InputOTP({
   className,
