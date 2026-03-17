@@ -45,6 +45,13 @@ export function proxy(request: NextRequest, event: NextFetchEvent) {
 
   const { pathname } = request.nextUrl
 
+  if (
+    process.env.NODE_ENV === 'development' &&
+    (pathname === '/reference' || pathname === '/openapi.json')
+  ) {
+    return NextResponse.next({ request: { headers: requestHeaders } })
+  }
+
   const isPublic = PUBLIC_ROUTES.some((route) => pathname.startsWith(route))
   const sessionToken =
     request.cookies.get('better-auth.session_token')?.value ||
