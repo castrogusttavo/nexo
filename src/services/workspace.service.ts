@@ -5,7 +5,10 @@ import { err, ok, type Result } from '@/src/lib/result'
 import { toWorkspaceDTO } from '@/src/mappers/workspace.mapper'
 import { UserRepository } from '@/src/repositories/user.repository'
 import { WorkspaceRepository } from '@/src/repositories/workspace.repository'
-import type { CreateWorkspaceDTO, UpdateWorkspaceDTO } from '@/src/schemas/workspace.schema'
+import type {
+  CreateWorkspaceDTO,
+  UpdateWorkspaceDTO,
+} from '@/src/schemas/workspace.schema'
 import type { WorkspaceDTO } from '@/types/workspace'
 
 export const WorkspaceService = {
@@ -76,10 +79,7 @@ export const WorkspaceService = {
     return ok(workspaceDTO)
   },
 
-  async delete(
-    actorId: string,
-    workspaceId: string,
-  ): Promise<Result<void>> {
+  async delete(actorId: string, workspaceId: string): Promise<Result<void>> {
     const actor = await UserRepository.findById(actorId)
     if (!actor.ok) return actor
 

@@ -9,7 +9,10 @@ export const CreateWorkspaceSchema = z.object({
     .string()
     .min(2, 'Slug deve ter ao menos 2 caracteres')
     .max(50, 'Slug deve ter no máximo 50 caracteres')
-    .regex(/^[a-z0-9-]+$/, 'Slug deve conter apenas letras minúsculas, números e hífens'),
+    .regex(
+      /^[a-z0-9-]+$/,
+      'Slug deve conter apenas letras minúsculas, números e hífens',
+    ),
 })
 
 export type CreateWorkspaceDTO = z.infer<typeof CreateWorkspaceSchema>
@@ -24,7 +27,10 @@ export const UpdateWorkspaceSchema = z.object({
     .string()
     .min(2, 'Slug deve ter ao menos 2 caracteres')
     .max(50, 'Slug deve ter no máximo 50 caracteres')
-    .regex(/^[a-z0-9-]+$/, 'Slug deve conter apenas letras minúsculas, números e hífens')
+    .regex(
+      /^[a-z0-9-]+$/,
+      'Slug deve conter apenas letras minúsculas, números e hífens',
+    )
     .optional(),
 })
 

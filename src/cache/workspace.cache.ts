@@ -16,7 +16,9 @@ export const WorkspaceCache = {
 
   async set(workspaceId: string, workspace: WorkspaceDTO): Promise<void> {
     const client = await ensureRedisConnected()
-    await client.set(`${PREFIX}${workspaceId}`, JSON.stringify(workspace), { EX: TTL })
+    await client.set(`${PREFIX}${workspaceId}`, JSON.stringify(workspace), {
+      EX: TTL,
+    })
   },
 
   async invalidate(workspaceId: string): Promise<void> {

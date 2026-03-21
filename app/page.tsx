@@ -14,13 +14,13 @@ import {
 } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
+import { useUser } from '@/src/hooks/use-user'
 import {
   useCreateWorkspace,
   useDeleteWorkspace,
   useUpdateWorkspace,
   useWorkspace,
 } from '@/src/hooks/use-workspace'
-import { useUser } from '@/src/hooks/use-user'
 import { authClient } from '@/src/lib/auth-client'
 import { NexoIcon } from './_components/icon/icon'
 
@@ -76,7 +76,9 @@ function CreateWorkspaceCard() {
     <Card>
       <CardHeader>
         <CardTitle>Criar Workspace</CardTitle>
-        <CardDescription>Preencha os campos para criar um novo workspace.</CardDescription>
+        <CardDescription>
+          Preencha os campos para criar um novo workspace.
+        </CardDescription>
       </CardHeader>
       <CardContent>
         <form onSubmit={handleSubmit} className='flex flex-col gap-4'>
@@ -114,7 +116,10 @@ function WorkspaceDetailsCard({ workspaceId }: { workspaceId: string }) {
   const [editName, setEditName] = useState('')
   const [isEditing, setIsEditing] = useState(false)
 
-  if (isLoading) return <p className='text-muted-foreground text-sm'>Carregando workspace...</p>
+  if (isLoading)
+    return (
+      <p className='text-muted-foreground text-sm'>Carregando workspace...</p>
+    )
   if (!workspace) return null
 
   function handleUpdate(e: FormEvent) {
@@ -146,9 +151,18 @@ function WorkspaceDetailsCard({ workspaceId }: { workspaceId: string }) {
       </CardHeader>
       <CardContent className='flex flex-col gap-4'>
         <div className='flex flex-col gap-1 text-sm'>
-          <p><span className='text-muted-foreground'>Nome:</span> {workspace.name}</p>
-          <p><span className='text-muted-foreground'>Plano:</span> {workspace.activePlan}</p>
-          <p><span className='text-muted-foreground'>Criado em:</span> {new Date(workspace.createdAt).toLocaleDateString('pt-BR')}</p>
+          <p>
+            <span className='text-muted-foreground'>Nome:</span>{' '}
+            {workspace.name}
+          </p>
+          <p>
+            <span className='text-muted-foreground'>Plano:</span>{' '}
+            {workspace.activePlan}
+          </p>
+          <p>
+            <span className='text-muted-foreground'>Criado em:</span>{' '}
+            {new Date(workspace.createdAt).toLocaleDateString('pt-BR')}
+          </p>
         </div>
 
         {isEditing ? (
@@ -166,7 +180,11 @@ function WorkspaceDetailsCard({ workspaceId }: { workspaceId: string }) {
               <Button type='submit' disabled={updateWorkspace.isPending}>
                 {updateWorkspace.isPending ? 'Salvando...' : 'Salvar'}
               </Button>
-              <Button type='button' variant='outline' onClick={() => setIsEditing(false)}>
+              <Button
+                type='button'
+                variant='outline'
+                onClick={() => setIsEditing(false)}
+              >
                 Cancelar
               </Button>
             </div>

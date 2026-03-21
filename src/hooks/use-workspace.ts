@@ -20,7 +20,10 @@ export function useCreateWorkspace() {
   const queryClient = useQueryClient()
 
   return useMutation({
-    mutationFn: async (data: { name: string; slug: string }): Promise<WorkspaceDTO> => {
+    mutationFn: async (data: {
+      name: string
+      slug: string
+    }): Promise<WorkspaceDTO> => {
       const res = await fetch('/api/workspaces', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -44,7 +47,10 @@ export function useUpdateWorkspace(workspaceId: string) {
   const queryClient = useQueryClient()
 
   return useMutation({
-    mutationFn: async (data: { name?: string; slug?: string }): Promise<WorkspaceDTO> => {
+    mutationFn: async (data: {
+      name?: string
+      slug?: string
+    }): Promise<WorkspaceDTO> => {
       const res = await fetch(`/api/workspaces/${workspaceId}`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },

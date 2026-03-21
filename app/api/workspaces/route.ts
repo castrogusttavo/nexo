@@ -23,10 +23,7 @@ export async function POST(request: NextRequest) {
     )
   }
 
-  const result = await WorkspaceService.create(
-    auth.value.user.id,
-    parsed.data,
-  )
+  const result = await WorkspaceService.create(auth.value.user.id, parsed.data)
 
   if (!result.ok) return handleError(result.error)
 

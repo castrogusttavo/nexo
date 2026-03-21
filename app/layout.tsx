@@ -6,9 +6,9 @@ import { SpeedInsights } from '@vercel/speed-insights/next'
 import { Suspense } from 'react'
 import { Toaster } from '@/components/ui/sonner'
 import { TooltipProvider } from '@/components/ui/tooltip'
-import { Providers } from './_components/providers'
 import { WebVitals } from '@/lib/axiom/client'
 import { cn } from '@/lib/utils'
+import { Providers } from './_components/providers'
 
 const inter = Inter({ subsets: ['latin'], variable: '--font-sans' })
 
