@@ -30,6 +30,12 @@ How the system runs in production.
 - [Deployment](infrastructure/deployment.md) — CI/CD pipeline, deploy flow
 - [Networking](infrastructure/networking.md) — Docker network, ports, DNS
 
+### [Feature Creation](feature-creation.md)
+
+Step-by-step guide for implementing any new feature, from database to UI.
+
+- [Feature Creation Guide](feature-creation.md) — file order, patterns, checklist
+
 ### [Security](security/)
 
 How the system protects data and controls access.

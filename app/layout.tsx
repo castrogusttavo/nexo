@@ -6,6 +6,7 @@ import { SpeedInsights } from '@vercel/speed-insights/next'
 import { Suspense } from 'react'
 import { Toaster } from '@/components/ui/sonner'
 import { TooltipProvider } from '@/components/ui/tooltip'
+import { Providers } from './_components/providers'
 import { WebVitals } from '@/lib/axiom/client'
 import { cn } from '@/lib/utils'
 
@@ -25,10 +26,12 @@ export default function RootLayout({
     <html lang='en' className={cn('dark', inter.variable)}>
       <body className='root antialiased bg-background h-screen'>
         <Suspense>
-          <TooltipProvider>
-            {children}
-            <Toaster />
-          </TooltipProvider>
+          <Providers>
+            <TooltipProvider>
+              {children}
+              <Toaster />
+            </TooltipProvider>
+          </Providers>
         </Suspense>
         <WebVitals />
         <Analytics />
