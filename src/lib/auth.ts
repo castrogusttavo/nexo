@@ -69,7 +69,5 @@ export const auth = betterAuth({
       },
     },
   },
-  plugins: [
-    dash(),
-  ],
+  plugins: [dash()],
 })
