@@ -47,7 +47,7 @@ export function proxy(request: NextRequest, event: NextFetchEvent) {
 
   if (
     process.env.NODE_ENV === 'development' &&
-    (pathname === '/reference' || pathname === '/openapi.json')
+    (pathname === '/reference' || pathname === '/openapi.json' || pathname === '/contact')
   ) {
     return NextResponse.next({ request: { headers: requestHeaders } })
   }
