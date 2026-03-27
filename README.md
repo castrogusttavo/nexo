@@ -14,6 +14,7 @@ This README serves as both an introduction to Nexo and a guide to get started wi
 
 - New to Nexo? Start with [What is Nexo?](#what-is-nexo)
 - Want to run it locally? Jump to [Getting started](#getting-started)
+- Looking for the docs? Visit our [Official Documentation](https://doc.nexo.coodee.dev/)
 - Have feedback? Visit our [Forum](#community) or check the [Status page](#community)
 
 ## Table of contents
