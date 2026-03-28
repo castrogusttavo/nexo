@@ -1,4 +1,5 @@
 import { createClient, createSentinel } from 'redis'
+import { REDIS_PASSWORD, REDIS_SENTINEL_NAME, REDIS_SENTINEL_PASSWORD, REDIS_URL } from '@/lib/env/env.d'
 
 type RedisClient = ReturnType<typeof createClient>
 
@@ -23,13 +24,13 @@ function createRedisClient(): RedisClient {
   if (sentinelHosts) {
     const sentinel = createSentinel({
       sentinelRootNodes: parseSentinelHosts(sentinelHosts),
-      name: process.env.REDIS_SENTINEL_NAME ?? 'mymaster',
+      name:REDIS_SENTINEL_NAME,
       nodeClientOptions: {
-        password: process.env.REDIS_PASSWORD,
+        password: REDIS_PASSWORD,
         socket: SOCKET_DEFAULTS,
       },
       sentinelClientOptions: {
-        password: process.env.REDIS_SENTINEL_PASSWORD,
+        password: REDIS_SENTINEL_PASSWORD,
         socket: SOCKET_DEFAULTS,
       },
     })
@@ -42,7 +43,7 @@ function createRedisClient(): RedisClient {
   }
 
   const client = createClient({
-    url: process.env.REDIS_URL,
+    url: REDIS_URL,
     socket: SOCKET_DEFAULTS,
   })
 

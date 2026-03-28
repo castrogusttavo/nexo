@@ -4,6 +4,7 @@ import {
   type NextFetchEvent,
 } from 'next/server'
 import { logger } from '@/lib/axiom/server'
+import { NODE_ENV } from '@/lib/env/env.d'
 import { transformMiddlewareRequest } from '@axiomhq/nextjs'
 
 const PUBLIC_ROUTES = ['/sign-in', '/sign-up', '/api/auth']
@@ -46,7 +47,7 @@ export function proxy(request: NextRequest, event: NextFetchEvent) {
   const { pathname } = request.nextUrl
 
   if (
-    process.env.NODE_ENV === 'development' &&
+    NODE_ENV === 'development' &&
     (pathname === '/reference' || pathname === '/openapi.json' || pathname === '/contact' || pathname === '/testes')
   ) {
     return NextResponse.next({ request: { headers: requestHeaders } })

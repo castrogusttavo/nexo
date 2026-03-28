@@ -1,0 +1,87 @@
+import { z } from 'zod'
+
+const env = {
+  NODE_ENV: process.env.NODE_ENV,
+  POSTGRES_USER: process.env.POSTGRES_USER,
+  POSTGRES_PASSWORD: process.env.POSTGRES_PASSWORD,
+  POSTGRES_DB: process.env.POSTGRES_DB,
+  DATABASE_URL: process.env.DATABASE_URL,
+  REDIS_URL: process.env.REDIS_URL,
+  REDIS_PASSWORD: process.env.REDIS_PASSWORD,
+  REDIS_SENTINEL_NAME: process.env.REDIS_SENTINEL_NAME,
+  REDIS_SENTINEL_PASSWORD: process.env.REDIS_SENTINEL_PASSWORD,
+  RABBITMQ_USER: process.env.RABBITMQ_USER,
+  RABBITMQ_PASSWORD: process.env.RABBITMQ_PASSWORD,
+  MINIO_ENDPOINT: process.env.MINIO_ENDPOINT,
+  MINIO_USER: process.env.MINIO_USER,
+  MINIO_PASSWORD: process.env.MINIO_PASSWORD,
+  BETTER_AUTH_SECRET: process.env.BETTER_AUTH_SECRET,
+  BETTER_AUTH_URL: process.env.BETTER_AUTH_URL,
+  GOOGLE_CLIENT_ID: process.env.GOOGLE_CLIENT_ID,
+  GOOGLE_CLIENT_SECRET: process.env.GOOGLE_CLIENT_SECRET,
+  GITHUB_CLIENT_ID: process.env.GITHUB_CLIENT_ID,
+  GITHUB_CLIENT_SECRET: process.env.GITHUB_CLIENT_SECRET,
+  RESEND_API_KEY: process.env.RESEND_API_KEY,
+  NEXT_PUBLIC_AXIOM_TOKEN: process.env.NEXT_PUBLIC_AXIOM_TOKEN,
+  NEXT_PUBLIC_AXIOM_DATASET: process.env.NEXT_PUBLIC_AXIOM_DATASET,
+  HUGEICONS_TOKEN: process.env.HUGEICONS_TOKEN,
+}
+
+const envSchema = z.object({
+  NODE_ENV: z.enum(['development', 'production', 'test']),
+  POSTGRES_USER: z.string().min(2).max(63),
+  POSTGRES_PASSWORD: z.string().min(8).max(128),
+  POSTGRES_DB: z.string().min(1).max(63),
+  DATABASE_URL: z.url().startsWith('postgresql://'),
+  REDIS_URL: z.url().startsWith('redis://'),
+  REDIS_PASSWORD: z.string().min(8).max(128),
+  REDIS_SENTINEL_NAME: z.string().min(1).max(63),
+  REDIS_SENTINEL_PASSWORD: z.string().min(8).max(128),
+  RABBITMQ_USER: z.string().min(2).max(63),
+  RABBITMQ_PASSWORD: z.string().min(8).max(128),
+  MINIO_ENDPOINT: z.url().startsWith('http'),
+  MINIO_USER: z.string().min(3).max(63),
+  MINIO_PASSWORD: z.string().min(8).max(128),
+  BETTER_AUTH_SECRET: z.string().min(16).startsWith('ba_'),
+  BETTER_AUTH_URL: z.url().startsWith('http'),
+  GOOGLE_CLIENT_ID: z.string().min(10).endsWith('.apps.googleusercontent.com'),
+  GOOGLE_CLIENT_SECRET: z.string().min(10).startsWith('GOCSPX-'),
+  GITHUB_CLIENT_ID: z.string().min(10).max(40),
+  GITHUB_CLIENT_SECRET: z.string().length(40),
+  RESEND_API_KEY: z.string().startsWith('re_'),
+  NEXT_PUBLIC_AXIOM_TOKEN: z.string().startsWith('xaat-'),
+  NEXT_PUBLIC_AXIOM_DATASET: z.string().min(1).max(128),
+  HUGEICONS_TOKEN: z.string().regex(/^[A-F0-9]{8}(-[A-F0-9]{8}){3}$/),
+})
+
+export const validateEnv =
+  process.env.NODE_ENV === 'test'
+    ? (env as z.infer<typeof envSchema>)
+    : envSchema.parse(env)
+
+export const {
+  NODE_ENV,
+  POSTGRES_USER,
+  POSTGRES_PASSWORD,
+  POSTGRES_DB,
+  DATABASE_URL,
+  REDIS_URL,
+  REDIS_PASSWORD,
+  REDIS_SENTINEL_NAME,
+  REDIS_SENTINEL_PASSWORD,
+  RABBITMQ_USER,
+  RABBITMQ_PASSWORD,
+  MINIO_ENDPOINT,
+  MINIO_USER,
+  MINIO_PASSWORD,
+  BETTER_AUTH_SECRET,
+  BETTER_AUTH_URL,
+  GOOGLE_CLIENT_ID,
+  GOOGLE_CLIENT_SECRET,
+  GITHUB_CLIENT_ID,
+  GITHUB_CLIENT_SECRET,
+  RESEND_API_KEY,
+  NEXT_PUBLIC_AXIOM_TOKEN,
+  NEXT_PUBLIC_AXIOM_DATASET,
+  HUGEICONS_TOKEN
+} = validateEnv

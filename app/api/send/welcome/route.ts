@@ -1,9 +1,10 @@
 import { Resend } from 'resend'
 import { WelcomeEmail } from '@/components/emails/welcome'
+import { RESEND_API_KEY } from '@/lib/env/env.d'
 
 export async function POST(request: Request) {
   try {
-    const resend = new Resend(process.env.RESEND_API_KEY)
+    const resend = new Resend(RESEND_API_KEY)
     const { email, username } = await request.json()
 
     const { data, error } = await resend.emails.send({

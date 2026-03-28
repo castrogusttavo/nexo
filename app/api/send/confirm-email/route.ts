@@ -1,9 +1,10 @@
 import { Resend } from 'resend'
 import ConfirmEmail from '@/components/emails/confirm-email'
+import { RESEND_API_KEY } from '@/lib/env/env.d'
 
 export async function POST(request: Request) {
   try {
-    const resend = new Resend(process.env.RESEND_API_KEY)
+    const resend = new Resend(RESEND_API_KEY)
     const { email } = await request.json()
 
     const { data, error } = await resend.emails.send({

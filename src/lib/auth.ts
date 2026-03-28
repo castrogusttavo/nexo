@@ -5,9 +5,18 @@ import { betterAuth } from 'better-auth'
 import { prismaAdapter } from 'better-auth/adapters/prisma'
 import { Resend } from 'resend'
 import { WelcomeEmail } from '@/components/emails/welcome'
+import {
+  BETTER_AUTH_SECRET,
+  BETTER_AUTH_URL,
+  GITHUB_CLIENT_ID,
+  GITHUB_CLIENT_SECRET,
+  GOOGLE_CLIENT_ID,
+  GOOGLE_CLIENT_SECRET,
+  RESEND_API_KEY,
+} from '@/lib/env/env.d'
 import { prisma } from './prisma'
 
-const getResend = () => new Resend(process.env.RESEND_API_KEY)
+const getResend = () => new Resend(RESEND_API_KEY)
 
 export const auth = betterAuth({
   database: prismaAdapter(prisma, { provider: 'postgresql' }),
@@ -16,9 +25,9 @@ export const auth = betterAuth({
       generateId: () => createId(),
     },
   },
-  baseURL: process.env.BETTER_AUTH_URL,
-  trustedOrigins: [process.env.BETTER_AUTH_URL ?? 'http://nexo.coodee.dev'],
-  secret: process.env.BETTER_AUTH_SECRET,
+  baseURL: BETTER_AUTH_URL,
+  trustedOrigins: [BETTER_AUTH_URL],
+  secret: BETTER_AUTH_SECRET,
   emailAndPassword: {
     enabled: true,
     password: {
@@ -28,12 +37,12 @@ export const auth = betterAuth({
   },
   socialProviders: {
     google: {
-      clientId: process.env.GOOGLE_CLIENT_ID ?? '',
-      clientSecret: process.env.GOOGLE_CLIENT_SECRET ?? '',
+      clientId: GOOGLE_CLIENT_ID,
+      clientSecret: GOOGLE_CLIENT_SECRET,
     },
     github: {
-      clientId: process.env.GITHUB_CLIENT_ID ?? '',
-      clientSecret: process.env.GITHUB_CLIENT_SECRET ?? '',
+      clientId: GITHUB_CLIENT_ID,
+      clientSecret: GITHUB_CLIENT_SECRET,
     },
   },
   account: {
