@@ -1,7 +1,7 @@
 'use client'
 
-import { useState } from 'react'
 import Image from 'next/image'
+import { useState } from 'react'
 import ReactMarkdown from 'react-markdown'
 import { useCacheUser } from '@/src/hooks/cache/use-user'
 import { useUser } from '@/src/hooks/use-user'
