@@ -5,7 +5,11 @@ import {
   PutObjectCommand,
   S3Client,
 } from '@aws-sdk/client-s3'
-import { MINIO_ENDPOINT, MINIO_PASSWORD, MINIO_USER } from '@/lib/env/env/env'
+import {
+  MINIO_ENDPOINT,
+  MINIO_PASSWORD,
+  MINIO_USER,
+} from '@/lib/env/env/server'
 import { standardError, successResponse } from '@/utils/http-response'
 
 const BUCKET = 'test-docs'

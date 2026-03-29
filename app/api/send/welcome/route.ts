@@ -1,6 +1,6 @@
 import { Resend } from 'resend'
 import { WelcomeEmail } from '@/components/emails/welcome'
-import { RESEND_API_KEY } from '@/lib/env/env/env'
+import { RESEND_API_KEY } from '@/lib/env/env/server'
 
 export async function POST(request: Request) {
   try {
