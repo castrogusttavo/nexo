@@ -4,7 +4,7 @@ import {
   type NextFetchEvent,
 } from 'next/server'
 import { logger } from '@/lib/axiom/server'
-import { NODE_ENV } from '@/lib/env/env.d'
+import { NODE_ENV } from '@/lib/env/env/env'
 import { transformMiddlewareRequest } from '@axiomhq/nextjs'
 
 const PUBLIC_ROUTES = ['/sign-in', '/sign-up', '/api/auth']

@@ -1,6 +1,6 @@
 import { Resend } from 'resend'
 import InviteUserEmail from '@/components/emails/invite-user'
-import { RESEND_API_KEY } from '@/lib/env/env.d'
+import { RESEND_API_KEY } from '@/lib/env/env/env'
 
 const baseUrl = 'http://localhost:3000'
 

@@ -4,7 +4,7 @@ import {
   REDIS_SENTINEL_NAME,
   REDIS_SENTINEL_PASSWORD,
   REDIS_URL,
-} from '@/lib/env/env.d'
+} from '@/lib/env/env/env'
 
 type RedisClient = ReturnType<typeof createClient>
 

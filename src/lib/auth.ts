@@ -13,7 +13,7 @@ import {
   GOOGLE_CLIENT_ID,
   GOOGLE_CLIENT_SECRET,
   RESEND_API_KEY,
-} from '@/lib/env/env.d'
+} from '@/lib/env/env/env'
 import { prisma } from './prisma'
 
 const getResend = () => new Resend(RESEND_API_KEY)

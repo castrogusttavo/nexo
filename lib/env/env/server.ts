@@ -1,7 +1,7 @@
+import 'server-only'
 import { z } from 'zod'
 
-const env = {
-  NODE_ENV: process.env.NODE_ENV,
+const serverEnv = {
   POSTGRES_USER: process.env.POSTGRES_USER,
   POSTGRES_PASSWORD: process.env.POSTGRES_PASSWORD,
   POSTGRES_DB: process.env.POSTGRES_DB,
@@ -22,13 +22,10 @@ const env = {
   GITHUB_CLIENT_ID: process.env.GITHUB_CLIENT_ID,
   GITHUB_CLIENT_SECRET: process.env.GITHUB_CLIENT_SECRET,
   RESEND_API_KEY: process.env.RESEND_API_KEY,
-  NEXT_PUBLIC_AXIOM_TOKEN: process.env.NEXT_PUBLIC_AXIOM_TOKEN,
-  NEXT_PUBLIC_AXIOM_DATASET: process.env.NEXT_PUBLIC_AXIOM_DATASET,
   HUGEICONS_TOKEN: process.env.HUGEICONS_TOKEN,
 }
 
-const envSchema = z.object({
-  NODE_ENV: z.enum(['development', 'production', 'test']),
+const serverEnvSchema = z.object({
   POSTGRES_USER: z.string().min(2).max(63),
   POSTGRES_PASSWORD: z.string().min(8).max(128),
   POSTGRES_DB: z.string().min(1).max(63),
@@ -49,18 +46,15 @@ const envSchema = z.object({
   GITHUB_CLIENT_ID: z.string().min(10).max(40),
   GITHUB_CLIENT_SECRET: z.string().length(40),
   RESEND_API_KEY: z.string().startsWith('re_'),
-  NEXT_PUBLIC_AXIOM_TOKEN: z.string().startsWith('xaat-'),
-  NEXT_PUBLIC_AXIOM_DATASET: z.string().min(1).max(128),
   HUGEICONS_TOKEN: z.string().regex(/^[A-F0-9]{8}(-[A-F0-9]{8}){3}$/),
 })
 
-export const validateEnv =
+const validatedServerEnv =
   process.env.NODE_ENV === 'test'
-    ? (env as z.infer<typeof envSchema>)
-    : envSchema.parse(env)
+    ? (serverEnv as z.infer<typeof serverEnvSchema>)
+    : serverEnvSchema.parse(serverEnv)
 
 export const {
-  NODE_ENV,
   POSTGRES_USER,
   POSTGRES_PASSWORD,
   POSTGRES_DB,
@@ -81,7 +75,5 @@ export const {
   GITHUB_CLIENT_ID,
   GITHUB_CLIENT_SECRET,
   RESEND_API_KEY,
-  NEXT_PUBLIC_AXIOM_TOKEN,
-  NEXT_PUBLIC_AXIOM_DATASET,
-  HUGEICONS_TOKEN
-} = validateEnv
+  HUGEICONS_TOKEN,
+} = validatedServerEnv
