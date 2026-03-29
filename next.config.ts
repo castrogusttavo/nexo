@@ -13,6 +13,10 @@ const securityHeaders = [
     key: 'Permissions-Policy',
     value: 'camera=(), microphone=(), geolocation=(), browsing-topics=()',
   },
+  {
+    key: 'Content-Security-Policy',
+    value: "script-src 'self' 'unsafe-eval';",
+  },
 ]
 
 const nextConfig: NextConfig = {
