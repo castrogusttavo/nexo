@@ -22,7 +22,7 @@ export default function SignIn() {
   }>({})
   const [isPending, setIsPending] = useState(false)
 
-  async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
+  async function handleSubmit(e: React.SyntheticEvent<HTMLFormElement>) {
     e.preventDefault()
     setError(null)
     setFieldErrors({})
@@ -128,7 +128,7 @@ export default function SignIn() {
         </form>
       </div>
       <div>
-        <Muted>Junte-se a mais de 1.000 times no Elo</Muted>
+        <Muted>Junte-se a mais de 1.000 times no Nexo</Muted>
       </div>
     </div>
   )
