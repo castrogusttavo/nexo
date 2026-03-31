@@ -76,6 +76,8 @@ jobs:
 
       - name: Build application
         run: pnpm build
+        env:
+          SKIP_ENV_VALIDATION: 'true'
 
       - name: Install Lighthouse CI
         run: pnpm add -g @lhci/cli@0.14.x
@@ -147,6 +149,8 @@ jobs:
 
       - name: Build application
         run: pnpm build
+        env:
+          SKIP_ENV_VALIDATION: 'true'
 
       - name: Start server
         run: pnpm start &

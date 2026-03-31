@@ -50,7 +50,7 @@ const serverEnvSchema = z.object({
 })
 
 const validatedServerEnv =
-  process.env.NODE_ENV === 'test'
+  process.env.NODE_ENV === 'test' || process.env.SKIP_ENV_VALIDATION === 'true'
     ? (serverEnv as z.infer<typeof serverEnvSchema>)
     : serverEnvSchema.parse(serverEnv)
 

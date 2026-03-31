@@ -13,7 +13,7 @@ const publicEnvSchema = z.object({
 })
 
 const validatedPublicEnv =
-  process.env.NODE_ENV === 'test'
+  process.env.NODE_ENV === 'test' || process.env.SKIP_ENV_VALIDATION === 'true'
     ? (publicEnv as z.infer<typeof publicEnvSchema>)
     : publicEnvSchema.parse(publicEnv)
 
