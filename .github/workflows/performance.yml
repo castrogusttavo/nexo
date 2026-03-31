@@ -45,6 +45,7 @@ jobs:
       REDIS_URL: redis://localhost:6379
       BETTER_AUTH_SECRET: ci-test-secret-not-real
       BETTER_AUTH_URL: http://localhost:3000
+      SKIP_ENV_VALIDATION: 'true'
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -76,8 +77,6 @@ jobs:
 
       - name: Build application
         run: pnpm build
-        env:
-          SKIP_ENV_VALIDATION: 'true'
 
       - name: Install Lighthouse CI
         run: pnpm add -g @lhci/cli@0.14.x
@@ -118,6 +117,7 @@ jobs:
       REDIS_URL: redis://localhost:6379
       BETTER_AUTH_SECRET: ci-test-secret-not-real
       BETTER_AUTH_URL: http://localhost:3000
+      SKIP_ENV_VALIDATION: 'true'
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -149,8 +149,6 @@ jobs:
 
       - name: Build application
         run: pnpm build
-        env:
-          SKIP_ENV_VALIDATION: 'true'
 
       - name: Start server
         run: pnpm start &
