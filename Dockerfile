@@ -26,6 +26,7 @@ ARG NEXT_PUBLIC_APP_URL=https://nexo.coodee.dev
 ENV NEXT_PUBLIC_APP_URL=$NEXT_PUBLIC_APP_URL
 
 ENV DATABASE_URL="postgresql://dummy:dummy@localhost:5432/dummy"
+ENV SKIP_ENV_VALIDATION="true"
 
 RUN corepack enable pnpm && \
     pnpm prisma:generate && \
