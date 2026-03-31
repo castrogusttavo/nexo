@@ -1,6 +1,6 @@
 import { Resend } from 'resend'
 import ResetPasswordEmail from '@/components/emails/reset-password'
-import { RESEND_API_KEY } from '@/lib/env/env/server'
+import { RESEND_API_KEY } from '@/lib/env/server'
 
 export async function POST(request: Request) {
   try {

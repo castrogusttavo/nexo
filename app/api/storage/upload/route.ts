@@ -9,7 +9,7 @@ import {
   MINIO_ENDPOINT,
   MINIO_PASSWORD,
   MINIO_USER,
-} from '@/lib/env/env/server'
+} from '@/lib/env/server'
 import { standardError, successResponse } from '@/utils/http-response'
 
 const BUCKET = 'test-docs'

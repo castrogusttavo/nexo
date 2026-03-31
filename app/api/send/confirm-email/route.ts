@@ -1,6 +1,6 @@
 import { Resend } from 'resend'
 import ConfirmEmail from '@/components/emails/confirm-email'
-import { RESEND_API_KEY } from '@/lib/env/env/server'
+import { RESEND_API_KEY } from '@/lib/env/server'
 
 export async function POST(request: Request) {
   try {

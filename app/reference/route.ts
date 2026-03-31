@@ -1,6 +1,6 @@
 import { ApiReference } from '@scalar/nextjs-api-reference'
 import { NextResponse } from 'next/server'
-import { NODE_ENV } from '@/lib/env/env/env'
+import { NODE_ENV } from '@/lib/env/env'
 
 const config = {
   url: '/openapi.json',

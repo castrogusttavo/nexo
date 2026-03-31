@@ -69,12 +69,12 @@ model Verification {
 }
 
 model Workspace {
-  id         String   @id @default(cuid())
+  id         String     @id @default(cuid())
   name       String
-  slug       String   @unique
-  activePlan Plan     @default(BASIC) @map("active_plan")
-  createdAt  DateTime @default(now()) @map("created_at")
-  updatedAt  DateTime @updatedAt @map("updated_at")
+  slug       String     @unique
+  activePlan Plan       @default(BASIC) @map("active_plan")
+  createdAt  DateTime   @default(now()) @map("created_at")
+  updatedAt  DateTime   @updatedAt @map("updated_at")
   users      User[]
 
   @@map("workspaces")

@@ -25,7 +25,7 @@
     "prisma:migrate:dev": "prisma migrate dev",
     "prisma:studio": "prisma studio",
     "prisma:deploy": "prisma migrate deploy",
-    "dev:ws": "node scripts/yjs-server.mjs",
+    "dev:ws": "node --env-file=.env scripts/yjs-server.mjs",
     "docker:create": "docker compose -f docker-compose.infra.yml up -d",
     "docker:start": "docker compose -f docker-compose.infra.yml start",
     "docker:stop": "docker compose -f docker-compose.infra.yml stop",
