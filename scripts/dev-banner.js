@@ -85,15 +85,10 @@ function withSpinner(label, fn) {
   )
 }
 
-function toCommand(cmd, args) {
-  return [cmd, ...args].join(" ")
-}
-
 function runSilent(cmd, args) {
   return new Promise((resolve, reject) => {
-    const child = spawn(toCommand(cmd, args), {
+    const child = spawn(cmd, args, {
       stdio: "ignore",
-      shell: true,
       windowsHide: true,
     })
     child.on("close", (code) => {
@@ -127,9 +122,8 @@ function runCommands(entry) {
   const background = commands.filter((c) => c.background)
 
   for (const { cmd, args } of background) {
-    const child = spawn(toCommand(cmd, args), {
+    const child = spawn(cmd, args, {
       stdio: "ignore",
-      shell: true,
       windowsHide: true,
     })
     backgroundChildren.push(child)
@@ -145,9 +139,8 @@ function runCommands(entry) {
     chain = chain.then(() => {
       if (isLast) {
         console.log(`  \x1b[32m▸\x1b[0m \x1b[90m${label}\x1b[0m\n`)
-        const child = spawn(toCommand(cmd, args), {
+        const child = spawn(cmd, args, {
           stdio: "inherit",
-          shell: true,
           windowsHide: true,
         })
         child.on("close", (code) => process.exit(code ?? 0))
