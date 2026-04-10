@@ -23,6 +23,8 @@ const serverEnv = {
   GITHUB_CLIENT_SECRET: process.env.GITHUB_CLIENT_SECRET,
   RESEND_API_KEY: process.env.RESEND_API_KEY,
   HUGEICONS_TOKEN: process.env.HUGEICONS_TOKEN,
+  ABACATE_PAY: process.env.ABACATE_PAY,
+  ABACATE_PAY_WEBHOOK_SECRET: process.env.ABACATE_PAY_WEBHOOK_SECRET,
 }
 
 const serverEnvSchema = z.object({
@@ -47,6 +49,8 @@ const serverEnvSchema = z.object({
   GITHUB_CLIENT_SECRET: z.string().length(40),
   RESEND_API_KEY: z.string().startsWith('re_'),
   HUGEICONS_TOKEN: z.string().regex(/^[A-F0-9]{8}(-[A-F0-9]{8}){3}$/),
+  ABACATE_PAY: z.string().min(1).max(100),
+  ABACATE_PAY_WEBHOOK_SECRET: z.string().min(1).max(100),
 })
 
 const validatedServerEnv =
@@ -76,4 +80,6 @@ export const {
   GITHUB_CLIENT_SECRET,
   RESEND_API_KEY,
   HUGEICONS_TOKEN,
+  ABACATE_PAY,
+  ABACATE_PAY_WEBHOOK_SECRET,
 } = validatedServerEnv

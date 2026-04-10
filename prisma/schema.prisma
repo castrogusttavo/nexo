@@ -69,15 +69,32 @@ model Verification {
 }
 
 model Workspace {
-  id         String     @id @default(cuid())
-  name       String
-  slug       String     @unique
-  activePlan Plan       @default(BASIC) @map("active_plan")
-  createdAt  DateTime   @default(now()) @map("created_at")
-  updatedAt  DateTime   @updatedAt @map("updated_at")
-  users      User[]
+  id            String         @id @default(cuid())
+  name          String
+  slug          String         @unique
+  activePlan    Plan           @default(BASIC) @map("active_plan")
+  createdAt     DateTime       @default(now()) @map("created_at")
+  updatedAt     DateTime       @updatedAt @map("updated_at")
+  users         User[]
+  subscriptions Subscription[]
 
   @@map("workspaces")
+}
+
+model Subscription {
+  id          String             @id @default(cuid())
+  billId      String             @unique @map("bill_id")
+  plan        Plan
+  status      SubscriptionStatus @default(PENDING)
+  amount      Int
+  paymentUrl  String             @map("payment_url")
+  workspaceId String             @map("workspace_id")
+  workspace   Workspace          @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  createdAt   DateTime           @default(now()) @map("created_at")
+  updatedAt   DateTime           @updatedAt @map("updated_at")
+
+  @@index([workspaceId])
+  @@map("subscriptions")
 }
 
 enum Role {
@@ -91,4 +108,12 @@ enum Plan {
   BASIC
   PRO
   ENTERPRISE
+}
+
+enum SubscriptionStatus {
+  PENDING
+  PAID
+  CANCELLED
+  EXPIRED
+  REFUNDED
 }
