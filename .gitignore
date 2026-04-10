@@ -37,6 +37,7 @@ yarn-error.log*
 # secrets (SOPS + age)
 secrets/*.env
 !secrets/*.enc.env
+*.key
 
 # vercel
 .vercel
