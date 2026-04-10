@@ -11,7 +11,7 @@ import type { CreateSubscriptionDTO } from '@/src/schemas/subscription.schema'
 import type { SubscriptionDTO } from '@/types/subscription'
 
 const PLAN_PRODUCTS: Record<string, string> = {
-  PRO: 'prod_dEyDYm6ZWKyTt0BFUnbMTSaA',
+  PRO: 'prod_0BcjnDNaGQZdpgnKbfnhzRJL',
   ENTERPRISE: 'prod_enterprise_placeholder',
 }
 
