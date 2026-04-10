@@ -32,7 +32,7 @@ const serverEnvSchema = z.object({
   POSTGRES_PASSWORD: z.string().min(8).max(128),
   POSTGRES_DB: z.string().min(1).max(63),
   DATABASE_URL: z.url().startsWith('postgresql://'),
-  REDIS_URL: z.url().startsWith('redis://'),
+  REDIS_URL: z.url().startsWith('redis://').optional(),
   REDIS_PASSWORD: z.string().min(8).max(128),
   REDIS_SENTINEL_NAME: z.string().min(1).max(63).optional(),
   REDIS_SENTINEL_PASSWORD: z.string().min(8).max(128).optional(),
