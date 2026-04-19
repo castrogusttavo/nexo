@@ -14,7 +14,7 @@ This README serves as both an introduction to Nexo and a guide to get started wi
 
 - New to Nexo? Start with [What is Nexo?](#what-is-nexo)
 - Want to run it locally? Jump to [Getting started](#getting-started)
-- Looking for the docs? Visit our [Official Documentation](https://doc.nexo.coodee.dev/)
+- Looking for the docs? Visit our [Official Documentation](https://nexo.coodee.dev/docs)
 - Have feedback? Visit our [Forum](#community) or check the [Status page](#community)
 
 ## Table of contents
@@ -208,7 +208,7 @@ flowchart LR
 - **Mappers** (`src/mappers/`): Transform database models into DTOs.
 - **Errors** (`src/errors/`): Result pattern with typed error codes — no thrown exceptions.
 
-For more details, see the [architecture documentation](doc/software-architecture.mdx).
+For more details, see the [official documentation](https://nexo.coodee.dev/docs).
 
 ## Community
 
