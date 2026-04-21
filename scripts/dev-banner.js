@@ -111,9 +111,19 @@ function cleanup() {
   }
 }
 
+function stopDockerAndExit(code = 0) {
+  console.log("\n\x1b[90m  Stopping Docker containers...\x1b[0m")
+  const stop = spawn("pnpm", ["docker:stop"], {
+    stdio: "inherit",
+    windowsHide: true,
+  })
+  stop.on("close", () => process.exit(code))
+  stop.on("error", () => process.exit(code))
+}
+
 process.on("exit", cleanup)
-process.on("SIGINT", () => process.exit(0))
-process.on("SIGTERM", () => process.exit(0))
+process.on("SIGINT", () => stopDockerAndExit(0))
+process.on("SIGTERM", () => stopDockerAndExit(0))
 
 function runCommands(entry) {
   const { commands } = entry
