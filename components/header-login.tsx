@@ -1,4 +1,4 @@
-import { Muted } from "@/app/_components/typography/text/muted";
+import { Muted } from "@/components/typography/text/muted";
 import Image from "next/image";
 import Link from "next/link";
 

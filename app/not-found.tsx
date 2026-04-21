@@ -2,7 +2,7 @@
 
 import { AlertDiamondIcon } from '@hugeicons-pro/core-stroke-rounded'
 import { Button } from '@/components/ui/button'
-import { NexoIcon } from './_components/icon/icon'
+import { NexoIcon } from '../components/icon/icon'
 
 export default function Page() {
   return (
