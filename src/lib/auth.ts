@@ -1,4 +1,3 @@
-import { dash } from '@better-auth/infra'
 import { createId } from '@paralleldrive/cuid2'
 import { hash, verify } from 'argon2'
 import { betterAuth } from 'better-auth'
@@ -78,5 +77,4 @@ export const auth = betterAuth({
       },
     },
   },
-  plugins: [dash()],
 })
