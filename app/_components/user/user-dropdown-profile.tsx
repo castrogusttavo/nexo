@@ -18,11 +18,11 @@ import {
 } from '@/components/ui/dropdown-menu'
 import { useCacheUser } from '@/src/hooks/cache/use-user'
 import { authClient } from '@/src/lib/auth-client'
-import { NexoIcon } from '../icon/icon'
-import { H4 } from '../typography/heading/h4'
-import { Muted } from '../typography/text/muted'
+import { NexoIcon } from '../../../components/icon/icon'
+import { H4 } from '../../../components/typography/heading/h4'
+import { Muted } from '../../../components/typography/text/muted'
 
-export function Profile() {
+export function UserDropdownProfile() {
   const router = useRouter()
   const { data: user } = useCacheUser()
 

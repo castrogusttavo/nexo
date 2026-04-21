@@ -1,20 +1,30 @@
 'use client'
 
 import { InboxIcon } from '@hugeicons-pro/core-stroke-rounded'
-import { useRouter } from 'next/navigation'
-import { NexoIcon } from '@/app/_components/icon/icon'
-import { ShortCutButton } from '@/app/_components/shortcut-button'
-import { Profile } from '@/app/_components/user/profile'
+import Link from 'next/link'
+import { NexoIcon } from '@/components/icon/icon'
+import { ShortCutButton } from '@/components/shortcut-button'
+import { Button } from '@/components/ui/button'
+import { UserDropdownHelper } from '../user/user-dropdown-helper'
+import { UserDropdownProfile } from '../user/user-dropdown-profile'
+import { WorkSpaceDropdown } from '../workspace/workspace-dropdown'
 
 export function Header() {
-  const router = useRouter()
-
   return (
-    <div className='w-full flex justify-end py-1 px-2'>
-      <ShortCutButton onClick={() => router.push('/inbox')}>
-        <NexoIcon icon={InboxIcon} strokeWidth={2} size={20} />
-      </ShortCutButton>
-      <Profile />
+    <div className='w-full flex justify-between items-center py-1 px-2'>
+      <WorkSpaceDropdown />
+      <div className='flex items-center gap-1'>
+        <Link href='/get-started'>
+          <Button size='xs' variant='outline'>
+            Comece agora
+          </Button>
+        </Link>
+        <ShortCutButton href='/inbox'>
+          <NexoIcon icon={InboxIcon} strokeWidth={2} size={20} />
+        </ShortCutButton>
+        <UserDropdownHelper />
+        <UserDropdownProfile />
+      </div>
     </div>
   )
 }
