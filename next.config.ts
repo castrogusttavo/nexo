@@ -10,7 +10,6 @@ const securityHeaders = [
   },
   { key: 'Cross-Origin-Embedder-Policy', value: 'credentialless' },
   { key: 'Cross-Origin-Opener-Policy', value: 'same-origin' },
-  { key: 'Cross-Origin-Resource-Policy', value: 'same-origin' },
 ]
 
 const nextConfig: NextConfig = {
@@ -21,8 +20,16 @@ const nextConfig: NextConfig = {
     remotePatterns: [
       {
         protocol: 'https',
-        hostname: '**',
+        hostname: 'lh3.googleusercontent.com',
       },
+      {
+        protocol: 'https',
+        hostname: 'avatars.githubusercontent.com',
+      },
+      {
+        protocol: 'https',
+        hostname: 'nexo.coodee.dev'
+      }
     ],
   },
   cacheComponents: true,
