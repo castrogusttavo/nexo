@@ -4,7 +4,7 @@ registries:
   hugeicons:
     type: npm-registry
     url: https://npm.hugeicons.com
-    token: ${{secrets.HUGEICONS_NPM_TOKEN}}
+    token: ${{secrets.HUGEICONS_TOKEN}}
 
 updates:
   - package-ecosystem: "npm"
