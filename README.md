@@ -1,7 +1,7 @@
 <br />
 
 <p align="center">
-  <img src="./public/logo.svg" alt="Nexo Logo" width="400">
+  <img src="./public/brand/logo.svg" alt="Nexo Logo" width="400">
 </p>
 <p align="center"><b>Project management that actually works for your team</b></p>
 
