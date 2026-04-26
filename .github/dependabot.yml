@@ -1,8 +1,16 @@
 version: 2
 
+registries:
+  hugeicons:
+    type: npm-registry
+    url: https://npm.hugeicons.com
+    token: ${{secrets.HUGEICONS_NPM_TOKEN}}
+
 updates:
   - package-ecosystem: "npm"
     directory: "/"
+    registries:
+      - hugeicons
     schedule:
       interval: "weekly"
       day: "monday"
