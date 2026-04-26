@@ -1,0 +1,80 @@
+version: 2
+
+updates:
+  - package-ecosystem: "npm"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+      time: "09:00"
+      timezone: "America/Sao_Paulo"
+
+    open-pull-requests-limit: 5
+
+    versioning-strategy: increase-if-necessary
+
+    groups:
+      axiom:
+        patterns:
+          - "@axiomhq/*"
+      prisma:
+        patterns:
+          - "prisma"
+          - "@prisma/*"
+      tailwind:
+        patterns:
+          - "tailwindcss"
+          - "@tailwindcss/*"
+          - "tailwind-merge"
+          - "tw-animate-css"
+      react-email:
+        patterns:
+          - "@react-email/*"
+      vitest:
+        patterns:
+          - "vitest"
+          - "@vitest/*"
+      biome:
+        patterns:
+          - "@biomejs/*"
+      hugecions:
+        patterns:
+          - "@hugeicons/*"
+          - "@hugeicons-pro/*"
+      tanstack:
+        patterns:
+          - "@tanstack/*"
+      types:
+        patterns:
+          - "@types/*"
+
+    ignore:
+      - dependency-name: "next"
+        update-types: ["version-update:semver-major", "version-update:semver-minor"]
+      - dependency-name: "eslint-config-next"
+        update-types: ["version-update:semver-major", "version-update:semver-minor"]
+      - dependency-name: "react"
+        update-types: ["version-update:semver-major", "version-update:semver-minor"]
+      - dependency-name: "react-dom"
+        update-types: ["version-update:semver-major", "version-update:semver-minor"]
+      - dependency-name: "prisma"
+        update-types: ["version-update:semver-major", "version-update:semver-minor"]
+      - dependency-name: "@prisma/client"
+        update-types: ["version-update:semver-major", "version-update:semver-minor"]
+      - dependency-name: "@prisma/adapter-pg"
+        update-types: ["version-update:semver-major", "version-update:semver-minor"]
+      - dependency-name: "shadcn"
+        update-types: ["version-update:semver-major", "version-update:semver-minor"]
+      - dependency-name: "@react-email/tailwind"
+        update-types: ["version-update:semver-major", "version-update:semver-minor"]
+      - dependency-name: "effect"
+        update-types: ["version-update:semver-major", "version-update:semver-minor"]
+
+    labels:
+       - "dependencies"
+       - "automated"
+
+    commit-message:
+      prefix: "chore"
+      prefix-development: "chore"
+      include: "scope"
