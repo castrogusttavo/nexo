@@ -5,6 +5,7 @@ import { toast } from 'sonner'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { useUser } from '@/src/hooks/use-user'
+import { sendWelcomeEmail } from '@/src/lib/mail/user/send-welcome'
 
 export default function ContactPage() {
   const [email, setEmail] = useState('')
@@ -21,17 +22,7 @@ export default function ContactPage() {
     setLoading(true)
 
     try {
-      const res = await fetch('/api/send/welcome', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email, username: data.name }),
-      })
-
-      if (!res.ok) {
-        toast.error('Erro ao enviar e-mail')
-        return
-      }
-
+      await sendWelcomeEmail({ email, username: data.name })
       toast.success('E-mail enviado com sucesso!')
       setEmail('')
     } catch {

@@ -3,7 +3,7 @@ import { hash, verify } from 'argon2'
 import { betterAuth } from 'better-auth'
 import { prismaAdapter } from 'better-auth/adapters/prisma'
 import { Resend } from 'resend'
-import { WelcomeEmail } from '@/components/emails/welcome'
+import { WelcomeEmail } from '@/components/emails/user/welcome'
 import {
   BETTER_AUTH_SECRET,
   BETTER_AUTH_URL,
