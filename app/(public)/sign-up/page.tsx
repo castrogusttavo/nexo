@@ -90,10 +90,11 @@ export default function SignUp() {
 
   async function handleResend() {
     setOtpError(null)
-    const { error: resendError } = await authClient.emailOtp.sendVerificationOtp({
-      email,
-      type: 'email-verification',
-    })
+    const { error: resendError } =
+      await authClient.emailOtp.sendVerificationOtp({
+        email,
+        type: 'email-verification',
+      })
     if (resendError) {
       setOtpError(resendError.message ?? 'Não foi possível reenviar o código')
     }
@@ -125,7 +126,9 @@ export default function SignUp() {
                 <span className='w-full border-t' />
               </div>
               <div className='relative flex justify-center text-xs uppercase'>
-                <span className='bg-background px-2 text-muted-foreground'>ou</span>
+                <span className='bg-background px-2 text-muted-foreground'>
+                  ou
+                </span>
               </div>
             </div>
 
@@ -143,7 +146,9 @@ export default function SignUp() {
                   placeholder='Seu nome'
                   disabled={isPending}
                 />
-                {fieldErrors.name && <FieldError>{fieldErrors.name}</FieldError>}
+                {fieldErrors.name && (
+                  <FieldError>{fieldErrors.name}</FieldError>
+                )}
               </Field>
               <Field data-invalid={!!fieldErrors.email || undefined}>
                 <FieldLabel>E-mail</FieldLabel>
@@ -153,7 +158,9 @@ export default function SignUp() {
                   placeholder='nome@empresa.com'
                   disabled={isPending}
                 />
-                {fieldErrors.email && <FieldError>{fieldErrors.email}</FieldError>}
+                {fieldErrors.email && (
+                  <FieldError>{fieldErrors.email}</FieldError>
+                )}
               </Field>
               <Field data-invalid={!!fieldErrors.password || undefined}>
                 <FieldLabel>Senha</FieldLabel>
@@ -175,7 +182,10 @@ export default function SignUp() {
               <div className='text-center text-sm'>
                 <Muted>
                   Já tem conta?{' '}
-                  <Link href='/sign-in' className='text-primary hover:underline'>
+                  <Link
+                    href='/sign-in'
+                    className='text-primary hover:underline'
+                  >
                     Entre
                   </Link>
                 </Muted>

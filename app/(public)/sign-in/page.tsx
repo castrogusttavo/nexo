@@ -113,7 +113,9 @@ export default function SignIn() {
           <>
             <div>
               <H4>Trabalhe em todas as dimensões.</H4>
-              <H4 className='text-muted-foreground'>Bem-vindo de volta ao Nexo.</H4>
+              <H4 className='text-muted-foreground'>
+                Bem-vindo de volta ao Nexo.
+              </H4>
             </div>
 
             <div className='flex flex-col gap-3'>
@@ -126,7 +128,9 @@ export default function SignIn() {
                 <span className='w-full border-t' />
               </div>
               <div className='relative flex justify-center text-xs uppercase'>
-                <span className='bg-background px-2 text-muted-foreground'>ou</span>
+                <span className='bg-background px-2 text-muted-foreground'>
+                  ou
+                </span>
               </div>
             </div>
 
@@ -144,7 +148,9 @@ export default function SignIn() {
                   placeholder='nome@empresa.com'
                   disabled={isPending}
                 />
-                {fieldErrors.email && <FieldError>{fieldErrors.email}</FieldError>}
+                {fieldErrors.email && (
+                  <FieldError>{fieldErrors.email}</FieldError>
+                )}
               </Field>
               <Field data-invalid={!!fieldErrors.password || undefined}>
                 <FieldLabel>Senha</FieldLabel>
@@ -165,10 +171,11 @@ export default function SignIn() {
 
               <div className='flex items-center justify-center'>
                 <Muted className='text-center text-sm p-4'>
-                  Esqueceu sua senha? {' '}
+                  Esqueceu sua senha?{' '}
                   <Link href='#' className='text-primary hover:underline'>
                     Redefinir senha
-                  </Link>.
+                  </Link>
+                  .
                 </Muted>
               </div>
             </form>
