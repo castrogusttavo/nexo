@@ -14,6 +14,10 @@ export interface VerifyEmailOtpProps extends EmailProps {
   validationCode: string
 }
 
+export interface Verify2faAccessOtpProps extends EmailProps {
+  validationCode: string
+}
+
 export interface InviteUserToWorkspaceProps extends EmailProps {
   inviterName: string
   inviterEmail: string

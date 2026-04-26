@@ -2,8 +2,7 @@ import { createId } from '@paralleldrive/cuid2'
 import { hash, verify } from 'argon2'
 import { betterAuth } from 'better-auth'
 import { prismaAdapter } from 'better-auth/adapters/prisma'
-import { Resend } from 'resend'
-import { WelcomeEmail } from '@/components/emails/user/welcome'
+import { emailOTP, twoFactor } from 'better-auth/plugins'
 import {
   BETTER_AUTH_SECRET,
   BETTER_AUTH_URL,
@@ -11,11 +10,11 @@ import {
   GITHUB_CLIENT_SECRET,
   GOOGLE_CLIENT_ID,
   GOOGLE_CLIENT_SECRET,
-  RESEND_API_KEY,
 } from '@/lib/env/server'
+import { sendVerify2faAccessOtp } from '@/src/lib/mail/user/send-verify-2fa-access-otp'
+import { sendVerifyEmailWithOtp } from '@/src/lib/mail/user/send-verify-email-with-otp'
+import { sendWelcomeEmail } from '@/src/lib/mail/user/send-welcome'
 import { prisma } from './prisma'
-
-const getResend = () => new Resend(RESEND_API_KEY)
 
 export const auth = betterAuth({
   database: prismaAdapter(prisma, { provider: 'postgresql' }),
@@ -32,6 +31,21 @@ export const auth = betterAuth({
     password: {
       hash: async (password) => hash(password),
       verify: async ({ hash: hashed, password }) => verify(hashed, password),
+    },
+  },
+  emailVerification: {
+    sendOnSignUp: true,
+    autoSignInAfterVerification: true,
+    afterEmailVerification: async (user) => {
+      try {
+        await sendWelcomeEmail({
+          email: user.email,
+          username: user.name ?? 'there',
+          trialDays: '14',
+        })
+      } catch (error) {
+        console.error('[Auth] Failed to send welcome email:', error)
+      }
     },
   },
   socialProviders: {
@@ -63,12 +77,12 @@ export const auth = betterAuth({
     user: {
       create: {
         after: async (user) => {
+          if (!user.emailVerified) return
           try {
-            await getResend().emails.send({
-              from: 'nexo <suporte@nexo.coodee.dev>',
-              to: [user.email],
-              subject: 'Welcome Nexo',
-              react: WelcomeEmail({ userFirstname: user.name ?? 'there' }),
+            await sendWelcomeEmail({
+              email: user.email,
+              username: user.name ?? 'there',
+              trialDays: '14',
             })
           } catch (error) {
             console.error('[Auth] Failed to send welcome email:', error)
@@ -77,4 +91,35 @@ export const auth = betterAuth({
       },
     },
   },
+  plugins: [
+    emailOTP({
+      overrideDefaultEmailVerification: true,
+      async sendVerificationOTP({ email, otp, type }) {
+        if (type !== 'email-verification' && type !== 'sign-in') return
+        try {
+          await sendVerifyEmailWithOtp({
+            email,
+            validationCode: otp,
+          })
+        } catch (error) {
+          console.error('[Auth] Failed to send verification OTP:', error)
+        }
+      },
+    }),
+    twoFactor({
+      otpOptions: {
+        async sendOTP({ user, otp }) {
+          try {
+            await sendVerify2faAccessOtp({
+              email: user.email,
+              username: user.name ?? undefined,
+              validationCode: otp,
+            })
+          } catch (error) {
+            console.error('[Auth] Failed to send 2FA OTP:', error)
+          }
+        },
+      },
+    }),
+  ],
 })

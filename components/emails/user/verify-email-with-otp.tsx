@@ -14,7 +14,7 @@ import {
 import { baseEmailUrl } from '@/lib/base-email-url';
 import { VerifyEmailOtpProps } from '@/types/mail';
 
-export const VerifyEmailWithOtpEmail = ({
+export const VerifyEmailWithOtp = ({
   validationCode
 }: VerifyEmailOtpProps) => (
   <Html>
@@ -41,8 +41,10 @@ export const VerifyEmailWithOtpEmail = ({
             </Text>
           </Section>
           <Section className='bg-[#c2e2f5] rounded-md my-3 py-1.5 px-1.5'>
-            <Text className='text-2xl text-center font-medium uppercase'>
-              {validationCode}
+            <Text className='text-2xl text-center font-medium uppercase tracking-widest'>
+              {validationCode.length === 6
+                ? `${validationCode.slice(0, 3)}-${validationCode.slice(3)}`
+                : validationCode}
             </Text>
           </Section>
           <Section>
@@ -63,4 +65,4 @@ export const VerifyEmailWithOtpEmail = ({
   </Html>
 )
 
-export default VerifyEmailWithOtpEmail;
+export default VerifyEmailWithOtp;

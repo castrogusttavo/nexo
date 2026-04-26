@@ -12,6 +12,7 @@ export function createFakeUser(overrides?: Partial<User>): User {
     emailVerified: false,
     image: null,
     role: 'MEMBER',
+    twoFactorEnabled: false,
     workspaceId: null,
     createdAt: now,
     updatedAt: now,
