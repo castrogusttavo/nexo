@@ -45,10 +45,6 @@ updates:
       biome:
         patterns:
           - "@biomejs/*"
-      hugecions:
-        patterns:
-          - "@hugeicons/*"
-          - "@hugeicons-pro/*"
       tanstack:
         patterns:
           - "@tanstack/*"
@@ -77,6 +73,8 @@ updates:
         update-types: ["version-update:semver-major", "version-update:semver-minor"]
       - dependency-name: "effect"
         update-types: ["version-update:semver-major", "version-update:semver-minor"]
+      - dependency-name: "@hugeicons/*"
+      - dependency-name: "@hugeicons-pro/*"
 
     labels:
        - "dependencies"
