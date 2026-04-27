@@ -73,8 +73,8 @@ Most project management tools force you to choose: simplicity or power. Nexo pro
 
 ### Prerequisites
 
-- [Node.js](https://nodejs.org/) v20+
-- [pnpm](https://pnpm.io/) v9+
+- [Node.js](https://nodejs.org/) v22+
+- [pnpm](https://pnpm.io/) v10+
 - [Docker](https://www.docker.com/) (for PostgreSQL and Redis)
 
 ### Installation
@@ -139,7 +139,7 @@ pnpm test:all
 | Layer | Technology |
 |-------|-----------|
 | **Framework** | [Next.js 16](https://nextjs.org/) with Turbopack |
-| **Language** | [TypeScript](https://www.typescriptlang.org/) |
+| **Language** | [TypeScript 5](https://www.typescriptlang.org/) |
 | **Database** | [PostgreSQL](https://www.postgresql.org/) |
 | **ORM** | [Prisma 7](https://www.prisma.io/) |
 | **Cache** | [Redis](https://redis.io/) |
@@ -214,7 +214,6 @@ For more details, see the [official documentation](https://nexo.coodee.dev/docs)
 
 We'd love to hear from you. Use the channels below to follow updates, report bugs, or request features:
 
-- **Forum:** Share ideas, report bugs, request features, and follow development updates on our [Forum](https://nexo.coodee.dev/forum).
 - **Status:** Check real-time availability and incident history on our [Status page](https://nexo.coodee.dev/status).
 
 ## Security
