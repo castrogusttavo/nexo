@@ -1,2 +1,4 @@
-10038	IGNORE	(CSP Header Not Set - handled by proxy.ts)
+10038	IGNORE	(CSP Header Not Set - handled by proxy.ts and next.config.ts)
 10063	IGNORE	(Feature Policy Header Not Set - handled via Permissions-Policy)
+10015	IGNORE	(Re-examine Cache-control Directives - per-route cache policy will be set granularly)
+10049	IGNORE	(Storable/Non-Storable/Non-Cacheable Content - per-route cache policy will be set granularly)
