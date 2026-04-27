@@ -194,11 +194,17 @@ export default function SignUp() {
               <div className='flex items-center justify-center'>
                 <Muted className='text-center text-sm p-4'>
                   Ao criar sua conta, você concorda com nossos{' '}
-                  <Link href='#' className='text-primary hover:underline'>
+                  <Link
+                    href='/service-term'
+                    className='text-primary hover:underline'
+                  >
                     Termos de Serviço
                   </Link>{' '}
                   e{' '}
-                  <Link href='#' className='text-primary hover:underline'>
+                  <Link
+                    href='/privacy-policy'
+                    className='text-primary hover:underline'
+                  >
                     Política de Privacidade
                   </Link>{' '}
                   .
