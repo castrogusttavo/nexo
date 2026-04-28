@@ -7,8 +7,8 @@ import { Muted } from '@/components/typography/text/muted'
 import { P } from '@/components/typography/text/p'
 import { Button } from '@/components/ui/button'
 import { cn } from '@/lib/utils'
-import { STATUS_META } from '@/src/services/status/status-map'
 import { StatusService } from '@/src/services/status/status.service'
+import { STATUS_META } from '@/src/services/status/status-map'
 import type { IncidentUpdateDTO } from '@/types/status'
 
 const EVENT_LABEL: Record<IncidentUpdateDTO['event'], string> = {
@@ -63,8 +63,8 @@ export default async function IncidentPage({ params }: IncidentPageProps) {
 
   const incident = result.value
   const meta = STATUS_META[incident.severity]
-  const isResolved = incident.resolvedAt !== null
-  const headerDate = isResolved ? incident.resolvedAt! : incident.startedAt
+  const resolvedAt = incident.resolvedAt
+  const headerDate = resolvedAt ?? incident.startedAt
 
   return (
     <div className='max-w-3xl flex flex-col items-center mx-auto py-4 space-y-8'>
@@ -83,8 +83,18 @@ export default async function IncidentPage({ params }: IncidentPageProps) {
           </Link>
         </div>
       </div>
-      <div className={cn('w-full h-fit overflow-hidden flex flex-col rounded-lg border', meta.border)}>
-        <span className={cn('flex items-center gap-2 px-3.5 py-4 text-base text-zinc-50', meta.banner)}>
+      <div
+        className={cn(
+          'w-full h-fit overflow-hidden flex flex-col rounded-lg border',
+          meta.border,
+        )}
+      >
+        <span
+          className={cn(
+            'flex items-center gap-2 px-3.5 py-4 text-base text-zinc-50',
+            meta.banner,
+          )}
+        >
           <Link href='/status'>
             <NexoIcon icon={ArrowLeft01Icon} size={20} />
           </Link>
@@ -92,7 +102,9 @@ export default async function IncidentPage({ params }: IncidentPageProps) {
         </span>
         <div>
           <div className='flex items-center px-4 py-3 gap-2'>
-            <span className='text-primary'>{isResolved ? 'Resolvido' : 'Em andamento'}</span>
+            <span className='text-primary'>
+              {resolvedAt ? 'Resolvido' : 'Em andamento'}
+            </span>
             <span>·</span>
             <span className='text-primary'>{meta.label}</span>
             <span>·</span>
@@ -101,8 +113,8 @@ export default async function IncidentPage({ params }: IncidentPageProps) {
           <div className='h-px w-full bg-zinc-800' />
           <div className='flex flex-col px-4 pt-2 pb-4 gap-2'>
             <span className='text-primary'>
-              {isResolved
-                ? `Incidente iniciado em ${formatDateTime(incident.startedAt)} e resolvido em ${formatDateTime(incident.resolvedAt!)}.`
+              {resolvedAt
+                ? `Incidente iniciado em ${formatDateTime(incident.startedAt)} e resolvido em ${formatDateTime(resolvedAt)}.`
                 : `Incidente em andamento desde ${formatDateTime(incident.startedAt)}.`}
             </span>
             <div className='flex gap-2'>
@@ -113,18 +125,29 @@ export default async function IncidentPage({ params }: IncidentPageProps) {
         </div>
       </div>
       <div className='w-full h-fit overflow-hidden flex flex-col rounded-lg border border-zinc-800'>
-        <h2 className='font-semibold p-4 md:p-3 border-b border-zinc-800'>Atualizações</h2>
+        <h2 className='font-semibold p-4 md:p-3 border-b border-zinc-800'>
+          Atualizações
+        </h2>
         <div className='p-4 md:p-3'>
           {incident.updates.map((update, index) => (
             <div key={update.id} className='flex gap-4'>
               <div className='w-4 flex flex-none flex-col items-center gap-2 mt-2'>
-                <div className={cn('size-2 rounded-full', EVENT_COLOR[update.event])} />
+                <div
+                  className={cn(
+                    'size-2 rounded-full',
+                    EVENT_COLOR[update.event],
+                  )}
+                />
                 {index < incident.updates.length - 1 && (
-                  <div className={cn('w-px flex-1', EVENT_COLOR[update.event])} />
+                  <div
+                    className={cn('w-px flex-1', EVENT_COLOR[update.event])}
+                  />
                 )}
               </div>
               <div className='space-y-2 pb-8'>
-                <Muted className='font-semibold text-primary'>{EVENT_LABEL[update.event]}</Muted>
+                <Muted className='font-semibold text-primary'>
+                  {EVENT_LABEL[update.event]}
+                </Muted>
                 <P className='mt-0!'>{update.message}</P>
                 <Muted>{formatDateTime(update.postedAt)}</Muted>
               </div>

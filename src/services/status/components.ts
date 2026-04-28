@@ -63,11 +63,15 @@ export const COMPONENTS = [
   },
 ] as const satisfies ReadonlyArray<ComponentDefinition>
 
-export const COMPONENT_KEYS = COMPONENTS.map((c) => c.key) as ReadonlyArray<ComponentKey>
+export const COMPONENT_KEYS = COMPONENTS.map(
+  (c) => c.key,
+) as ReadonlyArray<ComponentKey>
 
-export const COMPONENTS_BY_KEY: Record<ComponentKey, ComponentDefinition> = Object.fromEntries(
-  COMPONENTS.map((c) => [c.key, c]),
-) as Record<ComponentKey, ComponentDefinition>
+export const COMPONENTS_BY_KEY: Record<ComponentKey, ComponentDefinition> =
+  Object.fromEntries(COMPONENTS.map((c) => [c.key, c])) as Record<
+    ComponentKey,
+    ComponentDefinition
+  >
 
 export const STATUS_RANK: Record<ComponentStatus, number> = {
   OPERATIONAL: 0,
@@ -79,7 +83,9 @@ export const STATUS_RANK: Record<ComponentStatus, number> = {
 
 export function worstStatus(statuses: ComponentStatus[]): ComponentStatus {
   if (statuses.length === 0) return 'OPERATIONAL'
-  return statuses.reduce((acc, s) => (STATUS_RANK[s] > STATUS_RANK[acc] ? s : acc))
+  return statuses.reduce((acc, s) =>
+    STATUS_RANK[s] > STATUS_RANK[acc] ? s : acc,
+  )
 }
 
 export function isComponentKey(value: string): value is ComponentKey {

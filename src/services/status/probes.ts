@@ -10,11 +10,7 @@ import {
 import { auth } from '@/src/lib/auth'
 import { prisma } from '@/src/lib/prisma'
 import { ensureRedisConnected } from '@/src/lib/redis'
-import {
-  COMPONENTS,
-  type ComponentKey,
-  type ComponentTier,
-} from './components'
+import { COMPONENTS, type ComponentKey, type ComponentTier } from './components'
 
 export type ProbeStatus = 'OPERATIONAL' | 'DEGRADED' | 'MAJOR_OUTAGE'
 
@@ -129,17 +125,23 @@ const PROBES: Record<ComponentKey, () => Promise<ProbeResult>> = {
   payment: probePayment,
 }
 
-async function runForKeys(keys: ReadonlyArray<ComponentKey>): Promise<Partial<ProbeMap>> {
+async function runForKeys(
+  keys: ReadonlyArray<ComponentKey>,
+): Promise<Partial<ProbeMap>> {
   const entries = await Promise.all(
     keys.map(async (key) => [key, await PROBES[key]()] as const),
   )
   return Object.fromEntries(entries) as Partial<ProbeMap>
 }
 
-export function componentsForTier(tier: ComponentTier): ReadonlyArray<ComponentKey> {
+export function componentsForTier(
+  tier: ComponentTier,
+): ReadonlyArray<ComponentKey> {
   return COMPONENTS.filter((c) => c.tier === tier).map((c) => c.key)
 }
 
-export async function runProbesForTier(tier: ComponentTier): Promise<Partial<ProbeMap>> {
+export async function runProbesForTier(
+  tier: ComponentTier,
+): Promise<Partial<ProbeMap>> {
   return runForKeys(componentsForTier(tier))
 }

@@ -1,11 +1,15 @@
 import 'server-only'
-import type { ComponentDaily, ComponentStatus, HealthCheck } from '@prisma/client'
+import type {
+  ComponentDaily,
+  ComponentStatus,
+  HealthCheck,
+} from '@prisma/client'
 import { StatusCache } from '@/src/cache/status.cache'
 import { databaseError, notFound } from '@/src/errors'
+import { prisma } from '@/src/lib/prisma'
 import { err, ok, type Result } from '@/src/lib/result'
 import { IncidentRepository } from '@/src/repositories/incident.repository'
 import { StatusRepository } from '@/src/repositories/status.repository'
-import { prisma } from '@/src/lib/prisma'
 import type {
   ComponentSnapshot,
   DailyPoint,
@@ -43,7 +47,9 @@ function isoDay(date: Date): string {
   return date.toISOString().slice(0, 10)
 }
 
-function computeOverallStatus(components: ComponentSnapshot[]): ComponentStatus {
+function computeOverallStatus(
+  components: ComponentSnapshot[],
+): ComponentStatus {
   const coreStatuses = components
     .filter((c) => c.tier === 'core')
     .map((c) => c.currentStatus)
@@ -75,12 +81,19 @@ function uptimeFor90Days(history: DailyPoint[]): number {
   return Number((sum / history.length).toFixed(3))
 }
 
-function buildIncidentTitle(componentKey: ComponentKey, severity: ComponentStatus): string {
+function buildIncidentTitle(
+  componentKey: ComponentKey,
+  severity: ComponentStatus,
+): string {
   const def = COMPONENTS_BY_KEY[componentKey]
   return `${def.name}: ${STATUS_META[severity].label}`
 }
 
-function buildInvestigatingMessage(componentKey: ComponentKey, severity: ComponentStatus, probeError: string | null): string {
+function buildInvestigatingMessage(
+  componentKey: ComponentKey,
+  severity: ComponentStatus,
+  probeError: string | null,
+): string {
   const def = COMPONENTS_BY_KEY[componentKey]
   const base = `Detectamos uma anomalia em ${def.name} (${STATUS_META[severity].label.toLowerCase()}). Estamos investigando.`
   return probeError ? `${base} Erro reportado: ${probeError}` : base
@@ -103,7 +116,11 @@ async function evaluateIncidentFor(
 
   if (status === 'OPERATIONAL') {
     if (!open) return ok(undefined)
-    return IncidentRepository.close(open.id, new Date(), buildResolvedMessage(componentKey))
+    return IncidentRepository.close(
+      open.id,
+      new Date(),
+      buildResolvedMessage(componentKey),
+    )
   }
 
   if (!open) {
@@ -112,7 +129,11 @@ async function evaluateIncidentFor(
       severity: status,
       title: buildIncidentTitle(componentKey, status),
       startedAt: new Date(),
-      initialMessage: buildInvestigatingMessage(componentKey, status, probe.error),
+      initialMessage: buildInvestigatingMessage(
+        componentKey,
+        status,
+        probe.error,
+      ),
     })
     if (!created.ok) return created
     return ok(undefined)
@@ -138,10 +159,7 @@ async function loadIncidentMapForWindow(
 ): Promise<Map<ComponentKey, Map<string, string>>> {
   const incidents = await prisma.incident.findMany({
     where: {
-      OR: [
-        { resolvedAt: null },
-        { resolvedAt: { gte: fromDay } },
-      ],
+      OR: [{ resolvedAt: null }, { resolvedAt: { gte: fromDay } }],
       startedAt: { lte: addDays(toDay, 1) },
     },
     select: { id: true, componentKey: true, startedAt: true, resolvedAt: true },
@@ -273,10 +291,18 @@ export const StatusService = {
     const tomorrow = addDays(today, 1)
 
     for (const key of tierKeys) {
-      const aggResult = await StatusRepository.aggregateForDay(key, today, tomorrow)
+      const aggResult = await StatusRepository.aggregateForDay(
+        key,
+        today,
+        tomorrow,
+      )
       if (!aggResult.ok) return aggResult
       if (!aggResult.value) continue
-      const upsertResult = await StatusRepository.upsertDaily(key, today, aggResult.value)
+      const upsertResult = await StatusRepository.upsertDaily(
+        key,
+        today,
+        aggResult.value,
+      )
       if (!upsertResult.ok) return upsertResult
     }
 
@@ -285,7 +311,10 @@ export const StatusService = {
       if (!probe) continue
       const evalResult = await evaluateIncidentFor(key, probe)
       if (!evalResult.ok) {
-        console.error(`[StatusService] incident eval failed for ${key}:`, evalResult.error.message)
+        console.error(
+          `[StatusService] incident eval failed for ${key}:`,
+          evalResult.error.message,
+        )
       }
     }
 
@@ -335,14 +364,22 @@ export const StatusService = {
     const today = startOfUtcDay()
     const fromDay = addDays(today, -(days - 1))
 
-    const result = await StatusRepository.findDailies(componentKey, fromDay, today)
+    const result = await StatusRepository.findDailies(
+      componentKey,
+      fromDay,
+      today,
+    )
     if (!result.ok) return result
 
     const incidentMap = await loadIncidentMapForWindow(fromDay, today)
-    return ok(attachIncidentIds(buildHistory(result.value), componentKey, incidentMap))
+    return ok(
+      attachIncidentIds(buildHistory(result.value), componentKey, incidentMap),
+    )
   },
 
-  async listIncidents(days = HISTORY_WINDOW_DAYS): Promise<Result<IncidentSummaryDTO[]>> {
+  async listIncidents(
+    days = HISTORY_WINDOW_DAYS,
+  ): Promise<Result<IncidentSummaryDTO[]>> {
     const today = startOfUtcDay()
     const fromDay = addDays(today, -(days - 1))
     const result = await IncidentRepository.findInWindow(fromDay)

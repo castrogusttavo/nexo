@@ -1,5 +1,9 @@
+import type {
+  ComponentDaily,
+  ComponentStatus,
+  HealthCheck,
+} from '@prisma/client'
 import { Prisma } from '@prisma/client'
-import type { ComponentDaily, ComponentStatus, HealthCheck } from '@prisma/client'
 import { databaseError } from '@/src/errors'
 import { prisma } from '@/src/lib/prisma'
 import { err, ok, type Result } from '@/src/lib/result'

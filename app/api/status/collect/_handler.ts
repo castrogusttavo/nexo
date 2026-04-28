@@ -2,7 +2,11 @@ import type { NextRequest } from 'next/server'
 import { STATUS_COLLECTOR_SECRET } from '@/lib/env/server'
 import type { ComponentTier } from '@/src/services/status/components'
 import { StatusService } from '@/src/services/status/status.service'
-import { handleError, standardError, successResponse } from '@/utils/http-response'
+import {
+  handleError,
+  standardError,
+  successResponse,
+} from '@/utils/http-response'
 
 function constantTimeEqual(a: string, b: string): boolean {
   if (a.length !== b.length) return false

@@ -3,7 +3,11 @@
 import { CheckmarkCircle02Icon } from '@hugeicons-pro/core-bulk-rounded'
 import Link from 'next/link'
 import { NexoIcon } from '@/components/icon/icon'
-import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from '@/components/ui/tooltip'
 import { cn, DateFormat } from '@/lib/utils'
 import { STATUS_META } from '@/src/services/status/status-map'
 import type { DailyPoint } from '@/types/status'
@@ -54,7 +58,10 @@ export function HistoryBars({ history }: HistoryBarsProps) {
             <TooltipContent side='bottom' className='flex flex-col gap-2'>
               {DateFormat(date)}
               {point.incidentId ? (
-                <Link href={`/status/incident/${point.incidentId}`} className='underline-offset-2 hover:underline'>
+                <Link
+                  href={`/status/incident/${point.incidentId}`}
+                  className='underline-offset-2 hover:underline'
+                >
                   {summary}
                 </Link>
               ) : (

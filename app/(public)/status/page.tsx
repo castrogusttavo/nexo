@@ -1,4 +1,7 @@
-import { CheckmarkBadge02Icon, CheckmarkCircle02Icon } from '@hugeicons-pro/core-bulk-rounded'
+import {
+  CheckmarkBadge02Icon,
+  CheckmarkCircle02Icon,
+} from '@hugeicons-pro/core-bulk-rounded'
 import { Calendar04Icon } from '@hugeicons-pro/core-solid-rounded'
 import { InformationCircleIcon } from '@hugeicons-pro/core-stroke-rounded'
 import Image from 'next/image'
@@ -7,7 +10,11 @@ import { NexoIcon } from '@/components/icon/icon'
 import { Muted } from '@/components/typography/text/muted'
 import { P } from '@/components/typography/text/p'
 import { Button } from '@/components/ui/button'
-import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from '@/components/ui/tooltip'
 import { cn } from '@/lib/utils'
 import { StatusService } from '@/src/services/status/status.service'
 import { STATUS_META } from '@/src/services/status/status-map'
@@ -52,7 +59,12 @@ export default async function StatusPage() {
         </div>
       </div>
       <div className='w-full h-fit overflow-hidden flex flex-col rounded-lg border border-zinc-200'>
-        <span className={cn('flex items-center gap-2 px-3.5 py-4 text-base text-zinc-50', overallMeta.banner)}>
+        <span
+          className={cn(
+            'flex items-center gap-2 px-3.5 py-4 text-base text-zinc-50',
+            overallMeta.banner,
+          )}
+        >
           <NexoIcon icon={CheckmarkBadge02Icon} size={20} />
           {overallMeta.headline}
         </span>
@@ -67,7 +79,10 @@ export default async function StatusPage() {
         {snapshot.components.map((component) => {
           const meta = STATUS_META[component.currentStatus]
           return (
-            <div key={component.key} className='w-full flex flex-col p-4 md:p-3 space-y-2 border-t border-zinc-800'>
+            <div
+              key={component.key}
+              className='w-full flex flex-col p-4 md:p-3 space-y-2 border-t border-zinc-800'
+            >
               <div className='w-full flex justify-between items-center'>
                 <div className='flex items-center gap-2'>
                   <NexoIcon
@@ -79,15 +94,19 @@ export default async function StatusPage() {
                   <P className='font-medium mt-0!'>{component.name}</P>
                   <Tooltip>
                     <TooltipTrigger>
-                      <NexoIcon icon={InformationCircleIcon} className='text-muted-foreground' strokeWidth={2} />
+                      <NexoIcon
+                        icon={InformationCircleIcon}
+                        className='text-muted-foreground'
+                        strokeWidth={2}
+                      />
                     </TooltipTrigger>
-                    <TooltipContent>
-                      {component.description}
-                    </TooltipContent>
+                    <TooltipContent>{component.description}</TooltipContent>
                   </Tooltip>
                 </div>
                 <Muted className='text-end'>
-                  {component.uptime90d > 0 ? `${component.uptime90d.toFixed(2)}% uptime` : 'Sem dados'}
+                  {component.uptime90d > 0
+                    ? `${component.uptime90d.toFixed(2)}% uptime`
+                    : 'Sem dados'}
                 </Muted>
               </div>
               <HistoryBars history={component.history} />

@@ -1,4 +1,4 @@
-import { type ComponentStatus, type IncidentEvent, Prisma } from '@prisma/client'
+import type { ComponentStatus, IncidentEvent, Prisma } from '@prisma/client'
 import { databaseError } from '@/src/errors'
 import { prisma } from '@/src/lib/prisma'
 import { err, ok, type Result } from '@/src/lib/result'
@@ -20,7 +20,9 @@ export type IncidentSummary = Prisma.IncidentGetPayload<{
 }>
 
 export const IncidentRepository = {
-  async findOpenByComponent(componentKey: ComponentKey): Promise<Result<IncidentSummary | null>> {
+  async findOpenByComponent(
+    componentKey: ComponentKey,
+  ): Promise<Result<IncidentSummary | null>> {
     try {
       const incident = await prisma.incident.findFirst({
         where: { componentKey, resolvedAt: null },
@@ -77,7 +79,10 @@ export const IncidentRepository = {
     }
   },
 
-  async bumpSeverity(incidentId: string, severity: ComponentStatus): Promise<Result<void>> {
+  async bumpSeverity(
+    incidentId: string,
+    severity: ComponentStatus,
+  ): Promise<Result<void>> {
     try {
       await prisma.incident.update({
         where: { id: incidentId },
@@ -104,7 +109,11 @@ export const IncidentRepository = {
     }
   },
 
-  async close(incidentId: string, resolvedAt: Date, message: string): Promise<Result<void>> {
+  async close(
+    incidentId: string,
+    resolvedAt: Date,
+    message: string,
+  ): Promise<Result<void>> {
     try {
       await prisma.incident.update({
         where: { id: incidentId },
