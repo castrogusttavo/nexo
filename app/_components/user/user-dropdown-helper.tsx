@@ -63,6 +63,11 @@ export function UserDropdownHelper() {
           <DropdownMenuItem className='text-xs'>
             O que há de novo?
           </DropdownMenuItem>
+          <Link href='/status'>
+            <DropdownMenuItem className='text-xs'>
+              Status do sistema
+            </DropdownMenuItem>
+          </Link>
         </DropdownMenuGroup>
         <DropdownMenuSeparator />
         <DropdownMenuGroup>

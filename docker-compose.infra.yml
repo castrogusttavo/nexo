@@ -21,7 +21,7 @@ services:
 
   nexo-redis-master:
     image: bitnami/redis:latest
-    container_name: nexo-redis-master
+    container_name: nexo-redis
     restart: unless-stopped
     environment:
       REDIS_REPLICATION_MODE: master
@@ -35,90 +35,6 @@ services:
       interval: 5s
       timeout: 5s
       retries: 5
-    networks:
-      - app-network
-
-  nexo-redis-replica:
-    image: bitnami/redis:latest
-    container_name: nexo-redis-replica
-    restart: unless-stopped
-    environment:
-      REDIS_REPLICATION_MODE: slave
-      REDIS_MASTER_HOST: nexo-redis-master
-      REDIS_MASTER_PASSWORD: ${REDIS_PASSWORD}
-      REDIS_PASSWORD: ${REDIS_PASSWORD}
-    volumes:
-      - redis-replica-data:/bitnami/redis/data
-    depends_on:
-      nexo-redis-master:
-        condition: service_healthy
-    healthcheck:
-      test: ["CMD", "redis-cli", "-a", "${REDIS_PASSWORD}", "ping"]
-      interval: 5s
-      timeout: 5s
-      retries: 5
-    networks:
-      - app-network
-
-  nexo-sentinel-1:
-    image: bitnami/redis-sentinel:latest
-    container_name: nexo-sentinel-1
-    restart: unless-stopped
-    environment:
-      REDIS_MASTER_HOST: nexo-redis-master
-      REDIS_MASTER_PORT_NUMBER: 6379
-      REDIS_MASTER_PASSWORD: ${REDIS_PASSWORD}
-      REDIS_SENTINEL_PASSWORD: ${REDIS_SENTINEL_PASSWORD}
-      REDIS_SENTINEL_MASTER_NAME: ${REDIS_SENTINEL_NAME:-mymaster}
-      REDIS_SENTINEL_DOWN_AFTER_MILLISECONDS: 5000
-      REDIS_SENTINEL_QUORUM: 2
-    ports:
-      - "26379:26379"
-    depends_on:
-      nexo-redis-master:
-        condition: service_healthy
-      nexo-redis-replica:
-        condition: service_healthy
-    networks:
-      - app-network
-
-  nexo-sentinel-2:
-    image: bitnami/redis-sentinel:latest
-    container_name: nexo-sentinel-2
-    restart: unless-stopped
-    environment:
-      REDIS_MASTER_HOST: nexo-redis-master
-      REDIS_MASTER_PORT_NUMBER: 6379
-      REDIS_MASTER_PASSWORD: ${REDIS_PASSWORD}
-      REDIS_SENTINEL_PASSWORD: ${REDIS_SENTINEL_PASSWORD}
-      REDIS_SENTINEL_MASTER_NAME: ${REDIS_SENTINEL_NAME:-mymaster}
-      REDIS_SENTINEL_DOWN_AFTER_MILLISECONDS: 5000
-      REDIS_SENTINEL_QUORUM: 2
-    depends_on:
-      nexo-redis-master:
-        condition: service_healthy
-      nexo-redis-replica:
-        condition: service_healthy
-    networks:
-      - app-network
-
-  nexo-sentinel-3:
-    image: bitnami/redis-sentinel:latest
-    container_name: nexo-sentinel-3
-    restart: unless-stopped
-    environment:
-      REDIS_MASTER_HOST: nexo-redis-master
-      REDIS_MASTER_PORT_NUMBER: 6379
-      REDIS_MASTER_PASSWORD: ${REDIS_PASSWORD}
-      REDIS_SENTINEL_PASSWORD: ${REDIS_SENTINEL_PASSWORD}
-      REDIS_SENTINEL_MASTER_NAME: ${REDIS_SENTINEL_NAME:-mymaster}
-      REDIS_SENTINEL_DOWN_AFTER_MILLISECONDS: 5000
-      REDIS_SENTINEL_QUORUM: 2
-    depends_on:
-      nexo-redis-master:
-        condition: service_healthy
-      nexo-redis-replica:
-        condition: service_healthy
     networks:
       - app-network
 

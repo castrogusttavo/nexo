@@ -24,7 +24,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang='en' className={cn('dark', inter.variable)}>
-      <body className='root antialiased bg-background h-screen'>
+      <body className='root antialiased bg-background text-primary h-screen'>
         <Suspense>
           <Providers>
             <TooltipProvider>

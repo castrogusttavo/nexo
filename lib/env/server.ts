@@ -25,6 +25,7 @@ const serverEnv = {
   HUGEICONS_TOKEN: process.env.HUGEICONS_TOKEN,
   ABACATE_PAY: process.env.ABACATE_PAY,
   ABACATE_PAY_WEBHOOK_SECRET: process.env.ABACATE_PAY_WEBHOOK_SECRET,
+  STATUS_COLLECTOR_SECRET: process.env.STATUS_COLLECTOR_SECRET,
 }
 
 const serverEnvSchema = z.object({
@@ -51,6 +52,7 @@ const serverEnvSchema = z.object({
   HUGEICONS_TOKEN: z.string().regex(/^[A-F0-9]{8}(-[A-F0-9]{8}){3}$/),
   ABACATE_PAY: z.string().min(1).max(100),
   ABACATE_PAY_WEBHOOK_SECRET: z.string().min(1).max(100),
+  STATUS_COLLECTOR_SECRET: z.string().min(32).max(128),
 })
 
 const validatedServerEnv =
@@ -82,4 +84,5 @@ export const {
   HUGEICONS_TOKEN,
   ABACATE_PAY,
   ABACATE_PAY_WEBHOOK_SECRET,
+  STATUS_COLLECTOR_SECRET,
 } = validatedServerEnv

@@ -132,3 +132,74 @@ enum SubscriptionStatus {
   EXPIRED
   REFUNDED
 }
+
+enum ComponentStatus {
+  OPERATIONAL
+  DEGRADED
+  PARTIAL_OUTAGE
+  MAJOR_OUTAGE
+  MAINTENANCE
+}
+
+model HealthCheck {
+  id           String          @id @default(cuid())
+  componentKey String          @map("component_key")
+  status       ComponentStatus
+  latencyMs    Int             @map("latency_ms")
+  error        String?
+  checkedAt    DateTime        @default(now()) @map("checked_at")
+
+  @@index([componentKey, checkedAt])
+  @@index([checkedAt])
+  @@map("health_checks")
+}
+
+model ComponentDaily {
+  id           String          @id @default(cuid())
+  componentKey String          @map("component_key")
+  day          DateTime        @db.Date
+  worstStatus  ComponentStatus @map("worst_status")
+  totalChecks  Int             @map("total_checks")
+  upChecks     Int             @map("up_checks")
+  uptimePct    Decimal         @map("uptime_pct") @db.Decimal(6, 3)
+  avgLatencyMs Int             @map("avg_latency_ms")
+  updatedAt    DateTime        @updatedAt @map("updated_at")
+
+  @@unique([componentKey, day])
+  @@index([componentKey, day])
+  @@map("component_dailies")
+}
+
+enum IncidentEvent {
+  INVESTIGATING
+  IDENTIFIED
+  MONITORING
+  RESOLVED
+}
+
+model Incident {
+  id           String           @id @default(cuid())
+  componentKey String           @map("component_key")
+  severity     ComponentStatus
+  title        String
+  startedAt    DateTime         @map("started_at")
+  resolvedAt   DateTime?        @map("resolved_at")
+  updates      IncidentUpdate[]
+
+  @@index([componentKey, startedAt])
+  @@index([resolvedAt])
+  @@index([startedAt])
+  @@map("incidents")
+}
+
+model IncidentUpdate {
+  id         String        @id @default(cuid())
+  incidentId String        @map("incident_id")
+  event      IncidentEvent
+  message    String
+  postedAt   DateTime      @default(now()) @map("posted_at")
+  incident   Incident      @relation(fields: [incidentId], references: [id], onDelete: Cascade)
+
+  @@index([incidentId, postedAt])
+  @@map("incident_updates")
+}
