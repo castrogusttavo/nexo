@@ -1,10 +1,7 @@
 import 'server-only'
-import { HeadBucketCommand, S3Client } from '@aws-sdk/client-s3'
 import {
   ABACATE_PAY,
   MINIO_ENDPOINT,
-  MINIO_PASSWORD,
-  MINIO_USER,
   RESEND_API_KEY,
 } from '@/lib/env/server'
 import { auth } from '@/src/lib/auth'
@@ -24,14 +21,6 @@ export type ProbeMap = Record<ComponentKey, ProbeResult>
 
 const TIMEOUT_MS = 5_000
 const DEGRADED_THRESHOLD_MS = 1_500
-const STORAGE_BUCKET = 'test-docs'
-
-const s3Client = new S3Client({
-  endpoint: MINIO_ENDPOINT,
-  region: 'us-east-1',
-  credentials: { accessKeyId: MINIO_USER, secretAccessKey: MINIO_PASSWORD },
-  forcePathStyle: true,
-})
 
 function classify(latencyMs: number, error: string | null): ProbeStatus {
   if (error) return 'MAJOR_OUTAGE'
@@ -98,7 +87,10 @@ export async function probeEmail(): Promise<ProbeResult> {
 
 export async function probeStorage(): Promise<ProbeResult> {
   return timed(async () => {
-    await s3Client.send(new HeadBucketCommand({ Bucket: STORAGE_BUCKET }))
+    const res = await fetchWithTimeout(
+      `${MINIO_ENDPOINT}/minio/health/live`,
+    )
+    if (!res.ok) throw new Error(`MinIO HTTP ${res.status}`)
   })
 }
 
