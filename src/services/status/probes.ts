@@ -1,9 +1,5 @@
 import 'server-only'
-import {
-  ABACATE_PAY,
-  MINIO_ENDPOINT,
-  RESEND_API_KEY,
-} from '@/lib/env/server'
+import { ABACATE_PAY, MINIO_ENDPOINT, RESEND_API_KEY } from '@/lib/env/server'
 import { auth } from '@/src/lib/auth'
 import { prisma } from '@/src/lib/prisma'
 import { ensureRedisConnected } from '@/src/lib/redis'
@@ -87,9 +83,7 @@ export async function probeEmail(): Promise<ProbeResult> {
 
 export async function probeStorage(): Promise<ProbeResult> {
   return timed(async () => {
-    const res = await fetchWithTimeout(
-      `${MINIO_ENDPOINT}/minio/health/live`,
-    )
+    const res = await fetchWithTimeout(`${MINIO_ENDPOINT}/minio/health/live`)
     if (!res.ok) throw new Error(`MinIO HTTP ${res.status}`)
   })
 }
