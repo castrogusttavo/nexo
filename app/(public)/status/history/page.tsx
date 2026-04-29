@@ -1,5 +1,6 @@
 import Image from 'next/image'
 import Link from 'next/link'
+import { connection } from 'next/server'
 import { Muted } from '@/components/typography/text/muted'
 import { Button } from '@/components/ui/button'
 import { cn } from '@/lib/utils'
@@ -38,6 +39,7 @@ function groupByMonth(
 }
 
 export default async function StatusHistoryPage() {
+  await connection()
   const result = await StatusService.listIncidents()
 
   return (
