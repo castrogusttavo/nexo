@@ -39,7 +39,7 @@ services:
       - app-network
 
   nexo-queue:
-    image: rabbitmq:4-management-alpine
+    image: rabbitmq:4-alpine
     container_name: nexo-mq-1
     restart: unless-stopped
     environment:
@@ -48,7 +48,6 @@ services:
       RABBITMQ_DEFAULT_VHOST: ${RABBITMQ_VHOST:-/}
     ports:
       - "5656:5672" # AMQP
-      - "15672:15672" # Management UI
     volumes:
       - rabbitmqdata:/var/lib/rabbitmq
     healthcheck:
@@ -68,7 +67,7 @@ services:
       MINIO_ROOT_PASSWORD: ${MINIO_PASSWORD}
     ports:
       - "9000:9000" # API
-      - "9001:9001" # Console Web
+      - "127.0.0.1:9001:9001" # Console Web
     volumes:
       - miniodata:/data
     command: server /data --console-address ":9001"
