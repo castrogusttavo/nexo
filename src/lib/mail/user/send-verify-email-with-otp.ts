@@ -2,7 +2,7 @@
 
 import { VerifyEmailWithOtp } from '@/components/emails/user/verify-email-with-otp'
 import { NEXT_PUBLIC_URL } from '@/lib/env/env'
-import { defaultFrom, resend } from '@/src/lib/mail/client'
+import { sendEmail } from '@/src/lib/mail/send'
 import type { VerifyEmailOtpProps } from '@/types/mail'
 
 export async function sendVerifyEmailWithOtp({
@@ -10,8 +10,7 @@ export async function sendVerifyEmailWithOtp({
   username,
   validationCode,
 }: VerifyEmailOtpProps) {
-  const { data, error } = await resend.emails.send({
-    from: defaultFrom,
+  return sendEmail({
     to: [email],
     subject: 'Confirme seu e-mail',
     react: VerifyEmailWithOtp({
@@ -21,10 +20,4 @@ export async function sendVerifyEmailWithOtp({
       validationCode,
     }),
   })
-
-  if (error) {
-    throw new Error(error.message)
-  }
-
-  return data
 }

@@ -17,6 +17,7 @@ export default defineConfig({
             'src/errors/**/__tests__/*.test.ts',
             'src/lib/__tests__/*.test.ts',
           ],
+          exclude: ['**/*.integration.test.ts'],
           setupFiles: [
             './src/__tests__/setup.ts',
             './src/__tests__/setup.unit.ts',
@@ -33,6 +34,7 @@ export default defineConfig({
           include: [
             'src/repositories/**/__tests__/*.test.ts',
             'src/cache/**/__tests__/*.test.ts',
+            'src/lib/**/__tests__/*.integration.test.ts',
           ],
           setupFiles: [
             './src/__tests__/setup.ts',

@@ -2,7 +2,7 @@
 
 import { DeleteAccount } from '@/components/emails/user/delete-account'
 import { NEXT_PUBLIC_URL } from '@/lib/env/env'
-import { defaultFrom, resend } from '@/src/lib/mail/client'
+import { sendEmail } from '@/src/lib/mail/send'
 import type { DeleteAccountProps } from '@/types/mail'
 
 export async function sendDeleteAccountEmail({
@@ -11,8 +11,7 @@ export async function sendDeleteAccountEmail({
   scheduledDeletionDate,
   redirectUrl,
 }: DeleteAccountProps) {
-  const { data, error } = await resend.emails.send({
-    from: defaultFrom,
+  return sendEmail({
     to: [email],
     subject: `Sua conta será excluída em ${scheduledDeletionDate}`,
     react: DeleteAccount({
@@ -22,10 +21,4 @@ export async function sendDeleteAccountEmail({
       redirectUrl: redirectUrl ?? `${NEXT_PUBLIC_URL}/account/cancel-deletion`,
     }),
   })
-
-  if (error) {
-    throw new Error(error.message)
-  }
-
-  return data
 }

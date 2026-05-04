@@ -1,5 +1,6 @@
 import type { NextRequest } from 'next/server'
 import { getAuthSession } from '@/src/lib/auth-session'
+import { apiLimiter, consume } from '@/src/lib/rate-limit'
 import { CreateSubscriptionSchema } from '@/src/schemas/subscription.schema'
 import { SubscriptionService } from '@/src/services/subscription.service'
 import {
@@ -14,6 +15,9 @@ export async function POST(request: NextRequest) {
     console.log('[payment/plan] auth failed', auth.error)
     return handleError(auth.error)
   }
+
+  const limit = await consume(apiLimiter, `user:${auth.value.user.id}`)
+  if (!limit.ok) return handleError(limit.error)
 
   console.log('[payment/plan] authenticated user', {
     userId: auth.value.user.id,

@@ -40,3 +40,8 @@ export const badRequest = (message: string): AppError =>
 
 export const databaseError = (message = 'Database error'): AppError =>
   appError('DATABASE_ERROR', message)
+
+export const rateLimited = (
+  retryAfterSeconds: number,
+  message = 'Muitas requisições',
+): AppError => appError('RATE_LIMITED', message, { retryAfterSeconds })

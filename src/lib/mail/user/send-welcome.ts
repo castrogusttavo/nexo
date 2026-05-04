@@ -2,7 +2,7 @@
 
 import { WelcomeEmail } from '@/components/emails/user/welcome'
 import { NEXT_PUBLIC_URL } from '@/lib/env/env'
-import { defaultFrom, resend } from '@/src/lib/mail/client'
+import { sendEmail } from '@/src/lib/mail/send'
 import type { WelcomeEmailProps } from '@/types/mail'
 
 export async function sendWelcomeEmail({
@@ -10,8 +10,7 @@ export async function sendWelcomeEmail({
   username,
   trialDays,
 }: WelcomeEmailProps) {
-  const { data, error } = await resend.emails.send({
-    from: defaultFrom,
+  return sendEmail({
     to: [email],
     subject: 'Welcome Nexo',
     react: WelcomeEmail({
@@ -21,10 +20,4 @@ export async function sendWelcomeEmail({
       trialDays,
     }),
   })
-
-  if (error) {
-    throw new Error(error.message)
-  }
-
-  return data
 }

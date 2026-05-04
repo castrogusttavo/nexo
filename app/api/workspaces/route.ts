@@ -1,5 +1,6 @@
 import type { NextRequest } from 'next/server'
 import { getAuthSession } from '@/src/lib/auth-session'
+import { apiLimiter, consume } from '@/src/lib/rate-limit'
 import { CreateWorkspaceSchema } from '@/src/schemas/workspace.schema'
 import { WorkspaceService } from '@/src/services/workspace.service'
 import {
@@ -11,6 +12,9 @@ import {
 export async function POST(request: NextRequest) {
   const auth = await getAuthSession()
   if (!auth.ok) return handleError(auth.error)
+
+  const limit = await consume(apiLimiter, `user:${auth.value.user.id}`)
+  if (!limit.ok) return handleError(limit.error)
 
   const body = await request.json()
   const parsed = CreateWorkspaceSchema.safeParse(body)

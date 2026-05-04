@@ -2,7 +2,7 @@
 
 import { ResetPasswordEmail } from '@/components/emails/user/reset-password'
 import { NEXT_PUBLIC_URL } from '@/lib/env/env'
-import { defaultFrom, resend } from '@/src/lib/mail/client'
+import { sendEmail } from '@/src/lib/mail/send'
 import type { ResetPasswordEmailProps } from '@/types/mail'
 
 export async function sendResetPasswordEmail({
@@ -10,8 +10,7 @@ export async function sendResetPasswordEmail({
   username,
   redirectUrl,
 }: ResetPasswordEmailProps) {
-  const { data, error } = await resend.emails.send({
-    from: defaultFrom,
+  return sendEmail({
     to: [email],
     subject: 'Redefinir sua senha',
     react: ResetPasswordEmail({
@@ -20,10 +19,4 @@ export async function sendResetPasswordEmail({
       redirectUrl: redirectUrl ?? NEXT_PUBLIC_URL,
     }),
   })
-
-  if (error) {
-    throw new Error(error.message)
-  }
-
-  return data
 }
