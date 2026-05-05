@@ -104,9 +104,7 @@ export function NavItem({
       variant='ghost'
       size='default'
       {...props}
-      render={
-        <Link href={href} aria-current={isActive ? 'page' : undefined} />
-      }
+      render={<Link href={href} aria-current={isActive ? 'page' : undefined} />}
       className={cn(
         'w-full justify-start text-muted-foreground',
         isActive && 'bg-secondary text-secondary-foreground',
@@ -132,10 +130,7 @@ export function NavAction({
       variant='ghost'
       size='default'
       {...props}
-      className={cn(
-        'w-full justify-start text-muted-foreground',
-        className,
-      )}
+      className={cn('w-full justify-start text-muted-foreground', className)}
     >
       <NexoIcon icon={icon} strokeWidth={2} />
       {children}

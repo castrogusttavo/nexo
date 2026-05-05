@@ -1,16 +1,13 @@
-import {
-  Home03Icon,
-  PanelLeftIcon,
-} from '@hugeicons-pro/core-stroke-rounded'
+import { Home03Icon, PanelLeftIcon } from '@hugeicons-pro/core-stroke-rounded'
 import type { ReactNode } from 'react'
-import { NexoIcon } from '@/components/icon/icon'
-import { Button } from '@/components/ui/button'
 import {
   ContextHeader,
   ContextSidebar,
   NavGroup,
   NavItem,
 } from '@/app/_components/navigation/context-sidebar-navigation'
+import { NexoIcon } from '@/components/icon/icon'
+import { Button } from '@/components/ui/button'
 
 export default function SettingsLayout({ children }: { children: ReactNode }) {
   return (

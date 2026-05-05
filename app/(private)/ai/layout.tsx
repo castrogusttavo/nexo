@@ -4,13 +4,13 @@ import {
 } from '@hugeicons-pro/core-stroke-rounded'
 import type { Metadata } from 'next'
 import type { ReactNode } from 'react'
-import { NexoIcon } from '@/components/icon/icon'
-import { Button } from '@/components/ui/button'
 import {
   ContextHeader,
   ContextPrimaryAction,
   ContextSidebar,
 } from '@/app/_components/navigation/context-sidebar-navigation'
+import { NexoIcon } from '@/components/icon/icon'
+import { Button } from '@/components/ui/button'
 
 export const metadata: Metadata = {
   title: '',

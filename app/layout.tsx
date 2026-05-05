@@ -1,7 +1,11 @@
 import type { Metadata } from 'next'
 import { Inter } from 'next/font/google'
 import './globals.css'
-import { Home03Icon, PanelLeftIcon, SlidersHorizontalIcon } from '@hugeicons-pro/core-stroke-rounded'
+import {
+  Home03Icon,
+  PanelLeftIcon,
+  SlidersHorizontalIcon,
+} from '@hugeicons-pro/core-stroke-rounded'
 import { Analytics } from '@vercel/analytics/next'
 import { SpeedInsights } from '@vercel/speed-insights/next'
 import { Suspense } from 'react'
@@ -12,7 +16,13 @@ import { TooltipProvider } from '@/components/ui/tooltip'
 import { WebVitals } from '@/lib/axiom/client'
 import { cn } from '@/lib/utils'
 import { UserHeader } from './_components/header/user-header'
-import { ContextHeader, ContextPrimaryAction, ContextSidebar, NavGroup, NavItem } from './_components/navigation/context-sidebar-navigation'
+import {
+  ContextHeader,
+  ContextPrimaryAction,
+  ContextSidebar,
+  NavGroup,
+  NavItem,
+} from './_components/navigation/context-sidebar-navigation'
 import { GlobalSidebarNavigation } from './_components/navigation/global-sidebar-navigation'
 import { Providers } from './_components/providers'
 
@@ -45,7 +55,10 @@ export default function RootLayout({
                         actions={
                           <>
                             <Button variant='ghost' size='icon-sm'>
-                              <NexoIcon icon={SlidersHorizontalIcon} strokeWidth={2} />
+                              <NexoIcon
+                                icon={SlidersHorizontalIcon}
+                                strokeWidth={2}
+                              />
                             </Button>
                             <Button variant='ghost' size='icon-sm'>
                               <NexoIcon icon={PanelLeftIcon} strokeWidth={2} />

@@ -31,7 +31,10 @@ export function GlobalSidebarNavigation() {
           <NexoIcon icon={SparklesIcon} className='size-5' />
         </GlobalButtonNavigation>
         <div className='w-full h-px bg-secondary' />
-        <GlobalButtonNavigation linkNavigation='/settings' description='Ajustes'>
+        <GlobalButtonNavigation
+          linkNavigation='/settings'
+          description='Ajustes'
+        >
           <NexoIcon icon={Settings02Icon} className='size-5' />
         </GlobalButtonNavigation>
       </div>
