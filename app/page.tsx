@@ -1,9 +1,7 @@
-import { Header } from './_components/header/header'
-
 export default async function Page() {
   return (
     <div>
-      <Header />
+      <h1>Welcome to Nexo</h1>
     </div>
   )
 }
