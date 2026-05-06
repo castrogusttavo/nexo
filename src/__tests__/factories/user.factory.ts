@@ -11,9 +11,7 @@ export function createFakeUser(overrides?: Partial<User>): User {
     email: `test-${createId()}@example.com`,
     emailVerified: false,
     image: null,
-    role: 'MEMBER',
     twoFactorEnabled: false,
-    workspaceId: null,
     createdAt: now,
     updatedAt: now,
     ...overrides,
@@ -27,15 +25,14 @@ export function createFakeUserDTO(overrides?: Partial<UserDTO>): UserDTO {
     email: `test-${createId()}@example.com`,
     emailVerified: false,
     image: null,
-    role: 'MEMBER',
-    workspaceId: null,
     createdAt: new Date().toISOString(),
+    memberships: [],
     ...overrides,
   }
 }
 
 export async function seedUser(
-  overrides?: Partial<Pick<User, 'name' | 'email' | 'role' | 'workspaceId'>>,
+  overrides?: Partial<Pick<User, 'name' | 'email'>>,
 ) {
   return prisma.user.create({
     data: {

@@ -13,8 +13,9 @@ import { Providers } from './_components/providers'
 const inter = Inter({ subsets: ['latin'], variable: '--font-sans' })
 
 export const metadata: Metadata = {
-  title: 'Home Page',
-  description: 'AI-native project management | Nexo',
+  title: 'AI-native project management | Nexo',
+  description:
+    'Nexo brings projects, docs, and AI-powered workflows into one unified workspace so teams and agents can plan, execute, and stay aligned.',
 }
 
 export default function RootLayout({
