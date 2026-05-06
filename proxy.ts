@@ -58,19 +58,17 @@ export function proxy(request: NextRequest, event: NextFetchEvent) {
   }
 
   const isPublic = PUBLIC_ROUTES.some((route) => pathname.startsWith(route))
-  const sessionToken =
-    request.cookies.get('better-auth.session_token')?.value ||
-    request.cookies.get('__Secure-better-auth.session_token')?.value
 
   if (isPublic) {
-    if (sessionToken && (pathname === '/sign-in' || pathname === '/sign-up')) {
-      return NextResponse.redirect(new URL('/', request.url))
-    }
     return withSecurityHeaders(
       NextResponse.next({ request: { headers: requestHeaders } }),
       nonce,
     )
   }
+
+  const sessionToken =
+    request.cookies.get('better-auth.session_token')?.value ||
+    request.cookies.get('__Secure-better-auth.session_token')?.value
 
   if (!sessionToken) {
     return NextResponse.redirect(new URL('/sign-in', request.url))

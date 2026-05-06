@@ -49,9 +49,8 @@ export const WorkspaceRepository = {
     try {
       const workspace = await prisma.$transaction(async (tx) => {
         const ws = await tx.workspace.create({ data })
-        await tx.user.update({
-          where: { id: userId },
-          data: { workspaceId: ws.id, role: 'OWNER' },
+        await tx.membership.create({
+          data: { userId, workspaceId: ws.id, role: 'OWNER' },
         })
         return ws
       })

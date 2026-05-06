@@ -2,6 +2,7 @@
 
 import { InboxIcon } from '@hugeicons-pro/core-stroke-rounded'
 import Link from 'next/link'
+import { useParams } from 'next/navigation'
 import { NexoIcon } from '@/components/icon/icon'
 import { ShortCutButton } from '@/components/shortcut-button'
 import { Button } from '@/components/ui/button'
@@ -10,16 +11,19 @@ import { UserDropdownProfile } from '../user/user-dropdown-profile'
 import { WorkSpaceDropdown } from '../workspace/workspace-dropdown'
 
 export function Header() {
+  const params = useParams<{ 'workspace-slug': string }>()
+  const slug = params['workspace-slug'] ?? ''
+
   return (
     <div className='w-full flex justify-between items-center py-1 px-2'>
-      <WorkSpaceDropdown />
+      <WorkSpaceDropdown currentSlug={slug} />
       <div className='flex items-center gap-1'>
-        <Link href='/get-started'>
+        <Link href={`/${slug}/get-started`}>
           <Button size='xs' variant='outline'>
             Comece agora
           </Button>
         </Link>
-        <ShortCutButton href='/inbox'>
+        <ShortCutButton href={`/${slug}/inbox`}>
           <NexoIcon icon={InboxIcon} strokeWidth={2} size={20} />
         </ShortCutButton>
         <UserDropdownHelper />

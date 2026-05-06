@@ -61,12 +61,6 @@ export const auth = betterAuth({
   account: {
     accountLinking: { enabled: true },
   },
-  user: {
-    additionalFields: {
-      role: { type: 'string', defaultValue: 'MEMBER', input: false },
-      workspaceId: { type: 'string', required: false, input: false },
-    },
-  },
   session: {
     cookieCache: {
       enabled: true,

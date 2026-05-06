@@ -5,8 +5,8 @@ import { WorkspaceCache } from '@/src/cache/workspace.cache'
 import { badRequest, forbidden } from '@/src/errors'
 import { err, ok, type Result } from '@/src/lib/result'
 import { toSubscriptionDTO } from '@/src/mappers/subscription.mapper'
+import { MembershipRepository } from '@/src/repositories/membership.repository'
 import { SubscriptionRepository } from '@/src/repositories/subscription.repository'
-import { UserRepository } from '@/src/repositories/user.repository'
 import type { CreateSubscriptionDTO } from '@/src/schemas/subscription.schema'
 import type { SubscriptionDTO } from '@/types/subscription'
 
@@ -20,14 +20,14 @@ export const SubscriptionService = {
     actorId: string,
     dto: CreateSubscriptionDTO,
   ): Promise<Result<SubscriptionDTO>> {
-    const actor = await UserRepository.findById(actorId)
-    if (!actor.ok) return actor
+    const membership = await MembershipRepository.findByUserAndWorkspace(
+      actorId,
+      dto.workspaceId,
+    )
+    if (!membership.ok) return membership
+    if (!membership.value) return err(forbidden())
 
-    if (actor.value.workspaceId !== dto.workspaceId) {
-      return err(forbidden())
-    }
-
-    if (!['OWNER', 'ADMIN'].includes(actor.value.role)) {
+    if (!['OWNER', 'ADMIN'].includes(membership.value.role)) {
       return err(forbidden('Apenas OWNER ou ADMIN podem alterar o plano'))
     }
 
