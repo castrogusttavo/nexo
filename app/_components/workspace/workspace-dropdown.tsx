@@ -3,7 +3,6 @@
 import {
   AddCircleIcon,
   AddTeamIcon,
-  Logout05Icon,
   Settings01Icon,
   UserAdd01Icon,
 } from '@hugeicons-pro/core-stroke-rounded'
@@ -21,7 +20,6 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
 import { useUser } from '@/src/hooks/use-user'
-import { authClient } from '@/src/lib/auth-client'
 import type { MembershipDTO } from '@/types/user'
 
 export function WorkSpaceDropdown({ currentSlug }: { currentSlug: string }) {
@@ -34,11 +32,6 @@ export function WorkSpaceDropdown({ currentSlug }: { currentSlug: string }) {
 
   function handleSelect(slug: string) {
     if (slug !== currentSlug) router.push(`/${slug}`)
-  }
-
-  async function handleSignOut() {
-    await authClient.signOut()
-    router.push('/sign-in')
   }
 
   return (
@@ -86,14 +79,6 @@ export function WorkSpaceDropdown({ currentSlug }: { currentSlug: string }) {
           >
             <NexoIcon icon={AddTeamIcon} />
             Convidar para workspace
-          </DropdownMenuItem>
-          <DropdownMenuItem
-            variant='destructive'
-            className='text-sm'
-            onClick={handleSignOut}
-          >
-            <NexoIcon icon={Logout05Icon} />
-            Sair
           </DropdownMenuItem>
         </DropdownMenuGroup>
       </DropdownMenuContent>
