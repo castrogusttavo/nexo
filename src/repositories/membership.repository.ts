@@ -35,9 +35,7 @@ export const MembershipRepository = {
     }
   },
 
-  async listByUser(
-    userId: string,
-  ): Promise<Result<MembershipWithWorkspace[]>> {
+  async listByUser(userId: string): Promise<Result<MembershipWithWorkspace[]>> {
     try {
       const memberships = await prisma.membership.findMany({
         where: { userId },

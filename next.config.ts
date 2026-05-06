@@ -42,6 +42,9 @@ const nextConfig: NextConfig = {
     ],
   },
   cacheComponents: true,
+  experimental: {
+    webpackMemoryOptimizations: true
+  },
   headers: async () => [
     {
       source: '/_next/static/:path*',

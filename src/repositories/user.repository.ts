@@ -55,10 +55,7 @@ export const UserRepository = {
     }
   },
 
-  async create(data: {
-    name: string
-    email: string
-  }): Promise<Result<User>> {
+  async create(data: { name: string; email: string }): Promise<Result<User>> {
     try {
       const user = await prisma.user.create({ data })
       return ok(user)
