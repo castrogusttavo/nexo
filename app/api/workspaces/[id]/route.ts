@@ -1,5 +1,6 @@
 import type { NextRequest } from 'next/server'
 import { getAuthSession } from '@/src/lib/auth-session'
+import { apiLimiter, consume } from '@/src/lib/rate-limit'
 import { UpdateWorkspaceSchema } from '@/src/schemas/workspace.schema'
 import { WorkspaceService } from '@/src/services/workspace.service'
 import {
@@ -14,6 +15,9 @@ export async function GET(_request: NextRequest, { params }: Params) {
   const auth = await getAuthSession()
   if (!auth.ok) return handleError(auth.error)
 
+  const limit = await consume(apiLimiter, `user:${auth.value.user.id}`)
+  if (!limit.ok) return handleError(limit.error)
+
   const { id } = await params
 
   const result = await WorkspaceService.getById(auth.value.user.id, id)
@@ -26,6 +30,9 @@ export async function GET(_request: NextRequest, { params }: Params) {
 export async function PATCH(request: NextRequest, { params }: Params) {
   const auth = await getAuthSession()
   if (!auth.ok) return handleError(auth.error)
+
+  const limit = await consume(apiLimiter, `user:${auth.value.user.id}`)
+  if (!limit.ok) return handleError(limit.error)
 
   const { id } = await params
 
@@ -54,6 +61,9 @@ export async function PATCH(request: NextRequest, { params }: Params) {
 export async function DELETE(_request: NextRequest, { params }: Params) {
   const auth = await getAuthSession()
   if (!auth.ok) return handleError(auth.error)
+
+  const limit = await consume(apiLimiter, `user:${auth.value.user.id}`)
+  if (!limit.ok) return handleError(limit.error)
 
   const { id } = await params
 

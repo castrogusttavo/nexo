@@ -1,7 +1,7 @@
 'use server'
 
 import { ExportData } from '@/components/emails/user/export-data'
-import { defaultFrom, resend } from '@/src/lib/mail/client'
+import { sendEmail } from '@/src/lib/mail/send'
 import type { ExportDataProps } from '@/types/mail'
 
 export async function sendExportDataEmail({
@@ -11,8 +11,7 @@ export async function sendExportDataEmail({
   expiresAt,
   fileSize,
 }: ExportDataProps) {
-  const { data, error } = await resend.emails.send({
-    from: defaultFrom,
+  return sendEmail({
     to: [email],
     subject: 'Seus dados estão prontos para download',
     react: ExportData({
@@ -23,10 +22,4 @@ export async function sendExportDataEmail({
       fileSize,
     }),
   })
-
-  if (error) {
-    throw new Error(error.message)
-  }
-
-  return data
 }

@@ -73,5 +73,16 @@ export function standardError(
 
 export function handleError(error: AppError): NextResponse<ErrorResponse> {
   const { status } = ERROR_CODES[error.code]
-  return errorResponse(error.code, status, error.message, error.details as ErrorDetails)
+  const details = error.details as ErrorDetails | undefined
+  const response = errorResponse(error.code, status, error.message, details)
+
+  if (error.code === 'RATE_LIMITED') {
+    const seconds = (error.details as { retryAfterSeconds?: number } | undefined)
+      ?.retryAfterSeconds
+    if (typeof seconds === 'number' && seconds > 0) {
+      response.headers.set('Retry-After', String(seconds))
+    }
+  }
+
+  return response
 }

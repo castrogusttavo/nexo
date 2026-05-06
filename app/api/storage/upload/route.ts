@@ -6,6 +6,8 @@ import {
   S3Client,
 } from '@aws-sdk/client-s3'
 import { MINIO_ENDPOINT, MINIO_PASSWORD, MINIO_USER } from '@/lib/env/server'
+import { apiLimiter } from '@/src/lib/rate-limit'
+import { getClientIp, withRateLimit } from '@/src/lib/rate-limit-helpers'
 import { standardError, successResponse } from '@/utils/http-response'
 
 const BUCKET = 'test-docs'
@@ -28,36 +30,39 @@ async function ensureBucket() {
   }
 }
 
-export async function POST(request: Request) {
-  try {
-    const { content, filename } = await request.json()
+export const POST = withRateLimit(
+  (request) => ({ limiter: apiLimiter, key: `ip:${getClientIp(request)}` }),
+  async (request: Request) => {
+    try {
+      const { content, filename } = await request.json()
 
-    if (!content || !filename) {
-      return standardError(
-        'VALIDATION_ERROR',
-        'content and filename are required',
+      if (!content || !filename) {
+        return standardError(
+          'VALIDATION_ERROR',
+          'content and filename are required',
+        )
+      }
+
+      await ensureBucket()
+
+      await s3.send(
+        new PutObjectCommand({
+          Bucket: BUCKET,
+          Key: filename,
+          Body: content,
+          ContentType: 'text/markdown',
+        }),
       )
+
+      const response = await s3.send(
+        new GetObjectCommand({ Bucket: BUCKET, Key: filename }),
+      )
+      const saved = await response.Body?.transformToString()
+
+      return successResponse({ filename, content: saved })
+    } catch (err) {
+      console.error('Storage error:', err)
+      return standardError('INTERNAL_SERVER_ERROR', 'Failed to upload file')
     }
-
-    await ensureBucket()
-
-    await s3.send(
-      new PutObjectCommand({
-        Bucket: BUCKET,
-        Key: filename,
-        Body: content,
-        ContentType: 'text/markdown',
-      }),
-    )
-
-    const response = await s3.send(
-      new GetObjectCommand({ Bucket: BUCKET, Key: filename }),
-    )
-    const saved = await response.Body?.transformToString()
-
-    return successResponse({ filename, content: saved })
-  } catch (err) {
-    console.error('Storage error:', err)
-    return standardError('INTERNAL_SERVER_ERROR', 'Failed to upload file')
-  }
-}
+  },
+)

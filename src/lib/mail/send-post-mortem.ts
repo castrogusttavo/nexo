@@ -2,7 +2,7 @@
 
 import { PostMortem } from '@/components/emails/post-mortem'
 import { NEXT_PUBLIC_URL } from '@/lib/env/env'
-import { defaultFrom, resend } from '@/src/lib/mail/client'
+import { sendEmail } from '@/src/lib/mail/send'
 import type { PostMortemProps } from '@/types/mail'
 
 export async function sendPostMortemEmail({
@@ -12,8 +12,7 @@ export async function sendPostMortemEmail({
   incidentId,
   resume,
 }: PostMortemProps) {
-  const { data, error } = await resend.emails.send({
-    from: defaultFrom,
+  return sendEmail({
     to: [email],
     subject: `Nexo | ${incidentTitle}`,
     react: PostMortem({
@@ -25,10 +24,4 @@ export async function sendPostMortemEmail({
       redirectUrl: `${NEXT_PUBLIC_URL}/incidents`,
     }),
   })
-
-  if (error) {
-    throw new Error(error.message)
-  }
-
-  return data
 }

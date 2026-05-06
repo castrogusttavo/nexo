@@ -98,6 +98,9 @@ importers:
       next-themes:
         specifier: ^0.4.6
         version: 0.4.6(react-dom@19.2.5(react@19.2.5))(react@19.2.5)
+      rate-limiter-flexible:
+        specifier: ^11.0.2
+        version: 11.0.2
       react:
         specifier: 19.2.5
         version: 19.2.5
@@ -4908,6 +4911,9 @@ packages:
   range-parser@1.2.1:
     resolution: {integrity: sha512-Hrgsx+orqoygnmhFbKaHE6c296J+HTAQXoxEF6gNupROmmGJRoyzfG3ccAveqCBrwr/2yxQ5BVd/GTl5agOwSg==}
     engines: {node: '>= 0.6'}
+
+  rate-limiter-flexible@11.0.2:
+    resolution: {integrity: sha512-KF/g/GrzzL8bm5K9ZZ8MM0ascA+8dUwv5xA6+/k/3TpT/5cfz3ab36sRUTZsWMd0zmkOOZBu5oXURsRvztjBhw==}
 
   raw-body@3.0.2:
     resolution: {integrity: sha512-K5zQjDllxWkf7Z5xJdV0/B0WTNqx6vxG70zJE4N0kBs4LovmEYWJzQGxC9bS9RAKu3bgM40lrd5zoLJ12MQ5BA==}
@@ -10681,6 +10687,8 @@ snapshots:
   queue-microtask@1.2.3: {}
 
   range-parser@1.2.1: {}
+
+  rate-limiter-flexible@11.0.2: {}
 
   raw-body@3.0.2:
     dependencies:
