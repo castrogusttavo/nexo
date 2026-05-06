@@ -48,7 +48,7 @@ export function ContextPrimaryAction({
   ...props
 }: ComponentProps<typeof Button>) {
   return (
-    <Button {...props} variant='secondary' className='w-full justify-start'>
+    <Button {...props} variant='outline' className='w-full justify-start'>
       {children}
     </Button>
   )
@@ -100,20 +100,17 @@ export function NavItem({
   const isActive = pathname === href
 
   return (
-    <Button
-      variant='ghost'
-      size='default'
-      {...props}
-      render={<Link href={href} aria-current={isActive ? 'page' : undefined} />}
-      className={cn(
-        'w-full justify-start text-muted-foreground',
-        isActive && 'bg-secondary text-secondary-foreground',
-        className,
-      )}
-    >
-      <NexoIcon icon={icon} strokeWidth={2} />
-      {children}
-    </Button>
+    <Link href={href} className='block'>
+      <Button
+        variant={isActive ? 'secondary' : 'ghost'}
+        size='default'
+        {...props}
+        className={cn('w-full justify-start', className)}
+      >
+        <NexoIcon icon={icon} strokeWidth={2} />
+        {children}
+      </Button>
+    </Link>
   )
 }
 
