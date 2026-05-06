@@ -51,7 +51,6 @@ describe('UserRepository', () => {
       const user = expectOk(result)
       expect(user.name).toBe('New User')
       expect(user.email).toBe('new@example.com')
-      expect(user.role).toBe('MEMBER')
       expect(user.id).toBeDefined()
     })
 

@@ -1,18 +1,44 @@
 import { describe, expect, it } from 'vitest'
 import { createFakeUser } from '@/src/__tests__/factories/user.factory'
 import { toUserDTO } from '@/src/mappers/user.mapper'
+import type { UserWithMemberships } from '@/src/repositories/user.repository'
+
+function withMemberships(
+  user: ReturnType<typeof createFakeUser>,
+  memberships: UserWithMemberships['memberships'] = [],
+): UserWithMemberships {
+  return { ...user, memberships }
+}
 
 describe('toUserDTO()', () => {
   it('should map all fields correctly', () => {
-    const user = createFakeUser({
-      id: 'user-1',
-      name: 'John Doe',
-      email: 'john@example.com',
-      emailVerified: true,
-      image: 'https://example.com/avatar.png',
-      role: 'ADMIN',
-      workspaceId: 'ws-1',
-    })
+    const user = withMemberships(
+      createFakeUser({
+        id: 'user-1',
+        name: 'John Doe',
+        email: 'john@example.com',
+        emailVerified: true,
+        image: 'https://example.com/avatar.png',
+      }),
+      [
+        {
+          id: 'mem-1',
+          userId: 'user-1',
+          workspaceId: 'ws-1',
+          role: 'ADMIN',
+          createdAt: new Date(),
+          updatedAt: new Date(),
+          workspace: {
+            id: 'ws-1',
+            name: 'Acme',
+            slug: 'acme',
+            activePlan: 'BASIC',
+            createdAt: new Date(),
+            updatedAt: new Date(),
+          },
+        },
+      ],
+    )
 
     const dto = toUserDTO(user)
 
@@ -22,15 +48,21 @@ describe('toUserDTO()', () => {
       email: 'john@example.com',
       emailVerified: true,
       image: 'https://example.com/avatar.png',
-      role: 'ADMIN',
-      workspaceId: 'ws-1',
       createdAt: user.createdAt.toISOString(),
+      memberships: [
+        {
+          workspaceId: 'ws-1',
+          slug: 'acme',
+          name: 'Acme',
+          role: 'ADMIN',
+        },
+      ],
     })
   })
 
   it('should convert createdAt Date to ISO string', () => {
     const date = new Date('2025-01-15T10:30:00.000Z')
-    const user = createFakeUser({ createdAt: date })
+    const user = withMemberships(createFakeUser({ createdAt: date }))
 
     const dto = toUserDTO(user)
 
@@ -38,23 +70,23 @@ describe('toUserDTO()', () => {
   })
 
   it('should handle null image', () => {
-    const user = createFakeUser({ image: null })
+    const user = withMemberships(createFakeUser({ image: null }))
 
     const dto = toUserDTO(user)
 
     expect(dto.image).toBeNull()
   })
 
-  it('should handle null workspaceId', () => {
-    const user = createFakeUser({ workspaceId: null })
+  it('should default to empty memberships', () => {
+    const user = withMemberships(createFakeUser())
 
     const dto = toUserDTO(user)
 
-    expect(dto.workspaceId).toBeNull()
+    expect(dto.memberships).toEqual([])
   })
 
   it('should exclude updatedAt from the output', () => {
-    const user = createFakeUser()
+    const user = withMemberships(createFakeUser())
 
     const dto = toUserDTO(user)
 
@@ -62,7 +94,7 @@ describe('toUserDTO()', () => {
   })
 
   it('should exclude password-related fields', () => {
-    const user = createFakeUser()
+    const user = withMemberships(createFakeUser())
 
     const dto = toUserDTO(user)
 
