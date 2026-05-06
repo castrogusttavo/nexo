@@ -17,8 +17,16 @@ export function GlobalSidebarNavigation({ slug }: { slug: string }) {
   const base = `/${slug}`
   const pathname = usePathname()
 
+  const sectionRoots = [`${base}/wiki`, `${base}/ai`, `${base}/settings`]
+
   const isActive = (href: string) =>
-    href === base ? pathname === base : pathname.startsWith(href)
+    href === base
+      ? pathname === base ||
+        (pathname.startsWith(`${base}/`) &&
+          !sectionRoots.some(
+            (root) => pathname === root || pathname.startsWith(`${root}/`),
+          ))
+      : pathname === href || pathname.startsWith(`${href}/`)
 
   return (
     <div className=' h-screen px-2 py-3'>
