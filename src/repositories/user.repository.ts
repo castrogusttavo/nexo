@@ -1,12 +1,40 @@
-import type { Role, User } from '@prisma/client'
+import type { Membership, User, Workspace } from '@prisma/client'
 import { conflict, databaseError, notFound } from '@/src/errors'
 import { prisma } from '@/src/lib/prisma'
 import { err, ok, type Result } from '@/src/lib/result'
+
+export type UserWithMemberships = User & {
+  memberships: (Membership & { workspace: Workspace })[]
+}
 
 export const UserRepository = {
   async findById(id: string): Promise<Result<User>> {
     try {
       const user = await prisma.user.findUnique({ where: { id } })
+
+      if (!user) {
+        return err(notFound('User'))
+      }
+
+      return ok(user)
+    } catch {
+      return err(databaseError('Failed to find user by id'))
+    }
+  },
+
+  async findByIdWithMemberships(
+    id: string,
+  ): Promise<Result<UserWithMemberships>> {
+    try {
+      const user = await prisma.user.findUnique({
+        where: { id },
+        include: {
+          memberships: {
+            include: { workspace: true },
+            orderBy: { createdAt: 'asc' },
+          },
+        },
+      })
 
       if (!user) {
         return err(notFound('User'))
@@ -30,8 +58,6 @@ export const UserRepository = {
   async create(data: {
     name: string
     email: string
-    role?: Role
-    workspaceId?: string
   }): Promise<Result<User>> {
     try {
       const user = await prisma.user.create({ data })
