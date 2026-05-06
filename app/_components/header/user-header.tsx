@@ -9,17 +9,17 @@ import { UserDropdownHelper } from '../user/user-dropdown-helper'
 import { UserDropdownProfile } from '../user/user-dropdown-profile'
 import { WorkSpaceDropdown } from '../workspace/workspace-dropdown'
 
-export function UserHeader() {
+export function UserHeader({ slug }: { slug: string }) {
   return (
     <div className='w-full flex justify-between items-center'>
-      <WorkSpaceDropdown />
+      <WorkSpaceDropdown currentSlug={slug} />
       <div className='flex items-center gap-1'>
-        <Link href='/get-started'>
+        <Link href={`/${slug}/get-started`}>
           <Button size='xs' variant='outline'>
             Comece agora
           </Button>
         </Link>
-        <ShortCutButton href='/inbox'>
+        <ShortCutButton href={`/${slug}/inbox`}>
           <NexoIcon icon={InboxIcon} strokeWidth={2} size={20} />
         </ShortCutButton>
         <UserDropdownHelper />

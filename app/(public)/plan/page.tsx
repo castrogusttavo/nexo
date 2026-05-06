@@ -11,7 +11,10 @@ export default function PlanPage() {
       .then((res) => res.json())
       .then((result) => {
         if (result.success) {
-          setWorkspaceId(result.data.workspaceId)
+          const memberships = result.data.memberships ?? []
+          if (memberships.length > 0) {
+            setWorkspaceId(memberships[0].workspaceId)
+          }
         }
       })
   }, [])
