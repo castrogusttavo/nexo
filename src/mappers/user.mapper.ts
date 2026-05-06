@@ -1,15 +1,19 @@
-import type { User } from '@prisma/client'
+import type { UserWithMemberships } from '@/src/repositories/user.repository'
 import type { UserDTO } from '@/types/user'
 
-export function toUserDTO(user: User): UserDTO {
+export function toUserDTO(user: UserWithMemberships): UserDTO {
   return {
     id: user.id,
     name: user.name,
     email: user.email,
     emailVerified: user.emailVerified,
     image: user.image,
-    role: user.role,
-    workspaceId: user.workspaceId,
     createdAt: user.createdAt.toISOString(),
+    memberships: user.memberships.map((m) => ({
+      workspaceId: m.workspaceId,
+      slug: m.workspace.slug,
+      name: m.workspace.name,
+      role: m.role,
+    })),
   }
 }

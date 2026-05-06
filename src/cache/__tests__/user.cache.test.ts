@@ -44,8 +44,14 @@ describe('UserCache', () => {
         email: 'test@example.com',
         emailVerified: true,
         image: 'https://example.com/photo.jpg',
-        role: 'ADMIN',
-        workspaceId: 'workspace-1',
+        memberships: [
+          {
+            workspaceId: 'workspace-1',
+            slug: 'workspace',
+            name: 'Workspace',
+            role: 'ADMIN',
+          },
+        ],
       })
 
       await UserCache.set('cache-user-2', dto)

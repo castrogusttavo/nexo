@@ -11,7 +11,7 @@ export const UserService = {
     const cached = await UserCache.get(actorId)
     if (cached) return ok(cached)
 
-    const result = await UserRepository.findById(actorId)
+    const result = await UserRepository.findByIdWithMemberships(actorId)
     if (!result.ok) return result
 
     const userDTO = toUserDTO(result.value)
@@ -33,11 +33,16 @@ export const UserService = {
       }
     }
 
-    const result = await UserRepository.update(actorId, dto)
+    const updateResult = await UserRepository.update(actorId, dto)
+    if (!updateResult.ok) return updateResult
+
+    await UserCache.invalidate(actorId)
+
+    const result = await UserRepository.findByIdWithMemberships(actorId)
     if (!result.ok) return result
 
     const userDTO = toUserDTO(result.value)
-    await UserCache.invalidate(actorId)
+    await UserCache.set(actorId, userDTO)
 
     return ok(userDTO)
   },
