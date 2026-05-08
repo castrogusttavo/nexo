@@ -1,8 +1,9 @@
-import { createClient, createSentinel } from 'redis'
+import { readFileSync } from 'node:fs'
+import { createClient } from 'redis'
+import { logger } from '@/lib/axiom/logger'
 import {
-  REDIS_PASSWORD,
-  REDIS_SENTINEL_NAME,
-  REDIS_SENTINEL_PASSWORD,
+  REDIS_TLS_CA_PATH,
+  REDIS_TLS_ENABLED,
   REDIS_URL,
 } from '@/lib/env/server'
 
@@ -16,44 +17,24 @@ const SOCKET_DEFAULTS = {
   },
 }
 
-function parseSentinelHosts(raw: string) {
-  return raw.split(',').map((entry) => {
-    const [host, port] = entry.trim().split(':')
-    return { host, port: Number(port) || 26379 }
-  })
+function buildSocketOptions() {
+  if (!REDIS_TLS_ENABLED) return SOCKET_DEFAULTS
+  const ca = REDIS_TLS_CA_PATH ? readFileSync(REDIS_TLS_CA_PATH) : undefined
+  return { ...SOCKET_DEFAULTS, tls: true as const, ca }
 }
 
 function createRedisClient(): RedisClient {
-  const sentinelHosts = process.env.REDIS_SENTINEL_HOSTS
-
-  if (sentinelHosts) {
-    const sentinel = createSentinel({
-      sentinelRootNodes: parseSentinelHosts(sentinelHosts),
-      name: REDIS_SENTINEL_NAME ?? '',
-      nodeClientOptions: {
-        password: REDIS_PASSWORD,
-        socket: SOCKET_DEFAULTS,
-      },
-      sentinelClientOptions: {
-        password: REDIS_SENTINEL_PASSWORD,
-        socket: SOCKET_DEFAULTS,
-      },
-    })
-
-    sentinel.on('error', (err: Error) => {
-      console.error('[Redis Sentinel] Connection error:', err)
-    })
-
-    return sentinel as unknown as RedisClient
-  }
-
   const client = createClient({
     url: REDIS_URL,
-    socket: SOCKET_DEFAULTS,
+    socket: buildSocketOptions(),
   })
 
   client.on('error', (err: Error) => {
-    console.error('[Redis] Connection error:', err)
+    logger.error('redis.connection_error', {
+      component: 'Redis',
+      message: err.message,
+      stack: err.stack,
+    })
   })
 
   return client

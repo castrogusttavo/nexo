@@ -38,6 +38,9 @@ secrets/*.env
 !secrets/*.enc.env
 *.key
 
+# redis TLS certs (generated on server)
+redis-tls/
+
 # vercel
 .vercel
 

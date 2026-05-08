@@ -1,7 +1,7 @@
 creation_rules:
   - path_regex: secrets/.*\.env$
     age: >-
-      age1grsaequhguy8j5mtf5ml5y9am5yv04tfak4pqp08mnnt2akq2v3qdmn28n
+      age16gwfmnsyt2nze0cgjun2zl6rn2m5cj53kmyk4ctzgm90e8q53aeqqzpxme
     # Replace the public key above with your actual age public key.
     # Generate a key pair: age-keygen -o nexo-secrets.key
     # The public key is printed to stdout during generation.

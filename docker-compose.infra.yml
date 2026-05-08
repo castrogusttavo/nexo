@@ -26,12 +26,20 @@ services:
     environment:
       REDIS_REPLICATION_MODE: master
       REDIS_PASSWORD: ${REDIS_PASSWORD}
+      REDIS_TLS_ENABLED: "yes"
+      REDIS_TLS_PORT_NUMBER: 6379
+      REDIS_PORT_NUMBER: 0
+      REDIS_TLS_CERT_FILE: /opt/bitnami/redis/certs/redis.crt
+      REDIS_TLS_KEY_FILE: /opt/bitnami/redis/certs/redis.key
+      REDIS_TLS_CA_FILE: /opt/bitnami/redis/certs/ca.crt
+      REDIS_TLS_AUTH_CLIENTS: "no"
     ports:
       - "6379:6379"
     volumes:
       - redis-master-data:/bitnami/redis/data
+      - ./redis-tls:/opt/bitnami/redis/certs:ro
     healthcheck:
-      test: ["CMD", "redis-cli", "-a", "${REDIS_PASSWORD}", "ping"]
+      test: ["CMD-SHELL", "redis-cli --tls --cacert /opt/bitnami/redis/certs/ca.crt -a $${REDIS_PASSWORD} ping"]
       interval: 5s
       timeout: 5s
       retries: 5
@@ -82,7 +90,6 @@ services:
 volumes:
   pgdata:
   redis-master-data:
-  redis-replica-data:
   rabbitmqdata:
   miniodata:
 

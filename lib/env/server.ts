@@ -8,8 +8,8 @@ const serverEnv = {
   DATABASE_URL: process.env.DATABASE_URL,
   REDIS_URL: process.env.REDIS_URL,
   REDIS_PASSWORD: process.env.REDIS_PASSWORD,
-  REDIS_SENTINEL_NAME: process.env.REDIS_SENTINEL_NAME,
-  REDIS_SENTINEL_PASSWORD: process.env.REDIS_SENTINEL_PASSWORD,
+  REDIS_TLS_ENABLED: process.env.REDIS_TLS_ENABLED,
+  REDIS_TLS_CA_PATH: process.env.REDIS_TLS_CA_PATH,
   RABBITMQ_USER: process.env.RABBITMQ_USER,
   RABBITMQ_PASSWORD: process.env.RABBITMQ_PASSWORD,
   MINIO_ENDPOINT: process.env.MINIO_ENDPOINT,
@@ -33,10 +33,17 @@ const serverEnvSchema = z.object({
   POSTGRES_PASSWORD: z.string().min(8).max(128),
   POSTGRES_DB: z.string().min(1).max(63),
   DATABASE_URL: z.url().startsWith('postgresql://'),
-  REDIS_URL: z.url().startsWith('redis://').optional(),
+  REDIS_URL: z
+    .url()
+    .refine((v) => v.startsWith('redis://') || v.startsWith('rediss://'), {
+      message: 'REDIS_URL must start with redis:// or rediss://',
+    }),
   REDIS_PASSWORD: z.string().min(8).max(128),
-  REDIS_SENTINEL_NAME: z.string().min(1).max(63).optional(),
-  REDIS_SENTINEL_PASSWORD: z.string().min(8).max(128).optional(),
+  REDIS_TLS_ENABLED: z
+    .string()
+    .optional()
+    .transform((v) => v === 'true'),
+  REDIS_TLS_CA_PATH: z.string().min(1).optional(),
   RABBITMQ_USER: z.string().min(2).max(63),
   RABBITMQ_PASSWORD: z.string().min(8).max(128),
   MINIO_ENDPOINT: z.url().startsWith('http'),
@@ -57,7 +64,7 @@ const serverEnvSchema = z.object({
 
 const validatedServerEnv =
   process.env.NODE_ENV === 'test' || process.env.SKIP_ENV_VALIDATION === 'true'
-    ? (serverEnv as z.infer<typeof serverEnvSchema>)
+    ? (serverEnv as unknown as z.infer<typeof serverEnvSchema>)
     : serverEnvSchema.parse(serverEnv)
 
 export const {
@@ -67,8 +74,8 @@ export const {
   DATABASE_URL,
   REDIS_URL,
   REDIS_PASSWORD,
-  REDIS_SENTINEL_NAME,
-  REDIS_SENTINEL_PASSWORD,
+  REDIS_TLS_ENABLED,
+  REDIS_TLS_CA_PATH,
   RABBITMQ_USER,
   RABBITMQ_PASSWORD,
   MINIO_ENDPOINT,
