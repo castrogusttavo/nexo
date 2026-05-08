@@ -1,4 +1,5 @@
 import type { NextRequest } from 'next/server'
+import { withAxiom } from '@/lib/axiom/server'
 import { getAuthSession } from '@/src/lib/auth-session'
 import { UpdateUserSchema } from '@/src/schemas/user.schema'
 import { UserService } from '@/src/services/user.service'
@@ -8,7 +9,7 @@ import {
   successResponse,
 } from '@/utils/http-response'
 
-export async function GET() {
+export const GET = withAxiom(async () => {
   const auth = await getAuthSession()
   if (!auth.ok) return handleError(auth.error)
 
@@ -17,9 +18,9 @@ export async function GET() {
   if (!result.ok) return handleError(result.error)
 
   return successResponse(result.value)
-}
+})
 
-export async function PATCH(request: NextRequest) {
+export const PATCH = withAxiom(async (request: NextRequest) => {
   const auth = await getAuthSession()
   if (!auth.ok) return handleError(auth.error)
 
@@ -42,4 +43,4 @@ export async function PATCH(request: NextRequest) {
   if (!result.ok) return handleError(result.error)
 
   return successResponse(result.value)
-}
+})

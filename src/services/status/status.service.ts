@@ -4,6 +4,7 @@ import type {
   ComponentStatus,
   HealthCheck,
 } from '@prisma/client'
+import { logger } from '@/lib/axiom/logger'
 import { StatusCache } from '@/src/cache/status.cache'
 import { databaseError, notFound } from '@/src/errors'
 import { prisma } from '@/src/lib/prisma'
@@ -311,24 +312,32 @@ export const StatusService = {
       if (!probe) continue
       const evalResult = await evaluateIncidentFor(key, probe)
       if (!evalResult.ok) {
-        console.error(
-          '[StatusService] incident eval failed for',
-          key,
-          evalResult.error.message,
-        )
+        logger.error('status.incident_eval_failed', {
+          component: 'StatusService',
+          componentKey: key,
+          errorCode: evalResult.error.code,
+          message: evalResult.error.message,
+        })
       }
     }
 
     const cutoff = addDays(today, -RAW_RETENTION_DAYS)
     const pruneResult = await StatusRepository.pruneOldChecks(cutoff)
     if (!pruneResult.ok) {
-      console.error('[StatusService] prune failed:', pruneResult.error.message)
+      logger.error('status.prune_failed', {
+        component: 'StatusService',
+        errorCode: pruneResult.error.code,
+        message: pruneResult.error.message,
+      })
     }
 
     try {
       await StatusCache.invalidate()
     } catch (e) {
-      console.error('[StatusService] cache invalidate failed:', e)
+      logger.error('status.cache_invalidate_failed', {
+        component: 'StatusService',
+        message: e instanceof Error ? e.message : String(e),
+      })
     }
 
     return ok(undefined)
@@ -339,7 +348,10 @@ export const StatusService = {
       const cached = await StatusCache.get()
       if (cached) return ok(cached)
     } catch (e) {
-      console.error('[StatusService] cache read failed:', e)
+      logger.error('status.cache_read_failed', {
+        component: 'StatusService',
+        message: e instanceof Error ? e.message : String(e),
+      })
     }
 
     const result = await buildSnapshot()
@@ -348,7 +360,10 @@ export const StatusService = {
     try {
       await StatusCache.set(result.value)
     } catch (e) {
-      console.error('[StatusService] cache write failed:', e)
+      logger.error('status.cache_write_failed', {
+        component: 'StatusService',
+        message: e instanceof Error ? e.message : String(e),
+      })
     }
 
     return result

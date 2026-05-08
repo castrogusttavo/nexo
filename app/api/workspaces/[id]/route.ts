@@ -1,4 +1,5 @@
 import type { NextRequest } from 'next/server'
+import { withAxiom } from '@/lib/axiom/server'
 import { getAuthSession } from '@/src/lib/auth-session'
 import { apiLimiter, consume } from '@/src/lib/rate-limit'
 import { UpdateWorkspaceSchema } from '@/src/schemas/workspace.schema'
@@ -11,30 +12,30 @@ import {
 
 type Params = { params: Promise<{ id: string }> }
 
-export async function GET(_request: NextRequest, { params }: Params) {
+export const GET = withAxiom(async (_request: NextRequest, ctx: Params) => {
   const auth = await getAuthSession()
   if (!auth.ok) return handleError(auth.error)
 
   const limit = await consume(apiLimiter, `user:${auth.value.user.id}`)
   if (!limit.ok) return handleError(limit.error)
 
-  const { id } = await params
+  const { id } = await ctx.params
 
   const result = await WorkspaceService.getById(auth.value.user.id, id)
 
   if (!result.ok) return handleError(result.error)
 
   return successResponse(result.value)
-}
+})
 
-export async function PATCH(request: NextRequest, { params }: Params) {
+export const PATCH = withAxiom(async (request: NextRequest, ctx: Params) => {
   const auth = await getAuthSession()
   if (!auth.ok) return handleError(auth.error)
 
   const limit = await consume(apiLimiter, `user:${auth.value.user.id}`)
   if (!limit.ok) return handleError(limit.error)
 
-  const { id } = await params
+  const { id } = await ctx.params
 
   const body = await request.json()
   const parsed = UpdateWorkspaceSchema.safeParse(body)
@@ -56,20 +57,20 @@ export async function PATCH(request: NextRequest, { params }: Params) {
   if (!result.ok) return handleError(result.error)
 
   return successResponse(result.value)
-}
+})
 
-export async function DELETE(_request: NextRequest, { params }: Params) {
+export const DELETE = withAxiom(async (_request: NextRequest, ctx: Params) => {
   const auth = await getAuthSession()
   if (!auth.ok) return handleError(auth.error)
 
   const limit = await consume(apiLimiter, `user:${auth.value.user.id}`)
   if (!limit.ok) return handleError(limit.error)
 
-  const { id } = await params
+  const { id } = await ctx.params
 
   const result = await WorkspaceService.delete(auth.value.user.id, id)
 
   if (!result.ok) return handleError(result.error)
 
   return successResponse(null, 200)
-}
+})

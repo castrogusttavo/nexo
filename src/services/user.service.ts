@@ -1,3 +1,4 @@
+import { auditMutation } from '@/lib/axiom/audit'
 import { UserCache } from '@/src/cache/user.cache'
 import { conflict } from '@/src/errors'
 import { err, ok, type Result } from '@/src/lib/result'
@@ -29,12 +30,32 @@ export const UserService = {
       if (!existingResult.ok) return existingResult
 
       if (existingResult.value && existingResult.value.id !== actorId) {
+        auditMutation({
+          entity: 'user',
+          action: 'update',
+          actorId,
+          targetId: actorId,
+          outcome: 'failure',
+          reason: 'email_conflict',
+          meta: { fields: Object.keys(dto) },
+        })
         return err(conflict('E-mail já está em uso'))
       }
     }
 
     const updateResult = await UserRepository.update(actorId, dto)
-    if (!updateResult.ok) return updateResult
+    if (!updateResult.ok) {
+      auditMutation({
+        entity: 'user',
+        action: 'update',
+        actorId,
+        targetId: actorId,
+        outcome: 'failure',
+        reason: updateResult.error.code,
+        meta: { fields: Object.keys(dto) },
+      })
+      return updateResult
+    }
 
     await UserCache.invalidate(actorId)
 
@@ -43,6 +64,14 @@ export const UserService = {
 
     const userDTO = toUserDTO(result.value)
     await UserCache.set(actorId, userDTO)
+
+    auditMutation({
+      entity: 'user',
+      action: 'update',
+      actorId,
+      targetId: actorId,
+      meta: { fields: Object.keys(dto) },
+    })
 
     return ok(userDTO)
   },

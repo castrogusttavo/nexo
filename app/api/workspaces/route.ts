@@ -1,4 +1,5 @@
 import type { NextRequest } from 'next/server'
+import { withAxiom } from '@/lib/axiom/server'
 import { getAuthSession } from '@/src/lib/auth-session'
 import { apiLimiter, consume } from '@/src/lib/rate-limit'
 import { CreateWorkspaceSchema } from '@/src/schemas/workspace.schema'
@@ -9,7 +10,7 @@ import {
   successResponse,
 } from '@/utils/http-response'
 
-export async function POST(request: NextRequest) {
+export const POST = withAxiom(async (request: NextRequest) => {
   const auth = await getAuthSession()
   if (!auth.ok) return handleError(auth.error)
 
@@ -32,4 +33,4 @@ export async function POST(request: NextRequest) {
   if (!result.ok) return handleError(result.error)
 
   return successResponse(result.value, 201)
-}
+})

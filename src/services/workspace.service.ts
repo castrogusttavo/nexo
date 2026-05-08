@@ -1,3 +1,4 @@
+import { auditMutation } from '@/lib/axiom/audit'
 import { UserCache } from '@/src/cache/user.cache'
 import { WorkspaceCache } from '@/src/cache/workspace.cache'
 import { forbidden } from '@/src/errors'
@@ -40,9 +41,25 @@ export const WorkspaceService = {
     dto: CreateWorkspaceDTO,
   ): Promise<Result<WorkspaceDTO>> {
     const result = await WorkspaceRepository.createWithOwner(dto, actorId)
-    if (!result.ok) return result
+    if (!result.ok) {
+      auditMutation({
+        entity: 'workspace',
+        action: 'create',
+        actorId,
+        outcome: 'failure',
+        reason: result.error.code,
+      })
+      return result
+    }
 
     await UserCache.invalidate(actorId)
+
+    auditMutation({
+      entity: 'workspace',
+      action: 'create',
+      actorId,
+      targetId: result.value.id,
+    })
 
     return ok(toWorkspaceDTO(result.value))
   },
@@ -57,18 +74,55 @@ export const WorkspaceService = {
       workspaceId,
     )
     if (!membership.ok) return membership
-    if (!membership.value) return err(forbidden())
+    if (!membership.value) {
+      auditMutation({
+        entity: 'workspace',
+        action: 'update',
+        actorId,
+        targetId: workspaceId,
+        outcome: 'failure',
+        reason: 'not_a_member',
+      })
+      return err(forbidden())
+    }
 
     if (!['OWNER', 'ADMIN'].includes(membership.value.role)) {
+      auditMutation({
+        entity: 'workspace',
+        action: 'update',
+        actorId,
+        targetId: workspaceId,
+        outcome: 'failure',
+        reason: 'insufficient_role',
+        meta: { role: membership.value.role },
+      })
       return err(forbidden('Apenas OWNER ou ADMIN podem editar o workspace'))
     }
 
     const result = await WorkspaceRepository.update(workspaceId, dto)
-    if (!result.ok) return result
+    if (!result.ok) {
+      auditMutation({
+        entity: 'workspace',
+        action: 'update',
+        actorId,
+        targetId: workspaceId,
+        outcome: 'failure',
+        reason: result.error.code,
+      })
+      return result
+    }
 
     const workspaceDTO = toWorkspaceDTO(result.value)
     await WorkspaceCache.invalidate(workspaceId)
     await UserCache.invalidate(actorId)
+
+    auditMutation({
+      entity: 'workspace',
+      action: 'update',
+      actorId,
+      targetId: workspaceId,
+      meta: { fields: Object.keys(dto) },
+    })
 
     return ok(workspaceDTO)
   },
@@ -79,17 +133,53 @@ export const WorkspaceService = {
       workspaceId,
     )
     if (!membership.ok) return membership
-    if (!membership.value) return err(forbidden())
+    if (!membership.value) {
+      auditMutation({
+        entity: 'workspace',
+        action: 'delete',
+        actorId,
+        targetId: workspaceId,
+        outcome: 'failure',
+        reason: 'not_a_member',
+      })
+      return err(forbidden())
+    }
 
     if (membership.value.role !== 'OWNER') {
+      auditMutation({
+        entity: 'workspace',
+        action: 'delete',
+        actorId,
+        targetId: workspaceId,
+        outcome: 'failure',
+        reason: 'insufficient_role',
+        meta: { role: membership.value.role },
+      })
       return err(forbidden('Apenas o OWNER pode deletar o workspace'))
     }
 
     const result = await WorkspaceRepository.delete(workspaceId)
-    if (!result.ok) return result
+    if (!result.ok) {
+      auditMutation({
+        entity: 'workspace',
+        action: 'delete',
+        actorId,
+        targetId: workspaceId,
+        outcome: 'failure',
+        reason: result.error.code,
+      })
+      return result
+    }
 
     await WorkspaceCache.invalidate(workspaceId)
     await UserCache.invalidate(actorId)
+
+    auditMutation({
+      entity: 'workspace',
+      action: 'delete',
+      actorId,
+      targetId: workspaceId,
+    })
 
     return ok(undefined)
   },

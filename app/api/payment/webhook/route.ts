@@ -1,4 +1,5 @@
 import type { NextRequest } from 'next/server'
+import { withAxiom } from '@/lib/axiom/server'
 import { ABACATE_PAY_WEBHOOK_SECRET } from '@/lib/env/server'
 import { SubscriptionService } from '@/src/services/subscription.service'
 
@@ -12,7 +13,7 @@ interface WebhookPayload {
   }
 }
 
-export async function POST(request: NextRequest) {
+export const POST = withAxiom(async (request: NextRequest) => {
   const secret = request.headers.get('x-webhook-secret')
 
   if (secret !== ABACATE_PAY_WEBHOOK_SECRET) {
@@ -34,4 +35,4 @@ export async function POST(request: NextRequest) {
   }
 
   return Response.json({ received: true }, { status: 200 })
-}
+})

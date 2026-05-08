@@ -3,6 +3,7 @@ import { hash, verify } from 'argon2'
 import { betterAuth } from 'better-auth'
 import { prismaAdapter } from 'better-auth/adapters/prisma'
 import { emailOTP, twoFactor } from 'better-auth/plugins'
+import { auditAuth } from '@/lib/axiom/audit'
 import {
   BETTER_AUTH_SECRET,
   BETTER_AUTH_URL,
@@ -37,6 +38,7 @@ export const auth = betterAuth({
     sendOnSignUp: true,
     autoSignInAfterVerification: true,
     afterEmailVerification: async (user) => {
+      auditAuth({ event: 'user.email_verified', userId: user.id })
       try {
         await sendWelcomeEmail({
           email: user.email,
@@ -44,7 +46,12 @@ export const auth = betterAuth({
           trialDays: '14',
         })
       } catch (error) {
-        console.error('[Auth] Failed to send welcome email:', error)
+        auditAuth({
+          event: 'auth.welcome_email.send_failed',
+          userId: user.id,
+          outcome: 'failure',
+          reason: error instanceof Error ? error.message : String(error),
+        })
       }
     },
   },
@@ -71,6 +78,7 @@ export const auth = betterAuth({
     user: {
       create: {
         after: async (user) => {
+          auditAuth({ event: 'user.created', userId: user.id })
           if (!user.emailVerified) return
           try {
             await sendWelcomeEmail({
@@ -79,8 +87,24 @@ export const auth = betterAuth({
               trialDays: '14',
             })
           } catch (error) {
-            console.error('[Auth] Failed to send welcome email:', error)
+            auditAuth({
+              event: 'auth.welcome_email.send_failed',
+              userId: user.id,
+              outcome: 'failure',
+              reason: error instanceof Error ? error.message : String(error),
+            })
           }
+        },
+      },
+    },
+    session: {
+      create: {
+        after: async (session) => {
+          auditAuth({
+            event: 'session.created',
+            userId: session.userId,
+            meta: { sessionId: session.id },
+          })
         },
       },
     },
@@ -90,13 +114,22 @@ export const auth = betterAuth({
       overrideDefaultEmailVerification: true,
       async sendVerificationOTP({ email, otp, type }) {
         if (type !== 'email-verification' && type !== 'sign-in') return
+        auditAuth({
+          event: 'auth.email_otp.requested',
+          meta: { otpType: type },
+        })
         try {
           await sendVerifyEmailWithOtp({
             email,
             validationCode: otp,
           })
         } catch (error) {
-          console.error('[Auth] Failed to send verification OTP:', error)
+          auditAuth({
+            event: 'auth.email_otp.send_failed',
+            outcome: 'failure',
+            reason: error instanceof Error ? error.message : String(error),
+            meta: { otpType: type },
+          })
         }
       },
     }),
@@ -111,7 +144,12 @@ export const auth = betterAuth({
               validationCode: otp,
             })
           } catch (error) {
-            console.error('[Auth] Failed to send 2FA OTP:', error)
+            auditAuth({
+              event: 'auth.2fa_otp.send_failed',
+              userId: user.id,
+              outcome: 'failure',
+              reason: error instanceof Error ? error.message : String(error),
+            })
           }
         },
       },

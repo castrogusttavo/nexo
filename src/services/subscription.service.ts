@@ -1,6 +1,7 @@
 import type { Plan } from '@prisma/client'
 import { AbacatePayClient } from '@/lib/abacatepay'
 import { BETTER_AUTH_URL } from '@/lib/env/server'
+import { auditMutation } from '@/lib/axiom/audit'
 import { WorkspaceCache } from '@/src/cache/workspace.cache'
 import { badRequest, forbidden } from '@/src/errors'
 import { err, ok, type Result } from '@/src/lib/result'
@@ -60,7 +61,29 @@ export const SubscriptionService = {
       workspaceId: dto.workspaceId,
     })
 
-    if (!result.ok) return result
+    if (!result.ok) {
+      auditMutation({
+        entity: 'subscription',
+        action: 'create',
+        actorId,
+        outcome: 'failure',
+        reason: result.error.code,
+        meta: { workspaceId: dto.workspaceId, plan: dto.plan },
+      })
+      return result
+    }
+
+    auditMutation({
+      entity: 'subscription',
+      action: 'create',
+      actorId,
+      targetId: result.value.id,
+      meta: {
+        workspaceId: dto.workspaceId,
+        plan: dto.plan,
+        billId: bill.id,
+      },
+    })
 
     return ok(toSubscriptionDTO(result.value))
   },
@@ -78,9 +101,32 @@ export const SubscriptionService = {
           billId,
           subscription.value.plan,
         )
-        if (!result.ok) return result
+        if (!result.ok) {
+          auditMutation({
+            entity: 'subscription',
+            action: 'activate',
+            actorId: null,
+            targetId: subscription.value.id,
+            outcome: 'failure',
+            reason: result.error.code,
+            meta: { billId, source: 'webhook' },
+          })
+          return result
+        }
 
         await WorkspaceCache.invalidate(subscription.value.workspaceId)
+        auditMutation({
+          entity: 'subscription',
+          action: 'activate',
+          actorId: null,
+          targetId: subscription.value.id,
+          meta: {
+            billId,
+            workspaceId: subscription.value.workspaceId,
+            plan: subscription.value.plan,
+            source: 'webhook',
+          },
+        })
         return ok(undefined)
       }
 
@@ -89,7 +135,29 @@ export const SubscriptionService = {
           billId,
           'CANCELLED',
         )
-        if (!result.ok) return result
+        if (!result.ok) {
+          auditMutation({
+            entity: 'subscription',
+            action: 'cancel',
+            actorId: null,
+            targetId: subscription.value.id,
+            outcome: 'failure',
+            reason: result.error.code,
+            meta: { billId, source: 'webhook' },
+          })
+          return result
+        }
+        auditMutation({
+          entity: 'subscription',
+          action: 'cancel',
+          actorId: null,
+          targetId: subscription.value.id,
+          meta: {
+            billId,
+            workspaceId: subscription.value.workspaceId,
+            source: 'webhook',
+          },
+        })
         return ok(undefined)
       }
 

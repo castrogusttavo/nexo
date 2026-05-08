@@ -1,8 +1,10 @@
 'use client'
 
 import { useEffect, useState } from 'react'
+import { useLogger } from '@/lib/axiom/client'
 
 export default function PlanPage() {
+  const log = useLogger()
   const [loading, setLoading] = useState(false)
   const [workspaceId, setWorkspaceId] = useState<string | null>(null)
 
@@ -38,8 +40,11 @@ export default function PlanPage() {
       if (result.success && result.data?.paymentUrl) {
         window.location.href = result.data.paymentUrl
       }
-    } catch {
-      console.error('Erro ao criar assinatura')
+    } catch (error) {
+      log.error('plan.subscribe_failed', {
+        component: 'PlanPage',
+        message: error instanceof Error ? error.message : String(error),
+      })
     } finally {
       setLoading(false)
     }

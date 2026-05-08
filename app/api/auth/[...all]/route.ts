@@ -1,4 +1,5 @@
 import { toNextJsHandler } from 'better-auth/next-js'
+import { withAxiom } from '@/lib/axiom/server'
 import { auth } from '@/src/lib/auth'
 import { authLimiter, consume, otpLimiter } from '@/src/lib/rate-limit'
 import { getClientIp } from '@/src/lib/rate-limit-helpers'
@@ -45,11 +46,11 @@ async function getOtpRateKey(request: Request): Promise<string> {
 
 const handler = toNextJsHandler(auth)
 
-export async function GET(request: Request) {
+export const GET = withAxiom(async (request: Request) => {
   return handler.GET(request)
-}
+})
 
-export async function POST(request: Request) {
+export const POST = withAxiom(async (request: Request) => {
   const pathname = new URL(request.url).pathname
 
   if (shouldRateLimit(pathname)) {
@@ -65,4 +66,4 @@ export async function POST(request: Request) {
   }
 
   return handler.POST(request)
-}
+})

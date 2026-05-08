@@ -1,13 +1,6 @@
-import axiomClient from '@/lib/axiom/axiom';
-import { NEXT_PUBLIC_AXIOM_DATASET } from '@/lib/env/env';
-import { Logger, AxiomJSTransport } from '@axiomhq/logging';
-import { createAxiomRouteHandler, nextJsFormatters } from '@axiomhq/nextjs';
+import { createAxiomRouteHandler } from '@axiomhq/nextjs'
+import { logger } from '@/lib/axiom/logger'
 
-export const logger = new Logger({
-  transports: [
-    new AxiomJSTransport({ axiom: axiomClient, dataset: NEXT_PUBLIC_AXIOM_DATASET }),
-  ],
-  formatters: nextJsFormatters,
-});
+export { logger }
 
-export const withAxiom = createAxiomRouteHandler(logger);
+export const withAxiom = createAxiomRouteHandler(logger)

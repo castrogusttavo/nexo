@@ -1,6 +1,7 @@
 import type { NextRequest } from 'next/server'
+import { withAxiom } from '@/lib/axiom/server'
 import { handleCollect } from '../_handler'
 
-export async function POST(request: NextRequest) {
+export const POST = withAxiom(async (request: NextRequest) => {
   return handleCollect(request, 'peripheral')
-}
+})
