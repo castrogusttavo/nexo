@@ -203,3 +203,61 @@ jobs:
         uses: codecov/codecov-action@v5
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
+
+  notify-slack:
+    name: Notify Slack on Failure
+    needs: [lint, unit-tests, integration-tests, coverage-tests]
+    if: failure()
+    runs-on: ubuntu-latest
+    steps:
+      - name: Prepare notification context
+        id: ctx
+        env:
+          COMMIT_MSG: ${{ github.event.head_commit.message || github.event.pull_request.title || '' }}
+        run: |
+          first_line="${COMMIT_MSG%%$'\n'*}"
+          escaped=$(printf '%s' "$first_line" | sed 's/\\/\\\\/g; s/"/\\"/g')
+          echo "commit_msg=$escaped" >> "$GITHUB_OUTPUT"
+          echo "short_sha=${GITHUB_SHA::7}" >> "$GITHUB_OUTPUT"
+          echo "branch=${GITHUB_HEAD_REF:-${GITHUB_REF_NAME}}" >> "$GITHUB_OUTPUT"
+
+      - name: Send Slack notification
+        uses: slackapi/slack-github-action@v2
+        with:
+          webhook: ${{ secrets.SLACK_WEBHOOK_URL }}
+          webhook-type: incoming-webhook
+          payload: |
+            {
+              "text": "CI failed: ${{ github.workflow }} on ${{ steps.ctx.outputs.branch }}",
+              "attachments": [
+                {
+                  "color": "#dc2626",
+                  "fallback": "CI failed on ${{ steps.ctx.outputs.branch }}",
+                  "blocks": [
+                    {
+                      "type": "section",
+                      "text": { "type": "mrkdwn", "text": "*CI failed*" }
+                    },
+                    {
+                      "type": "section",
+                      "fields": [
+                        { "type": "mrkdwn", "text": "*Workflow*\n${{ github.workflow }}" },
+                        { "type": "mrkdwn", "text": "*Branch*\n`${{ steps.ctx.outputs.branch }}`" },
+                        { "type": "mrkdwn", "text": "*Author*\n${{ github.actor }}" },
+                        { "type": "mrkdwn", "text": "*Commit*\n<${{ github.server_url }}/${{ github.repository }}/commit/${{ github.sha }}|`${{ steps.ctx.outputs.short_sha }}`> ${{ steps.ctx.outputs.commit_msg }}" }
+                      ]
+                    },
+                    {
+                      "type": "actions",
+                      "elements": [
+                        {
+                          "type": "button",
+                          "text": { "type": "plain_text", "text": "Open failed run" },
+                          "url": "${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            }

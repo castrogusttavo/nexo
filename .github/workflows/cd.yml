@@ -105,3 +105,76 @@ jobs:
           docker compose pull
           docker compose up -d
           docker image prune -f
+
+  notify-slack:
+    name: Notify Slack
+    needs: [migrate, deploy]
+    if: always() && needs.migrate.result != 'skipped' && needs.deploy.result != 'skipped'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Prepare notification context
+        id: ctx
+        env:
+          COMMIT_MSG: ${{ github.event.workflow_run.head_commit.message || '' }}
+          COMMIT_SHA: ${{ github.event.workflow_run.head_sha || github.sha }}
+          BRANCH: ${{ github.event.workflow_run.head_branch || github.ref_name }}
+          ACTOR: ${{ github.event.workflow_run.head_commit.author.name || github.actor }}
+        run: |
+          first_line="${COMMIT_MSG%%$'\n'*}"
+          escaped=$(printf '%s' "$first_line" | sed 's/\\/\\\\/g; s/"/\\"/g')
+          echo "commit_msg=$escaped" >> "$GITHUB_OUTPUT"
+          echo "commit_sha=$COMMIT_SHA" >> "$GITHUB_OUTPUT"
+          echo "short_sha=${COMMIT_SHA:0:7}" >> "$GITHUB_OUTPUT"
+          echo "branch=$BRANCH" >> "$GITHUB_OUTPUT"
+          echo "actor=$ACTOR" >> "$GITHUB_OUTPUT"
+
+          if [[ "${{ needs.migrate.result }}" == "success" && "${{ needs.deploy.result }}" == "success" ]]; then
+            echo "status_text=Deploy succeeded" >> "$GITHUB_OUTPUT"
+            echo "color=#16a34a" >> "$GITHUB_OUTPUT"
+          else
+            echo "status_text=Deploy failed" >> "$GITHUB_OUTPUT"
+            echo "color=#dc2626" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Send Slack notification
+        uses: slackapi/slack-github-action@v2
+        with:
+          webhook: ${{ secrets.SLACK_WEBHOOK_URL }}
+          webhook-type: incoming-webhook
+          payload: |
+            {
+              "text": "${{ steps.ctx.outputs.status_text }} on ${{ steps.ctx.outputs.branch }}",
+              "attachments": [
+                {
+                  "color": "${{ steps.ctx.outputs.color }}",
+                  "fallback": "${{ steps.ctx.outputs.status_text }} on ${{ steps.ctx.outputs.branch }}",
+                  "blocks": [
+                    {
+                      "type": "section",
+                      "text": { "type": "mrkdwn", "text": "*${{ steps.ctx.outputs.status_text }}*" }
+                    },
+                    {
+                      "type": "section",
+                      "fields": [
+                        { "type": "mrkdwn", "text": "*Environment*\nproduction" },
+                        { "type": "mrkdwn", "text": "*Branch*\n`${{ steps.ctx.outputs.branch }}`" },
+                        { "type": "mrkdwn", "text": "*Migrate*\n${{ needs.migrate.result }}" },
+                        { "type": "mrkdwn", "text": "*Deploy*\n${{ needs.deploy.result }}" },
+                        { "type": "mrkdwn", "text": "*Author*\n${{ steps.ctx.outputs.actor }}" },
+                        { "type": "mrkdwn", "text": "*Commit*\n<${{ github.server_url }}/${{ github.repository }}/commit/${{ steps.ctx.outputs.commit_sha }}|`${{ steps.ctx.outputs.short_sha }}`> ${{ steps.ctx.outputs.commit_msg }}" }
+                      ]
+                    },
+                    {
+                      "type": "actions",
+                      "elements": [
+                        {
+                          "type": "button",
+                          "text": { "type": "plain_text", "text": "Open run" },
+                          "url": "${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            }
