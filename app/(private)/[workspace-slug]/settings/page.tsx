@@ -112,7 +112,8 @@ export default function SettingsPage() {
             <form onSubmit={handleConfirm} className='space-y-3 border-t pt-4'>
               <Field data-invalid={!!error || undefined}>
                 <FieldLabel>
-                  Senha para {mode === 'enabling' ? 'ativar' : 'desativar'} a 2FA
+                  Senha para {mode === 'enabling' ? 'ativar' : 'desativar'} a
+                  2FA
                 </FieldLabel>
                 <Input
                   type='password'
