@@ -37,7 +37,7 @@ export const Verify2faAccessOtp = ({
             <Text className='text-[16px] leading-6.5 font-light'>
               Detectamos uma tentativa de login na sua conta com verificação em
               duas etapas. Use o código abaixo para concluir o acesso. Ele é
-              válido pelos próximos 3 minutos.
+              válido pelos próximos 5 minutos.
             </Text>
           </Section>
           <Section className='bg-[#c2e2f5] rounded-md my-3 py-1.5 px-1.5'>

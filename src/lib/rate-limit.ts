@@ -14,6 +14,9 @@ const AUTH_POINTS = 10
 const AUTH_DURATION_SECONDS = 15 * 60
 const AUTH_BLOCK_SECONDS = 30 * 60
 
+const OTP_POINTS = 5
+const OTP_DURATION_SECONDS = 15 * 60
+
 const EMAIL_POINTS = 5
 const EMAIL_DURATION_SECONDS = 60 * 60
 
@@ -38,6 +41,22 @@ export const authLimiter = new RateLimiterRedis({
   insuranceLimiter: authInsurance,
 })
 
+const otpInsurance = new RateLimiterMemory({
+  points: OTP_POINTS,
+  duration: OTP_DURATION_SECONDS,
+  keyPrefix: 'rl:otp:mem',
+})
+
+export const otpLimiter = new RateLimiterRedis({
+  storeClient: redis,
+  storeType: 'redis',
+  useRedisPackage: true,
+  keyPrefix: 'rl:otp',
+  points: OTP_POINTS,
+  duration: OTP_DURATION_SECONDS,
+  insuranceLimiter: otpInsurance,
+})
+
 export const emailLimiter = new RateLimiterRedis({
   storeClient: redis,
   storeType: 'redis',
@@ -60,6 +79,7 @@ export type Limiter = RateLimiterRedis
 
 const limiterNames = new WeakMap<Limiter, string>([
   [authLimiter, 'auth'],
+  [otpLimiter, 'otp'],
   [emailLimiter, 'email'],
   [apiLimiter, 'api'],
 ])

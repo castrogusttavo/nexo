@@ -102,6 +102,7 @@ export const auth = betterAuth({
     }),
     twoFactor({
       otpOptions: {
+        period: 5,
         async sendOTP({ user, otp }) {
           try {
             await sendVerify2faAccessOtp({
