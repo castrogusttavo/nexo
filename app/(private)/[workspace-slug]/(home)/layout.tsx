@@ -19,7 +19,7 @@ import {
   ContextSidebar,
   NavGroup,
   NavItem,
-} from '@/app/_components/navigation/context-sidebar-navigation'
+} from '@/app/_components/navigation/sidebar-context'
 import { NexoIcon } from '@/components/icon/icon'
 import { Button } from '@/components/ui/button'
 

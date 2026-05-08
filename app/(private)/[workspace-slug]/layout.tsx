@@ -1,7 +1,7 @@
 import { notFound, redirect } from 'next/navigation'
 import type { ReactNode } from 'react'
-import { UserHeader } from '@/app/_components/header/user-header'
-import { GlobalSidebarNavigation } from '@/app/_components/navigation/global-sidebar-navigation'
+import { UserHeader } from '@/app/_components/header/header-layout-user'
+import { GlobalSidebarNavigation } from '@/app/_components/navigation/sidebar-global'
 import { getAuthSession } from '@/src/lib/auth-session'
 import { MembershipRepository } from '@/src/repositories/membership.repository'
 
