@@ -87,7 +87,7 @@ describe('withRateLimit()', () => {
 
   it('should forward extra args to resolver and handler', async () => {
     vi.spyOn(rateLimitModule, 'consume').mockResolvedValue(ok(undefined))
-    const resolver = vi.fn(() => ({
+    const resolver = vi.fn((_req: Request, _slug: string) => ({
       limiter: {} as never,
       key: 'k',
       points: 5,

@@ -159,6 +159,7 @@ describe('StatusService.getHistory()', () => {
           upChecks: 100,
           uptimePct: { toString: () => '100' } as unknown as never,
           avgLatencyMs: 50,
+          updatedAt: new Date('2025-01-01T00:00:00.000Z'),
         },
       ]),
     )

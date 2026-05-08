@@ -1,3 +1,4 @@
+import type { MockInstance } from 'vitest'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
 vi.mock('@/lib/env/server', async (importOriginal) => {
@@ -34,7 +35,7 @@ import {
   runProbesForTier,
 } from '@/src/services/status/probes'
 
-let fetchSpy: ReturnType<typeof vi.spyOn<typeof globalThis, 'fetch'>>
+let fetchSpy: MockInstance<typeof fetch>
 
 beforeEach(() => {
   fetchSpy = vi.spyOn(globalThis, 'fetch')

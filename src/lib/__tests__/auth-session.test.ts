@@ -11,12 +11,12 @@ vi.mock('@/src/lib/auth', () => ({
 import { auth } from '@/src/lib/auth'
 import { getAuthSession } from '@/src/lib/auth-session'
 
-const mockedAuth = vi.mocked(auth)
+const mockedGetSession = vi.mocked(auth.api.getSession)
 
 describe('getAuthSession()', () => {
   it('should return ok with session when present', async () => {
     const fakeSession = { user: { id: 'u1', email: 'x@y.z' } }
-    mockedAuth.api.getSession.mockResolvedValue(fakeSession as never)
+    mockedGetSession.mockResolvedValue(fakeSession as never)
 
     const result = await getAuthSession()
 
@@ -25,7 +25,7 @@ describe('getAuthSession()', () => {
   })
 
   it('should return UNAUTHORIZED when no session', async () => {
-    mockedAuth.api.getSession.mockResolvedValue(null as never)
+    mockedGetSession.mockResolvedValue(null as never)
 
     const result = await getAuthSession()
 
