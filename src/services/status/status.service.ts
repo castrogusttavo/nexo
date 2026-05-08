@@ -312,7 +312,8 @@ export const StatusService = {
       const evalResult = await evaluateIncidentFor(key, probe)
       if (!evalResult.ok) {
         console.error(
-          `[StatusService] incident eval failed for ${key}:`,
+          '[StatusService] incident eval failed for',
+          key,
           evalResult.error.message,
         )
       }
