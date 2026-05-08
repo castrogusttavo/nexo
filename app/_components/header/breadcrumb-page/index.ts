@@ -1,2 +1,2 @@
-export { Crumb } from './header-breadcrumb-crumb'
-export { PageHeader } from './header-breadcrumb-page'
+export { HeaderBreadcrumbCrumb } from './header-breadcrumb-crumb'
+export { HeaderBreadcrumbList } from './header-breadcrumb-page'

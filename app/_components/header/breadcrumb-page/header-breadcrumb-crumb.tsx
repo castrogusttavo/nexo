@@ -1,5 +1,15 @@
 import { BreadcrumbItem } from '@/components/ui/breadcrumb'
 
-export function Crumb({ children }: { children: React.ReactNode }) {
-  return <BreadcrumbItem>{children}</BreadcrumbItem>
+export function HeaderBreadcrumbCrumb({
+  children,
+  title,
+}: {
+  children: React.ReactNode
+  title: string
+}) {
+  return (
+    <BreadcrumbItem className='font-semibold text-xs'>
+      {children} {title}
+    </BreadcrumbItem>
+  )
 }
