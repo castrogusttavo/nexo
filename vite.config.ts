@@ -16,6 +16,8 @@ export default defineConfig({
             'src/schemas/**/__tests__/*.test.ts',
             'src/errors/**/__tests__/*.test.ts',
             'src/lib/__tests__/*.test.ts',
+            'utils/__tests__/*.test.ts',
+            'lib/__tests__/*.test.ts',
           ],
           exclude: ['**/*.integration.test.ts'],
           setupFiles: [
@@ -71,7 +73,14 @@ export default defineConfig({
         'src/mappers/**',
         'src/schemas/**',
         'src/errors/**',
+        'src/repositories/**',
+        'src/cache/**',
+        'src/lib/auth-session.ts',
+        'src/lib/rate-limit.ts',
+        'src/lib/rate-limit-helpers.ts',
         'src/lib/result.ts',
+        'utils/**',
+        'lib/abacatepay.ts',
       ],
       exclude: [
         'node_modules/**',
