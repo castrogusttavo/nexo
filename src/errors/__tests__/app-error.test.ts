@@ -7,6 +7,7 @@ import {
   forbidden,
   invalidCredentials,
   notFound,
+  rateLimited,
   unauthorized,
   validationError,
 } from '@/src/errors/app-error'
@@ -132,6 +133,25 @@ describe('AppError factories', () => {
 
       expect(error.code).toBe('DATABASE_ERROR')
       expect(error.message).toBe('Connection failed')
+    })
+  })
+
+  describe('rateLimited()', () => {
+    it('should expose retryAfterSeconds via details', () => {
+      const error = rateLimited(120)
+
+      expect(error.code).toBe('RATE_LIMITED')
+      expect(error.message).toBe('Muitas requisições')
+      expect(error.details).toEqual({ retryAfterSeconds: 120 })
+    })
+
+    it('should accept a custom message', () => {
+      const error = rateLimited(60, 'slow down')
+
+      expect(error.message).toBe('slow down')
+      expect(
+        (error.details as { retryAfterSeconds: number }).retryAfterSeconds,
+      ).toBe(60)
     })
   })
 })

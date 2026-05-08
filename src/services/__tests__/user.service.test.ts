@@ -171,5 +171,22 @@ describe('UserService', () => {
 
       expectErr(result, 'DATABASE_ERROR')
     })
+
+    it('should propagate post-update findByIdWithMemberships error', async () => {
+      const updatedUser = createFakeUser({ id: 'user-1' })
+      mockedRepo.update.mockResolvedValue(ok(updatedUser))
+      mockedCache.invalidate.mockResolvedValue(undefined)
+      mockedRepo.findByIdWithMemberships.mockResolvedValue(
+        err(databaseError('post-update read failed')),
+      )
+
+      const result = await UserService.updateProfile('user-1', {
+        name: 'New Name',
+      })
+
+      expectErr(result, 'DATABASE_ERROR')
+      expect(mockedCache.invalidate).toHaveBeenCalledWith('user-1')
+      expect(mockedCache.set).not.toHaveBeenCalled()
+    })
   })
 })
