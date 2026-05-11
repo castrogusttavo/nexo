@@ -13,16 +13,16 @@ importers:
     dependencies:
       '@axiomhq/js':
         specifier: ^1.6.0
-        version: 1.6.0
+        version: 1.6.1
       '@axiomhq/logging':
         specifier: ^0.2.0
-        version: 0.2.0(@axiomhq/js@1.6.0)
+        version: 0.2.1(@axiomhq/js@1.6.1)
       '@axiomhq/nextjs':
         specifier: ^0.2.1
-        version: 0.2.1(@axiomhq/logging@0.2.0(@axiomhq/js@1.6.0))(next@16.2.4(@babel/core@7.29.0)(@opentelemetry/api@1.9.1)(react-dom@19.2.5(react@19.2.5))(react@19.2.5))
+        version: 0.2.1(@axiomhq/logging@0.2.1(@axiomhq/js@1.6.1))(next@16.2.4(@babel/core@7.29.0)(@opentelemetry/api@1.9.1)(react-dom@19.2.5(react@19.2.5))(react@19.2.5))
       '@axiomhq/react':
         specifier: ^0.2.0
-        version: 0.2.0(@axiomhq/logging@0.2.0(@axiomhq/js@1.6.0))(react-dom@19.2.5(react@19.2.5))(react@19.2.5)
+        version: 0.2.1(@axiomhq/logging@0.2.1(@axiomhq/js@1.6.1))(react-dom@19.2.5(react@19.2.5))(react@19.2.5)
       '@base-ui/react':
         specifier: ^1.4.1
         version: 1.4.1(@types/react@19.2.14)(react-dom@19.2.5(react@19.2.5))(react@19.2.5)
@@ -368,15 +368,15 @@ packages:
     resolution: {integrity: sha512-iY8yvjE0y651BixKNPgmv1WrQc+GZ142sb0z4gYnChDDY2YqI4P/jsSopBWrKfAt7LOJAkOXt7rC/hms+WclQQ==}
     engines: {node: '>=18.0.0'}
 
-  '@axiomhq/js@1.6.0':
-    resolution: {integrity: sha512-qm0ObduIpI6PJUOYwakH5WV3E7IF0qXE/wh5N1JWGAzxKtCZryk+YwA0aW3lPZSGPQeLHyEzN+9pXsOIjoPiRg==}
+  '@axiomhq/js@1.6.1':
+    resolution: {integrity: sha512-iNWOnGvP+R2lIWYk9jkfvRI/rfhOR9hlWJOBJhMKwZ9mfpE0KdnFnG2XPLoMcrbyrOBKj6Jw0hpIH5GhPucLog==}
     engines: {node: '>=20'}
 
-  '@axiomhq/logging@0.2.0':
-    resolution: {integrity: sha512-Ro3GxgBAZQvsbx6Yjor9f6yx2IC7Wvqy0FC7HGcOjdtswl0refGB+gtKs94XyxbfnIo6MbKjHhHHkZOubjE+pQ==}
+  '@axiomhq/logging@0.2.1':
+    resolution: {integrity: sha512-q3qTrXMs0mL5cQwAzjTRXQJiMfsZxBxVU41gNlBVwWhBMgSMpmTyoqqHYMgf0upvrl6Lz8kMo8u5r3ueXSRf1g==}
     engines: {node: '>=20'}
     peerDependencies:
-      '@axiomhq/js': 1.4.0
+      '@axiomhq/js': ^1.0.0
     peerDependenciesMeta:
       '@axiomhq/js':
         optional: true
@@ -388,11 +388,11 @@ packages:
       '@axiomhq/logging': 0.2.1
       next: '>=13'
 
-  '@axiomhq/react@0.2.0':
-    resolution: {integrity: sha512-PrvX/y7UEJp/WTcKQqSk1CoZVJeo1tGVnE6ekTZ5JRlv7E9pmewlig3Saxs4g9Bd/I9jMGQvEjy61J6x/QOMSg==}
+  '@axiomhq/react@0.2.1':
+    resolution: {integrity: sha512-3aqbx87Y1jpoQAXXKS50IbDUn4uDFVlwILlAFl4sDB5Rhf5Zrep1fpz/UuKnL2aFf6ARUfkL56iZ/tGu4ExTvw==}
     engines: {node: '>=20'}
     peerDependencies:
-      '@axiomhq/logging': 0.2.0
+      '@axiomhq/logging': 0.2.1
       react: ^18 || ^19
       react-dom: ^18 || ^19
 
@@ -2332,6 +2332,9 @@ packages:
   '@types/estree@1.0.8':
     resolution: {integrity: sha512-dWHzHa2WqEXI/O1E9OjrocMTKJl2mSrEolh1Iomrv6U+JuNwaHXsXx9bLu5gG7BUWFIN0skIQJQ/L1rIex4X6w==}
 
+  '@types/estree@1.0.9':
+    resolution: {integrity: sha512-GhdPgy1el4/ImP05X05Uw4cw2/M93BCUmnEvWZNStlCzEKME4Fkk+YpoA5OiHNQmoS7Cafb8Xa3Pya8m1Qrzeg==}
+
   '@types/json-schema@7.0.15':
     resolution: {integrity: sha512-5+fP8P8MFNC+AyZCDxrB2pkZFPGzqQWUzpSeuuVLvm8VMcorNYavBqoFcxK8bQz4Qsbn4oUEEem4wDLfcysGHA==}
 
@@ -3663,6 +3666,9 @@ packages:
 
   fast-xml-builder@1.1.9:
     resolution: {integrity: sha512-jcyKVSEX13iseJqg7n/KWw+xnu/7fdrZ333Fac54KjHDIELVCfDDJXYIm6DTJ0Su4gSzrhqiK0DzY/wZbF40mw==}
+
+  fast-xml-builder@1.2.0:
+    resolution: {integrity: sha512-00aAWieqff+ZJhsXA4g1g7M8k+7AYoMUUHF+/zFb5U6Uv/P0Vl4QZo84/IcufzYalLuEj9928bXN9PbbFzMF0Q==}
 
   fast-xml-parser@5.7.2:
     resolution: {integrity: sha512-P7oW7tLbYnhOLQk/Gv7cZgzgMPP/XN03K02/Jy6Y/NHzyIAIpxuZIM/YqAkfiXFPxA2CTm7NtCijK9EDu09u2w==}
@@ -5358,6 +5364,9 @@ packages:
   strnum@2.2.3:
     resolution: {integrity: sha512-oKx6RUCuHfT3oyVjtnrmn19H1SiCqgJSg+54XqURKp5aCMbrXrhLjRN9TjuwMjiYstZ0MzDrHqkGZ5dFTKd+zg==}
 
+  strnum@2.3.0:
+    resolution: {integrity: sha512-ums3KNd42PGyx5xaoVTO1mjU1bH3NpY4vsrVlnv9PNGqQj8wd7rJ6nEypLrJ7z5vxK5RP0yMLo6J/Gsm62DI5Q==}
+
   stubborn-fs@2.0.0:
     resolution: {integrity: sha512-Y0AvSwDw8y+nlSNFXMm2g6L51rBGdAQT20J3YSOqxC53Lo3bjWRtr2BKcfYoAf352WYpsZSTURrA0tqhfgudPA==}
 
@@ -5757,6 +5766,10 @@ packages:
 
   xml-escape@1.1.0:
     resolution: {integrity: sha512-B/T4sDK8Z6aUh/qNr7mjKAwwncIljFuUP+DO/D5hloYFj+90O88z8Wf7oSucZTHxBAsC1/CTP4rtx/x1Uf72Mg==}
+
+  xml-naming@0.1.0:
+    resolution: {integrity: sha512-k8KO9hrMyNk6tUWqUfkTEZbezRRpONVOzUTnc97VnCvyj6Tf9lyUR9EDAIeiVLv56jsMcoXEwjW8Kv5yPY52lw==}
+    engines: {node: '>=16.0.0'}
 
   xml@1.0.1:
     resolution: {integrity: sha512-huCv9IH9Tcf95zuYCsQraZtWnJvBtLVE0QHMOs8bWyZAFZNDcYjsPq1nEx8jKA9y+Beo9v+7OBPRisQTjinQMw==}
@@ -6281,22 +6294,22 @@ snapshots:
 
   '@aws/lambda-invoke-store@0.2.4': {}
 
-  '@axiomhq/js@1.6.0':
+  '@axiomhq/js@1.6.1':
     dependencies:
       fetch-retry: 6.0.0
 
-  '@axiomhq/logging@0.2.0(@axiomhq/js@1.6.0)':
+  '@axiomhq/logging@0.2.1(@axiomhq/js@1.6.1)':
     optionalDependencies:
-      '@axiomhq/js': 1.6.0
+      '@axiomhq/js': 1.6.1
 
-  '@axiomhq/nextjs@0.2.1(@axiomhq/logging@0.2.0(@axiomhq/js@1.6.0))(next@16.2.4(@babel/core@7.29.0)(@opentelemetry/api@1.9.1)(react-dom@19.2.5(react@19.2.5))(react@19.2.5))':
+  '@axiomhq/nextjs@0.2.1(@axiomhq/logging@0.2.1(@axiomhq/js@1.6.1))(next@16.2.4(@babel/core@7.29.0)(@opentelemetry/api@1.9.1)(react-dom@19.2.5(react@19.2.5))(react@19.2.5))':
     dependencies:
-      '@axiomhq/logging': 0.2.0(@axiomhq/js@1.6.0)
+      '@axiomhq/logging': 0.2.1(@axiomhq/js@1.6.1)
       next: 16.2.4(@babel/core@7.29.0)(@opentelemetry/api@1.9.1)(react-dom@19.2.5(react@19.2.5))(react@19.2.5)
 
-  '@axiomhq/react@0.2.0(@axiomhq/logging@0.2.0(@axiomhq/js@1.6.0))(react-dom@19.2.5(react@19.2.5))(react@19.2.5)':
+  '@axiomhq/react@0.2.1(@axiomhq/logging@0.2.1(@axiomhq/js@1.6.1))(react-dom@19.2.5(react@19.2.5))(react@19.2.5)':
     dependencies:
-      '@axiomhq/logging': 0.2.0(@axiomhq/js@1.6.0)
+      '@axiomhq/logging': 0.2.1(@axiomhq/js@1.6.1)
       react: 19.2.5
       react-dom: 19.2.5(react@19.2.5)
       use-deep-compare: 1.3.0(react@19.2.5)
@@ -8139,6 +8152,8 @@ snapshots:
 
   '@types/estree@1.0.8': {}
 
+  '@types/estree@1.0.9': {}
+
   '@types/json-schema@7.0.15': {}
 
   '@types/json5@0.0.29': {}
@@ -9360,7 +9375,7 @@ snapshots:
       '@humanfs/node': 0.16.8
       '@humanwhocodes/module-importer': 1.0.1
       '@humanwhocodes/retry': 0.4.3
-      '@types/estree': 1.0.8
+      '@types/estree': 1.0.9
       ajv: 6.15.0
       chalk: 4.1.2
       cross-spawn: 7.0.6
@@ -9533,6 +9548,11 @@ snapshots:
     dependencies:
       path-expression-matcher: 1.5.0
 
+  fast-xml-builder@1.2.0:
+    dependencies:
+      path-expression-matcher: 1.5.0
+      xml-naming: 0.1.0
+
   fast-xml-parser@5.7.2:
     dependencies:
       '@nodable/entities': 2.1.0
@@ -9543,9 +9563,9 @@ snapshots:
   fast-xml-parser@5.7.3:
     dependencies:
       '@nodable/entities': 2.1.0
-      fast-xml-builder: 1.1.9
+      fast-xml-builder: 1.2.0
       path-expression-matcher: 1.5.0
-      strnum: 2.2.3
+      strnum: 2.3.0
 
   fastq@1.20.1:
     dependencies:
@@ -11306,6 +11326,8 @@ snapshots:
 
   strnum@2.2.3: {}
 
+  strnum@2.3.0: {}
+
   stubborn-fs@2.0.0:
     dependencies:
       stubborn-utils: 1.0.2
@@ -11674,6 +11696,8 @@ snapshots:
       xpath: 0.0.33
 
   xml-escape@1.1.0: {}
+
+  xml-naming@0.1.0: {}
 
   xml@1.0.1: {}
 
