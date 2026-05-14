@@ -1,20 +1,38 @@
+import type { Metadata } from 'next'
 import { notFound, redirect } from 'next/navigation'
 import type { ReactNode } from 'react'
 import { UserHeader } from '@/app/_components/header/header-layout-user'
+import { HeaderPromotionBanner } from '@/app/_components/header/header-promotion-banner'
 import { GlobalSidebarNavigation } from '@/app/_components/navigation/sidebar-global'
 import { getAuthSession } from '@/src/lib/auth-session'
 import { MembershipRepository } from '@/src/repositories/membership.repository'
 
+type WorkspaceLayoutProps = {
+  children: ReactNode
+  params: Promise<{ 'workspace-slug': string }>
+}
+
+export async function generateMetadata({
+  params,
+}: WorkspaceLayoutProps): Promise<Metadata> {
+  const { 'workspace-slug': slug } = await params
+
+  return {
+    title: `${slug} | Nexo`,
+    description:
+      'Nexo brings projects, docs, and AI-powered workflows into one unified workspace so teams and agents can plan, execute, and stay aligned.',
+  }
+}
+
 export default async function WorkspaceLayout({
   children,
   params,
-}: {
-  children: ReactNode
-  params: Promise<{ 'workspace-slug': string }>
-}) {
-  const { 'workspace-slug': slug } = await params
+}: WorkspaceLayoutProps) {
+  const [{ 'workspace-slug': slug }, session] = await Promise.all([
+    params,
+    getAuthSession(),
+  ])
 
-  const session = await getAuthSession()
   if (!session.ok) redirect('/sign-in')
 
   const membership = await MembershipRepository.findByUserAndSlug(
@@ -33,9 +51,10 @@ export default async function WorkspaceLayout({
   }
 
   return (
-    <div className='flex flex-col h-screen overflow-hidden'>
+    <div className='flex flex-col h-screen overflow-hidden gap-y-0.5'>
+      <HeaderPromotionBanner EndDate='2025-05-15' />
       <UserHeader slug={slug} />
-      <div className='flex gap-x-1.5 flex-1 overflow-hidden min-h-0'>
+      <div className='flex gap-x-1.5 flex-1 overflow-hidden min-h-0 pr-2 pb-2'>
         <GlobalSidebarNavigation slug={slug} />
         <div className='flex-1 w-full flex items-start bg-primary-foreground rounded-lg border border-border overflow-hidden'>
           {children}
