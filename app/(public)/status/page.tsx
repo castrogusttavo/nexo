@@ -4,6 +4,7 @@ import {
 } from '@hugeicons-pro/core-bulk-rounded'
 import { Calendar04Icon } from '@hugeicons-pro/core-solid-rounded'
 import { InformationCircleIcon } from '@hugeicons-pro/core-stroke-rounded'
+import type { Metadata } from 'next'
 import Image from 'next/image'
 import Link from 'next/link'
 import { NexoIcon } from '@/components/icon/icon'
@@ -20,12 +21,17 @@ import { StatusService } from '@/src/services/status/status.service'
 import { STATUS_META } from '@/src/services/status/status-map'
 import { HistoryBars } from './_components/history-bars'
 
+export const metadata: Metadata = {
+  title: 'Status | Nexo',
+  description: 'Status em tempo real dos serviços do Nexo.',
+}
+
 export default async function StatusPage() {
   const result = await StatusService.getCurrentSnapshot()
 
   if (!result.ok) {
     return (
-      <div className='max-w-3xl flex flex-col items-center mx-auto py-4 space-y-8'>
+      <div className='max-w-3xl flex flex-col items-center mx-auto py-4 gap-y-8'>
         <div className='w-full h-fit overflow-hidden flex flex-col rounded-lg border border-zinc-200'>
           <span className='flex items-center gap-2 px-3.5 py-4 text-base bg-zinc-900 text-zinc-50'>
             Não foi possível carregar o status do sistema
@@ -42,7 +48,7 @@ export default async function StatusPage() {
   const overallMeta = STATUS_META[snapshot.overallStatus]
 
   return (
-    <div className='max-w-3xl flex flex-col items-center mx-auto py-4 space-y-8'>
+    <div className='max-w-3xl flex flex-col items-center mx-auto py-4 gap-y-8'>
       <div className='w-full flex items-center justify-between'>
         <Image src='/brand/logo.svg' width={100} height={30} alt='Nexo' />
         <div className='flex items-center gap-2'>
@@ -81,7 +87,7 @@ export default async function StatusPage() {
           return (
             <div
               key={component.key}
-              className='w-full flex flex-col p-4 md:p-3 space-y-2 border-t border-zinc-800'
+              className='w-full flex flex-col p-4 md:p-3 gap-y-2 border-t border-zinc-800'
             >
               <div className='w-full flex justify-between items-center'>
                 <div className='flex items-center gap-2'>

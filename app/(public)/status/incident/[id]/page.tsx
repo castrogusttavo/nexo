@@ -1,4 +1,5 @@
 import { ArrowLeft01Icon } from '@hugeicons-pro/core-stroke-rounded'
+import type { Metadata } from 'next'
 import Image from 'next/image'
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
@@ -10,6 +11,11 @@ import { cn } from '@/lib/utils'
 import { StatusService } from '@/src/services/status/status.service'
 import { STATUS_META } from '@/src/services/status/status-map'
 import type { IncidentUpdateDTO } from '@/types/status'
+
+export const metadata: Metadata = {
+  title: 'Incidente | Nexo',
+  description: 'Detalhes e atualizações do incidente.',
+}
 
 const EVENT_LABEL: Record<IncidentUpdateDTO['event'], string> = {
   INVESTIGATING: 'Investigando',
@@ -67,7 +73,7 @@ export default async function IncidentPage({ params }: IncidentPageProps) {
   const headerDate = resolvedAt ?? incident.startedAt
 
   return (
-    <div className='max-w-3xl flex flex-col items-center mx-auto py-4 space-y-8'>
+    <div className='max-w-3xl flex flex-col items-center mx-auto py-4 gap-y-8'>
       <div className='w-full flex items-center justify-between'>
         <Image src='/brand/logo.svg' width={100} height={30} alt='Nexo' />
         <div className='flex items-center gap-2'>

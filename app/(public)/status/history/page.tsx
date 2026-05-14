@@ -1,3 +1,4 @@
+import type { Metadata } from 'next'
 import Image from 'next/image'
 import Link from 'next/link'
 import { connection } from 'next/server'
@@ -7,6 +8,12 @@ import { cn } from '@/lib/utils'
 import { StatusService } from '@/src/services/status/status.service'
 import { STATUS_META } from '@/src/services/status/status-map'
 import type { IncidentSummaryDTO } from '@/types/status'
+
+export const metadata: Metadata = {
+  title: 'Histórico de incidentes | Nexo',
+  description:
+    'Histórico de incidentes e disponibilidade dos serviços do Nexo.',
+}
 
 const MONTH_FORMAT: Intl.DateTimeFormatOptions = {
   month: 'long',
@@ -43,7 +50,7 @@ export default async function StatusHistoryPage() {
   const result = await StatusService.listIncidents()
 
   return (
-    <div className='max-w-3xl flex flex-col items-center mx-auto py-4 space-y-8'>
+    <div className='max-w-3xl flex flex-col items-center mx-auto py-4 gap-y-8'>
       <div className='w-full flex items-center justify-between'>
         <Image src='/brand/logo.svg' width={100} height={30} alt='Nexo' />
         <div className='flex items-center gap-2'>
@@ -89,7 +96,7 @@ export default async function StatusHistoryPage() {
                     return (
                       <div
                         key={inc.id}
-                        className='w-full flex space-x-8 border-b border-zinc-700/80 pb-8'
+                        className='w-full flex gap-x-8 border-b border-zinc-700/80 pb-8'
                       >
                         <Muted>
                           <strong className='text-primary'>{dayNum}</strong>{' '}
