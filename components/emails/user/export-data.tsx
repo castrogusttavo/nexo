@@ -40,7 +40,7 @@ export const ExportData = ({
             <strong>Seus dados estão prontos, {username}.</strong>
           </Text>
           <Text className='text-[16px] leading-6.5 font-light'>
-            Empacotamos tudo que você criou no Nexo em um único arquivo{fileSize ? <> de <strong className='font-semibold'>{fileSize}</strong></> : null} — projetos, tasks, ideias e anexos.
+            Empacotamos tudo que você criou no Nexo em um único arquivo{fileSize ? <> de <strong className='font-semibold'>{fileSize}</strong></> : null}: projetos, tasks, ideias e anexos.
           </Text>
           <Text className='text-[16px] leading-6.5 font-light'>
             O link abaixo é válido até <strong className='font-semibold'>{expiresAt}</strong>. Depois disso, você precisará gerar uma nova exportação.
@@ -49,7 +49,7 @@ export const ExportData = ({
             Baixar meus dados
           </Button>
           <Text className='text-[16px] leading-6.5 font-light'>
-            Por segurança, esse link é pessoal — não compartilhe com ninguém.
+            Por segurança, esse link é pessoal, não compartilhe com ninguém.
           </Text>
           <Section>
             <Hr className="border-[#cccccc] my-5" />

@@ -42,7 +42,7 @@ function slugify(value: string) {
 }
 
 export default function CreateWorkspacePage() {
-  const router = useRouter()
+  const { push, back } = useRouter()
   const createWorkspace = useCreateWorkspace()
   const { data: user } = useCacheUser()
 
@@ -94,7 +94,7 @@ export default function CreateWorkspacePage() {
         name: trimmedName,
         slug,
       })
-      router.push(`/${workspace.slug}`)
+      push(`/${workspace.slug}`)
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Erro ao criar workspace')
     }
@@ -196,7 +196,7 @@ export default function CreateWorkspacePage() {
               type='button'
               variant='outline'
               size='sm'
-              onClick={() => router.back()}
+              onClick={() => back()}
               disabled={isPending}
             >
               Voltar

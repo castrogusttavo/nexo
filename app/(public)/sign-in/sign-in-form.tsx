@@ -17,7 +17,7 @@ import { authClient } from '@/src/lib/auth-client'
 type Step = 'form' | 'otp'
 
 export function SignInForm() {
-  const router = useRouter()
+  const { push } = useRouter()
   const [step, setStep] = useState<Step>('form')
   const [email, setEmail] = useState('')
   const [error, setError] = useState<string | null>(null)
@@ -73,7 +73,7 @@ export function SignInForm() {
       return
     }
 
-    router.push('/')
+    push('/')
   }
 
   async function handleVerify(otp: string) {
@@ -89,7 +89,7 @@ export function SignInForm() {
       return
     }
 
-    router.push('/')
+    push('/')
   }
 
   async function handleResend() {
@@ -108,7 +108,7 @@ export function SignInForm() {
   return (
     <div className='min-h-screen flex flex-col items-center justiyf-center p-4 pb-12'>
       <HeaderLogin path='sign-up' pathname='Cadastre-se' />
-      <div className='flex-1 w-full flex flex-col justify-center space-y-6 max-w-90'>
+      <div className='flex-1 w-full flex flex-col justify-center gap-y-6 max-w-90'>
         {step === 'form' ? (
           <>
             <div>

@@ -52,7 +52,7 @@ export const ResetPasswordEmail = ({
           </Section>
           <Section>
             <Text className="text-[16px] leading-6.5 font-light">
-              Não foi você? Pode ignorar sem problemas — sua senha continuará a mesma.
+              Não foi você? Pode ignorar sem problemas, sua senha continuará a mesma.
             </Text>
             <Hr className="border-[#cccccc] my-5" />
             <Text className="text-zinc-600 text-[13px]">

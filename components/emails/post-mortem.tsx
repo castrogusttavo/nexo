@@ -48,7 +48,7 @@ export const PostMortem = ({
             Ler nota completa
           </Button>
           <Text className="text-[16px] leading-6.5 font-light">
-            Tem dúvidas? Responda este email — nossa equipe lê tudo.
+            Tem dúvidas? Responda este email, nossa equipe lê tudo.
           </Text>
           <Section>
             <Hr className="border-[#cccccc] my-5" />

@@ -39,10 +39,10 @@ export const WelcomeEmail = ({
             <strong>Seu workspace está pronto, {username}.</strong>
           </Text>
           <Text className="text-[16px] leading-6.5 font-light">
-            Seu trial de <strong className='font-semibold'>{trialDays} dias</strong> do plano Business está ativo — sem cartão, sem cobrança automática.
+            Seu trial de <strong className='font-semibold'>{trialDays} dias</strong> do plano Business está ativo, sem cartão e sem cobrança automática.
           </Text>
           <Text className="text-[16px] leading-6.5 font-light">
-            Para começar, adicione algo que você já está trabalhando —
+            Para começar, adicione algo que você já está trabalhando:
             um projeto, uma task ou até uma ideia.
           </Text>
           <Text className="text-[16px] leading-6.5 font-light mb-9">
@@ -54,7 +54,7 @@ export const WelcomeEmail = ({
             </Button>
           </Section>
           <Text className="text-[16px] leading-6.5 font-light">
-            Tem dúvidas? Responda este email — nossa equipe lê tudo.
+            Tem dúvidas? Responda este email, nossa equipe lê tudo.
           </Text>
           <Hr className="border-[#cccccc] my-5" />
           <Text className="text-zinc-600 text-[13px]">

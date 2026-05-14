@@ -42,7 +42,7 @@ export const DeleteAccount = ({
             Recebemos seu pedido. A partir de <strong className='font-semibold'>{scheduledDeletionDate}</strong>, sua conta e todos os dados associados serão excluídos permanentemente.
           </Text>
           <Text className='text-[16px] leading-6.5 font-light'>
-            Mudou de ideia? Você pode cancelar a exclusão a qualquer momento antes dessa data — basta clicar no botão abaixo.
+            Mudou de ideia? Você pode cancelar a exclusão a qualquer momento antes dessa data, basta clicar no botão abaixo.
           </Text>
           <Button className='w-full rounded-md py-3 px-2.5 bg-[#2893cc] text-white text-center font-semibold' href={redirectUrl}>
             Cancelar exclusão

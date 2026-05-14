@@ -40,7 +40,7 @@ export const VerifyEmailWithOtp = ({
               É só digitar o código abaixo na janela do seu navegador e entrar na sua conta. Ele é válido pelos próximos 5 minutos.
             </Text>
           </Section>
-          <Section className='bg-[#c2e2f5] rounded-md my-3 py-1.5 px-1.5'>
+          <Section className='bg-[#c2e2f5] rounded-md my-3 p-1.5'>
             <Text className='text-2xl text-center font-medium uppercase tracking-widest'>
               {validationCode.length === 6
                 ? `${validationCode.slice(0, 3)}-${validationCode.slice(3)}`

@@ -42,7 +42,7 @@ export const InactiveUser = ({
           <Text className='text-[16px] leading-6.5 font-light'>
             Você entrou no Nexo, mas não chegou a usar de verdade ainda.
             <br />
-            Normal — começar do zero sempre trava.
+            Normal, começar do zero sempre trava.
           </Text>
           <Text className='text-[16px] leading-6.5 font-light'>
             Começe com algo simples:
@@ -71,7 +71,7 @@ export const InactiveUser = ({
             Voltar pro Nexo
           </Button>
           <Text className="text-[16px] leading-6.5 font-light">
-            Tem dúvidas? Responda este email — nossa equipe lê tudo.
+            Tem dúvidas? Responda este email, nossa equipe lê tudo.
           </Text>
           <Section>
             <Hr className="border-[#cccccc] my-5" />

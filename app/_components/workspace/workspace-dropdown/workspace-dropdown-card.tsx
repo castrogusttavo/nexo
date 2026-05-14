@@ -22,7 +22,7 @@ export function WorkspaceDropdownCard({
       value={membership.slug}
       className='data-checked:bg-accent'
     >
-      <div className='flex flex-col items-start justify-center space-y-4'>
+      <div className='flex flex-col items-start justify-center gap-y-4'>
         <div className='w-full flex gap-1.5 items-center'>
           <div className='size-6 flex items-center justify-center rounded-sm bg-blue-400 text-xs font-semibold text-white'>
             {initial}

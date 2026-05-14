@@ -50,7 +50,7 @@ function getVariant({
   return {
     paragraphs: [
       'Você já construiu bastante coisa no Nexo.',
-      <>Hoje são {itemsCreated} itens dentro do workspace {workspaceName} — projetos, tarefas, docs… tudo organizado e conectado.</>,
+      <>Hoje são {itemsCreated} itens dentro do workspace {workspaceName}: projetos, tarefas, docs… tudo organizado e conectado.</>,
       <>Quando o trial acabar, você perde acesso à IA, wiki e integrações. <br />Na prática, tudo isso para de evoluir.</>,
       'Se isso já faz parte do seu fluxo, faz sentido continuar.',
     ],

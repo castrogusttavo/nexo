@@ -44,19 +44,20 @@ export function EmailValidationWithOtp({
   }, [cooldown])
 
   useEffect(() => {
-    if (otp.length !== 6) return
-    if (lastSubmittedRef.current === otp) return
-    if (isPending) return
-    lastSubmittedRef.current = otp
-    void onVerify(otp)
-  }, [otp, isPending, onVerify])
-
-  useEffect(() => {
     if (error) {
       setOtp('')
       lastSubmittedRef.current = null
     }
   }, [error])
+
+  function handleOtpChange(value: string) {
+    setOtp(value)
+    if (value.length !== 6) return
+    if (lastSubmittedRef.current === value) return
+    if (isPending) return
+    lastSubmittedRef.current = value
+    void onVerify(value)
+  }
 
   async function handleResend() {
     if (cooldown > 0 || isResending) return
@@ -100,7 +101,7 @@ export function EmailValidationWithOtp({
           maxLength={6}
           pattern={REGEXP_ONLY_DIGITS_AND_CHARS}
           value={otp}
-          onChange={setOtp}
+          onChange={handleOtpChange}
           disabled={isPending}
           autoFocus
         >

@@ -18,7 +18,7 @@ import type { MembershipDTO } from '@/types/user'
 import { WorkspaceDropdownCard } from './workspace-dropdown-card'
 
 export function WorkSpaceDropdown({ currentSlug }: { currentSlug: string }) {
-  const router = useRouter()
+  const { push } = useRouter()
   const { data: user } = useUser()
 
   const memberships: MembershipDTO[] = user?.memberships ?? []
@@ -26,7 +26,7 @@ export function WorkSpaceDropdown({ currentSlug }: { currentSlug: string }) {
   const initial = (current?.name ?? '?').charAt(0).toUpperCase()
 
   function handleSelect(slug: string) {
-    if (slug !== currentSlug) router.push(`/${slug}`)
+    if (slug !== currentSlug) push(`/${slug}`)
   }
 
   return (
