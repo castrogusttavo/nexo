@@ -51,12 +51,12 @@ function isoDay(date: Date): string {
 function computeOverallStatus(
   components: ComponentSnapshot[],
 ): ComponentStatus {
-  const coreStatuses = components
-    .filter((c) => c.tier === 'core')
-    .map((c) => c.currentStatus)
-  const peripheralStatuses = components
-    .filter((c) => c.tier === 'peripheral')
-    .map((c) => c.currentStatus)
+  const coreStatuses: ComponentStatus[] = []
+  const peripheralStatuses: ComponentStatus[] = []
+  for (const c of components) {
+    if (c.tier === 'core') coreStatuses.push(c.currentStatus)
+    else if (c.tier === 'peripheral') peripheralStatuses.push(c.currentStatus)
+  }
 
   const worstCore = worstStatus(coreStatuses)
   if (STATUS_RANK[worstCore] >= STATUS_RANK.MAJOR_OUTAGE) return 'MAJOR_OUTAGE'
@@ -291,35 +291,37 @@ export const StatusService = {
     const today = startOfUtcDay()
     const tomorrow = addDays(today, 1)
 
-    for (const key of tierKeys) {
-      const aggResult = await StatusRepository.aggregateForDay(
-        key,
-        today,
-        tomorrow,
-      )
-      if (!aggResult.ok) return aggResult
-      if (!aggResult.value) continue
-      const upsertResult = await StatusRepository.upsertDaily(
-        key,
-        today,
-        aggResult.value,
-      )
-      if (!upsertResult.ok) return upsertResult
+    const dailyResults = await Promise.all(
+      tierKeys.map(async (key) => {
+        const aggResult = await StatusRepository.aggregateForDay(
+          key,
+          today,
+          tomorrow,
+        )
+        if (!aggResult.ok) return aggResult
+        if (!aggResult.value) return ok(undefined)
+        return StatusRepository.upsertDaily(key, today, aggResult.value)
+      }),
+    )
+    for (const dailyResult of dailyResults) {
+      if (!dailyResult.ok) return dailyResult
     }
 
-    for (const key of tierKeys) {
-      const probe = probeMap[key]
-      if (!probe) continue
-      const evalResult = await evaluateIncidentFor(key, probe)
-      if (!evalResult.ok) {
-        logger.error('status.incident_eval_failed', {
-          component: 'StatusService',
-          componentKey: key,
-          errorCode: evalResult.error.code,
-          message: evalResult.error.message,
-        })
-      }
-    }
+    await Promise.all(
+      tierKeys.map(async (key) => {
+        const probe = probeMap[key]
+        if (!probe) return
+        const evalResult = await evaluateIncidentFor(key, probe)
+        if (!evalResult.ok) {
+          logger.error('status.incident_eval_failed', {
+            component: 'StatusService',
+            componentKey: key,
+            errorCode: evalResult.error.code,
+            message: evalResult.error.message,
+          })
+        }
+      }),
+    )
 
     const cutoff = addDays(today, -RAW_RETENTION_DAYS)
     const pruneResult = await StatusRepository.pruneOldChecks(cutoff)

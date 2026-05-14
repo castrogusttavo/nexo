@@ -67,8 +67,10 @@ describe('POST /api/payment/plan', () => {
   })
 
   it('should return 403 when user is not a member of workspace', async () => {
-    const { workspace } = await authenticatedOwner()
-    const stranger = await createAuthenticatedUser()
+    const [{ workspace }, stranger] = await Promise.all([
+      authenticatedOwner(),
+      createAuthenticatedUser(),
+    ])
 
     const res = await postJson(
       '/api/payment/plan',

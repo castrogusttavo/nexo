@@ -18,8 +18,10 @@ describe('GET /api/workspaces/[id]', () => {
   })
 
   it('should return 403 when user is not a member', async () => {
-    const { workspace } = await authenticatedOwner()
-    const stranger = await createAuthenticatedUser()
+    const [{ workspace }, stranger] = await Promise.all([
+      authenticatedOwner(),
+      createAuthenticatedUser(),
+    ])
 
     const res = await getJson(
       `/api/workspaces/${workspace.id}`,
@@ -55,8 +57,10 @@ describe('PATCH /api/workspaces/[id]', () => {
   })
 
   it('should return 403 for non-member', async () => {
-    const { workspace } = await authenticatedOwner()
-    const stranger = await createAuthenticatedUser()
+    const [{ workspace }, stranger] = await Promise.all([
+      authenticatedOwner(),
+      createAuthenticatedUser(),
+    ])
 
     const res = await patchJson(
       `/api/workspaces/${workspace.id}`,
@@ -161,8 +165,10 @@ describe('DELETE /api/workspaces/[id]', () => {
   })
 
   it('should return 403 for non-member', async () => {
-    const { workspace } = await authenticatedOwner()
-    const stranger = await createAuthenticatedUser()
+    const [{ workspace }, stranger] = await Promise.all([
+      authenticatedOwner(),
+      createAuthenticatedUser(),
+    ])
 
     const res = await deleteJson(
       `/api/workspaces/${workspace.id}`,

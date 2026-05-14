@@ -14,11 +14,13 @@ import {
 import { baseEmailUrl } from '@/lib/base-email-url';
 import { PostMortemProps } from '@/types/mail';
 
+const EMPTY_RESUME: string[] = [];
+
 export const PostMortem = ({
   incidentTitle,
   incidentDate,
   incidentId,
-  resume = [],
+  resume = EMPTY_RESUME,
   redirectUrl,
 }: PostMortemProps) => (
   <Html>
@@ -40,8 +42,8 @@ export const PostMortem = ({
             <strong>Uma nota rápida da equipe Nexo</strong>
           </Text>
           <Section>
-            {resume.map((paragraph, index) => (
-              <Text key={index} className='text-[16px] leading-6.5 font-light'>{paragraph}</Text>
+            {resume.map((paragraph) => (
+              <Text key={paragraph} className='text-[16px] leading-6.5 font-light'>{paragraph}</Text>
             ))}
           </Section>
           <Button className='w-full rounded-md py-3 px-2.5 bg-[#2893cc] text-white text-center font-semibold' href={redirectUrl}>

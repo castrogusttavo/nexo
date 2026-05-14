@@ -5,7 +5,7 @@ import { prisma } from '@/src/lib/prisma'
 import { ensureRedisConnected } from '@/src/lib/redis'
 import { COMPONENTS, type ComponentKey, type ComponentTier } from './components'
 
-export type ProbeStatus = 'OPERATIONAL' | 'DEGRADED' | 'MAJOR_OUTAGE'
+type ProbeStatus = 'OPERATIONAL' | 'DEGRADED' | 'MAJOR_OUTAGE'
 
 export interface ProbeResult {
   status: ProbeStatus
@@ -88,7 +88,7 @@ export async function probeStorage(): Promise<ProbeResult> {
   })
 }
 
-export async function probePayment(): Promise<ProbeResult> {
+async function probePayment(): Promise<ProbeResult> {
   return timed(async () => {
     const res = await fetchWithTimeout(
       'https://api.abacatepay.com/v2/customer/list?limit=1',
@@ -123,7 +123,11 @@ async function runForKeys(
 export function componentsForTier(
   tier: ComponentTier,
 ): ReadonlyArray<ComponentKey> {
-  return COMPONENTS.filter((c) => c.tier === tier).map((c) => c.key)
+  const keys: ComponentKey[] = []
+  for (const c of COMPONENTS) {
+    if (c.tier === tier) keys.push(c.key)
+  }
+  return keys
 }
 
 export async function runProbesForTier(

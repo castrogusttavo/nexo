@@ -92,6 +92,7 @@ export const TrialEndPromotion = ({
             </Text>
             <Section>
               {variant.paragraphs.map((paragraph, index) => (
+                // biome-ignore lint/suspicious/noArrayIndexKey: static email content, never reordered
                 <Text key={index} className='text-[16px] leading-6.5 font-light'>{paragraph}</Text>
               ))}
               <Button className='w-full rounded-md py-3 px-2.5 bg-[#2893cc] text-white text-center font-semibold'>

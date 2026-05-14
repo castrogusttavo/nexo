@@ -1,6 +1,6 @@
 import { logger } from '@/lib/axiom/logger'
 
-export type AuditEntity =
+type AuditEntity =
   | 'user'
   | 'session'
   | 'workspace'
@@ -9,7 +9,7 @@ export type AuditEntity =
   | 'status_check'
   | 'storage_object'
 
-export type AuditAction =
+type AuditAction =
   | 'create'
   | 'update'
   | 'delete'
@@ -19,9 +19,9 @@ export type AuditAction =
   | 'aggregate'
   | 'prune'
 
-export type AuditOutcome = 'success' | 'failure'
+type AuditOutcome = 'success' | 'failure'
 
-export type AuditAuthEvent =
+type AuditAuthEvent =
   | 'user.created'
   | 'user.email_verified'
   | 'session.created'

@@ -8,8 +8,10 @@ import { MembershipRepository } from '@/src/repositories/membership.repository'
 describe('MembershipRepository', () => {
   describe('findByUserAndWorkspace()', () => {
     it('should return membership when it exists', async () => {
-      const user = await seedUser({ email: 'u1@example.com' })
-      const ws = await seedWorkspace()
+      const [user, ws] = await Promise.all([
+        seedUser({ email: 'u1@example.com' }),
+        seedWorkspace(),
+      ])
       await seedMembership({
         userId: user.id,
         workspaceId: ws.id,
@@ -39,8 +41,10 @@ describe('MembershipRepository', () => {
 
   describe('findByUserAndSlug()', () => {
     it('should return membership including workspace when slug matches', async () => {
-      const user = await seedUser({ email: 'u2@example.com' })
-      const ws = await seedWorkspace({ slug: 'lookup-slug' })
+      const [user, ws] = await Promise.all([
+        seedUser({ email: 'u2@example.com' }),
+        seedWorkspace({ slug: 'lookup-slug' }),
+      ])
       await seedMembership({ userId: user.id, workspaceId: ws.id })
 
       const result = await MembershipRepository.findByUserAndSlug(
@@ -68,9 +72,11 @@ describe('MembershipRepository', () => {
 
   describe('listByUser()', () => {
     it('should list all memberships for a user including workspaces', async () => {
-      const user = await seedUser({ email: 'u4@example.com' })
-      const wsA = await seedWorkspace({ slug: 'list-a' })
-      const wsB = await seedWorkspace({ slug: 'list-b' })
+      const [user, wsA, wsB] = await Promise.all([
+        seedUser({ email: 'u4@example.com' }),
+        seedWorkspace({ slug: 'list-a' }),
+        seedWorkspace({ slug: 'list-b' }),
+      ])
       await seedMembership({ userId: user.id, workspaceId: wsA.id })
       await seedMembership({ userId: user.id, workspaceId: wsB.id })
 
@@ -95,8 +101,10 @@ describe('MembershipRepository', () => {
 
   describe('create()', () => {
     it('should default to MEMBER role', async () => {
-      const user = await seedUser({ email: 'u6@example.com' })
-      const ws = await seedWorkspace()
+      const [user, ws] = await Promise.all([
+        seedUser({ email: 'u6@example.com' }),
+        seedWorkspace(),
+      ])
 
       const result = await MembershipRepository.create({
         userId: user.id,
@@ -108,8 +116,10 @@ describe('MembershipRepository', () => {
     })
 
     it('should accept custom role', async () => {
-      const user = await seedUser({ email: 'u7@example.com' })
-      const ws = await seedWorkspace()
+      const [user, ws] = await Promise.all([
+        seedUser({ email: 'u7@example.com' }),
+        seedWorkspace(),
+      ])
 
       const result = await MembershipRepository.create({
         userId: user.id,
@@ -122,8 +132,10 @@ describe('MembershipRepository', () => {
     })
 
     it('should return DATABASE_ERROR on duplicate (user, workspace)', async () => {
-      const user = await seedUser({ email: 'u8@example.com' })
-      const ws = await seedWorkspace()
+      const [user, ws] = await Promise.all([
+        seedUser({ email: 'u8@example.com' }),
+        seedWorkspace(),
+      ])
       await seedMembership({ userId: user.id, workspaceId: ws.id })
 
       const result = await MembershipRepository.create({

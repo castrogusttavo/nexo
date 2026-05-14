@@ -13,7 +13,7 @@ export function getClientIp(request: Request): string {
   return 'unknown'
 }
 
-export type RateLimitTarget = { limiter: Limiter; key: string; points?: number }
+type RateLimitTarget = { limiter: Limiter; key: string; points?: number }
 
 export type RateLimitResolver<TReq extends Request, TArgs extends unknown[]> = (
   request: TReq,

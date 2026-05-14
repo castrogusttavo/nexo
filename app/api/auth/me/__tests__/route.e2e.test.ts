@@ -103,10 +103,12 @@ describe('PATCH /api/auth/me', () => {
   })
 
   it('should return 409 when email is already taken', async () => {
-    const { email: takenEmail } = await createAuthenticatedUser({
-      email: `taken-${Date.now()}@example.com`,
-    })
-    const { cookie } = await createAuthenticatedUser()
+    const [{ email: takenEmail }, { cookie }] = await Promise.all([
+      createAuthenticatedUser({
+        email: `taken-${Date.now()}@example.com`,
+      }),
+      createAuthenticatedUser(),
+    ])
 
     const res = await fetch(`${BASE_URL}/api/auth/me`, {
       method: 'PATCH',

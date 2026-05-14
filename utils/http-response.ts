@@ -5,7 +5,6 @@ import type { ErrorCode } from '@/src/errors/codes'
 import type { ErrorResponse, SuccessResponse } from '@/types/http-response'
 
 export type { ErrorCode }
-export { ERROR_CODES }
 
 export interface CacheOptions {
   maxAge?: number
