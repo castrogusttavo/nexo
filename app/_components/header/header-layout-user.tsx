@@ -11,7 +11,7 @@ import { WorkSpaceDropdown } from '../workspace/workspace-dropdown'
 
 export function UserHeader({ slug }: { slug: string }) {
   return (
-    <div className='w-full flex justify-between items-center'>
+    <div className='w-full flex justify-between items-center px-3.5'>
       <WorkSpaceDropdown currentSlug={slug} />
       <div className='flex items-center gap-1'>
         <Link href={`/${slug}/get-started`}>

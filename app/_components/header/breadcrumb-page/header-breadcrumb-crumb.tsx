@@ -1,4 +1,9 @@
 import { BreadcrumbItem } from '@/components/ui/breadcrumb'
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from '@/components/ui/tooltip'
 
 export function HeaderBreadcrumbCrumb({
   children,
@@ -8,8 +13,20 @@ export function HeaderBreadcrumbCrumb({
   title: string
 }) {
   return (
-    <BreadcrumbItem className='font-semibold text-xs'>
-      {children} {title}
-    </BreadcrumbItem>
+    <Tooltip>
+      <TooltipTrigger
+        render={
+          <BreadcrumbItem className='font-semibold text-xs'>
+            {children} {title}
+          </BreadcrumbItem>
+        }
+      />
+      <TooltipContent
+        side={'bottom'}
+        className='cursor-pointer! hover:cursor-pointer!'
+      >
+        {title}
+      </TooltipContent>
+    </Tooltip>
   )
 }
