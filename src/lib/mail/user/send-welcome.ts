@@ -1,5 +1,3 @@
-'use server'
-
 import { WelcomeEmail } from '@/components/emails/user/welcome'
 import { NEXT_PUBLIC_URL } from '@/lib/env/env'
 import { sendEmail } from '@/src/lib/mail/send'

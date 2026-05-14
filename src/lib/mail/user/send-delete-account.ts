@@ -1,5 +1,3 @@
-'use server'
-
 import { DeleteAccount } from '@/components/emails/user/delete-account'
 import { NEXT_PUBLIC_URL } from '@/lib/env/env'
 import { sendEmail } from '@/src/lib/mail/send'

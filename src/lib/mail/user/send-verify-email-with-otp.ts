@@ -1,5 +1,3 @@
-'use server'
-
 import { VerifyEmailWithOtp } from '@/components/emails/user/verify-email-with-otp'
 import { NEXT_PUBLIC_URL } from '@/lib/env/env'
 import { sendEmail } from '@/src/lib/mail/send'

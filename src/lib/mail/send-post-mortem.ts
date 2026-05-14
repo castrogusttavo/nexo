@@ -1,5 +1,3 @@
-'use server'
-
 import { PostMortem } from '@/components/emails/post-mortem'
 import { NEXT_PUBLIC_URL } from '@/lib/env/env'
 import { sendEmail } from '@/src/lib/mail/send'

@@ -1,5 +1,3 @@
-'use server'
-
 import { ExportData } from '@/components/emails/user/export-data'
 import { sendEmail } from '@/src/lib/mail/send'
 import type { ExportDataProps } from '@/types/mail'

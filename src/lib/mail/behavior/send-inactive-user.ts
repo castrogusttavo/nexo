@@ -1,5 +1,3 @@
-'use server'
-
 import { InactiveUser } from '@/components/emails/behavior/inactive-user'
 import { NEXT_PUBLIC_URL } from '@/lib/env/env'
 import { sendEmail } from '@/src/lib/mail/send'

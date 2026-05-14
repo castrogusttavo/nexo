@@ -1,5 +1,3 @@
-'use server'
-
 import { TrialEndPromotion } from '@/components/emails/workspace/trial-end-promotion'
 import { defaultFrom, resend } from '@/src/lib/mail/client'
 import type { TrialEndPromotionProps } from '@/types/mail'

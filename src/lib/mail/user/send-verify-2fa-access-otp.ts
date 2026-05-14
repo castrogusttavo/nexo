@@ -1,5 +1,3 @@
-'use server'
-
 import { Verify2faAccessOtp } from '@/components/emails/user/verify-2fa-access-otp'
 import { NEXT_PUBLIC_URL } from '@/lib/env/env'
 import { sendEmail } from '@/src/lib/mail/send'

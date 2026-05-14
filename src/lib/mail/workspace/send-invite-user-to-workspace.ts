@@ -1,5 +1,3 @@
-'use server'
-
 import { InviteUserToWorkspace } from '@/components/emails/workspace/invite-user-to-workspace'
 import { NEXT_PUBLIC_URL } from '@/lib/env/env'
 import { defaultFrom, resend } from '@/src/lib/mail/client'
