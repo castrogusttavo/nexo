@@ -20,6 +20,7 @@ const options = [
       { cmd: "pnpm", args: ["docker:start"] },
       { cmd: "pnpm", args: ["prisma:migrate:dev"] },
       { cmd: "pnpm", args: ["prisma:studio"], background: true },
+      { cmd: "node", args: ["scripts/fix-imports.mjs", "--watch"], background: true },
       { cmd: "pnpm", args: ["exec", "next", "dev", "--turbopack"] },
     ],
   },
@@ -35,6 +36,7 @@ const options = [
     label: "Frontend",
     hint: "(Next.js)",
     commands: [
+      { cmd: "node", args: ["scripts/fix-imports.mjs", "--watch"], background: true },
       { cmd: "pnpm", args: ["exec", "next", "dev", "--turbopack"] },
     ],
   },
