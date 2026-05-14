@@ -23,12 +23,12 @@ import { H4 } from '../../../components/typography/heading/h4'
 import { Muted } from '../../../components/typography/text/muted'
 
 export function UserDropdownProfile() {
-  const router = useRouter()
+  const { push } = useRouter()
   const { data: user } = useCacheUser()
 
   async function handleSubmit() {
     await authClient.signOut()
-    router.push('/sign-in')
+    push('/sign-in')
   }
 
   return (
@@ -49,13 +49,13 @@ export function UserDropdownProfile() {
       />
       <DropdownMenuContent className='w-72 p-3 flex flex-col gap-y-3 rounded-md'>
         <DropdownMenuGroup className='rounded-lg relative h-29 w-full'>
-          <div className='absolute inset-0 bg-black/25' />
+          <div className='absolute inset-0 bg-black/25 rounded-lg' />
           <Image
-            width={262}
-            height={116}
+            fill
+            sizes='(max-width:100%) 100vw, 33vw'
             src={'/images/bg-1.jpg'}
             alt={'background'}
-            className='object-cover h-29 w-full rounded-lg'
+            className='object-cover h-29 w-full rounded-lg brightness-60'
           />
           <div className='flex flex-col gap-y-1 items-center absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2'>
             <Avatar className='rounded-full size-12'>
