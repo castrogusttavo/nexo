@@ -98,7 +98,7 @@
   },
   "devDependencies": {
     "@aws-sdk/client-s3": "^3.1043.0",
-    "@biomejs/biome": "2.4.13",
+    "@biomejs/biome": "2.4.15",
     "@commitlint/cli": "^20.5.3",
     "@commitlint/config-conventional": "^20.5.3",
     "@faker-js/faker": "^10.4.0",
