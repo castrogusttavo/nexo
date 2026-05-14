@@ -1,60 +1,28 @@
-'use client'
+import type { Metadata } from 'next'
+import { headers } from 'next/headers'
+import { auth } from '@/src/lib/auth'
+import { MembershipRepository } from '@/src/repositories/membership.repository'
+import { PlanSubscribeButton } from './plan-subscribe-button'
 
-import { useEffect, useState } from 'react'
-import { useLogger } from '@/lib/axiom/client'
+export const metadata: Metadata = {
+  title: 'Planos | Nexo',
+  description: 'Conheça os planos do Nexo e escolha o ideal para o seu time.',
+}
 
-export default function PlanPage() {
-  const log = useLogger()
-  const [loading, setLoading] = useState(false)
-  const [workspaceId, setWorkspaceId] = useState<string | null>(null)
+export default async function PlanPage() {
+  const session = await auth.api.getSession({ headers: await headers() })
 
-  useEffect(() => {
-    fetch('/api/auth/me')
-      .then((res) => res.json())
-      .then((result) => {
-        if (result.success) {
-          const memberships = result.data.memberships ?? []
-          if (memberships.length > 0) {
-            setWorkspaceId(memberships[0].workspaceId)
-          }
-        }
-      })
-  }, [])
-
-  async function handleSubscribe() {
-    if (!workspaceId) return
-    setLoading(true)
-
-    try {
-      const response = await fetch('/api/payment/plan', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          plan: 'PRO',
-          workspaceId,
-        }),
-      })
-
-      const result = await response.json()
-
-      if (result.success && result.data?.paymentUrl) {
-        window.location.href = result.data.paymentUrl
-      }
-    } catch (error) {
-      log.error('plan.subscribe_failed', {
-        component: 'PlanPage',
-        message: error instanceof Error ? error.message : String(error),
-      })
-    } finally {
-      setLoading(false)
+  let workspaceId: string | null = null
+  if (session) {
+    const memberships = await MembershipRepository.listByUser(session.user.id)
+    if (memberships.ok && memberships.value.length > 0) {
+      workspaceId = memberships.value[0].workspaceId
     }
   }
 
   return (
     <div>
-      <button disabled={loading || !workspaceId} onClick={handleSubscribe}>
-        {loading ? 'Processando...' : 'Assinar PRO'}
-      </button>
+      <PlanSubscribeButton workspaceId={workspaceId} />
     </div>
   )
 }
