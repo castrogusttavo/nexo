@@ -1,5 +1,5 @@
 import type { Metadata } from 'next'
-import { Inter } from 'next/font/google'
+import { Geist } from 'next/font/google'
 import './globals.css'
 import { Analytics } from '@vercel/analytics/next'
 import { SpeedInsights } from '@vercel/speed-insights/next'
@@ -10,7 +10,7 @@ import { WebVitals } from '@/lib/axiom/client'
 import { cn } from '@/lib/utils'
 import { Providers } from './_components/providers'
 
-const inter = Inter({ subsets: ['latin'], variable: '--font-sans' })
+const geist = Geist({ subsets: ['latin'], variable: '--font-sans' })
 
 export const metadata: Metadata = {
   title: 'AI-native project management | Nexo',
@@ -24,7 +24,7 @@ export default function RootLayout({
   children: React.ReactNode
 }>) {
   return (
-    <html lang='en' className={cn('dark', inter.variable)}>
+    <html lang='en' className={cn('dark', geist.variable)}>
       <body className='root antialiased bg-background text-primary h-screen'>
         <Suspense>
           <Providers>
