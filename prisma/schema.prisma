@@ -20,6 +20,7 @@ model User {
   sessions    Session[]
   accounts    Account[]
   twoFactors  TwoFactor[]
+  shortLinks  ShortLink[]
 
   @@map("users")
 }
@@ -216,4 +217,18 @@ model IncidentUpdate {
 
   @@index([incidentId, postedAt])
   @@map("incident_updates")
+}
+
+model ShortLink {
+  id        String        @id @default(cuid())
+  title     String        @map("title")
+  url       String        @map("url")
+  createdAt DateTime      @default(now()) @map("created_at")
+  updatedAt DateTime      @updatedAt @map("updated_at")
+
+  user      User          @relation(fields: [userId], references: [id])
+  userId    String        @map("user_id")
+
+  @@index([createdAt])
+  @@map("short_links")
 }

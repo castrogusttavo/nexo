@@ -8,6 +8,7 @@ type AuditEntity =
   | 'incident'
   | 'status_check'
   | 'storage_object'
+  | 'short_link'
 
 type AuditAction =
   | 'create'
