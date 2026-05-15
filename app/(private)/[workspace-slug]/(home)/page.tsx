@@ -7,8 +7,9 @@ import {
   HeaderBreadcrumbList,
 } from '@/app/_components/header/breadcrumb-page'
 import HeaderInternalNavigation from '@/app/_components/header/header-internal-navigation'
+import { UserShortcutLinkList } from '@/app/_components/user/shortcut-link/user-shortcut-link-list'
+import { UserShortcutLinkModal } from '@/app/_components/user/shortcut-link/user-shortcut-link-modal'
 import { UserStick } from '@/app/_components/user/sticky/user-sticky'
-import { ShortcutLink } from '@/app/_components/user/user-shortcut-link'
 import { NexoIcon } from '@/components/icon/icon'
 import { H4 } from '@/components/typography/heading/h4'
 import { Muted } from '@/components/typography/text/muted'
@@ -74,7 +75,7 @@ export default async function Page() {
           Gerenciar widgets
         </Button>
       </HeaderInternalNavigation>
-      <div className='max-w-[800px] w-full h-full mx-auto p-6 space-y-8'>
+      <div className='max-w-200 w-full h-full mx-auto p-6 space-y-8'>
         <div>
           <div className='text-center'>
             <H4>{getGreeting()}, Gusttavo Castro</H4>
@@ -85,38 +86,9 @@ export default async function Page() {
         <div className='flex flex-col flex-wrap w-full gap-y-3'>
           <div className='w-full flex items-center justify-between'>
             <Small>Links rápidos</Small>
-            <Button size='xs' variant='link'>
-              <NexoIcon icon={Add01Icon} strokeWidth={2} />
-              Adicionar link rápido
-            </Button>
+            <UserShortcutLinkModal />
           </div>
-          <div className='flex gap-2 mb-2 flex-wrap flex-1'>
-            <ShortcutLink
-              href='https://google.com'
-              title='Google'
-              daysAgo='10'
-            />
-            <ShortcutLink
-              href='https://google.com'
-              title='Google'
-              daysAgo='10'
-            />
-            <ShortcutLink
-              href='https://google.com'
-              title='Google'
-              daysAgo='10'
-            />
-            <ShortcutLink
-              href='https://google.com'
-              title='Google'
-              daysAgo='10'
-            />
-            <ShortcutLink
-              href='https://google.com'
-              title='Google'
-              daysAgo='10'
-            />
-          </div>
+          <UserShortcutLinkList />
         </div>
 
         <div className='flex flex-col flex-wrap w-full gap-y-3'>
