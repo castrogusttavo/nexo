@@ -1,5 +1,8 @@
-import { describe, expect, it } from "vitest";
-import { CreateShortLinkSchema, UpdateShortLinkSchema } from "../short-link.schema";
+import { describe, expect, it } from 'vitest'
+import {
+  CreateShortLinkSchema,
+  UpdateShortLinkSchema,
+} from '../short-link.schema'
 
 describe('CreateShortLinkSchema', () => {
   it('should accept valid title and url', () => {
@@ -55,7 +58,7 @@ describe('CreateShortLinkSchema', () => {
   it('should reject when title or url is missing', () => {
     expect(
       CreateShortLinkSchema.safeParse({
-        title: 'Only title'
+        title: 'Only title',
       }).success,
     ).toBe(false)
   })
@@ -70,7 +73,7 @@ describe('UpdateShortLinkSchema', () => {
 
   it('should accept title only', () => {
     const result = UpdateShortLinkSchema.safeParse({
-      title: 'Renamed'
+      title: 'Renamed',
     })
 
     expect(result.success).toBe(true)
@@ -78,7 +81,7 @@ describe('UpdateShortLinkSchema', () => {
 
   it('shoudl accept url only', () => {
     const result = UpdateShortLinkSchema.safeParse({
-      url: 'https://updated.com'
+      url: 'https://updated.com',
     })
 
     expect(result.success).toBe(true)
@@ -86,7 +89,7 @@ describe('UpdateShortLinkSchema', () => {
 
   it('should reject invalid URL', () => {
     const result = UpdateShortLinkSchema.safeParse({
-      url: 'invalid'
+      url: 'invalid',
     })
 
     expect(result.success).toBe(false)

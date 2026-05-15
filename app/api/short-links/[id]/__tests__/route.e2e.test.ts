@@ -81,10 +81,7 @@ describe('DELETE /api/short-links/[id]', () => {
     ])
     const link = await seedShortLinkFor(owner.id)
 
-    const res = await deleteJson(
-      `/api/short-links/${link.id}`,
-      stranger.cookie,
-    )
+    const res = await deleteJson(`/api/short-links/${link.id}`, stranger.cookie)
     expect(res.status).toBe(403)
   })
 

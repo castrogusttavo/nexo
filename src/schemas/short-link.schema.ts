@@ -1,8 +1,8 @@
-import { z } from "zod";
+import { z } from 'zod'
 
 export const CreateShortLinkSchema = z.object({
   title: z
-    .string    ()
+    .string()
     .min(2, 'Titulo deve ter ao menos 2 caracteres')
     .max(100, 'Título deve ter no máximo 100 caracteres'),
   url: z

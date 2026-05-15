@@ -26,7 +26,7 @@ export function useCreateShortLink() {
       const res = await fetch('/api/short-links', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(data)
+        body: JSON.stringify(data),
       })
       if (!res.ok) {
         const json = await res.json()
@@ -37,7 +37,7 @@ export function useCreateShortLink() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['short-links'] })
-    }
+    },
   })
 }
 
@@ -52,7 +52,7 @@ export function useUpdateShortLink(shortLinkId: string) {
       const res = await fetch(`/api/short-links/${shortLinkId}`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(data)
+        body: JSON.stringify(data),
       })
       if (!res.ok) {
         const json = await res.json()
@@ -63,7 +63,7 @@ export function useUpdateShortLink(shortLinkId: string) {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['short-links'] })
-    }
+    },
   })
 }
 
@@ -73,7 +73,7 @@ export function useDeleteShortLink(shortLinkId: string) {
   return useMutation({
     mutationFn: async (): Promise<void> => {
       const res = await fetch(`/api/short-links/${shortLinkId}`, {
-        method: 'DELETE'
+        method: 'DELETE',
       })
       if (!res.ok) {
         const json = await res.json()
@@ -82,6 +82,6 @@ export function useDeleteShortLink(shortLinkId: string) {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['short-links'] })
-    }
+    },
   })
 }

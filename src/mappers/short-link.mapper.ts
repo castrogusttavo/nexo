@@ -1,5 +1,5 @@
-import type { ShortLink } from "@prisma/client";
-import type { ShortLinkDTO } from "@/types/short-link";
+import type { ShortLink } from '@prisma/client'
+import type { ShortLinkDTO } from '@/types/short-link'
 
 export function toShortLinkDTO(shortLink: ShortLink): ShortLinkDTO {
   return {

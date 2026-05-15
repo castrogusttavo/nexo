@@ -4,7 +4,11 @@ import { getAuthSession } from '@/src/lib/auth-session'
 import { apiLimiter, consume } from '@/src/lib/rate-limit'
 import { CreateShortLinkSchema } from '@/src/schemas/short-link.schema'
 import { ShortLinkService } from '@/src/services/short-link.service'
-import { handleError, standardError, successResponse } from '@/utils/http-response'
+import {
+  handleError,
+  standardError,
+  successResponse,
+} from '@/utils/http-response'
 
 export const GET = withAxiom(async (_request: NextRequest) => {
   const auth = await getAuthSession()
@@ -33,7 +37,7 @@ export const POST = withAxiom(async (request: NextRequest) => {
     return standardError(
       'VALIDATION_ERROR',
       'Dados inválidos',
-      parsed.error.issues
+      parsed.error.issues,
     )
   }
 

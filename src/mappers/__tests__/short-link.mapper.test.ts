@@ -1,6 +1,6 @@
-import { describe, expect, it } from "vitest";
-import { createFakeShortLink } from "@/src/__tests__/factories/short-link.factory";
-import { toShortLinkDTO } from "../short-link.mapper";
+import { describe, expect, it } from 'vitest'
+import { createFakeShortLink } from '@/src/__tests__/factories/short-link.factory'
+import { toShortLinkDTO } from '../short-link.mapper'
 
 describe('toShortLinkDTO()', () => {
   it('should map all fields correctly', () => {
@@ -8,7 +8,7 @@ describe('toShortLinkDTO()', () => {
       id: 'sl-1',
       title: 'My Link',
       url: 'https://example.com',
-      userId: 'u-1'
+      userId: 'u-1',
     })
 
     const dto = toShortLinkDTO(link)

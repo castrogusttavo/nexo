@@ -20,7 +20,7 @@ export const ShortLinkService = {
 
   async getById(
     actorId: string,
-    shortLinkId: string
+    shortLinkId: string,
   ): Promise<Result<ShortLinkDTO>> {
     const result = await ShortLinkRepository.findById(shortLinkId)
 
@@ -35,7 +35,7 @@ export const ShortLinkService = {
 
   async create(
     actorId: string,
-    dto: CreateShortLinkDTO
+    dto: CreateShortLinkDTO,
   ): Promise<Result<ShortLinkDTO>> {
     const result = await ShortLinkRepository.create({
       ...dto,
@@ -48,7 +48,7 @@ export const ShortLinkService = {
         action: 'create',
         actorId,
         outcome: 'failure',
-        reason: result.error.code
+        reason: result.error.code,
       })
       return result
     }
@@ -57,7 +57,7 @@ export const ShortLinkService = {
       entity: 'short_link',
       action: 'create',
       actorId,
-      targetId: result.value.id
+      targetId: result.value.id,
     })
 
     return ok(toShortLinkDTO(result.value))
@@ -66,7 +66,7 @@ export const ShortLinkService = {
   async update(
     actorId: string,
     shortLinkId: string,
-    dto: UpdateShortLinkDTO
+    dto: UpdateShortLinkDTO,
   ): Promise<Result<ShortLinkDTO>> {
     const existing = await ShortLinkRepository.findById(shortLinkId)
     if (!existing.ok) return existing
@@ -78,7 +78,7 @@ export const ShortLinkService = {
         actorId,
         targetId: shortLinkId,
         outcome: 'failure',
-        reason: 'not_owner'
+        reason: 'not_owner',
       })
       return err(forbidden())
     }
@@ -109,10 +109,7 @@ export const ShortLinkService = {
     return ok(toShortLinkDTO(result.value))
   },
 
-  async delete(
-    actorId: string,
-    shortLinkId: string
-  ): Promise<Result<void>> {
+  async delete(actorId: string, shortLinkId: string): Promise<Result<void>> {
     const existing = await ShortLinkRepository.findById(shortLinkId)
     if (!existing.ok) return existing
 
@@ -123,7 +120,7 @@ export const ShortLinkService = {
         actorId,
         targetId: shortLinkId,
         outcome: 'failure',
-        reason: 'not_owner'
+        reason: 'not_owner',
       })
       return err(forbidden())
     }

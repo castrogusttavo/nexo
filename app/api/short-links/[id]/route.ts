@@ -4,7 +4,11 @@ import { getAuthSession } from '@/src/lib/auth-session'
 import { apiLimiter, consume } from '@/src/lib/rate-limit'
 import { UpdateShortLinkSchema } from '@/src/schemas/short-link.schema'
 import { ShortLinkService } from '@/src/services/short-link.service'
-import { handleError, standardError, successResponse } from '@/utils/http-response'
+import {
+  handleError,
+  standardError,
+  successResponse,
+} from '@/utils/http-response'
 
 type Params = { params: Promise<{ id: string }> }
 
@@ -29,7 +33,7 @@ export const PATCH = withAxiom(async (request: NextRequest, ctx: Params) => {
   const result = await ShortLinkService.update(
     auth.value.user.id,
     id,
-    parsed.data
+    parsed.data,
   )
 
   if (!result.ok) return handleError(result.error)

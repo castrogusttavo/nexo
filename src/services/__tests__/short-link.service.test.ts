@@ -106,7 +106,11 @@ describe('ShortLinkService', () => {
   describe('update()', () => {
     it('should update when actor is owner', async () => {
       const existing = createFakeShortLink({ id: 'sl1', userId: 'u1' })
-      const updated = createFakeShortLink({ id: 'sl1', userId: 'u1', title: 'New' })
+      const updated = createFakeShortLink({
+        id: 'sl1',
+        userId: 'u1',
+        title: 'New',
+      })
       mockedRepo.findById.mockResolvedValue(ok(existing))
       mockedRepo.update.mockResolvedValue(ok(updated))
 

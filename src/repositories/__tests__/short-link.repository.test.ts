@@ -1,9 +1,9 @@
-import { describe, expect, it } from "vitest";
-import { seedShortLink } from "@/src/__tests__/factories/short-link.factory";
-import { seedUser } from "@/src/__tests__/factories/user.factory";
-import { expectErr, expectOk } from "@/src/__tests__/helpers/result.helpers";
-import { prisma } from "@/src/lib/prisma";
-import { ShortLinkRepository } from "../short-link.repository";
+import { describe, expect, it } from 'vitest'
+import { seedShortLink } from '@/src/__tests__/factories/short-link.factory'
+import { seedUser } from '@/src/__tests__/factories/user.factory'
+import { expectErr, expectOk } from '@/src/__tests__/helpers/result.helpers'
+import { prisma } from '@/src/lib/prisma'
+import { ShortLinkRepository } from '../short-link.repository'
 
 describe('ShortLinkRepository', () => {
   describe('findById()', () => {
@@ -81,7 +81,7 @@ describe('ShortLinkRepository', () => {
       const result = await ShortLinkRepository.create({
         title: 'Orphan',
         url: 'https://example.com',
-        userId: 'nonexistent-user'
+        userId: 'nonexistent-user',
       })
 
       expectErr(result, 'DATABASE_ERROR')
@@ -94,7 +94,7 @@ describe('ShortLinkRepository', () => {
       const seeded = await seedShortLink(user.id, { title: 'Old' })
 
       const result = await ShortLinkRepository.update(seeded.id, {
-        title: 'New'
+        title: 'New',
       })
 
       const link = expectOk(result)
@@ -106,7 +106,7 @@ describe('ShortLinkRepository', () => {
       const seeded = await seedShortLink(user.id)
 
       const result = await ShortLinkRepository.update(seeded.id, {
-        url: 'https://updated.example.com'
+        url: 'https://updated.example.com',
       })
 
       const link = expectOk(result)
@@ -115,7 +115,7 @@ describe('ShortLinkRepository', () => {
 
     it('should return DATABASE_ERROR when short link does not exist', async () => {
       const result = await ShortLinkRepository.update('nonexistent', {
-        title: 'X'
+        title: 'X',
       })
 
       expectErr(result, 'DATABASE_ERROR')
@@ -131,7 +131,7 @@ describe('ShortLinkRepository', () => {
 
       expectOk(result)
       const link = await prisma.shortLink.findUnique({
-        where: { id: seeded.id }
+        where: { id: seeded.id },
       })
       expect(link).toBeNull()
     })
