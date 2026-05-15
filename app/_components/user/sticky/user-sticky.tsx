@@ -33,6 +33,7 @@ export function UserStick() {
   const [color, setColor] = useState('bg-red-950')
 
   const editor = useEditor({
+    immediatelyRender: false,
     extensions: [StarterKit, TaskList, TaskItem.configure({ nested: false })],
     content: '',
     editorProps: {
