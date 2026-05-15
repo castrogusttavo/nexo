@@ -19,14 +19,11 @@ function formatRelativeTime(iso: string): string {
   const months = Math.round(days / 30)
   const years = Math.round(months / 365)
 
-  if (Math.abs(years) >= 1)
-    return relativeTimeFormatter.format(years, 'year')
+  if (Math.abs(years) >= 1) return relativeTimeFormatter.format(years, 'year')
   if (Math.abs(months) >= 1)
     return relativeTimeFormatter.format(months, 'month')
-  if (Math.abs(days) >= 1)
-    return relativeTimeFormatter.format(days, 'day')
-  if (Math.abs(hours) >= 1)
-    return relativeTimeFormatter.format(hours, 'hour')
+  if (Math.abs(days) >= 1) return relativeTimeFormatter.format(days, 'day')
+  if (Math.abs(hours) >= 1) return relativeTimeFormatter.format(hours, 'hour')
   if (Math.abs(minutes) >= 1)
     return relativeTimeFormatter.format(minutes, 'minute')
 
@@ -52,7 +49,9 @@ export function UserShortcutLink({ title, url, createdAt }: LinkProps) {
         </div>
         <div>
           <Muted className='text-primary'>{title}</Muted>
-          <Muted className='text-[0.75rem]'>{formatRelativeTime(createdAt)}</Muted>
+          <Muted className='text-[0.75rem]'>
+            {formatRelativeTime(createdAt)}
+          </Muted>
         </div>
       </div>
       <div>

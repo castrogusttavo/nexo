@@ -13,7 +13,12 @@ import {
   DialogTitle,
   DialogTrigger,
 } from '@/components/ui/dialog'
-import { Field, FieldError, FieldGroup, FieldLabel } from '@/components/ui/field'
+import {
+  Field,
+  FieldError,
+  FieldGroup,
+  FieldLabel,
+} from '@/components/ui/field'
 import { Input } from '@/components/ui/input'
 import { useCreateShortLink } from '@/src/hooks/use-short-link'
 
@@ -32,7 +37,7 @@ export function UserShortcutLinkModal() {
   const [open, setOpen] = useState(false)
   const [title, setTitle] = useState('')
   const [url, setUrl] = useState('')
-  const [fieldErrors, setFieldErrors] = useState < {
+  const [fieldErrors, setFieldErrors] = useState<{
     title?: string
     url?: string
   }>({})
@@ -100,7 +105,7 @@ export function UserShortcutLinkModal() {
             )}
             <Field data-invalid={!!fieldErrors.url || undefined}>
               <FieldLabel>
-                URL <span className="text-destructive">*</span>
+                URL <span className='text-destructive'>*</span>
               </FieldLabel>
               <Input
                 id='url'
@@ -114,7 +119,7 @@ export function UserShortcutLinkModal() {
             </Field>
             <Field data-invalid={!!fieldErrors.title || undefined}>
               <FieldLabel>
-                Título <span className="text-destructive">*</span>
+                Título <span className='text-destructive'>*</span>
               </FieldLabel>
               <Input
                 id='title'
@@ -124,7 +129,9 @@ export function UserShortcutLinkModal() {
                 disabled={isPending}
                 placeholder='Como você gostaria de ver este link'
               />
-              {fieldErrors.title && <FieldError>{fieldErrors.title}</FieldError>}
+              {fieldErrors.title && (
+                <FieldError>{fieldErrors.title}</FieldError>
+              )}
             </Field>
           </FieldGroup>
           <DialogFooter>
@@ -135,7 +142,7 @@ export function UserShortcutLinkModal() {
                 </Button>
               }
             />
-            <Button type="submit" disabled={isPending}>
+            <Button type='submit' disabled={isPending}>
               {isPending ? 'Adicionando...' : 'Adicionar Link rápido'}
             </Button>
           </DialogFooter>

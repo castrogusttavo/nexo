@@ -1,9 +1,9 @@
 'use client'
 
-import { Muted } from "@/components/typography/text/muted"
-import { Skeleton } from "@/components/ui/skeleton"
-import { useShortLinks } from "@/src/hooks/use-short-link"
-import { UserShortcutLink } from "./user-shortcut-link"
+import { Muted } from '@/components/typography/text/muted'
+import { Skeleton } from '@/components/ui/skeleton'
+import { useShortLinks } from '@/src/hooks/use-short-link'
+import { UserShortcutLink } from './user-shortcut-link'
 
 const SKELETON_KEYS = ['s1', 's2', 's3', 's4', 's5']
 
@@ -40,6 +40,6 @@ export function UserShortcutLinkList() {
           />
         )
       })}
-   </div>
- )
+    </div>
+  )
 }
