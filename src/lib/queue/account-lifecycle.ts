@@ -6,8 +6,10 @@ export const ACCOUNT_DELETION_GRACE_DAYS = 30
 export const ACCOUNT_DELETION_GRACE_MS =
   ACCOUNT_DELETION_GRACE_DAYS * 24 * 60 * 60 * 1000
 
+// BullMQ rejects ':' in custom job IDs because it uses ':' as the
+// Redis key separator internally.
 function deleteAccountJobId(userId: string): string {
-  return `delete-account:${userId}`
+  return `delete-account-${userId}`
 }
 
 export async function scheduleAccountDeletion(

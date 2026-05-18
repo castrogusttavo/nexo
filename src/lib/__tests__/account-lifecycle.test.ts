@@ -35,7 +35,8 @@ describe('account-lifecycle queue helpers', () => {
     const [jobName, payload, opts] = addMock.mock.calls[0]
     expect(jobName).toBe('delete-account')
     expect(payload).toEqual({ userId: 'user-1' })
-    expect(opts.jobId).toBe('delete-account:user-1')
+    expect(opts.jobId).toBe('delete-account-user-1')
+    expect(opts.jobId).not.toContain(':')
     expect(opts.delay).toBeGreaterThanOrEqual(0)
   })
 
@@ -53,7 +54,7 @@ describe('account-lifecycle queue helpers', () => {
     removeMock.mockClear()
     const ok = await cancelAccountDeletion('user-1')
 
-    expect(removeMock).toHaveBeenCalledWith('delete-account:user-1')
+    expect(removeMock).toHaveBeenCalledWith('delete-account-user-1')
     expect(ok).toBe(true)
   })
 
