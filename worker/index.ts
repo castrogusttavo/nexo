@@ -1,30 +1,36 @@
-import { Worker } from 'bullmq'
+import { type Job, Worker } from 'bullmq'
 import { logger } from '../lib/axiom/logger'
 import {
   closeQueueConnection,
   getQueueConnection,
 } from '../src/lib/queue/connection'
 import { QueueName } from '../src/lib/queue/jobs'
+import { processDataRetention } from '../src/lib/queue/processors/data-retention'
 import { closeQueues } from '../src/lib/queue/queues'
+import { scheduleDataRetentionJobs } from '../src/lib/queue/scheduler'
 
 const workers: Worker[] = []
 
-function registerWorker(name: QueueName): Worker {
-  const worker = new Worker(
-    name,
-    async (job) => {
-      logger.warn('queue.job.unimplemented', {
-        component: 'Worker',
-        queue: name,
-        jobName: job.name,
-        jobId: job.id,
-      })
-      throw new Error(
-        `Processor not registered for queue=${name} job=${job.name}`,
-      )
-    },
-    { connection: getQueueConnection() },
-  )
+type Processor = (job: Job) => Promise<unknown>
+
+function rejectUnimplemented(queue: QueueName): Processor {
+  return async (job) => {
+    logger.warn('queue.job.unimplemented', {
+      component: 'Worker',
+      queue,
+      jobName: job.name,
+      jobId: job.id,
+    })
+    throw new Error(
+      `Processor not registered for queue=${queue} job=${job.name}`,
+    )
+  }
+}
+
+function registerWorker(name: QueueName, processor: Processor): Worker {
+  const worker = new Worker(name, processor, {
+    connection: getQueueConnection(),
+  })
 
   worker.on('completed', (job) => {
     logger.info('queue.job.completed', {
@@ -88,9 +94,16 @@ async function shutdown(signal: NodeJS.Signals): Promise<void> {
   process.exit(0)
 }
 
-function main() {
-  workers.push(registerWorker(QueueName.DataRetention))
-  workers.push(registerWorker(QueueName.AccountLifecycle))
+async function main(): Promise<void> {
+  workers.push(registerWorker(QueueName.DataRetention, processDataRetention))
+  workers.push(
+    registerWorker(
+      QueueName.AccountLifecycle,
+      rejectUnimplemented(QueueName.AccountLifecycle),
+    ),
+  )
+
+  await scheduleDataRetentionJobs()
 
   logger.info('queue.worker.started', {
     component: 'Worker',
@@ -101,4 +114,13 @@ function main() {
   process.on('SIGINT', shutdown)
 }
 
-main()
+main().catch(async (err) => {
+  const e = err as Error
+  logger.error('queue.worker.bootstrap_error', {
+    component: 'Worker',
+    message: e.message,
+    stack: e.stack,
+  })
+  await logger.flush()
+  process.exit(1)
+})
