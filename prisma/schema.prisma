@@ -7,21 +7,24 @@ datasource db {
 }
 
 model User {
-  id               String   @id @default(cuid())
-  name             String
-  email            String   @unique
-  emailVerified    Boolean  @default(false) @map("email_verified")
-  image            String?
-  twoFactorEnabled Boolean  @default(false) @map("two_factor_enabled")
-  createdAt        DateTime @default(now()) @map("created_at")
-  updatedAt        DateTime @updatedAt @map("updated_at")
+  id                   String    @id @default(cuid())
+  name                 String
+  email                String    @unique
+  emailVerified        Boolean   @default(false) @map("email_verified")
+  image                String?
+  twoFactorEnabled     Boolean   @default(false) @map("two_factor_enabled")
+  deletionScheduledAt  DateTime? @map("deletion_scheduled_at")
+  createdAt            DateTime  @default(now()) @map("created_at")
+  updatedAt            DateTime  @updatedAt @map("updated_at")
 
   memberships Membership[]
   sessions    Session[]
   accounts    Account[]
   twoFactors  TwoFactor[]
   shortLinks  ShortLink[]
+  stickyNotes StickyNote[]
 
+  @@index([deletionScheduledAt])
   @@map("users")
 }
 
@@ -226,9 +229,22 @@ model ShortLink {
   createdAt DateTime      @default(now()) @map("created_at")
   updatedAt DateTime      @updatedAt @map("updated_at")
 
-  user      User          @relation(fields: [userId], references: [id])
+  user      User          @relation(fields: [userId], references: [id], onDelete: Cascade)
   userId    String        @map("user_id")
 
   @@index([createdAt])
   @@map("short_links")
+}
+
+model StickyNote {
+  id        String        @id @default(cuid())
+  content   String        @map("content")
+  createdAt DateTime      @default(now()) @map("created_at")
+  updatedAt DateTime      @updatedAt @map("updated_at")
+
+  user      User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId    String        @map("user_id")
+
+  @@index([createdAt])
+  @@map("sticky_notes")
 }
