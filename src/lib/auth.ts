@@ -68,6 +68,13 @@ export const auth = betterAuth({
   },
   account: {
     accountLinking: { enabled: true },
+    // Encrypt OAuth access/refresh/id tokens at rest using better-auth's
+    // native XChaCha20-Poly1305 envelope ($ba$<version>$<ct>). Keys come
+    // from BETTER_AUTH_SECRETS (versioned, comma-separated "v:secret"
+    // pairs); BETTER_AUTH_SECRET stays as the legacy fallback for
+    // pre-envelope payloads. Existing plain tokens are read as-is and
+    // re-encrypted lazily on the next OAuth refresh/login.
+    encryptOAuthTokens: true,
   },
   session: {
     cookieCache: {

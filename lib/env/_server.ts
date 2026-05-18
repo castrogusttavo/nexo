@@ -13,6 +13,7 @@ const serverEnv = {
   MINIO_USER: process.env.MINIO_USER,
   MINIO_PASSWORD: process.env.MINIO_PASSWORD,
   BETTER_AUTH_SECRET: process.env.BETTER_AUTH_SECRET,
+  BETTER_AUTH_SECRETS: process.env.BETTER_AUTH_SECRETS,
   BETTER_AUTH_URL: process.env.BETTER_AUTH_URL,
   GOOGLE_CLIENT_ID: process.env.GOOGLE_CLIENT_ID,
   GOOGLE_CLIENT_SECRET: process.env.GOOGLE_CLIENT_SECRET,
@@ -47,6 +48,13 @@ const serverEnvSchema = z.object({
   MINIO_USER: z.string().min(3).max(63),
   MINIO_PASSWORD: z.string().min(8).max(128),
   BETTER_AUTH_SECRET: z.string().min(16).startsWith('ba_'),
+  BETTER_AUTH_SECRETS: z
+    .string()
+    .regex(/^\d+:.{32,}(,\d+:.{32,})*$/, {
+      message:
+        'BETTER_AUTH_SECRETS must be "v:secret[,v:secret...]" with secrets >= 32 chars',
+    })
+    .optional(),
   BETTER_AUTH_URL: z.url().startsWith('http'),
   GOOGLE_CLIENT_ID: z.string().min(10).endsWith('.apps.googleusercontent.com'),
   GOOGLE_CLIENT_SECRET: z.string().min(10).startsWith('GOCSPX-'),
@@ -84,6 +92,7 @@ export const {
   MINIO_USER,
   MINIO_PASSWORD,
   BETTER_AUTH_SECRET,
+  BETTER_AUTH_SECRETS,
   BETTER_AUTH_URL,
   GOOGLE_CLIENT_ID,
   GOOGLE_CLIENT_SECRET,
