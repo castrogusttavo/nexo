@@ -44,3 +44,14 @@ export const PATCH = withAxiom(async (request: NextRequest) => {
 
   return successResponse(result.value)
 })
+
+export const DELETE = withAxiom(async () => {
+  const auth = await getAuthSession()
+  if (!auth.ok) return handleError(auth.error)
+
+  const result = await UserService.deleteAccount(auth.value.user.id)
+
+  if (!result.ok) return handleError(result.error)
+
+  return successResponse(result.value, 202)
+})

@@ -182,7 +182,7 @@
         }
       }
     },
-    "/auth/me": {
+    "/users/me": {
       "get": {
         "tags": ["Usuário"],
         "summary": "Obter perfil do usuário autenticado",

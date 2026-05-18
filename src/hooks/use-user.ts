@@ -3,7 +3,7 @@ import type { UserDTO } from '@/types/user'
 import { authClient } from '../lib/auth-client'
 
 async function getUser(): Promise<UserDTO> {
-  const res = await fetch('/api/auth/me')
+  const res = await fetch('/api/users/me')
   if (!res.ok) throw new Error('Erro ao buscar usuário')
   const json = await res.json()
   return json.data as UserDTO
