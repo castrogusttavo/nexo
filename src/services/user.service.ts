@@ -1,12 +1,12 @@
 import { auditMutation } from '@/lib/axiom/audit'
 import { logger } from '@/lib/axiom/logger'
 import { UserCache } from '@/src/cache/user.cache'
-import { conflict } from '@/src/errors'
+import { conflict, databaseError } from '@/src/errors'
 import { sendDeleteAccountEmail } from '@/src/lib/mail/user/send-delete-account'
 import { prisma } from '@/src/lib/prisma'
 import {
-  ACCOUNT_DELETION_GRACE_MS,
   cancelAccountDeletion,
+  getAccountDeletionGraceMs,
   scheduleAccountDeletion,
 } from '@/src/lib/queue/account-lifecycle'
 import { err, ok, type Result } from '@/src/lib/result'
@@ -129,7 +129,7 @@ export const UserService = {
       )
     }
 
-    const scheduledAt = new Date(Date.now() + ACCOUNT_DELETION_GRACE_MS)
+    const scheduledAt = new Date(Date.now() + getAccountDeletionGraceMs())
 
     const scheduleResult = await UserRepository.scheduleDeletion(
       actorId,
@@ -137,7 +137,20 @@ export const UserService = {
     )
     if (!scheduleResult.ok) return scheduleResult
 
-    await scheduleAccountDeletion(actorId, scheduledAt)
+    try {
+      await scheduleAccountDeletion(actorId, scheduledAt)
+    } catch (error) {
+      // Queue enqueue failed: revert the DB so the user isn't left
+      // marked-for-deletion without a job to actually process it.
+      const message = error instanceof Error ? error.message : String(error)
+      logger.error('user.delete_account.enqueue_failed', {
+        component: 'UserService',
+        userId: actorId,
+        message,
+      })
+      await UserRepository.clearDeletionSchedule(actorId)
+      return err(databaseError('Failed to enqueue account deletion'))
+    }
 
     await prisma.session.deleteMany({ where: { userId: actorId } })
 

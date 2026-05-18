@@ -107,6 +107,11 @@ export const auth = betterAuth({
             meta: { sessionId: session.id },
           })
 
+          // Auto-cancel pending account deletion when a user logs back
+          // in during the grace period: re-authenticating signals they
+          // changed their mind. This is intentional UX, not a bug — but
+          // it means manual end-to-end tests of the deletion flow must
+          // NOT relog before the worker fires, or the schedule is wiped.
           try {
             const result = await UserService.cancelDeletion(session.userId)
             if (result.ok && result.value.canceled) {

@@ -13,6 +13,7 @@ vi.mock('@/src/repositories/user.repository')
 vi.mock('@/src/cache/user.cache')
 vi.mock('@/src/lib/queue/account-lifecycle', () => ({
   ACCOUNT_DELETION_GRACE_MS: 30 * 24 * 60 * 60 * 1000,
+  getAccountDeletionGraceMs: () => 30 * 24 * 60 * 60 * 1000,
   scheduleAccountDeletion: vi.fn(),
   cancelAccountDeletion: vi.fn(),
 }))
@@ -285,6 +286,26 @@ describe('UserService', () => {
       const result = await UserService.deleteAccount('user-1')
 
       expectErr(result, 'RESOURCE_NOT_FOUND')
+    })
+
+    it('reverts the DB schedule when queue enqueue fails', async () => {
+      const user = createFakeUser({ id: 'user-1' })
+      mockedRepo.findById.mockResolvedValue(ok(user))
+      mockedRepo.countBlockingSoleOwnerWorkspaces.mockResolvedValue(ok(0))
+      mockedRepo.scheduleDeletion.mockImplementation(async (_id, at) =>
+        ok({ ...user, deletionScheduledAt: at }),
+      )
+      mockedRepo.clearDeletionSchedule.mockResolvedValue(
+        ok({ ...user, deletionScheduledAt: null }),
+      )
+      mockedScheduleDeletion.mockRejectedValueOnce(new Error('queue boom'))
+
+      const result = await UserService.deleteAccount('user-1')
+
+      expectErr(result, 'DATABASE_ERROR')
+      expect(mockedRepo.clearDeletionSchedule).toHaveBeenCalledWith('user-1')
+      expect(mockedSessionDelete).not.toHaveBeenCalled()
+      expect(mockedSendEmail).not.toHaveBeenCalled()
     })
 
     it('does not fail the request when email send throws', async () => {

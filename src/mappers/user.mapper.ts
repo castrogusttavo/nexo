@@ -9,6 +9,7 @@ export function toUserDTO(user: UserWithMemberships): UserDTO {
     emailVerified: user.emailVerified,
     image: user.image,
     createdAt: user.createdAt.toISOString(),
+    deletionScheduledAt: user.deletionScheduledAt?.toISOString() ?? null,
     memberships: user.memberships.map((m) => ({
       workspaceId: m.workspaceId,
       slug: m.workspace.slug,

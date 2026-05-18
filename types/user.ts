@@ -12,5 +12,6 @@ export interface UserDTO {
   emailVerified: boolean
   image: string | null
   createdAt: string
+  deletionScheduledAt: string | null
   memberships: MembershipDTO[]
 }

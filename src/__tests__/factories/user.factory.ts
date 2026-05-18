@@ -27,6 +27,7 @@ export function createFakeUserDTO(overrides?: Partial<UserDTO>): UserDTO {
     emailVerified: false,
     image: null,
     createdAt: new Date().toISOString(),
+    deletionScheduledAt: null,
     memberships: [],
     ...overrides,
   }

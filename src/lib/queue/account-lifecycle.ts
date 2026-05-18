@@ -1,10 +1,19 @@
 import { logger } from '@/lib/axiom/logger'
+import { ACCOUNT_DELETION_GRACE_OVERRIDE_MS } from '@/lib/env/_server'
 import { AccountLifecycleJob } from './jobs'
 import { getAccountLifecycleQueue } from './queues'
 
 export const ACCOUNT_DELETION_GRACE_DAYS = 30
 export const ACCOUNT_DELETION_GRACE_MS =
   ACCOUNT_DELETION_GRACE_DAYS * 24 * 60 * 60 * 1000
+
+// Allow shortening the grace period in dev/staging via env var
+// (e.g. ACCOUNT_DELETION_GRACE_OVERRIDE_MS=60000 → 1 minute).
+// Ignored in tests so the constant-based assertions stay deterministic.
+export function getAccountDeletionGraceMs(): number {
+  if (process.env.NODE_ENV === 'test') return ACCOUNT_DELETION_GRACE_MS
+  return ACCOUNT_DELETION_GRACE_OVERRIDE_MS ?? ACCOUNT_DELETION_GRACE_MS
+}
 
 // BullMQ rejects ':' in custom job IDs because it uses ':' as the
 // Redis key separator internally.

@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Field, FieldError, FieldLabel } from '@/components/ui/field'
@@ -9,6 +9,15 @@ import { Switch } from '@/components/ui/switch'
 import { authClient } from '@/src/lib/auth-client'
 
 type Mode = 'idle' | 'enabling' | 'disabling'
+type DeleteState = 'idle' | 'confirming' | 'pending'
+type CancelState = 'idle' | 'pending'
+
+interface ProfileResponse {
+  success: boolean
+  data: {
+    deletionScheduledAt: string | null
+  }
+}
 
 export default function SettingsPage() {
   const { data: session, isPending: sessionPending } = authClient.useSession()
@@ -19,6 +28,73 @@ export default function SettingsPage() {
   const [error, setError] = useState<string | null>(null)
   const [busy, setBusy] = useState(false)
   const [backupCodes, setBackupCodes] = useState<string[] | null>(null)
+
+  const [deletionScheduledAt, setDeletionScheduledAt] = useState<string | null>(
+    null,
+  )
+  const [deleteState, setDeleteState] = useState<DeleteState>('idle')
+  const [cancelState, setCancelState] = useState<CancelState>('idle')
+  const [deleteError, setDeleteError] = useState<string | null>(null)
+
+  const refreshDeletionStatus = useCallback(async () => {
+    try {
+      const res = await fetch('/api/users/me', { cache: 'no-store' })
+      if (!res.ok) return
+      const json: ProfileResponse = await res.json()
+      setDeletionScheduledAt(json.data.deletionScheduledAt)
+    } catch {
+      // ignore — UI just won't update; user can refresh
+    }
+  }, [])
+
+  useEffect(() => {
+    refreshDeletionStatus()
+  }, [refreshDeletionStatus])
+
+  async function handleDeleteAccount() {
+    setDeleteError(null)
+    setDeleteState('pending')
+    try {
+      const res = await fetch('/api/users/me', { method: 'DELETE' })
+      if (!res.ok) {
+        const json = await res.json().catch(() => null)
+        setDeleteError(
+          json?.error?.message ?? 'Não foi possível agendar a exclusão',
+        )
+        setDeleteState('confirming')
+        return
+      }
+      // DB sessions are revoked server-side, but better-auth's cookie
+      // cache (5min) would keep this tab "logged in". Sign out on the
+      // client to drop the cookie immediately.
+      await authClient.signOut()
+      window.location.href = '/'
+    } catch (e) {
+      setDeleteError(e instanceof Error ? e.message : 'Erro de rede')
+      setDeleteState('confirming')
+    }
+  }
+
+  async function handleCancelDeletion() {
+    setDeleteError(null)
+    setCancelState('pending')
+    try {
+      const res = await fetch('/api/users/me/deletion', { method: 'DELETE' })
+      if (!res.ok) {
+        const json = await res.json().catch(() => null)
+        setDeleteError(
+          json?.error?.message ?? 'Não foi possível cancelar a exclusão',
+        )
+        setCancelState('idle')
+        return
+      }
+      setDeletionScheduledAt(null)
+      setCancelState('idle')
+    } catch (e) {
+      setDeleteError(e instanceof Error ? e.message : 'Erro de rede')
+      setCancelState('idle')
+    }
+  }
 
   function reset() {
     setMode('idle')
@@ -84,8 +160,12 @@ export default function SettingsPage() {
     }
   }
 
+  const scheduledDate = deletionScheduledAt
+    ? new Date(deletionScheduledAt).toLocaleString('pt-BR')
+    : null
+
   return (
-    <div className='flex-1 p-6 max-w-3xl mx-auto w-full'>
+    <div className='flex-1 p-6 max-w-3xl mx-auto w-full space-y-6'>
       <Card>
         <CardHeader>
           <CardTitle>Verificação em duas etapas (2FA)</CardTitle>
@@ -170,6 +250,84 @@ export default function SettingsPage() {
                   Copiar códigos
                 </Button>
               </div>
+            </div>
+          )}
+        </CardContent>
+      </Card>
+
+      <Card className='border-destructive/40'>
+        <CardHeader>
+          <CardTitle className='text-destructive'>Excluir conta</CardTitle>
+        </CardHeader>
+        <CardContent className='space-y-4'>
+          {scheduledDate ? (
+            <div className='space-y-3'>
+              <p className='text-sm'>
+                Exclusão agendada para{' '}
+                <span className='font-medium'>{scheduledDate}</span>. Você pode
+                cancelar a qualquer momento antes dessa data.
+              </p>
+              {deleteError && (
+                <p className='text-sm text-destructive'>{deleteError}</p>
+              )}
+              <div className='flex justify-end'>
+                <Button
+                  type='button'
+                  variant='outline'
+                  onClick={handleCancelDeletion}
+                  disabled={cancelState === 'pending'}
+                >
+                  {cancelState === 'pending'
+                    ? 'Cancelando...'
+                    : 'Cancelar exclusão'}
+                </Button>
+              </div>
+            </div>
+          ) : (
+            <div className='space-y-3'>
+              <p className='text-sm text-muted-foreground'>
+                A conta será agendada para exclusão. Suas sessões serão
+                encerradas e você precisará entrar novamente para cancelar.
+              </p>
+              {deleteError && (
+                <p className='text-sm text-destructive'>{deleteError}</p>
+              )}
+              {deleteState === 'idle' && (
+                <div className='flex justify-end'>
+                  <Button
+                    type='button'
+                    variant='destructive'
+                    onClick={() => setDeleteState('confirming')}
+                  >
+                    Excluir conta
+                  </Button>
+                </div>
+              )}
+              {deleteState !== 'idle' && (
+                <div className='flex justify-end gap-2'>
+                  <Button
+                    type='button'
+                    variant='ghost'
+                    onClick={() => {
+                      setDeleteState('idle')
+                      setDeleteError(null)
+                    }}
+                    disabled={deleteState === 'pending'}
+                  >
+                    Cancelar
+                  </Button>
+                  <Button
+                    type='button'
+                    variant='destructive'
+                    onClick={handleDeleteAccount}
+                    disabled={deleteState === 'pending'}
+                  >
+                    {deleteState === 'pending'
+                      ? 'Agendando...'
+                      : 'Confirmar exclusão'}
+                  </Button>
+                </div>
+              )}
             </div>
           )}
         </CardContent>
