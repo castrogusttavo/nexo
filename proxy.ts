@@ -71,6 +71,13 @@ export function proxy(request: NextRequest, event: NextFetchEvent) {
     request.cookies.get('__Secure-better-auth.session_token')?.value
 
   if (!sessionToken) {
+    // API routes should return 401, not redirect to the sign-in page.
+    if (pathname.startsWith('/api/')) {
+      return NextResponse.json(
+        { success: false, statusCode: 401, error: { code: 'UNAUTHORIZED' } },
+        { status: 401 },
+      )
+    }
     return NextResponse.redirect(new URL('/sign-in', request.url))
   }
 
