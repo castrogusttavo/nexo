@@ -1,6 +1,9 @@
 import { describe, expect, it } from 'vitest'
+import { seedMembership } from '@/src/__tests__/factories/membership.factory'
 import { seedUser } from '@/src/__tests__/factories/user.factory'
+import { seedWorkspace } from '@/src/__tests__/factories/workspace.factory'
 import { expectErr, expectOk } from '@/src/__tests__/helpers/result.helpers'
+import { prisma } from '@/src/lib/prisma'
 import { UserRepository } from '@/src/repositories/user.repository'
 
 describe('UserRepository', () => {
@@ -87,6 +90,156 @@ describe('UserRepository', () => {
 
       const user = expectOk(result)
       expect(user.email).toBe('new@example.com')
+    })
+  })
+
+  describe('scheduleDeletion()', () => {
+    it('should set deletionScheduledAt', async () => {
+      const seeded = await seedUser()
+      const when = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000)
+
+      const result = await UserRepository.scheduleDeletion(seeded.id, when)
+
+      const user = expectOk(result)
+      expect(user.deletionScheduledAt?.toISOString()).toBe(when.toISOString())
+    })
+
+    it('should return RESOURCE_NOT_FOUND for unknown user', async () => {
+      const result = await UserRepository.scheduleDeletion(
+        'nonexistent',
+        new Date(),
+      )
+      expectErr(result, 'RESOURCE_NOT_FOUND')
+    })
+  })
+
+  describe('clearDeletionSchedule()', () => {
+    it('should null out deletionScheduledAt', async () => {
+      const seeded = await seedUser()
+      await UserRepository.scheduleDeletion(seeded.id, new Date())
+
+      const result = await UserRepository.clearDeletionSchedule(seeded.id)
+
+      const user = expectOk(result)
+      expect(user.deletionScheduledAt).toBeNull()
+    })
+  })
+
+  describe('deleteHard()', () => {
+    it('should remove the user and cascade short-links', async () => {
+      const seeded = await seedUser()
+      await prisma.shortLink.create({
+        data: { title: 't', url: 'https://x.test', userId: seeded.id },
+      })
+
+      const result = await UserRepository.deleteHard(seeded.id)
+
+      expectOk(result)
+      expect(
+        await prisma.user.findUnique({ where: { id: seeded.id } }),
+      ).toBeNull()
+      expect(
+        await prisma.shortLink.count({ where: { userId: seeded.id } }),
+      ).toBe(0)
+    })
+
+    it('should return RESOURCE_NOT_FOUND for unknown user', async () => {
+      const result = await UserRepository.deleteHard('nonexistent')
+      expectErr(result, 'RESOURCE_NOT_FOUND')
+    })
+  })
+
+  describe('countBlockingSoleOwnerWorkspaces()', () => {
+    it('returns 0 when user has no workspaces', async () => {
+      const seeded = await seedUser()
+
+      const result = await UserRepository.countBlockingSoleOwnerWorkspaces(
+        seeded.id,
+      )
+
+      expect(expectOk(result)).toBe(0)
+    })
+
+    it('returns 0 when user is sole OWNER but has no other members', async () => {
+      const user = await seedUser()
+      const ws = await seedWorkspace()
+      await seedMembership({
+        userId: user.id,
+        workspaceId: ws.id,
+        role: 'OWNER',
+      })
+
+      const result = await UserRepository.countBlockingSoleOwnerWorkspaces(
+        user.id,
+      )
+
+      expect(expectOk(result)).toBe(0)
+    })
+
+    it('returns 0 when another OWNER exists in the same workspace', async () => {
+      const user = await seedUser()
+      const other = await seedUser()
+      const ws = await seedWorkspace()
+      await seedMembership({
+        userId: user.id,
+        workspaceId: ws.id,
+        role: 'OWNER',
+      })
+      await seedMembership({
+        userId: other.id,
+        workspaceId: ws.id,
+        role: 'OWNER',
+      })
+
+      const result = await UserRepository.countBlockingSoleOwnerWorkspaces(
+        user.id,
+      )
+
+      expect(expectOk(result)).toBe(0)
+    })
+
+    it('returns count when user is sole OWNER and other non-OWNER members exist', async () => {
+      const user = await seedUser()
+      const member = await seedUser()
+      const ws = await seedWorkspace()
+      await seedMembership({
+        userId: user.id,
+        workspaceId: ws.id,
+        role: 'OWNER',
+      })
+      await seedMembership({
+        userId: member.id,
+        workspaceId: ws.id,
+        role: 'MEMBER',
+      })
+
+      const result = await UserRepository.countBlockingSoleOwnerWorkspaces(
+        user.id,
+      )
+
+      expect(expectOk(result)).toBe(1)
+    })
+
+    it('ignores workspaces where user is not OWNER', async () => {
+      const user = await seedUser()
+      const owner = await seedUser()
+      const ws = await seedWorkspace()
+      await seedMembership({
+        userId: owner.id,
+        workspaceId: ws.id,
+        role: 'OWNER',
+      })
+      await seedMembership({
+        userId: user.id,
+        workspaceId: ws.id,
+        role: 'MEMBER',
+      })
+
+      const result = await UserRepository.countBlockingSoleOwnerWorkspaces(
+        user.id,
+      )
+
+      expect(expectOk(result)).toBe(0)
     })
   })
 })

@@ -12,6 +12,7 @@ export function createFakeUser(overrides?: Partial<User>): User {
     emailVerified: false,
     image: null,
     twoFactorEnabled: false,
+    deletionScheduledAt: null,
     createdAt: now,
     updatedAt: now,
     ...overrides,

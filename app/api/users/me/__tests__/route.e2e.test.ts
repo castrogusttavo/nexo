@@ -34,9 +34,9 @@ async function createAuthenticatedUser(overrides?: {
   return { name, email, cookie: setCookie }
 }
 
-describe('GET /api/auth/me', () => {
+describe('GET /api/users/me', () => {
   it('should return 401 without authentication', async () => {
-    const res = await fetch(`${BASE_URL}/api/auth/me`, {
+    const res = await fetch(`${BASE_URL}/api/users/me`, {
       headers: { Origin: BASE_URL },
     })
 
@@ -48,7 +48,7 @@ describe('GET /api/auth/me', () => {
   it('should return 200 with user profile when authenticated', async () => {
     const { name, email, cookie } = await createAuthenticatedUser()
 
-    const res = await fetch(`${BASE_URL}/api/auth/me`, {
+    const res = await fetch(`${BASE_URL}/api/users/me`, {
       headers: { Cookie: cookie, Origin: BASE_URL },
     })
 
@@ -62,9 +62,9 @@ describe('GET /api/auth/me', () => {
   })
 })
 
-describe('PATCH /api/auth/me', () => {
+describe('PATCH /api/users/me', () => {
   it('should return 401 without authentication', async () => {
-    const res = await fetch(`${BASE_URL}/api/auth/me`, {
+    const res = await fetch(`${BASE_URL}/api/users/me`, {
       method: 'PATCH',
       headers: defaultHeaders,
       body: JSON.stringify({ name: 'Hacker' }),
@@ -76,7 +76,7 @@ describe('PATCH /api/auth/me', () => {
   it('should update name successfully', async () => {
     const { cookie } = await createAuthenticatedUser()
 
-    const res = await fetch(`${BASE_URL}/api/auth/me`, {
+    const res = await fetch(`${BASE_URL}/api/users/me`, {
       method: 'PATCH',
       headers: { ...defaultHeaders, Cookie: cookie },
       body: JSON.stringify({ name: 'Updated Name' }),
@@ -91,7 +91,7 @@ describe('PATCH /api/auth/me', () => {
   it('should return 422 for invalid email', async () => {
     const { cookie } = await createAuthenticatedUser()
 
-    const res = await fetch(`${BASE_URL}/api/auth/me`, {
+    const res = await fetch(`${BASE_URL}/api/users/me`, {
       method: 'PATCH',
       headers: { ...defaultHeaders, Cookie: cookie },
       body: JSON.stringify({ email: 'not-an-email' }),
@@ -110,7 +110,7 @@ describe('PATCH /api/auth/me', () => {
       createAuthenticatedUser(),
     ])
 
-    const res = await fetch(`${BASE_URL}/api/auth/me`, {
+    const res = await fetch(`${BASE_URL}/api/users/me`, {
       method: 'PATCH',
       headers: { ...defaultHeaders, Cookie: cookie },
       body: JSON.stringify({ email: takenEmail }),

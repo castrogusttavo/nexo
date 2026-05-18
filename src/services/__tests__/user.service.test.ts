@@ -1,4 +1,4 @@
-import { describe, expect, it, vi } from 'vitest'
+import { beforeEach, describe, expect, it, vi } from 'vitest'
 import {
   createFakeUser,
   createFakeUserDTO,
@@ -11,12 +11,35 @@ import { UserService } from '@/src/services/user.service'
 
 vi.mock('@/src/repositories/user.repository')
 vi.mock('@/src/cache/user.cache')
+vi.mock('@/src/lib/queue/account-lifecycle', () => ({
+  ACCOUNT_DELETION_GRACE_MS: 30 * 24 * 60 * 60 * 1000,
+  scheduleAccountDeletion: vi.fn(),
+  cancelAccountDeletion: vi.fn(),
+}))
+vi.mock('@/src/lib/mail/user/send-delete-account', () => ({
+  sendDeleteAccountEmail: vi.fn(),
+}))
+vi.mock('@/src/lib/prisma', () => ({
+  prisma: {
+    session: { deleteMany: vi.fn().mockResolvedValue({ count: 0 }) },
+  },
+}))
 
 import { UserCache } from '@/src/cache/user.cache'
+import { sendDeleteAccountEmail } from '@/src/lib/mail/user/send-delete-account'
+import { prisma } from '@/src/lib/prisma'
+import {
+  cancelAccountDeletion,
+  scheduleAccountDeletion,
+} from '@/src/lib/queue/account-lifecycle'
 import { UserRepository } from '@/src/repositories/user.repository'
 
 const mockedRepo = vi.mocked(UserRepository)
 const mockedCache = vi.mocked(UserCache)
+const mockedScheduleDeletion = vi.mocked(scheduleAccountDeletion)
+const mockedCancelDeletion = vi.mocked(cancelAccountDeletion)
+const mockedSendEmail = vi.mocked(sendDeleteAccountEmail)
+const mockedSessionDelete = vi.mocked(prisma.session.deleteMany)
 
 function withMemberships(
   user: ReturnType<typeof createFakeUser>,
@@ -187,6 +210,137 @@ describe('UserService', () => {
       expectErr(result, 'DATABASE_ERROR')
       expect(mockedCache.invalidate).toHaveBeenCalledWith('user-1')
       expect(mockedCache.set).not.toHaveBeenCalled()
+    })
+  })
+
+  describe('deleteAccount()', () => {
+    beforeEach(() => {
+      mockedScheduleDeletion.mockResolvedValue(undefined)
+      mockedSendEmail.mockResolvedValue({ id: 'email-id' })
+      mockedSessionDelete.mockResolvedValue({ count: 0 })
+      mockedCache.invalidate.mockResolvedValue(undefined)
+    })
+
+    it('schedules deletion, revokes sessions, invalidates cache, sends email', async () => {
+      const user = createFakeUser({ id: 'user-1', email: 'me@example.com' })
+      mockedRepo.findById.mockResolvedValue(ok(user))
+      mockedRepo.countBlockingSoleOwnerWorkspaces.mockResolvedValue(ok(0))
+      mockedRepo.scheduleDeletion.mockImplementation(async (_id, at) =>
+        ok({ ...user, deletionScheduledAt: at }),
+      )
+
+      const result = await UserService.deleteAccount('user-1')
+
+      const value = expectOk(result)
+      expect(typeof value.scheduledAt).toBe('string')
+      expect(mockedRepo.scheduleDeletion).toHaveBeenCalledWith(
+        'user-1',
+        expect.any(Date),
+      )
+      expect(mockedScheduleDeletion).toHaveBeenCalledWith(
+        'user-1',
+        expect.any(Date),
+      )
+      expect(mockedSessionDelete).toHaveBeenCalledWith({
+        where: { userId: 'user-1' },
+      })
+      expect(mockedCache.invalidate).toHaveBeenCalledWith('user-1')
+      expect(mockedSendEmail).toHaveBeenCalledWith(
+        expect.objectContaining({ email: 'me@example.com' }),
+      )
+    })
+
+    it('is idempotent when deletion already scheduled', async () => {
+      const existingDate = new Date('2026-06-01T12:00:00Z')
+      const user = createFakeUser({
+        id: 'user-1',
+        deletionScheduledAt: existingDate,
+      })
+      mockedRepo.findById.mockResolvedValue(ok(user))
+
+      const result = await UserService.deleteAccount('user-1')
+
+      const value = expectOk(result)
+      expect(value.scheduledAt).toBe(existingDate.toISOString())
+      expect(mockedRepo.scheduleDeletion).not.toHaveBeenCalled()
+      expect(mockedScheduleDeletion).not.toHaveBeenCalled()
+      expect(mockedSendEmail).not.toHaveBeenCalled()
+    })
+
+    it('returns CONFLICT when user is sole OWNER of a workspace with members', async () => {
+      const user = createFakeUser({ id: 'user-1' })
+      mockedRepo.findById.mockResolvedValue(ok(user))
+      mockedRepo.countBlockingSoleOwnerWorkspaces.mockResolvedValue(ok(2))
+
+      const result = await UserService.deleteAccount('user-1')
+
+      expectErr(result, 'CONFLICT')
+      expect(mockedRepo.scheduleDeletion).not.toHaveBeenCalled()
+      expect(mockedScheduleDeletion).not.toHaveBeenCalled()
+    })
+
+    it('propagates not found from initial lookup', async () => {
+      mockedRepo.findById.mockResolvedValue(err(notFound('User')))
+
+      const result = await UserService.deleteAccount('user-1')
+
+      expectErr(result, 'RESOURCE_NOT_FOUND')
+    })
+
+    it('does not fail the request when email send throws', async () => {
+      const user = createFakeUser({ id: 'user-1' })
+      mockedRepo.findById.mockResolvedValue(ok(user))
+      mockedRepo.countBlockingSoleOwnerWorkspaces.mockResolvedValue(ok(0))
+      mockedRepo.scheduleDeletion.mockImplementation(async (_id, at) =>
+        ok({ ...user, deletionScheduledAt: at }),
+      )
+      mockedSendEmail.mockRejectedValue(new Error('resend boom'))
+
+      const result = await UserService.deleteAccount('user-1')
+
+      expectOk(result)
+      expect(mockedScheduleDeletion).toHaveBeenCalled()
+    })
+  })
+
+  describe('cancelDeletion()', () => {
+    it('returns canceled:false when no deletion was scheduled', async () => {
+      const user = createFakeUser({ id: 'user-1' })
+      mockedRepo.findById.mockResolvedValue(ok(user))
+
+      const result = await UserService.cancelDeletion('user-1')
+
+      expect(expectOk(result)).toEqual({ canceled: false })
+      expect(mockedCancelDeletion).not.toHaveBeenCalled()
+      expect(mockedRepo.clearDeletionSchedule).not.toHaveBeenCalled()
+    })
+
+    it('cancels the job, clears the flag and invalidates cache when pending', async () => {
+      const user = createFakeUser({
+        id: 'user-1',
+        deletionScheduledAt: new Date('2026-06-01T00:00:00Z'),
+      })
+      mockedRepo.findById.mockResolvedValue(ok(user))
+      mockedRepo.clearDeletionSchedule.mockResolvedValue(
+        ok({ ...user, deletionScheduledAt: null }),
+      )
+      mockedCancelDeletion.mockResolvedValue(true)
+      mockedCache.invalidate.mockResolvedValue(undefined)
+
+      const result = await UserService.cancelDeletion('user-1')
+
+      expect(expectOk(result)).toEqual({ canceled: true })
+      expect(mockedCancelDeletion).toHaveBeenCalledWith('user-1')
+      expect(mockedRepo.clearDeletionSchedule).toHaveBeenCalledWith('user-1')
+      expect(mockedCache.invalidate).toHaveBeenCalledWith('user-1')
+    })
+
+    it('propagates RESOURCE_NOT_FOUND from initial lookup', async () => {
+      mockedRepo.findById.mockResolvedValue(err(notFound('User')))
+
+      const result = await UserService.cancelDeletion('user-1')
+
+      expectErr(result, 'RESOURCE_NOT_FOUND')
     })
   })
 })
