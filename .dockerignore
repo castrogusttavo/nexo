@@ -38,7 +38,6 @@ secrets/
 biome.json
 commitlint.config.js
 proxy.ts
-scripts
 
 # Docs
 docs
