@@ -13,8 +13,6 @@
     "lint": "biome lint --write",
     "format": "biome format --write",
     "format:check": "biome format",
-    "fix:imports": "node scripts/fix-imports.mjs",
-    "fix:imports:watch": "node scripts/fix-imports.mjs --watch",
     "test": "vitest",
     "test:unit": "vitest --project unit",
     "test:integration": "vitest --project integration",

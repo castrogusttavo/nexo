@@ -59,7 +59,7 @@ Project management primitives are next on deck:
 
 ## Stack
 
-- **Backend** — Next.js 16 (App Router), PostgreSQL, Prisma 7, Redis, RabbitMQ, MinIO, Better Auth, Resend.
+- **Backend** — Next.js 16 (App Router), PostgreSQL, Prisma 7, Redis, BullMQ, MinIO, Better Auth, Resend.
 - **Frontend** — React 19, Tailwind CSS 4, Base UI, TanStack Query, React Email, Hugeicons.
 - **Quality** — Vitest, Biome, Commitlint, Husky.
 - **Observability** — Axiom, Vercel Analytics and Speed Insights.
@@ -103,7 +103,7 @@ Project management primitives are next on deck:
 
 ## Local development
 
-Spin up the infrastructure (Postgres, Redis, RabbitMQ, MinIO) with Docker Compose, then run the dev server:
+Spin up the infrastructure (Postgres, Redis, BullMQ worker, MinIO) with Docker Compose, then run the dev server:
 
 ```bash
 pnpm install
