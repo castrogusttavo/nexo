@@ -9,6 +9,7 @@ type AuditEntity =
   | 'status_check'
   | 'storage_object'
   | 'short_link'
+  | 'consent'
 
 type AuditAction =
   | 'create'
@@ -19,6 +20,8 @@ type AuditAction =
   | 'upload'
   | 'aggregate'
   | 'prune'
+  | 'grant'
+  | 'revoke'
 
 type AuditOutcome = 'success' | 'failure'
 
