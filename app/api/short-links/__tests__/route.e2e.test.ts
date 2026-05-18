@@ -9,13 +9,11 @@ import { BASE_URL } from '@/src/__tests__/setup.e2e'
 import { prisma } from '@/src/lib/prisma'
 
 describe('GET /api/short-links', () => {
-  it('should redirect to /sign-in via middleware when unauthenticated', async () => {
+  it('should return 401 via middleware when unauthenticated', async () => {
     const res = await fetch(`${BASE_URL}/api/short-links`, {
       headers: defaultHeaders,
-      redirect: 'manual',
     })
-    expect(res.status).toBe(307)
-    expect(res.headers.get('location')).toContain('/sign-in')
+    expect(res.status).toBe(401)
   })
 
   it('should return only the authenticated user links', async () => {
@@ -46,14 +44,13 @@ describe('GET /api/short-links', () => {
 })
 
 describe('POST /api/short-links', () => {
-  it('should redirect to /sign-in via middleware when unauthenticated', async () => {
+  it('should return 401 via middleware when unauthenticated', async () => {
     const res = await fetch(`${BASE_URL}/api/short-links`, {
       method: 'POST',
       headers: defaultHeaders,
       body: JSON.stringify({ title: 'X', url: 'https://x.com' }),
-      redirect: 'manual',
     })
-    expect(res.status).toBe(307)
+    expect(res.status).toBe(401)
   })
 
   it('should return 422 when url is invalid', async () => {

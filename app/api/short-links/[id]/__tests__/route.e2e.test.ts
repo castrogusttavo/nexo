@@ -17,10 +17,9 @@ async function seedShortLinkFor(userId: string) {
 }
 
 describe('PATCH /api/short-links/[id]', () => {
-  it('should redirect to /sign-in via middleware when unauthenticated', async () => {
+  it('should return 401 via middleware when unauthenticated', async () => {
     const res = await patchJson('/api/short-links/some-id', { title: 'X' })
-    expect(res.status).toBe(307)
-    expect(res.headers.get('location')).toContain('/sign-in')
+    expect(res.status).toBe(401)
   })
 
   it('should return 403 when actor is not the owner', async () => {
@@ -69,9 +68,9 @@ describe('PATCH /api/short-links/[id]', () => {
 })
 
 describe('DELETE /api/short-links/[id]', () => {
-  it('should redirect to /sign-in via middleware when unauthenticated', async () => {
+  it('should return 401 via middleware when unauthenticated', async () => {
     const res = await deleteJson('/api/short-links/some-id')
-    expect(res.status).toBe(307)
+    expect(res.status).toBe(401)
   })
 
   it('should return 403 when actor is not the owner', async () => {

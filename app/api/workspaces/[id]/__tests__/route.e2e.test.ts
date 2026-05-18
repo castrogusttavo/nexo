@@ -11,10 +11,9 @@ import {
 import { prisma } from '@/src/lib/prisma'
 
 describe('GET /api/workspaces/[id]', () => {
-  it('should redirect to /sign-in via middleware when unauthenticated', async () => {
+  it('should return 401 via middleware when unauthenticated', async () => {
     const res = await getJson('/api/workspaces/some-id')
-    expect(res.status).toBe(307)
-    expect(res.headers.get('location')).toContain('/sign-in')
+    expect(res.status).toBe(401)
   })
 
   it('should return 403 when user is not a member', async () => {
@@ -50,10 +49,9 @@ describe('GET /api/workspaces/[id]', () => {
 })
 
 describe('PATCH /api/workspaces/[id]', () => {
-  it('should redirect to /sign-in via middleware when unauthenticated', async () => {
+  it('should return 401 via middleware when unauthenticated', async () => {
     const res = await patchJson('/api/workspaces/some-id', { name: 'X' })
-    expect(res.status).toBe(307)
-    expect(res.headers.get('location')).toContain('/sign-in')
+    expect(res.status).toBe(401)
   })
 
   it('should return 403 for non-member', async () => {
@@ -158,10 +156,9 @@ describe('PATCH /api/workspaces/[id]', () => {
 })
 
 describe('DELETE /api/workspaces/[id]', () => {
-  it('should redirect to /sign-in via middleware when unauthenticated', async () => {
+  it('should return 401 via middleware when unauthenticated', async () => {
     const res = await deleteJson('/api/workspaces/some-id')
-    expect(res.status).toBe(307)
-    expect(res.headers.get('location')).toContain('/sign-in')
+    expect(res.status).toBe(401)
   })
 
   it('should return 403 for non-member', async () => {
