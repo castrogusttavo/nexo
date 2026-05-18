@@ -204,9 +204,76 @@ jobs:
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
 
+  redis-tls-smoke:
+    name: Redis TLS Smoke
+    runs-on: ubuntu-latest
+    env:
+      REDIS_URL: rediss://:testpassword@localhost:6379
+      REDIS_PASSWORD: testpassword
+      REDIS_TLS_ENABLED: 'true'
+      REDIS_TLS_CA_PATH: ${{ github.workspace }}/redis-tls/ca.crt
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v3
+        with:
+          version: 9
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'pnpm'
+
+      - name: Configure HugeIcons registry
+        run: |
+          echo "@hugeicons-pro:registry=https://npm.hugeicons.com" > .npmrc
+          echo "//npm.hugeicons.com/:_authToken=${{ secrets.HUGEICONS_TOKEN }}" >> .npmrc
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Generate TLS certificates
+        run: bash redis-tls/generate.sh
+
+      - name: Start Redis with TLS
+        run: |
+          docker run -d --name redis-tls \
+            -p 6379:6379 \
+            -v "$PWD/redis-tls:/opt/bitnami/redis/certs:ro" \
+            -e REDIS_PASSWORD=testpassword \
+            -e REDIS_TLS_ENABLED=yes \
+            -e REDIS_TLS_PORT_NUMBER=6379 \
+            -e REDIS_PORT_NUMBER=0 \
+            -e REDIS_TLS_CERT_FILE=/opt/bitnami/redis/certs/redis.crt \
+            -e REDIS_TLS_KEY_FILE=/opt/bitnami/redis/certs/redis.key \
+            -e REDIS_TLS_CA_FILE=/opt/bitnami/redis/certs/ca.crt \
+            -e REDIS_TLS_AUTH_CLIENTS=no \
+            bitnami/redis:latest
+
+      - name: Wait for Redis TLS to be ready
+        run: |
+          for i in {1..30}; do
+            if docker exec redis-tls redis-cli --tls \
+                --cacert /opt/bitnami/redis/certs/ca.crt \
+                -a testpassword ping 2>/dev/null | grep -q PONG; then
+              echo "Redis TLS is ready"
+              exit 0
+            fi
+            sleep 1
+          done
+          echo "Redis TLS failed to become ready"
+          docker logs redis-tls
+          exit 1
+
+      - name: Run Redis TLS smoke test
+        run: pnpm vitest --project redis-tls --run
+
   notify-slack:
     name: Notify Slack on Failure
-    needs: [lint, unit-tests, integration-tests, coverage-tests]
+    needs: [lint, unit-tests, integration-tests, coverage-tests, redis-tls-smoke]
     if: failure()
     runs-on: ubuntu-latest
     steps:

@@ -19,7 +19,7 @@ export default defineConfig({
             'utils/__tests__/*.test.ts',
             'lib/__tests__/*.test.ts',
           ],
-          exclude: ['**/*.integration.test.ts'],
+          exclude: ['**/*.integration.test.ts', '**/*.smoke.test.ts'],
           setupFiles: [
             './src/__tests__/setup.ts',
             './src/__tests__/setup.unit.ts',
@@ -63,6 +63,17 @@ export default defineConfig({
           testTimeout: 30000,
           pool: 'forks',
           maxWorkers: 1,
+        },
+      },
+      {
+        extends: true,
+        test: {
+          name: 'redis-tls',
+          environment: 'node',
+          globals: true,
+          include: ['src/lib/__tests__/*.smoke.test.ts'],
+          setupFiles: ['./src/__tests__/setup.ts'],
+          testTimeout: 15000,
         },
       },
     ],
