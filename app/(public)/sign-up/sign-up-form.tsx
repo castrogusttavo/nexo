@@ -195,14 +195,14 @@ export function SignUpForm() {
                 <Muted className='text-center text-sm p-4'>
                   Ao criar sua conta, você concorda com nossos{' '}
                   <Link
-                    href='/service-term'
+                    href='/legals/terms'
                     className='text-primary hover:underline'
                   >
                     Termos de Serviço
                   </Link>{' '}
                   e{' '}
                   <Link
-                    href='/privacy-policy'
+                    href='/legals/privacy'
                     className='text-primary hover:underline'
                   >
                     Política de Privacidade
