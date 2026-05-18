@@ -10,6 +10,7 @@
 		"includes": [
 			"app/**/*",
 			"src/**/*",
+			"worker/**/*",
 			"!!**/.next",
 			"!!**/node_modules",
 			"!!**/app/globals.css"

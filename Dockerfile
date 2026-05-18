@@ -36,7 +36,8 @@ ENV SKIP_ENV_VALIDATION="true"
 
 RUN corepack enable pnpm && \
     pnpm prisma:generate && \
-    pnpm build
+    pnpm build && \
+    pnpm worker:build
 
 FROM base AS runner
 WORKDIR /app
@@ -50,6 +51,7 @@ RUN addgroup --system --gid 1001 nodejs && \
 COPY --from=builder /app/public ./public
 COPY --from=builder --chown=nextjs:nodejs /app/.next/standalone ./
 COPY --from=builder --chown=nextjs:nodejs /app/.next/static ./.next/static
+COPY --from=builder --chown=nextjs:nodejs /app/dist ./dist
 
 USER nextjs
 EXPOSE 3000

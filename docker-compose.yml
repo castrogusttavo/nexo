@@ -15,6 +15,21 @@ services:
     networks:
       - app-network
 
+  nexo-worker:
+    image: ghcr.io/castrogusttavo/nexo:latest
+    container_name: nexo-worker
+    restart: unless-stopped
+    command: ["node", "dist/worker.cjs"]
+    env_file:
+      - .env
+    volumes:
+      - ./redis-tls/ca.crt:/etc/redis-tls/ca.crt:ro
+    dns:
+      - 8.8.8.8
+      - 8.8.4.4
+    networks:
+      - app-network
+
 networks:
   app-network:
     external: true

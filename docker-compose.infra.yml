@@ -1,7 +1,7 @@
 services:
   nexo-db:
     image: postgres:17-alpine
-    container_name: nexo-db-1
+    container_name: nexo-db
     restart: unless-stopped
     environment:
       POSTGRES_USER: ${POSTGRES_USER}
@@ -19,7 +19,7 @@ services:
     networks:
       - app-network
 
-  nexo-redis-master:
+  nexo-redis:
     image: bitnami/redis:latest
     container_name: nexo-redis
     restart: unless-stopped
@@ -46,29 +46,9 @@ services:
     networks:
       - app-network
 
-  nexo-queue:
-    image: rabbitmq:4-alpine
-    container_name: nexo-mq-1
-    restart: unless-stopped
-    environment:
-      RABBITMQ_DEFAULT_USER: ${RABBITMQ_USER}
-      RABBITMQ_DEFAULT_PASS: ${RABBITMQ_PASSWORD}
-      RABBITMQ_DEFAULT_VHOST: ${RABBITMQ_VHOST:-/}
-    ports:
-      - "5656:5672" # AMQP
-    volumes:
-      - rabbitmqdata:/var/lib/rabbitmq
-    healthcheck:
-      test: ["CMD", "rabbitmqctl", "status"]
-      interval: 5s
-      timeout: 5s
-      retries: 5
-    networks:
-      - app-network
-
   nexo-storage:
     image: minio/minio:RELEASE.2025-02-28T09-55-16Z
-    container_name: nexo-minio-1
+    container_name: nexo-minio
     restart: unless-stopped
     environment:
       MINIO_ROOT_USER: ${MINIO_USER}
@@ -92,6 +72,10 @@ volumes:
   redis-master-data:
   rabbitmqdata:
   miniodata:
+
+secrets:
+  hugeicons_token:
+    environment: HUGEICONS_TOKEN
 
 networks:
   app-network:

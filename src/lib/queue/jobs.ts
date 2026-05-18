@@ -1,0 +1,30 @@
+export const QueueName = {
+  DataRetention: 'data-retention',
+  AccountLifecycle: 'account-lifecycle',
+} as const
+
+export type QueueName = (typeof QueueName)[keyof typeof QueueName]
+
+export const DataRetentionJob = {
+  CleanupExpiredSessions: 'cleanup-expired-sessions',
+  CleanupExpiredVerificationTokens: 'cleanup-expired-verification-tokens',
+} as const
+
+export type DataRetentionJob =
+  (typeof DataRetentionJob)[keyof typeof DataRetentionJob]
+
+export type DataRetentionJobPayload = {
+  [DataRetentionJob.CleanupExpiredSessions]: Record<string, never>
+  [DataRetentionJob.CleanupExpiredVerificationTokens]: Record<string, never>
+}
+
+export const AccountLifecycleJob = {
+  DeleteAccount: 'delete-account',
+} as const
+
+export type AccountLifecycleJob =
+  (typeof AccountLifecycleJob)[keyof typeof AccountLifecycleJob]
+
+export type AccountLifecycleJobPayload = {
+  [AccountLifecycleJob.DeleteAccount]: { userId: string }
+}

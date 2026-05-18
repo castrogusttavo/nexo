@@ -1,0 +1,104 @@
+import { Worker } from 'bullmq'
+import { logger } from '../lib/axiom/logger'
+import {
+  closeQueueConnection,
+  getQueueConnection,
+} from '../src/lib/queue/connection'
+import { QueueName } from '../src/lib/queue/jobs'
+import { closeQueues } from '../src/lib/queue/queues'
+
+const workers: Worker[] = []
+
+function registerWorker(name: QueueName): Worker {
+  const worker = new Worker(
+    name,
+    async (job) => {
+      logger.warn('queue.job.unimplemented', {
+        component: 'Worker',
+        queue: name,
+        jobName: job.name,
+        jobId: job.id,
+      })
+      throw new Error(
+        `Processor not registered for queue=${name} job=${job.name}`,
+      )
+    },
+    { connection: getQueueConnection() },
+  )
+
+  worker.on('completed', (job) => {
+    logger.info('queue.job.completed', {
+      component: 'Worker',
+      queue: name,
+      jobName: job.name,
+      jobId: job.id,
+      durationMs:
+        job.finishedOn && job.processedOn
+          ? job.finishedOn - job.processedOn
+          : undefined,
+    })
+  })
+
+  worker.on('failed', (job, err) => {
+    logger.error('queue.job.failed', {
+      component: 'Worker',
+      queue: name,
+      jobName: job?.name,
+      jobId: job?.id,
+      attemptsMade: job?.attemptsMade,
+      message: err.message,
+      stack: err.stack,
+    })
+  })
+
+  worker.on('error', (err) => {
+    logger.error('queue.worker.error', {
+      component: 'Worker',
+      queue: name,
+      message: err.message,
+      stack: err.stack,
+    })
+  })
+
+  return worker
+}
+
+async function shutdown(signal: NodeJS.Signals): Promise<void> {
+  logger.info('queue.worker.shutdown_start', {
+    component: 'Worker',
+    signal,
+  })
+
+  try {
+    await Promise.all(workers.map((w) => w.close()))
+    await closeQueues()
+    await closeQueueConnection()
+    await logger.flush()
+  } catch (err) {
+    const e = err as Error
+    logger.error('queue.worker.shutdown_error', {
+      component: 'Worker',
+      message: e.message,
+      stack: e.stack,
+    })
+    await logger.flush()
+    process.exit(1)
+  }
+
+  process.exit(0)
+}
+
+function main() {
+  workers.push(registerWorker(QueueName.DataRetention))
+  workers.push(registerWorker(QueueName.AccountLifecycle))
+
+  logger.info('queue.worker.started', {
+    component: 'Worker',
+    queues: workers.map((w) => w.name),
+  })
+
+  process.on('SIGTERM', shutdown)
+  process.on('SIGINT', shutdown)
+}
+
+main()
