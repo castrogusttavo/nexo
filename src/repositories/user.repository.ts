@@ -78,4 +78,69 @@ export const UserRepository = {
       return err(databaseError('Failed to update user'))
     }
   },
+
+  async scheduleDeletion(id: string, scheduledAt: Date): Promise<Result<User>> {
+    try {
+      const user = await prisma.user.update({
+        where: { id },
+        data: { deletionScheduledAt: scheduledAt },
+      })
+      return ok(user)
+    } catch (error) {
+      if (error instanceof Error && 'code' in error && error.code === 'P2025') {
+        return err(notFound('User'))
+      }
+      return err(databaseError('Failed to schedule user deletion'))
+    }
+  },
+
+  async clearDeletionSchedule(id: string): Promise<Result<User>> {
+    try {
+      const user = await prisma.user.update({
+        where: { id },
+        data: { deletionScheduledAt: null },
+      })
+      return ok(user)
+    } catch (error) {
+      if (error instanceof Error && 'code' in error && error.code === 'P2025') {
+        return err(notFound('User'))
+      }
+      return err(databaseError('Failed to clear deletion schedule'))
+    }
+  },
+
+  async deleteHard(id: string): Promise<Result<true>> {
+    try {
+      await prisma.user.delete({ where: { id } })
+      return ok(true)
+    } catch (error) {
+      if (error instanceof Error && 'code' in error && error.code === 'P2025') {
+        return err(notFound('User'))
+      }
+      return err(databaseError('Failed to delete user'))
+    }
+  },
+
+  async countBlockingSoleOwnerWorkspaces(
+    userId: string,
+  ): Promise<Result<number>> {
+    try {
+      const count = await prisma.workspace.count({
+        where: {
+          memberships: { some: { userId, role: 'OWNER' } },
+          AND: [
+            { memberships: { some: { userId: { not: userId } } } },
+            {
+              memberships: {
+                none: { userId: { not: userId }, role: 'OWNER' },
+              },
+            },
+          ],
+        },
+      })
+      return ok(count)
+    } catch {
+      return err(databaseError('Failed to count blocking workspaces'))
+    }
+  },
 }

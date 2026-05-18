@@ -5,6 +5,7 @@ import {
   getQueueConnection,
 } from '../src/lib/queue/connection'
 import { QueueName } from '../src/lib/queue/jobs'
+import { processAccountLifecycle } from '../src/lib/queue/processors/account-lifecycle'
 import { processDataRetention } from '../src/lib/queue/processors/data-retention'
 import { closeQueues } from '../src/lib/queue/queues'
 import { scheduleDataRetentionJobs } from '../src/lib/queue/scheduler'
@@ -12,20 +13,6 @@ import { scheduleDataRetentionJobs } from '../src/lib/queue/scheduler'
 const workers: Worker[] = []
 
 type Processor = (job: Job) => Promise<unknown>
-
-function rejectUnimplemented(queue: QueueName): Processor {
-  return async (job) => {
-    logger.warn('queue.job.unimplemented', {
-      component: 'Worker',
-      queue,
-      jobName: job.name,
-      jobId: job.id,
-    })
-    throw new Error(
-      `Processor not registered for queue=${queue} job=${job.name}`,
-    )
-  }
-}
 
 function registerWorker(name: QueueName, processor: Processor): Worker {
   const worker = new Worker(name, processor, {
@@ -97,10 +84,7 @@ async function shutdown(signal: NodeJS.Signals): Promise<void> {
 async function main(): Promise<void> {
   workers.push(registerWorker(QueueName.DataRetention, processDataRetention))
   workers.push(
-    registerWorker(
-      QueueName.AccountLifecycle,
-      rejectUnimplemented(QueueName.AccountLifecycle),
-    ),
+    registerWorker(QueueName.AccountLifecycle, processAccountLifecycle),
   )
 
   await scheduleDataRetentionJobs()

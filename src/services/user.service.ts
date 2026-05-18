@@ -1,11 +1,31 @@
 import { auditMutation } from '@/lib/axiom/audit'
+import { logger } from '@/lib/axiom/logger'
 import { UserCache } from '@/src/cache/user.cache'
 import { conflict } from '@/src/errors'
+import { sendDeleteAccountEmail } from '@/src/lib/mail/user/send-delete-account'
+import { prisma } from '@/src/lib/prisma'
+import {
+  ACCOUNT_DELETION_GRACE_MS,
+  cancelAccountDeletion,
+  scheduleAccountDeletion,
+} from '@/src/lib/queue/account-lifecycle'
 import { err, ok, type Result } from '@/src/lib/result'
 import { toUserDTO } from '@/src/mappers/user.mapper'
 import { UserRepository } from '@/src/repositories/user.repository'
 import type { UpdateUserDTO } from '@/src/schemas/user.schema'
 import type { UserDTO } from '@/types/user'
+
+export interface AccountDeletionScheduled {
+  scheduledAt: string
+}
+
+function formatDeletionDate(date: Date): string {
+  return new Intl.DateTimeFormat('pt-BR', {
+    day: '2-digit',
+    month: 'long',
+    year: 'numeric',
+  }).format(date)
+}
 
 export const UserService = {
   async getProfile(actorId: string): Promise<Result<UserDTO>> {
@@ -74,5 +94,103 @@ export const UserService = {
     })
 
     return ok(userDTO)
+  },
+
+  async deleteAccount(
+    actorId: string,
+  ): Promise<Result<AccountDeletionScheduled>> {
+    const userResult = await UserRepository.findById(actorId)
+    if (!userResult.ok) return userResult
+
+    const user = userResult.value
+
+    if (user.deletionScheduledAt) {
+      return ok({ scheduledAt: user.deletionScheduledAt.toISOString() })
+    }
+
+    const blockingResult =
+      await UserRepository.countBlockingSoleOwnerWorkspaces(actorId)
+    if (!blockingResult.ok) return blockingResult
+
+    if (blockingResult.value > 0) {
+      auditMutation({
+        entity: 'user',
+        action: 'delete',
+        actorId,
+        targetId: actorId,
+        outcome: 'failure',
+        reason: 'sole_owner_workspace',
+        meta: { blockingWorkspaces: blockingResult.value },
+      })
+      return err(
+        conflict(
+          'Transfira a posse dos workspaces onde você é único OWNER antes de excluir a conta',
+        ),
+      )
+    }
+
+    const scheduledAt = new Date(Date.now() + ACCOUNT_DELETION_GRACE_MS)
+
+    const scheduleResult = await UserRepository.scheduleDeletion(
+      actorId,
+      scheduledAt,
+    )
+    if (!scheduleResult.ok) return scheduleResult
+
+    await scheduleAccountDeletion(actorId, scheduledAt)
+
+    await prisma.session.deleteMany({ where: { userId: actorId } })
+
+    await UserCache.invalidate(actorId)
+
+    try {
+      await sendDeleteAccountEmail({
+        email: user.email,
+        username: user.name,
+        scheduledDeletionDate: formatDeletionDate(scheduledAt),
+      })
+    } catch (error) {
+      const message = error instanceof Error ? error.message : String(error)
+      logger.warn('user.delete_account.email_failed', {
+        component: 'UserService',
+        userId: actorId,
+        message,
+      })
+    }
+
+    auditMutation({
+      entity: 'user',
+      action: 'delete',
+      actorId,
+      targetId: actorId,
+      meta: { scheduledAt: scheduledAt.toISOString() },
+    })
+
+    return ok({ scheduledAt: scheduledAt.toISOString() })
+  },
+
+  async cancelDeletion(userId: string): Promise<Result<{ canceled: boolean }>> {
+    const userResult = await UserRepository.findById(userId)
+    if (!userResult.ok) return userResult
+
+    if (!userResult.value.deletionScheduledAt) {
+      return ok({ canceled: false })
+    }
+
+    await cancelAccountDeletion(userId)
+
+    const clearResult = await UserRepository.clearDeletionSchedule(userId)
+    if (!clearResult.ok) return clearResult
+
+    await UserCache.invalidate(userId)
+
+    auditMutation({
+      entity: 'user',
+      action: 'cancel',
+      actorId: userId,
+      targetId: userId,
+    })
+
+    return ok({ canceled: true })
   },
 }

@@ -15,6 +15,7 @@ import {
 import { sendVerify2faAccessOtp } from '@/src/lib/mail/user/send-verify-2fa-access-otp'
 import { sendVerifyEmailWithOtp } from '@/src/lib/mail/user/send-verify-email-with-otp'
 import { sendWelcomeEmail } from '@/src/lib/mail/user/send-welcome'
+import { UserService } from '@/src/services/user.service'
 import { prisma } from './prisma'
 
 export const auth = betterAuth({
@@ -105,6 +106,25 @@ export const auth = betterAuth({
             userId: session.userId,
             meta: { sessionId: session.id },
           })
+
+          try {
+            const result = await UserService.cancelDeletion(session.userId)
+            if (result.ok && result.value.canceled) {
+              auditAuth({
+                event: 'user.deletion_canceled_on_login',
+                userId: session.userId,
+                meta: { sessionId: session.id },
+              })
+            }
+          } catch (error) {
+            auditAuth({
+              event: 'user.deletion_cancel_failed',
+              userId: session.userId,
+              outcome: 'failure',
+              reason: error instanceof Error ? error.message : String(error),
+              meta: { sessionId: session.id },
+            })
+          }
         },
       },
     },

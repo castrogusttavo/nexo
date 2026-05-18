@@ -25,6 +25,8 @@ type AuditOutcome = 'success' | 'failure'
 type AuditAuthEvent =
   | 'user.created'
   | 'user.email_verified'
+  | 'user.deletion_canceled_on_login'
+  | 'user.deletion_cancel_failed'
   | 'session.created'
   | 'session.revoked'
   | 'auth.email_otp.requested'
