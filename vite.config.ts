@@ -40,7 +40,7 @@ export default defineConfig({
           ],
           setupFiles: [
             './src/__tests__/setup.ts',
-            './src/__tests__/setup.cache.ts',
+            './src/__tests__/setup.redis.ts',
             './src/__tests__/setup.integration.ts',
           ],
           testTimeout: 15000,
@@ -57,6 +57,7 @@ export default defineConfig({
           include: ['app/**/__tests__/*.e2e.test.ts'],
           setupFiles: [
             './src/__tests__/setup.ts',
+            './src/__tests__/setup.redis.ts',
             './src/__tests__/setup.e2e.ts',
           ],
           testTimeout: 30000,

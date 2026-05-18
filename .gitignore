@@ -39,8 +39,9 @@ secrets/*.env
 !secrets/*.enc.env
 *.key
 
-# redis TLS certs (generated on server)
-redis-tls/
+# redis TLS certs (generated locally, never committed)
+redis-tls/*
+!redis-tls/generate.sh
 
 # vercel
 .vercel
