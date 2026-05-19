@@ -20,7 +20,19 @@
     <a href="https://nexo.coodee.dev/docs"><b>Documentation</b></a>
 </p>
 
+<p align="center">
+  <a href="https://www.react.doctor/share?p=nexo&s=84&e=1&w=62&f=31">
+    <img src="https://www.react.doctor/share/badge?p=nexo&s=84&e=1&w=62&f=31" alt="React Doctor" />
+  </a>
 
+  <a href="https://codecov.io/gh/castrogusttavo/nexo">
+    <img src="https://codecov.io/gh/castrogusttavo/nexo/graph/badge.svg?token=LHSP0EU1VT" alt="Codecov" />
+  </a>
+
+  <a href="https://github.com/castrogusttavo/nexo/actions/workflows/cd.yml">
+    <img src="https://github.com/castrogusttavo/nexo/actions/workflows/cd.yml/badge.svg" alt="CD" />
+  </a>
+</p>
 
 Meet [Nexo](https://nexo.coodee.dev/), a project management platform built for teams that want to ship without fighting their tools. Multi-tenant by default, opinionated where it matters, and ready to grow with you.
 
