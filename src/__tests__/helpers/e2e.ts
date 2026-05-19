@@ -21,15 +21,24 @@ function uniqueClientIp(): string {
 export async function createAuthenticatedUser(overrides?: {
   name?: string
   email?: string
+  /** Skip the consent fields the SignUpForm sends — simulates a curl
+   *  client that bypasses the UI. Defaults to false (consent sent). */
+  skipConsent?: boolean
 }) {
   const name = overrides?.name ?? 'E2E User'
   const email = overrides?.email ?? `e2e-${createId()}@example.com`
   const password = 'Test@12345678'
+  const now = new Date()
+  const body: Record<string, unknown> = { name, email, password }
+  if (!overrides?.skipConsent) {
+    body.acceptedTermsAt = now
+    body.acceptedPrivacyAt = now
+  }
 
   const res = await fetch(`${BASE_URL}/api/auth/sign-up/email`, {
     method: 'POST',
     headers: { ...defaultHeaders, 'x-forwarded-for': uniqueClientIp() },
-    body: JSON.stringify({ name, email, password }),
+    body: JSON.stringify(body),
   })
 
   if (!res.ok) {
@@ -39,8 +48,8 @@ export async function createAuthenticatedUser(overrides?: {
   const cookie = res.headers.get('set-cookie')
   if (!cookie) throw new Error('No session cookie after sign-up')
 
-  const body = (await res.json()) as { user: { id: string } }
-  return { id: body.user.id, name, email, cookie }
+  const responseBody = (await res.json()) as { user: { id: string } }
+  return { id: responseBody.user.id, name, email, cookie }
 }
 
 export async function createWorkspaceForUser(

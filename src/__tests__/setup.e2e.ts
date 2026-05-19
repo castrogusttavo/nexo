@@ -7,7 +7,8 @@ afterEach(async () => {
   await prisma.$executeRawUnsafe(`
     TRUNCATE TABLE
       sessions, accounts, verifications,
-      subscriptions, memberships, workspaces, users,
+      subscriptions, memberships, workspaces,
+      consent_events, users,
       incident_updates, incidents,
       health_checks, component_dailies
     CASCADE
