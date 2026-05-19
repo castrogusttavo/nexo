@@ -3,7 +3,7 @@ import { hash, verify } from 'argon2'
 import { betterAuth } from 'better-auth'
 import { prismaAdapter } from 'better-auth/adapters/prisma'
 import { emailOTP, twoFactor } from 'better-auth/plugins'
-import { auditAuth } from '@/lib/axiom/audit'
+import { auditAuth, auditMutation } from '@/lib/axiom/audit'
 import {
   BETTER_AUTH_SECRET,
   BETTER_AUTH_URL,
@@ -12,6 +12,7 @@ import {
   GOOGLE_CLIENT_ID,
   GOOGLE_CLIENT_SECRET,
 } from '@/lib/env/server'
+import { PRIVACY_VERSION, TERMS_VERSION } from '@/lib/legal/versions'
 import { sendVerify2faAccessOtp } from '@/src/lib/mail/user/send-verify-2fa-access-otp'
 import { sendVerifyEmailWithOtp } from '@/src/lib/mail/user/send-verify-email-with-otp'
 import { sendWelcomeEmail } from '@/src/lib/mail/user/send-welcome'
@@ -66,6 +67,17 @@ export const auth = betterAuth({
       clientSecret: GITHUB_CLIENT_SECRET,
     },
   },
+  user: {
+    additionalFields: {
+      // Accepted at the email/password signup form (Onda 3). Declared
+      // here so better-auth's parseUserInput on POST /sign-up/email
+      // accepts the fields and persists them; OAuth flows skip
+      // parseUserInput entirely, so these stay null for social
+      // signups until the consent gate (Onda 4) collects them.
+      acceptedTermsAt: { type: 'date', input: true, required: false },
+      acceptedPrivacyAt: { type: 'date', input: true, required: false },
+    },
+  },
   account: {
     accountLinking: { enabled: true },
     // Encrypt OAuth access/refresh/id tokens at rest using better-auth's
@@ -85,8 +97,88 @@ export const auth = betterAuth({
   databaseHooks: {
     user: {
       create: {
-        after: async (user) => {
+        before: async (data) => {
+          // Trust the server clock, not the client. The signup form
+          // sends `new Date()` for each accepted document; we replace
+          // those with the server's `now` so a tampered client can't
+          // backdate (or postdate) its acceptance.
+          if (!data.acceptedTermsAt && !data.acceptedPrivacyAt) return
+          const now = new Date()
+          return {
+            data: {
+              ...data,
+              ...(data.acceptedTermsAt ? { acceptedTermsAt: now } : {}),
+              ...(data.acceptedPrivacyAt ? { acceptedPrivacyAt: now } : {}),
+            },
+          }
+        },
+        after: async (user, context) => {
           auditAuth({ event: 'user.created', userId: user.id })
+
+          if (user.acceptedTermsAt || user.acceptedPrivacyAt) {
+            const reqHeaders = context?.request?.headers
+            const ipAddress =
+              reqHeaders?.get('x-forwarded-for')?.split(',')[0]?.trim() ||
+              reqHeaders?.get('x-real-ip') ||
+              null
+            const userAgent = reqHeaders?.get('user-agent') ?? null
+
+            const events: {
+              userId: string
+              document: 'TERMS' | 'PRIVACY'
+              version: string
+              action: 'GRANTED'
+              ipAddress: string | null
+              userAgent: string | null
+            }[] = []
+            if (user.acceptedTermsAt) {
+              events.push({
+                userId: user.id,
+                document: 'TERMS',
+                version: TERMS_VERSION,
+                action: 'GRANTED',
+                ipAddress,
+                userAgent,
+              })
+            }
+            if (user.acceptedPrivacyAt) {
+              events.push({
+                userId: user.id,
+                document: 'PRIVACY',
+                version: PRIVACY_VERSION,
+                action: 'GRANTED',
+                ipAddress,
+                userAgent,
+              })
+            }
+            try {
+              await prisma.consentEvent.createMany({ data: events })
+              auditMutation({
+                entity: 'consent',
+                action: 'grant',
+                actorId: user.id,
+                targetId: user.id,
+                meta: {
+                  documents: events.map((e) => e.document),
+                  termsVersion: TERMS_VERSION,
+                  privacyVersion: PRIVACY_VERSION,
+                },
+              })
+            } catch (error) {
+              // Don't fail the signup if the audit trail write fails;
+              // the User.acceptedXxxAt columns still hold the current
+              // state. Log loudly so we notice.
+              auditMutation({
+                entity: 'consent',
+                action: 'grant',
+                actorId: user.id,
+                targetId: user.id,
+                outcome: 'failure',
+                reason: error instanceof Error ? error.message : String(error),
+              })
+            }
+          }
+
           if (!user.emailVerified) return
           try {
             await sendWelcomeEmail({

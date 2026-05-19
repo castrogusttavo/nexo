@@ -10,6 +10,7 @@ import { HeaderLogin } from '@/components/header-login'
 import { H4 } from '@/components/typography/heading/h4'
 import { Muted } from '@/components/typography/text/muted'
 import { Button } from '@/components/ui/button'
+import { Checkbox } from '@/components/ui/checkbox'
 import { Field, FieldError, FieldLabel } from '@/components/ui/field'
 import { Input } from '@/components/ui/input'
 import { authClient } from '@/src/lib/auth-client'
@@ -26,7 +27,10 @@ export function SignUpForm() {
     name?: string
     email?: string
     password?: string
+    consent?: string
   }>({})
+  const [acceptedTerms, setAcceptedTerms] = useState(false)
+  const [acceptedPrivacy, setAcceptedPrivacy] = useState(false)
   const [isPending, setIsPending] = useState(false)
   const [isVerifying, setIsVerifying] = useState(false)
 
@@ -41,12 +45,20 @@ export function SignUpForm() {
     const submittedEmail = formData.get('email') as string
     const password = formData.get('password') as string
 
-    const errors: { name?: string; email?: string; password?: string } = {}
+    const errors: {
+      name?: string
+      email?: string
+      password?: string
+      consent?: string
+    } = {}
     if (!name || name.length < 2)
       errors.name = 'Nome deve ter ao menos 2 caracteres'
     if (!submittedEmail) errors.email = 'E-mail é obrigatório'
     if (!password || password.length < 6)
       errors.password = 'Senha deve ter ao menos 6 caracteres'
+    if (!acceptedTerms || !acceptedPrivacy)
+      errors.consent =
+        'Você precisa aceitar os Termos de Serviço e a Política de Privacidade'
 
     if (Object.keys(errors).length > 0) {
       setFieldErrors(errors)
@@ -54,10 +66,16 @@ export function SignUpForm() {
       return
     }
 
+    // Send a client-side timestamp so the request typechecks; the
+    // server hook in `auth.ts` overwrites both with `new Date()` to
+    // prevent a tampered client from backdating its acceptance.
+    const now = new Date()
     const { error: signUpError } = await authClient.signUp.email({
       name,
       email: submittedEmail,
       password,
+      acceptedTermsAt: now,
+      acceptedPrivacyAt: now,
     })
 
     if (signUpError) {
@@ -175,6 +193,78 @@ export function SignUpForm() {
                 )}
               </Field>
 
+              <div className='flex flex-col gap-2'>
+                <div className='flex items-start gap-2'>
+                  <Checkbox
+                    id='accept-terms'
+                    checked={acceptedTerms}
+                    onCheckedChange={(state) => {
+                      setAcceptedTerms(state === true)
+                      if (state === true && fieldErrors.consent) {
+                        setFieldErrors((prev) => ({
+                          ...prev,
+                          consent: undefined,
+                        }))
+                      }
+                    }}
+                    disabled={isPending}
+                    aria-invalid={!!fieldErrors.consent || undefined}
+                    className='mt-0.5'
+                  />
+                  <label
+                    htmlFor='accept-terms'
+                    className='text-sm leading-5 text-muted-foreground'
+                  >
+                    Li e aceito os{' '}
+                    <Link
+                      href='/legals/terms'
+                      className='text-primary hover:underline'
+                      target='_blank'
+                      rel='noopener noreferrer'
+                    >
+                      Termos de Serviço
+                    </Link>
+                  </label>
+                </div>
+                <div className='flex items-start gap-2'>
+                  <Checkbox
+                    id='accept-privacy'
+                    checked={acceptedPrivacy}
+                    onCheckedChange={(state) => {
+                      setAcceptedPrivacy(state === true)
+                      if (state === true && fieldErrors.consent) {
+                        setFieldErrors((prev) => ({
+                          ...prev,
+                          consent: undefined,
+                        }))
+                      }
+                    }}
+                    disabled={isPending}
+                    aria-invalid={!!fieldErrors.consent || undefined}
+                    className='mt-0.5'
+                  />
+                  <label
+                    htmlFor='accept-privacy'
+                    className='text-sm leading-5 text-muted-foreground'
+                  >
+                    Li e aceito a{' '}
+                    <Link
+                      href='/legals/privacy'
+                      className='text-primary hover:underline'
+                      target='_blank'
+                      rel='noopener noreferrer'
+                    >
+                      Política de Privacidade
+                    </Link>
+                  </label>
+                </div>
+                {fieldErrors.consent && (
+                  <p className='text-sm text-destructive'>
+                    {fieldErrors.consent}
+                  </p>
+                )}
+              </div>
+
               <Button type='submit' className='w-full' disabled={isPending}>
                 {isPending ? 'Criando conta...' : 'Criar conta'}
               </Button>
@@ -188,26 +278,6 @@ export function SignUpForm() {
                   >
                     Entre
                   </Link>
-                </Muted>
-              </div>
-
-              <div className='flex items-center justify-center'>
-                <Muted className='text-center text-sm p-4'>
-                  Ao criar sua conta, você concorda com nossos{' '}
-                  <Link
-                    href='/legals/terms'
-                    className='text-primary hover:underline'
-                  >
-                    Termos de Serviço
-                  </Link>{' '}
-                  e{' '}
-                  <Link
-                    href='/legals/privacy'
-                    className='text-primary hover:underline'
-                  >
-                    Política de Privacidade
-                  </Link>{' '}
-                  .
                 </Muted>
               </div>
             </form>

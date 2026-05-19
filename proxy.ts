@@ -7,7 +7,7 @@ import { logger } from '@/lib/axiom/server'
 import { NODE_ENV } from '@/lib/env/env'
 import { transformMiddlewareRequest } from '@axiomhq/nextjs'
 
-const PUBLIC_ROUTES = ['/sign-in', '/sign-up', '/api/auth', '/api/status', '/api/payment/webhook', '/docs', '/privacy-policy', '/service-term', '/status', '/plan']
+const PUBLIC_ROUTES = ['/sign-in', '/sign-up', '/api/auth', '/api/status', '/api/payment/webhook', '/docs', '/legals', '/status', '/plan']
 
 function buildCspHeader(nonce: string): string {
   return `
