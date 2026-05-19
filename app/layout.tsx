@@ -1,13 +1,13 @@
 import type { Metadata } from 'next'
 import { Geist } from 'next/font/google'
 import './globals.css'
-import { Analytics } from '@vercel/analytics/next'
-import { SpeedInsights } from '@vercel/speed-insights/next'
 import { Suspense } from 'react'
 import { Toaster } from '@/components/ui/sonner'
 import { TooltipProvider } from '@/components/ui/tooltip'
-import { WebVitals } from '@/lib/axiom/client'
 import { cn } from '@/lib/utils'
+import { CookieConsentBanner } from './_components/cookie-consent/banner'
+import { ConsentedTrackers } from './_components/cookie-consent/consented-trackers'
+import { CookieConsentInit } from './_components/cookie-consent/init'
 import { Providers } from './_components/providers'
 
 const geist = Geist({ subsets: ['latin'], variable: '--font-sans' })
@@ -28,15 +28,16 @@ export default function RootLayout({
       <body className='root antialiased bg-background text-primary h-screen'>
         <Suspense>
           <Providers>
-            <TooltipProvider>
-              {children}
-              <Toaster />
-            </TooltipProvider>
+            <CookieConsentInit>
+              <TooltipProvider>
+                {children}
+                <Toaster />
+              </TooltipProvider>
+              <ConsentedTrackers />
+              <CookieConsentBanner />
+            </CookieConsentInit>
           </Providers>
         </Suspense>
-        <WebVitals />
-        <Analytics />
-        <SpeedInsights />
       </body>
     </html>
   )
