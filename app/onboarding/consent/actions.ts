@@ -6,6 +6,7 @@ import { z } from 'zod'
 import { auditMutation } from '@/lib/axiom/audit'
 import { logger } from '@/lib/axiom/server'
 import { PRIVACY_VERSION, TERMS_VERSION } from '@/lib/legal/versions'
+import { UserCache } from '@/src/cache/user.cache'
 import { unauthorized } from '@/src/errors'
 import { getAuthSession } from '@/src/lib/auth-session'
 import { prisma } from '@/src/lib/prisma'
@@ -98,6 +99,8 @@ export async function acceptOnboardingConsent(
       error: 'Não foi possível salvar seu consentimento. Tente novamente.',
     }
   }
+
+  await UserCache.invalidate(userId)
 
   auditMutation({
     entity: 'consent',

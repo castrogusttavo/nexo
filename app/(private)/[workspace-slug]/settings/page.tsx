@@ -1,6 +1,7 @@
 'use client'
 
 import { useCallback, useEffect, useState } from 'react'
+import { useCookieConsent } from '@/app/_components/cookie-consent/provider'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Field, FieldError, FieldLabel } from '@/components/ui/field'
@@ -16,6 +17,8 @@ interface ProfileResponse {
   success: boolean
   data: {
     deletionScheduledAt: string | null
+    acceptedTermsAt: string | null
+    acceptedPrivacyAt: string | null
   }
 }
 
@@ -32,24 +35,33 @@ export default function SettingsPage() {
   const [deletionScheduledAt, setDeletionScheduledAt] = useState<string | null>(
     null,
   )
+  const [acceptedTermsAt, setAcceptedTermsAt] = useState<string | null>(null)
+  const [acceptedPrivacyAt, setAcceptedPrivacyAt] = useState<string | null>(
+    null,
+  )
   const [deleteState, setDeleteState] = useState<DeleteState>('idle')
   const [cancelState, setCancelState] = useState<CancelState>('idle')
   const [deleteError, setDeleteError] = useState<string | null>(null)
 
-  const refreshDeletionStatus = useCallback(async () => {
+  const { consent: cookieConsent, setConsent: setCookieConsent } =
+    useCookieConsent()
+
+  const refreshProfile = useCallback(async () => {
     try {
       const res = await fetch('/api/users/me', { cache: 'no-store' })
       if (!res.ok) return
       const json: ProfileResponse = await res.json()
       setDeletionScheduledAt(json.data.deletionScheduledAt)
+      setAcceptedTermsAt(json.data.acceptedTermsAt)
+      setAcceptedPrivacyAt(json.data.acceptedPrivacyAt)
     } catch {
       // ignore — UI just won't update; user can refresh
     }
   }, [])
 
   useEffect(() => {
-    refreshDeletionStatus()
-  }, [refreshDeletionStatus])
+    refreshProfile()
+  }, [refreshProfile])
 
   async function handleDeleteAccount() {
     setDeleteError(null)
@@ -163,6 +175,13 @@ export default function SettingsPage() {
   const scheduledDate = deletionScheduledAt
     ? new Date(deletionScheduledAt).toLocaleString('pt-BR')
     : null
+  const termsDate = acceptedTermsAt
+    ? new Date(acceptedTermsAt).toLocaleDateString('pt-BR')
+    : null
+  const privacyDate = acceptedPrivacyAt
+    ? new Date(acceptedPrivacyAt).toLocaleDateString('pt-BR')
+    : null
+  const cookiesAccepted = cookieConsent === 'accepted'
 
   return (
     <div className='flex-1 p-6 max-w-3xl mx-auto w-full space-y-6'>
@@ -252,6 +271,56 @@ export default function SettingsPage() {
               </div>
             </div>
           )}
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardHeader>
+          <CardTitle>Privacidade</CardTitle>
+        </CardHeader>
+        <CardContent className='space-y-4'>
+          <div className='flex items-center justify-between gap-4'>
+            <div className='space-y-1'>
+              <p className='text-sm font-medium'>Cookies de análise</p>
+              <p className='text-sm text-muted-foreground'>
+                {cookieConsent === null
+                  ? 'Você ainda não decidiu sobre o uso de cookies de análise.'
+                  : cookiesAccepted
+                    ? 'Aceitos. Você pode revogar a qualquer momento.'
+                    : 'Recusados. Nenhum tracker de análise é carregado.'}
+              </p>
+            </div>
+            <Switch
+              checked={cookiesAccepted}
+              onCheckedChange={(next) =>
+                setCookieConsent(next ? 'accepted' : 'rejected')
+              }
+            />
+          </div>
+
+          <div className='border-t pt-4 space-y-2'>
+            <div className='flex items-center justify-between text-sm'>
+              <span className='text-muted-foreground'>Termos de Serviço</span>
+              <span>
+                {termsDate ? `Aceito em ${termsDate}` : 'Pendente de aceite'}
+              </span>
+            </div>
+            <div className='flex items-center justify-between text-sm'>
+              <span className='text-muted-foreground'>
+                Política de Privacidade
+              </span>
+              <span>
+                {privacyDate
+                  ? `Aceita em ${privacyDate}`
+                  : 'Pendente de aceite'}
+              </span>
+            </div>
+            <p className='text-sm text-muted-foreground pt-2'>
+              Para revogar o aceite dos Termos ou da Política de Privacidade,
+              você precisa excluir sua conta — não é possível manter a conta
+              ativa sem esses aceites.
+            </p>
+          </div>
         </CardContent>
       </Card>
 

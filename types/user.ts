@@ -13,5 +13,7 @@ export interface UserDTO {
   image: string | null
   createdAt: string
   deletionScheduledAt: string | null
+  acceptedTermsAt: string | null
+  acceptedPrivacyAt: string | null
   memberships: MembershipDTO[]
 }

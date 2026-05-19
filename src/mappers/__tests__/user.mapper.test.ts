@@ -50,6 +50,8 @@ describe('toUserDTO()', () => {
       image: 'https://example.com/avatar.png',
       createdAt: user.createdAt.toISOString(),
       deletionScheduledAt: null,
+      acceptedTermsAt: null,
+      acceptedPrivacyAt: null,
       memberships: [
         {
           workspaceId: 'ws-1',
@@ -59,6 +61,22 @@ describe('toUserDTO()', () => {
         },
       ],
     })
+  })
+
+  it('maps acceptedTermsAt and acceptedPrivacyAt to ISO strings when set', () => {
+    const termsAt = new Date('2026-05-18T12:00:00.000Z')
+    const privacyAt = new Date('2026-05-18T12:00:00.000Z')
+    const user = withMemberships(
+      createFakeUser({
+        acceptedTermsAt: termsAt,
+        acceptedPrivacyAt: privacyAt,
+      }),
+    )
+
+    const dto = toUserDTO(user)
+
+    expect(dto.acceptedTermsAt).toBe('2026-05-18T12:00:00.000Z')
+    expect(dto.acceptedPrivacyAt).toBe('2026-05-18T12:00:00.000Z')
   })
 
   it('should map deletionScheduledAt to ISO string when set', () => {
