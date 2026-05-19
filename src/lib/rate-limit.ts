@@ -3,7 +3,7 @@ import {
   RateLimiterRedis,
   RateLimiterRes,
 } from 'rate-limiter-flexible'
-import { logger } from '@/lib/axiom/server'
+import { logger } from '@/lib/axiom/logger'
 import type { AppError } from '@/src/errors/app-error'
 import { rateLimited } from '@/src/errors/app-error'
 import { ensureRedisConnected, redis } from '@/src/lib/redis'
@@ -22,6 +22,9 @@ const EMAIL_DURATION_SECONDS = 60 * 60
 
 const API_POINTS = 100
 const API_DURATION_SECONDS = 60
+
+const EXPORT_POINTS = 1
+const EXPORT_DURATION_SECONDS = 24 * 60 * 60
 
 const authInsurance = new RateLimiterMemory({
   points: AUTH_POINTS,
@@ -75,6 +78,15 @@ export const apiLimiter = new RateLimiterRedis({
   duration: API_DURATION_SECONDS,
 })
 
+export const exportLimiter = new RateLimiterRedis({
+  storeClient: redis,
+  storeType: 'redis',
+  useRedisPackage: true,
+  keyPrefix: 'rl:export',
+  points: EXPORT_POINTS,
+  duration: EXPORT_DURATION_SECONDS,
+})
+
 export type Limiter = RateLimiterRedis
 
 const limiterNames = new WeakMap<Limiter, string>([
@@ -82,6 +94,7 @@ const limiterNames = new WeakMap<Limiter, string>([
   [otpLimiter, 'otp'],
   [emailLimiter, 'email'],
   [apiLimiter, 'api'],
+  [exportLimiter, 'export'],
 ])
 
 let connectionEnsured: Promise<unknown> | null = null

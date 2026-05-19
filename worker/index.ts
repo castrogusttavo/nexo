@@ -6,6 +6,7 @@ import {
 } from '../src/lib/queue/connection'
 import { QueueName } from '../src/lib/queue/jobs'
 import { processAccountLifecycle } from '../src/lib/queue/processors/account-lifecycle'
+import { processDataExport } from '../src/lib/queue/processors/data-export'
 import { processDataRetention } from '../src/lib/queue/processors/data-retention'
 import { closeQueues } from '../src/lib/queue/queues'
 import { scheduleDataRetentionJobs } from '../src/lib/queue/scheduler'
@@ -86,6 +87,7 @@ async function main(): Promise<void> {
   workers.push(
     registerWorker(QueueName.AccountLifecycle, processAccountLifecycle),
   )
+  workers.push(registerWorker(QueueName.DataExport, processDataExport))
 
   await scheduleDataRetentionJobs()
 

@@ -22,6 +22,8 @@ type AuditAction =
   | 'prune'
   | 'grant'
   | 'revoke'
+  | 'export_requested'
+  | 'export_completed'
 
 type AuditOutcome = 'success' | 'failure'
 

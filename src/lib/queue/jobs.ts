@@ -1,6 +1,7 @@
 export const QueueName = {
   DataRetention: 'data-retention',
   AccountLifecycle: 'account-lifecycle',
+  DataExport: 'data-export',
 } as const
 
 export type QueueName = (typeof QueueName)[keyof typeof QueueName]
@@ -27,4 +28,14 @@ export type AccountLifecycleJob =
 
 export type AccountLifecycleJobPayload = {
   [AccountLifecycleJob.DeleteAccount]: { userId: string }
+}
+
+export const DataExportJob = {
+  ExportUserData: 'export-user-data',
+} as const
+
+export type DataExportJob = (typeof DataExportJob)[keyof typeof DataExportJob]
+
+export type DataExportJobPayload = {
+  [DataExportJob.ExportUserData]: { userId: string }
 }

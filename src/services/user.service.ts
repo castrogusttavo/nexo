@@ -9,6 +9,8 @@ import {
   getAccountDeletionGraceMs,
   scheduleAccountDeletion,
 } from '@/src/lib/queue/account-lifecycle'
+import { enqueueUserExport } from '@/src/lib/queue/data-export'
+import { consume, exportLimiter } from '@/src/lib/rate-limit'
 import { err, ok, type Result } from '@/src/lib/result'
 import { toUserDTO } from '@/src/mappers/user.mapper'
 import { UserRepository } from '@/src/repositories/user.repository'
@@ -17,6 +19,10 @@ import type { UserDTO } from '@/types/user'
 
 export interface AccountDeletionScheduled {
   scheduledAt: string
+}
+
+export interface DataExportRequested {
+  requestedAt: string
 }
 
 function formatDeletionDate(date: Date): string {
@@ -180,6 +186,56 @@ export const UserService = {
     })
 
     return ok({ scheduledAt: scheduledAt.toISOString() })
+  },
+
+  async requestExport(actorId: string): Promise<Result<DataExportRequested>> {
+    const userResult = await UserRepository.findById(actorId)
+    if (!userResult.ok) return userResult
+
+    const guard = await consume(exportLimiter, actorId)
+    if (!guard.ok) {
+      auditMutation({
+        entity: 'user',
+        action: 'export_requested',
+        actorId,
+        targetId: actorId,
+        outcome: 'failure',
+        reason: guard.error.code,
+      })
+      return err(guard.error)
+    }
+
+    try {
+      await enqueueUserExport(actorId)
+    } catch (error) {
+      const message = error instanceof Error ? error.message : String(error)
+      logger.error('user.export.enqueue_failed', {
+        component: 'UserService',
+        userId: actorId,
+        message,
+      })
+      auditMutation({
+        entity: 'user',
+        action: 'export_requested',
+        actorId,
+        targetId: actorId,
+        outcome: 'failure',
+        reason: 'enqueue_failed',
+      })
+      return err(databaseError('Failed to enqueue data export'))
+    }
+
+    const requestedAt = new Date().toISOString()
+
+    auditMutation({
+      entity: 'user',
+      action: 'export_requested',
+      actorId,
+      targetId: actorId,
+      meta: { requestedAt },
+    })
+
+    return ok({ requestedAt })
   },
 
   async cancelDeletion(userId: string): Promise<Result<{ canceled: boolean }>> {

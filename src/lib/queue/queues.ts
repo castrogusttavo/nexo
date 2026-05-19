@@ -3,6 +3,8 @@ import { getQueueConnection } from './connection'
 import {
   type AccountLifecycleJob,
   type AccountLifecycleJobPayload,
+  type DataExportJob,
+  type DataExportJobPayload,
   type DataRetentionJob,
   type DataRetentionJobPayload,
   QueueName,
@@ -17,6 +19,7 @@ const defaultJobOptions = {
 
 let dataRetentionQueue: Queue | null = null
 let accountLifecycleQueue: Queue | null = null
+let dataExportQueue: Queue | null = null
 
 export function getDataRetentionQueue(): Queue<
   DataRetentionJobPayload[DataRetentionJob],
@@ -54,11 +57,31 @@ export function getAccountLifecycleQueue(): Queue<
   >
 }
 
+export function getDataExportQueue(): Queue<
+  DataExportJobPayload[DataExportJob],
+  unknown,
+  DataExportJob
+> {
+  if (!dataExportQueue) {
+    dataExportQueue = new Queue(QueueName.DataExport, {
+      connection: getQueueConnection(),
+      defaultJobOptions,
+    })
+  }
+  return dataExportQueue as Queue<
+    DataExportJobPayload[DataExportJob],
+    unknown,
+    DataExportJob
+  >
+}
+
 export async function closeQueues(): Promise<void> {
   await Promise.all([
     dataRetentionQueue?.close(),
     accountLifecycleQueue?.close(),
+    dataExportQueue?.close(),
   ])
   dataRetentionQueue = null
   accountLifecycleQueue = null
+  dataExportQueue = null
 }

@@ -1,6 +1,6 @@
 import 'server-only'
 import type { CreateEmailOptions, CreateEmailResponseSuccess } from 'resend'
-import { logger } from '@/lib/axiom/server'
+import { logger } from '@/lib/axiom/logger'
 import { defaultFrom, resend } from '@/src/lib/mail/client'
 import { consume, emailLimiter } from '@/src/lib/rate-limit'
 

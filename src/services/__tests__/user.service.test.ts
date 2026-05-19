@@ -17,6 +17,13 @@ vi.mock('@/src/lib/queue/account-lifecycle', () => ({
   scheduleAccountDeletion: vi.fn(),
   cancelAccountDeletion: vi.fn(),
 }))
+vi.mock('@/src/lib/queue/data-export', () => ({
+  enqueueUserExport: vi.fn(),
+}))
+vi.mock('@/src/lib/rate-limit', () => ({
+  consume: vi.fn(),
+  exportLimiter: { __mock: 'export' },
+}))
 vi.mock('@/src/lib/mail/user/send-delete-account', () => ({
   sendDeleteAccountEmail: vi.fn(),
 }))
@@ -27,12 +34,15 @@ vi.mock('@/src/lib/prisma', () => ({
 }))
 
 import { UserCache } from '@/src/cache/user.cache'
+import { rateLimited } from '@/src/errors/app-error'
 import { sendDeleteAccountEmail } from '@/src/lib/mail/user/send-delete-account'
 import { prisma } from '@/src/lib/prisma'
 import {
   cancelAccountDeletion,
   scheduleAccountDeletion,
 } from '@/src/lib/queue/account-lifecycle'
+import { enqueueUserExport } from '@/src/lib/queue/data-export'
+import { consume } from '@/src/lib/rate-limit'
 import { UserRepository } from '@/src/repositories/user.repository'
 
 const mockedRepo = vi.mocked(UserRepository)
@@ -41,6 +51,8 @@ const mockedScheduleDeletion = vi.mocked(scheduleAccountDeletion)
 const mockedCancelDeletion = vi.mocked(cancelAccountDeletion)
 const mockedSendEmail = vi.mocked(sendDeleteAccountEmail)
 const mockedSessionDelete = vi.mocked(prisma.session.deleteMany)
+const mockedEnqueueExport = vi.mocked(enqueueUserExport)
+const mockedConsume = vi.mocked(consume)
 
 function withMemberships(
   user: ReturnType<typeof createFakeUser>,
@@ -321,6 +333,69 @@ describe('UserService', () => {
 
       expectOk(result)
       expect(mockedScheduleDeletion).toHaveBeenCalled()
+    })
+  })
+
+  describe('requestExport()', () => {
+    beforeEach(() => {
+      mockedConsume.mockResolvedValue(ok(undefined))
+      mockedEnqueueExport.mockResolvedValue('job-1')
+    })
+
+    it('enqueues a data-export job and returns requestedAt', async () => {
+      const user = createFakeUser({ id: 'user-1' })
+      mockedRepo.findById.mockResolvedValue(ok(user))
+
+      const result = await UserService.requestExport('user-1')
+
+      const value = expectOk(result)
+      expect(typeof value.requestedAt).toBe('string')
+      expect(mockedConsume).toHaveBeenCalledWith(expect.anything(), 'user-1')
+      expect(mockedEnqueueExport).toHaveBeenCalledWith('user-1')
+    })
+
+    it('allows export while account is in deletion grace period', async () => {
+      const user = createFakeUser({
+        id: 'user-1',
+        deletionScheduledAt: new Date('2026-06-01T00:00:00Z'),
+      })
+      mockedRepo.findById.mockResolvedValue(ok(user))
+
+      const result = await UserService.requestExport('user-1')
+
+      expectOk(result)
+      expect(mockedEnqueueExport).toHaveBeenCalledWith('user-1')
+    })
+
+    it('returns RATE_LIMITED without enqueuing when limiter denies', async () => {
+      const user = createFakeUser({ id: 'user-1' })
+      mockedRepo.findById.mockResolvedValue(ok(user))
+      mockedConsume.mockResolvedValue(err(rateLimited(3600)))
+
+      const result = await UserService.requestExport('user-1')
+
+      expectErr(result, 'RATE_LIMITED')
+      expect(mockedEnqueueExport).not.toHaveBeenCalled()
+    })
+
+    it('returns DATABASE_ERROR when enqueue throws', async () => {
+      const user = createFakeUser({ id: 'user-1' })
+      mockedRepo.findById.mockResolvedValue(ok(user))
+      mockedEnqueueExport.mockRejectedValueOnce(new Error('redis down'))
+
+      const result = await UserService.requestExport('user-1')
+
+      expectErr(result, 'DATABASE_ERROR')
+    })
+
+    it('propagates RESOURCE_NOT_FOUND from initial lookup', async () => {
+      mockedRepo.findById.mockResolvedValue(err(notFound('User')))
+
+      const result = await UserService.requestExport('user-1')
+
+      expectErr(result, 'RESOURCE_NOT_FOUND')
+      expect(mockedConsume).not.toHaveBeenCalled()
+      expect(mockedEnqueueExport).not.toHaveBeenCalled()
     })
   })
 
