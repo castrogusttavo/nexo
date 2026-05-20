@@ -3,8 +3,8 @@
 import {
   createContext,
   type ReactNode,
+  use,
   useCallback,
-  useContext,
   useState,
 } from 'react'
 import {
@@ -61,7 +61,7 @@ export function CookieConsentProvider({
 }
 
 export function useCookieConsent(): CookieConsentCtx {
-  const ctx = useContext(Ctx)
+  const ctx = use(Ctx)
   if (!ctx) {
     throw new Error(
       'useCookieConsent must be used inside <CookieConsentProvider>',

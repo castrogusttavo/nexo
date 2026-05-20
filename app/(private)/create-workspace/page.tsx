@@ -2,7 +2,7 @@
 
 import Image from 'next/image'
 import { useRouter } from 'next/navigation'
-import { useState } from 'react'
+import { useRef, useState } from 'react'
 import { Muted } from '@/components/typography/text/muted'
 import { Button } from '@/components/ui/button'
 import {
@@ -48,7 +48,9 @@ export default function CreateWorkspacePage() {
 
   const [name, setName] = useState('')
   const [slug, setSlug] = useState('')
-  const [slugTouched, setSlugTouched] = useState(false)
+  // Only read inside handlers (to stop auto-slugging once the user edits the
+  // slug), never in render — a ref avoids a needless re-render on first edit.
+  const slugTouchedRef = useRef(false)
   const [size, setSize] = useState<string | null>(null)
   const [fieldErrors, setFieldErrors] = useState<{
     name?: string
@@ -62,11 +64,11 @@ export default function CreateWorkspacePage() {
   function handleNameChange(e: React.ChangeEvent<HTMLInputElement>) {
     const value = e.target.value
     setName(value)
-    if (!slugTouched) setSlug(slugify(value))
+    if (!slugTouchedRef.current) setSlug(slugify(value))
   }
 
   function handleSlugChange(e: React.ChangeEvent<HTMLInputElement>) {
-    setSlugTouched(true)
+    slugTouchedRef.current = true
     setSlug(slugify(e.target.value))
   }
 
