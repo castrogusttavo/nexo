@@ -3,7 +3,7 @@
   "info": {
     "title": "Nexo API",
     "version": "1.0.0",
-    "description": "API do Nexo — gestão ágil de projetos. As respostas de sucesso seguem o envelope padrão `{ success, statusCode, data }` e os erros o envelope `{ success, statusCode, message, error }`. As rotas de e-mail transacional são disparadas internamente pelo Better Auth e não são expostas publicamente.",
+    "description": "API do Nexo — gestão ágil de projetos. As respostas de sucesso seguem o envelope padrão `{ success, statusCode, data }` e os erros o envelope `{ success, statusCode, message, error }`, exceto as rotas `/auth/*` (Better Auth), que retornam payloads próprios fora do envelope. As rotas de e-mail transacional são disparadas internamente pelo Better Auth e não são expostas publicamente.",
     "contact": {
       "name": "Coodee",
       "email": "suporte@nexo.coodee.dev"
@@ -245,7 +245,10 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/AuthSessionResponse"
+                  "anyOf": [
+                    { "$ref": "#/components/schemas/AuthSessionResponse" },
+                    { "type": "null" }
+                  ]
                 }
               }
             }
@@ -274,7 +277,7 @@
                   "type": {
                     "type": "string",
                     "enum": ["email-verification", "sign-in"],
-                    "description": "`email-verification` confirma a conta no cadastro; `sign-in` permite login sem senha por OTP. A redefinição de senha não usa OTP — use `/auth/forget-password` (fluxo por token).",
+                    "description": "`email-verification` confirma a conta no cadastro; `sign-in` permite login sem senha por OTP. A redefinição de senha não usa OTP — use `/auth/request-password-reset` (fluxo por token).",
                     "example": "email-verification"
                   }
                 }
