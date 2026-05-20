@@ -5,10 +5,10 @@ import { Suspense } from 'react'
 import { Toaster } from '@/components/ui/sonner'
 import { TooltipProvider } from '@/components/ui/tooltip'
 import { cn } from '@/lib/utils'
-import { CookieConsentBanner } from './_components/cookie-consent/banner'
-import { ConsentedTrackers } from './_components/cookie-consent/consented-trackers'
-import { CookieConsentInit } from './_components/cookie-consent/init'
 import { Providers } from './_components/providers'
+import { CookieConsentBanner } from './_components/user/cookie-consent/banner'
+import { ConsentedTrackers } from './_components/user/cookie-consent/consented-trackers'
+import { CookieConsentInit } from './_components/user/cookie-consent/init'
 
 const geist = Geist({ subsets: ['latin'], variable: '--font-sans' })
 

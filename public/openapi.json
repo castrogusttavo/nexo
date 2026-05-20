@@ -3,7 +3,7 @@
   "info": {
     "title": "Nexo API",
     "version": "1.0.0",
-    "description": "API do Nexo — gestão ágil de projetos",
+    "description": "API do Nexo — gestão ágil de projetos. As respostas de sucesso seguem o envelope padrão `{ success, statusCode, data }` e os erros o envelope `{ success, statusCode, message, error }`. As rotas de e-mail transacional são disparadas internamente pelo Better Auth e não são expostas publicamente.",
     "contact": {
       "name": "Coodee",
       "email": "suporte@nexo.coodee.dev"
@@ -19,12 +19,46 @@
       "description": "Produção"
     }
   ],
+  "tags": [
+    {
+      "name": "Autenticação",
+      "description": "Sign-up, sign-in, sessão, verificação por OTP e dois fatores (Better Auth)"
+    },
+    {
+      "name": "Usuário",
+      "description": "Perfil do usuário autenticado"
+    },
+    {
+      "name": "Privacidade (LGPD)",
+      "description": "Consentimento de cookies, exportação e exclusão de dados (LGPD Art. 18)"
+    },
+    {
+      "name": "Workspaces",
+      "description": "Criação e gestão de workspaces e seus membros"
+    },
+    {
+      "name": "Links Curtos",
+      "description": "Encurtador de links do usuário autenticado"
+    },
+    {
+      "name": "Assinaturas",
+      "description": "Planos pagos via AbacatePay e webhook de cobrança"
+    },
+    {
+      "name": "Status",
+      "description": "Página de status pública e coleta de health checks dos componentes"
+    },
+    {
+      "name": "Armazenamento",
+      "description": "Upload de objetos para o bucket (S3/MinIO)"
+    }
+  ],
   "paths": {
     "/auth/sign-up/email": {
       "post": {
         "tags": ["Autenticação"],
         "summary": "Criar conta com e-mail e senha",
-        "description": "Cria uma nova conta de usuário usando e-mail e senha. Retorna sessão autenticada.",
+        "description": "Cria uma nova conta de usuário. Um OTP de verificação é enviado por e-mail no cadastro; a sessão só é emitida após a verificação. Os campos `acceptedTermsAt` e `acceptedPrivacyAt` registram o consentimento aos documentos legais — o servidor sobrescreve os valores enviados com o relógio do servidor.",
         "requestBody": {
           "required": true,
           "content": {
@@ -45,8 +79,20 @@
                   },
                   "password": {
                     "type": "string",
-                    "minLength": 6,
-                    "example": "senha123"
+                    "minLength": 8,
+                    "example": "senha-forte-123"
+                  },
+                  "acceptedTermsAt": {
+                    "type": "string",
+                    "format": "date-time",
+                    "description": "Marca o aceite dos Termos de Uso no formulário de cadastro.",
+                    "example": "2026-01-01T00:00:00.000Z"
+                  },
+                  "acceptedPrivacyAt": {
+                    "type": "string",
+                    "format": "date-time",
+                    "description": "Marca o aceite da Política de Privacidade no formulário de cadastro.",
+                    "example": "2026-01-01T00:00:00.000Z"
                   }
                 }
               }
@@ -55,14 +101,20 @@
         },
         "responses": {
           "200": {
-            "description": "Conta criada e sessão iniciada",
+            "description": "Conta criada; OTP de verificação enviado por e-mail",
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/AuthSessionResponse"
+                  "$ref": "#/components/schemas/AuthSignUpResponse"
                 }
               }
             }
+          },
+          "422": {
+            "$ref": "#/components/responses/ValidationError"
+          },
+          "429": {
+            "$ref": "#/components/responses/RateLimitError"
           }
         }
       }
@@ -71,7 +123,7 @@
       "post": {
         "tags": ["Autenticação"],
         "summary": "Login com e-mail e senha",
-        "description": "Autentica o usuário e retorna sessão com cookie.",
+        "description": "Autentica o usuário e define o cookie de sessão. Se o usuário tiver dois fatores ativos, a resposta indica `twoFactorRedirect` e a sessão completa só é emitida após a verificação do OTP.",
         "requestBody": {
           "required": true,
           "content": {
@@ -87,7 +139,12 @@
                   },
                   "password": {
                     "type": "string",
-                    "example": "senha123"
+                    "example": "senha-forte-123"
+                  },
+                  "rememberMe": {
+                    "type": "boolean",
+                    "default": true,
+                    "example": true
                   }
                 }
               }
@@ -100,26 +157,16 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/AuthSessionResponse"
+                  "$ref": "#/components/schemas/AuthLoginResponse"
                 }
               }
             }
           },
           "401": {
             "description": "Credenciais inválidas"
-          }
-        }
-      }
-    },
-    "/auth/sign-out": {
-      "post": {
-        "tags": ["Autenticação"],
-        "summary": "Encerrar sessão",
-        "description": "Remove a sessão e limpa o cookie de autenticação.",
-        "security": [{ "cookieAuth": [] }],
-        "responses": {
-          "200": {
-            "description": "Sessão encerrada com sucesso"
+          },
+          "429": {
+            "$ref": "#/components/responses/RateLimitError"
           }
         }
       }
@@ -128,7 +175,7 @@
       "post": {
         "tags": ["Autenticação"],
         "summary": "Login com provedor social (Google/GitHub)",
-        "description": "Inicia o fluxo OAuth com o provedor especificado.",
+        "description": "Inicia o fluxo OAuth com o provedor especificado e retorna a URL de redirect.",
         "requestBody": {
           "required": true,
           "content": {
@@ -154,7 +201,34 @@
         },
         "responses": {
           "200": {
-            "description": "Retorna URL de redirect para o provedor OAuth"
+            "description": "URL de redirect para o provedor OAuth",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "url": { "type": "string", "format": "uri" },
+                    "redirect": { "type": "boolean" }
+                  }
+                }
+              }
+            }
+          },
+          "429": {
+            "$ref": "#/components/responses/RateLimitError"
+          }
+        }
+      }
+    },
+    "/auth/sign-out": {
+      "post": {
+        "tags": ["Autenticação"],
+        "summary": "Encerrar sessão",
+        "description": "Remove a sessão e limpa o cookie de autenticação.",
+        "security": [{ "cookieAuth": [] }],
+        "responses": {
+          "200": {
+            "description": "Sessão encerrada com sucesso"
           }
         }
       }
@@ -167,7 +241,311 @@
         "security": [{ "cookieAuth": [] }],
         "responses": {
           "200": {
-            "description": "Sessão ativa encontrada",
+            "description": "Sessão ativa encontrada (ou `null` quando não há sessão)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AuthSessionResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/auth/email-otp/send-verification-otp": {
+      "post": {
+        "tags": ["Autenticação"],
+        "summary": "Enviar OTP por e-mail",
+        "description": "Envia um código de uso único por e-mail para verificação de conta ou login sem senha.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["email", "type"],
+                "properties": {
+                  "email": {
+                    "type": "string",
+                    "format": "email",
+                    "example": "joao@exemplo.com"
+                  },
+                  "type": {
+                    "type": "string",
+                    "enum": ["email-verification", "sign-in"],
+                    "description": "`email-verification` confirma a conta no cadastro; `sign-in` permite login sem senha por OTP. A redefinição de senha não usa OTP — use `/auth/forget-password` (fluxo por token).",
+                    "example": "email-verification"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OTP enviado"
+          },
+          "429": {
+            "$ref": "#/components/responses/RateLimitError"
+          }
+        }
+      }
+    },
+    "/auth/email-otp/verify-email": {
+      "post": {
+        "tags": ["Autenticação"],
+        "summary": "Verificar e-mail com OTP",
+        "description": "Confirma a verificação do e-mail usando o código enviado. Em caso de sucesso, a sessão é iniciada automaticamente.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["email", "otp"],
+                "properties": {
+                  "email": {
+                    "type": "string",
+                    "format": "email",
+                    "example": "joao@exemplo.com"
+                  },
+                  "otp": {
+                    "type": "string",
+                    "example": "123456"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "E-mail verificado e sessão iniciada",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AuthSessionResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "OTP inválido ou expirado"
+          },
+          "429": {
+            "$ref": "#/components/responses/RateLimitError"
+          }
+        }
+      }
+    },
+    "/auth/request-password-reset": {
+      "post": {
+        "tags": ["Autenticação"],
+        "summary": "Solicitar redefinição de senha",
+        "description": "Dispara o e-mail de redefinição de senha para a conta informada. O link aponta para `redirectTo` com o token validado em query (`?token=`); se o token for inválido/expirado, redireciona com `?error=INVALID_TOKEN`.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["email"],
+                "properties": {
+                  "email": {
+                    "type": "string",
+                    "format": "email",
+                    "example": "joao@exemplo.com"
+                  },
+                  "redirectTo": {
+                    "type": "string",
+                    "format": "uri",
+                    "example": "https://nexo.coodee.dev/reset-password"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "E-mail de redefinição enviado (resposta neutra mesmo se a conta não existir)"
+          },
+          "429": {
+            "$ref": "#/components/responses/RateLimitError"
+          }
+        }
+      }
+    },
+    "/auth/reset-password": {
+      "post": {
+        "tags": ["Autenticação"],
+        "summary": "Redefinir senha",
+        "description": "Define uma nova senha a partir do token recebido por e-mail.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["newPassword", "token"],
+                "properties": {
+                  "newPassword": {
+                    "type": "string",
+                    "minLength": 8,
+                    "example": "nova-senha-456"
+                  },
+                  "token": {
+                    "type": "string",
+                    "description": "Token de redefinição enviado por e-mail."
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Senha redefinida com sucesso"
+          },
+          "400": {
+            "description": "Token inválido ou expirado"
+          },
+          "429": {
+            "$ref": "#/components/responses/RateLimitError"
+          }
+        }
+      }
+    },
+    "/auth/two-factor/enable": {
+      "post": {
+        "tags": ["Autenticação"],
+        "summary": "Habilitar dois fatores",
+        "description": "Habilita a autenticação em dois fatores para o usuário autenticado. Retorna a URI do TOTP e os códigos de backup.",
+        "security": [{ "cookieAuth": [] }],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["password"],
+                "properties": {
+                  "password": {
+                    "type": "string",
+                    "description": "Senha atual, exigida para confirmar a operação.",
+                    "example": "senha-forte-123"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Dois fatores habilitado",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "totpURI": { "type": "string" },
+                    "backupCodes": {
+                      "type": "array",
+                      "items": { "type": "string" }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/UnauthorizedError"
+          }
+        }
+      }
+    },
+    "/auth/two-factor/disable": {
+      "post": {
+        "tags": ["Autenticação"],
+        "summary": "Desabilitar dois fatores",
+        "description": "Desabilita a autenticação em dois fatores para o usuário autenticado.",
+        "security": [{ "cookieAuth": [] }],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["password"],
+                "properties": {
+                  "password": {
+                    "type": "string",
+                    "example": "senha-forte-123"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Dois fatores desabilitado"
+          },
+          "401": {
+            "$ref": "#/components/responses/UnauthorizedError"
+          }
+        }
+      }
+    },
+    "/auth/two-factor/send-otp": {
+      "post": {
+        "tags": ["Autenticação"],
+        "summary": "Enviar OTP de dois fatores",
+        "description": "Envia o código de dois fatores por e-mail durante o login. Requer a sessão parcial criada após o sign-in.",
+        "responses": {
+          "200": {
+            "description": "OTP de dois fatores enviado"
+          },
+          "401": {
+            "$ref": "#/components/responses/UnauthorizedError"
+          },
+          "429": {
+            "$ref": "#/components/responses/RateLimitError"
+          }
+        }
+      }
+    },
+    "/auth/two-factor/verify-otp": {
+      "post": {
+        "tags": ["Autenticação"],
+        "summary": "Verificar OTP de dois fatores",
+        "description": "Conclui o login validando o código de dois fatores e emite a sessão completa.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["code"],
+                "properties": {
+                  "code": {
+                    "type": "string",
+                    "example": "123456"
+                  },
+                  "trustDevice": {
+                    "type": "boolean",
+                    "default": false,
+                    "example": true
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Dois fatores verificado e sessão iniciada",
             "content": {
               "application/json": {
                 "schema": {
@@ -177,7 +555,10 @@
             }
           },
           "401": {
-            "description": "Nenhuma sessão ativa"
+            "description": "Código inválido ou expirado"
+          },
+          "429": {
+            "$ref": "#/components/responses/RateLimitError"
           }
         }
       }
@@ -186,7 +567,7 @@
       "get": {
         "tags": ["Usuário"],
         "summary": "Obter perfil do usuário autenticado",
-        "description": "Retorna os dados do perfil do usuário logado.",
+        "description": "Retorna o perfil do usuário logado, incluindo seus vínculos (memberships) com workspaces.",
         "security": [{ "cookieAuth": [] }],
         "responses": {
           "200": {
@@ -194,7 +575,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/SuccessResponse"
+                  "$ref": "#/components/schemas/UserProfileResponse"
                 },
                 "example": {
                   "success": true,
@@ -205,9 +586,18 @@
                     "email": "joao@exemplo.com",
                     "emailVerified": true,
                     "image": null,
-                    "role": "MEMBER",
-                    "workspaceId": null,
-                    "createdAt": "2026-01-01T00:00:00.000Z"
+                    "createdAt": "2026-01-01T00:00:00.000Z",
+                    "deletionScheduledAt": null,
+                    "acceptedTermsAt": "2026-01-01T00:00:00.000Z",
+                    "acceptedPrivacyAt": "2026-01-01T00:00:00.000Z",
+                    "memberships": [
+                      {
+                        "workspaceId": "clx2ws456",
+                        "slug": "acme",
+                        "name": "ACME",
+                        "role": "OWNER"
+                      }
+                    ]
                   }
                 }
               }
@@ -239,7 +629,205 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/SuccessResponse"
+                  "$ref": "#/components/schemas/UserProfileResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/UnauthorizedError"
+          },
+          "409": {
+            "$ref": "#/components/responses/ConflictError"
+          },
+          "422": {
+            "$ref": "#/components/responses/ValidationError"
+          }
+        }
+      },
+      "delete": {
+        "tags": ["Privacidade (LGPD)"],
+        "summary": "Agendar exclusão de conta",
+        "description": "Agenda a exclusão da conta após um período de carência. Durante a carência, todas as sessões são encerradas e a exclusão pode ser cancelada (inclusive automaticamente ao fazer login novamente). Bloqueado quando o usuário é único OWNER de algum workspace.",
+        "security": [{ "cookieAuth": [] }],
+        "responses": {
+          "202": {
+            "description": "Exclusão agendada",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    { "$ref": "#/components/schemas/SuccessResponse" },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "data": {
+                          "type": "object",
+                          "properties": {
+                            "scheduledAt": {
+                              "type": "string",
+                              "format": "date-time"
+                            }
+                          }
+                        }
+                      }
+                    }
+                  ]
+                },
+                "example": {
+                  "success": true,
+                  "statusCode": 202,
+                  "data": { "scheduledAt": "2026-06-19T00:00:00.000Z" }
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/UnauthorizedError"
+          },
+          "409": {
+            "$ref": "#/components/responses/ConflictError"
+          }
+        }
+      }
+    },
+    "/users/me/deletion": {
+      "delete": {
+        "tags": ["Privacidade (LGPD)"],
+        "summary": "Cancelar exclusão de conta",
+        "description": "Cancela uma exclusão de conta agendada que ainda esteja no período de carência.",
+        "security": [{ "cookieAuth": [] }],
+        "responses": {
+          "200": {
+            "description": "Resultado do cancelamento",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    { "$ref": "#/components/schemas/SuccessResponse" },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "data": {
+                          "type": "object",
+                          "properties": {
+                            "canceled": { "type": "boolean" }
+                          }
+                        }
+                      }
+                    }
+                  ]
+                },
+                "example": {
+                  "success": true,
+                  "statusCode": 200,
+                  "data": { "canceled": true }
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/UnauthorizedError"
+          }
+        }
+      }
+    },
+    "/users/me/export": {
+      "post": {
+        "tags": ["Privacidade (LGPD)"],
+        "summary": "Solicitar exportação de dados",
+        "description": "Enfileira a geração de um pacote com todos os dados do usuário (LGPD Art. 18). O processamento é assíncrono e o resultado é entregue posteriormente. Limitado por rate limit dedicado.",
+        "security": [{ "cookieAuth": [] }],
+        "responses": {
+          "202": {
+            "description": "Exportação enfileirada",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    { "$ref": "#/components/schemas/SuccessResponse" },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "data": {
+                          "type": "object",
+                          "properties": {
+                            "requestedAt": {
+                              "type": "string",
+                              "format": "date-time"
+                            }
+                          }
+                        }
+                      }
+                    }
+                  ]
+                },
+                "example": {
+                  "success": true,
+                  "statusCode": 202,
+                  "data": { "requestedAt": "2026-05-20T12:00:00.000Z" }
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/UnauthorizedError"
+          },
+          "429": {
+            "$ref": "#/components/responses/RateLimitError"
+          }
+        }
+      }
+    },
+    "/users/me/cookie-consent": {
+      "post": {
+        "tags": ["Privacidade (LGPD)"],
+        "summary": "Registrar consentimento de cookies",
+        "description": "Registra um evento de consentimento (concedido ou revogado) para a versão vigente da política de cookies, junto com IP e user-agent.",
+        "security": [{ "cookieAuth": [] }],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["accepted"],
+                "properties": {
+                  "accepted": {
+                    "type": "boolean",
+                    "description": "`true` registra GRANTED; `false` registra REVOKED.",
+                    "example": true
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Consentimento registrado",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    { "$ref": "#/components/schemas/SuccessResponse" },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "data": {
+                          "type": "object",
+                          "properties": {
+                            "accepted": { "type": "boolean" }
+                          }
+                        }
+                      }
+                    }
+                  ]
+                },
+                "example": {
+                  "success": true,
+                  "statusCode": 200,
+                  "data": { "accepted": true }
                 }
               }
             }
@@ -253,24 +841,375 @@
         }
       }
     },
-    "/send/welcome": {
+    "/workspaces": {
       "post": {
-        "tags": ["E-mails"],
-        "summary": "Enviar e-mail de boas-vindas",
+        "tags": ["Workspaces"],
+        "summary": "Criar workspace",
+        "description": "Cria um novo workspace e adiciona o usuário autenticado como OWNER.",
+        "security": [{ "cookieAuth": [] }],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateWorkspaceInput"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Workspace criado",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/WorkspaceResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/UnauthorizedError"
+          },
+          "422": {
+            "$ref": "#/components/responses/ValidationError"
+          },
+          "429": {
+            "$ref": "#/components/responses/RateLimitError"
+          }
+        }
+      }
+    },
+    "/workspaces/{id}": {
+      "parameters": [
+        {
+          "name": "id",
+          "in": "path",
+          "required": true,
+          "description": "ID (CUID) do workspace",
+          "schema": { "type": "string" }
+        }
+      ],
+      "get": {
+        "tags": ["Workspaces"],
+        "summary": "Obter workspace",
+        "description": "Retorna um workspace do qual o usuário autenticado é membro.",
+        "security": [{ "cookieAuth": [] }],
+        "responses": {
+          "200": {
+            "description": "Workspace retornado",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/WorkspaceResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/UnauthorizedError"
+          },
+          "403": {
+            "$ref": "#/components/responses/ForbiddenError"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFoundError"
+          },
+          "429": {
+            "$ref": "#/components/responses/RateLimitError"
+          }
+        }
+      },
+      "patch": {
+        "tags": ["Workspaces"],
+        "summary": "Atualizar workspace",
+        "description": "Atualiza nome e/ou slug do workspace. Exige papel OWNER ou ADMIN.",
+        "security": [{ "cookieAuth": [] }],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateWorkspaceInput"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Workspace atualizado",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/WorkspaceResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/UnauthorizedError"
+          },
+          "403": {
+            "$ref": "#/components/responses/ForbiddenError"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFoundError"
+          },
+          "422": {
+            "$ref": "#/components/responses/ValidationError"
+          },
+          "429": {
+            "$ref": "#/components/responses/RateLimitError"
+          }
+        }
+      },
+      "delete": {
+        "tags": ["Workspaces"],
+        "summary": "Excluir workspace",
+        "description": "Exclui o workspace. Exige papel OWNER.",
+        "security": [{ "cookieAuth": [] }],
+        "responses": {
+          "200": {
+            "description": "Workspace excluído",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/EmptySuccessResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/UnauthorizedError"
+          },
+          "403": {
+            "$ref": "#/components/responses/ForbiddenError"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFoundError"
+          },
+          "429": {
+            "$ref": "#/components/responses/RateLimitError"
+          }
+        }
+      }
+    },
+    "/short-links": {
+      "get": {
+        "tags": ["Links Curtos"],
+        "summary": "Listar links curtos",
+        "description": "Lista os links curtos criados pelo usuário autenticado.",
+        "security": [{ "cookieAuth": [] }],
+        "responses": {
+          "200": {
+            "description": "Lista de links curtos",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ShortLinkListResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/UnauthorizedError"
+          },
+          "429": {
+            "$ref": "#/components/responses/RateLimitError"
+          }
+        }
+      },
+      "post": {
+        "tags": ["Links Curtos"],
+        "summary": "Criar link curto",
+        "description": "Cria um novo link curto para o usuário autenticado.",
+        "security": [{ "cookieAuth": [] }],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateShortLinkInput"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Link curto criado",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ShortLinkResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/UnauthorizedError"
+          },
+          "422": {
+            "$ref": "#/components/responses/ValidationError"
+          },
+          "429": {
+            "$ref": "#/components/responses/RateLimitError"
+          }
+        }
+      }
+    },
+    "/short-links/{id}": {
+      "parameters": [
+        {
+          "name": "id",
+          "in": "path",
+          "required": true,
+          "description": "ID (CUID) do link curto",
+          "schema": { "type": "string" }
+        }
+      ],
+      "patch": {
+        "tags": ["Links Curtos"],
+        "summary": "Atualizar link curto",
+        "description": "Atualiza título e/ou URL de um link curto do próprio usuário.",
+        "security": [{ "cookieAuth": [] }],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateShortLinkInput"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Link curto atualizado",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ShortLinkResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/UnauthorizedError"
+          },
+          "403": {
+            "$ref": "#/components/responses/ForbiddenError"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFoundError"
+          },
+          "422": {
+            "$ref": "#/components/responses/ValidationError"
+          },
+          "429": {
+            "$ref": "#/components/responses/RateLimitError"
+          }
+        }
+      },
+      "delete": {
+        "tags": ["Links Curtos"],
+        "summary": "Excluir link curto",
+        "description": "Exclui um link curto do próprio usuário.",
+        "security": [{ "cookieAuth": [] }],
+        "responses": {
+          "200": {
+            "description": "Link curto excluído",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/EmptySuccessResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/UnauthorizedError"
+          },
+          "403": {
+            "$ref": "#/components/responses/ForbiddenError"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFoundError"
+          },
+          "429": {
+            "$ref": "#/components/responses/RateLimitError"
+          }
+        }
+      }
+    },
+    "/payment/plan": {
+      "post": {
+        "tags": ["Assinaturas"],
+        "summary": "Criar assinatura de plano",
+        "description": "Cria uma cobrança no AbacatePay para o plano escolhido e retorna a assinatura pendente com a URL de pagamento. Exige papel OWNER ou ADMIN no workspace.",
+        "security": [{ "cookieAuth": [] }],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateSubscriptionInput"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Assinatura criada (pendente de pagamento)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SubscriptionResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/UnauthorizedError"
+          },
+          "403": {
+            "$ref": "#/components/responses/ForbiddenError"
+          },
+          "422": {
+            "$ref": "#/components/responses/ValidationError"
+          },
+          "429": {
+            "$ref": "#/components/responses/RateLimitError"
+          }
+        }
+      }
+    },
+    "/payment/webhook": {
+      "post": {
+        "tags": ["Assinaturas"],
+        "summary": "Webhook de cobrança (AbacatePay)",
+        "description": "Recebe eventos do AbacatePay (ex.: `subscription.completed`, `subscription.cancelled`) e atualiza a assinatura correspondente. Autenticado por segredo no header `x-webhook-secret`. Esta rota não usa o envelope padrão de resposta.",
+        "security": [{ "webhookSecret": [] }],
         "requestBody": {
           "required": true,
           "content": {
             "application/json": {
               "schema": {
                 "type": "object",
-                "required": ["email", "username"],
+                "required": ["event", "data"],
                 "properties": {
-                  "email": {
+                  "id": { "type": "string" },
+                  "event": {
                     "type": "string",
-                    "format": "email"
+                    "example": "subscription.completed"
                   },
-                  "username": {
-                    "type": "string"
+                  "apiVersion": { "type": "integer", "example": 1 },
+                  "data": {
+                    "type": "object",
+                    "required": ["id"],
+                    "properties": {
+                      "id": { "type": "string", "example": "bill_abc123" },
+                      "status": { "type": "string", "example": "PAID" }
+                    }
                   }
                 }
               }
@@ -279,29 +1218,218 @@
         },
         "responses": {
           "200": {
-            "description": "E-mail enviado"
+            "description": "Evento processado",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "received": { "type": "boolean", "example": true }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Payload inválido",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": { "error": { "type": "string" } }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Segredo do webhook inválido",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": { "error": { "type": "string" } }
+                }
+              }
+            }
           },
           "500": {
-            "description": "Falha no envio"
+            "description": "Falha ao processar o evento",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": { "error": { "type": "string" } }
+                }
+              }
+            }
           }
         }
       }
     },
-    "/send/confirm-email": {
+    "/status": {
+      "get": {
+        "tags": ["Status"],
+        "summary": "Snapshot de status atual",
+        "description": "Retorna o status consolidado de todos os componentes monitorados, com uptime de 90 dias e histórico diário. Resposta pública com cache curto.",
+        "responses": {
+          "200": {
+            "description": "Snapshot de status",
+            "headers": {
+              "Cache-Control": {
+                "description": "public, max-age=30, stale-while-revalidate=60",
+                "schema": { "type": "string" }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StatusSnapshotResponse"
+                }
+              }
+            }
+          },
+          "429": {
+            "$ref": "#/components/responses/RateLimitError"
+          }
+        }
+      }
+    },
+    "/status/history": {
+      "get": {
+        "tags": ["Status"],
+        "summary": "Histórico diário de um componente",
+        "description": "Retorna o histórico diário de disponibilidade de um componente específico. Resposta pública com cache curto.",
+        "parameters": [
+          {
+            "name": "componentKey",
+            "in": "query",
+            "required": true,
+            "description": "Chave do componente monitorado",
+            "schema": {
+              "$ref": "#/components/schemas/ComponentKey"
+            }
+          },
+          {
+            "name": "days",
+            "in": "query",
+            "required": false,
+            "description": "Janela em dias (1 a 365)",
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 365,
+              "default": 90
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Histórico diário do componente",
+            "headers": {
+              "Cache-Control": {
+                "description": "public, max-age=30, stale-while-revalidate=60",
+                "schema": { "type": "string" }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StatusHistoryResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "$ref": "#/components/responses/ValidationError"
+          },
+          "429": {
+            "$ref": "#/components/responses/RateLimitError"
+          }
+        }
+      }
+    },
+    "/status/collect/core": {
       "post": {
-        "tags": ["E-mails"],
-        "summary": "Enviar e-mail de confirmação",
+        "tags": ["Status"],
+        "summary": "Coletar health checks (core)",
+        "description": "Executa os probes dos componentes do tier `core` (aplicação, banco, cache, autenticação), grava os resultados e avalia incidentes. Autenticado por segredo no header `x-status-secret`. Destinado a um cron/coletor interno.",
+        "security": [{ "collectorSecret": [] }],
+        "responses": {
+          "200": {
+            "description": "Coleta concluída",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StatusCollectResponse"
+                },
+                "example": {
+                  "success": true,
+                  "statusCode": 200,
+                  "data": {
+                    "tier": "core",
+                    "collectedAt": "2026-05-20T12:00:00.000Z"
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/UnauthorizedError"
+          }
+        }
+      }
+    },
+    "/status/collect/peripheral": {
+      "post": {
+        "tags": ["Status"],
+        "summary": "Coletar health checks (peripheral)",
+        "description": "Executa os probes dos componentes do tier `peripheral` (pagamentos, e-mail, armazenamento), grava os resultados e avalia incidentes. Autenticado por segredo no header `x-status-secret`. Destinado a um cron/coletor interno.",
+        "security": [{ "collectorSecret": [] }],
+        "responses": {
+          "200": {
+            "description": "Coleta concluída",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StatusCollectResponse"
+                },
+                "example": {
+                  "success": true,
+                  "statusCode": 200,
+                  "data": {
+                    "tier": "peripheral",
+                    "collectedAt": "2026-05-20T12:00:00.000Z"
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/UnauthorizedError"
+          }
+        }
+      }
+    },
+    "/storage/upload": {
+      "post": {
+        "tags": ["Armazenamento"],
+        "summary": "Upload de objeto",
+        "description": "Envia um arquivo de texto (markdown) para o bucket de armazenamento e retorna o conteúdo persistido. Limitado por rate limit por IP.",
         "requestBody": {
           "required": true,
           "content": {
             "application/json": {
               "schema": {
                 "type": "object",
-                "required": ["email"],
+                "required": ["content", "filename"],
                 "properties": {
-                  "email": {
+                  "content": {
                     "type": "string",
-                    "format": "email"
+                    "example": "# Documento\n\nConteúdo em markdown."
+                  },
+                  "filename": {
+                    "type": "string",
+                    "example": "doc.md"
                   }
                 }
               }
@@ -310,72 +1438,45 @@
         },
         "responses": {
           "200": {
-            "description": "E-mail enviado"
-          },
-          "500": {
-            "description": "Falha no envio"
-          }
-        }
-      }
-    },
-    "/send/reset-password": {
-      "post": {
-        "tags": ["E-mails"],
-        "summary": "Enviar e-mail de redefinição de senha",
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "type": "object",
-                "required": ["email"],
-                "properties": {
-                  "email": {
-                    "type": "string",
-                    "format": "email"
+            "description": "Arquivo enviado",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    { "$ref": "#/components/schemas/SuccessResponse" },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "data": {
+                          "type": "object",
+                          "properties": {
+                            "filename": { "type": "string" },
+                            "content": { "type": "string" }
+                          }
+                        }
+                      }
+                    }
+                  ]
+                },
+                "example": {
+                  "success": true,
+                  "statusCode": 200,
+                  "data": {
+                    "filename": "doc.md",
+                    "content": "# Documento\n\nConteúdo em markdown."
                   }
                 }
               }
             }
-          }
-        },
-        "responses": {
-          "200": {
-            "description": "E-mail enviado"
+          },
+          "422": {
+            "$ref": "#/components/responses/ValidationError"
+          },
+          "429": {
+            "$ref": "#/components/responses/RateLimitError"
           },
           "500": {
-            "description": "Falha no envio"
-          }
-        }
-      }
-    },
-    "/send/invite-user": {
-      "post": {
-        "tags": ["E-mails"],
-        "summary": "Enviar convite para usuário",
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "type": "object",
-                "required": ["email"],
-                "properties": {
-                  "email": {
-                    "type": "string",
-                    "format": "email"
-                  }
-                }
-              }
-            }
-          }
-        },
-        "responses": {
-          "200": {
-            "description": "Convite enviado"
-          },
-          "500": {
-            "description": "Falha no envio"
+            "$ref": "#/components/responses/InternalServerError"
           }
         }
       }
@@ -388,49 +1489,154 @@
         "in": "cookie",
         "name": "better-auth.session_token",
         "description": "Token de sessão gerenciado pelo Better Auth (cookie HttpOnly)"
+      },
+      "webhookSecret": {
+        "type": "apiKey",
+        "in": "header",
+        "name": "x-webhook-secret",
+        "description": "Segredo compartilhado para validar webhooks do AbacatePay"
+      },
+      "collectorSecret": {
+        "type": "apiKey",
+        "in": "header",
+        "name": "x-status-secret",
+        "description": "Segredo do coletor interno de status (comparação em tempo constante)"
       }
     },
     "schemas": {
-      "User": {
+      "AuthUser": {
         "type": "object",
+        "description": "Usuário retornado pelo Better Auth nas respostas de sessão.",
         "properties": {
           "id": {
             "type": "string",
             "description": "CUID do usuário",
             "example": "clx1abc123"
           },
-          "name": {
-            "type": "string",
-            "example": "João Silva"
-          },
+          "name": { "type": "string", "example": "João Silva" },
           "email": {
             "type": "string",
             "format": "email",
             "example": "joao@exemplo.com"
           },
-          "emailVerified": {
-            "type": "boolean",
-            "example": true
-          },
-          "image": {
+          "emailVerified": { "type": "boolean", "example": true },
+          "image": { "type": "string", "nullable": true, "example": null },
+          "twoFactorEnabled": { "type": "boolean", "example": false },
+          "acceptedTermsAt": {
             "type": "string",
+            "format": "date-time",
             "nullable": true,
-            "example": null
+            "example": "2026-01-01T00:00:00.000Z"
           },
-          "role": {
+          "acceptedPrivacyAt": {
             "type": "string",
-            "enum": ["MEMBER", "ADMIN"],
-            "example": "MEMBER"
-          },
-          "workspaceId": {
-            "type": "string",
+            "format": "date-time",
             "nullable": true,
-            "example": null
+            "example": "2026-01-01T00:00:00.000Z"
           },
           "createdAt": {
             "type": "string",
             "format": "date-time",
             "example": "2026-01-01T00:00:00.000Z"
+          },
+          "updatedAt": {
+            "type": "string",
+            "format": "date-time",
+            "example": "2026-01-01T00:00:00.000Z"
+          }
+        }
+      },
+      "Session": {
+        "type": "object",
+        "properties": {
+          "id": { "type": "string" },
+          "userId": { "type": "string" },
+          "token": { "type": "string" },
+          "expiresAt": { "type": "string", "format": "date-time" },
+          "ipAddress": { "type": "string", "nullable": true },
+          "userAgent": { "type": "string", "nullable": true },
+          "createdAt": { "type": "string", "format": "date-time" },
+          "updatedAt": { "type": "string", "format": "date-time" }
+        }
+      },
+      "AuthSessionResponse": {
+        "type": "object",
+        "description": "Sessão ativa com o respectivo usuário.",
+        "properties": {
+          "session": { "$ref": "#/components/schemas/Session" },
+          "user": { "$ref": "#/components/schemas/AuthUser" }
+        }
+      },
+      "AuthLoginResponse": {
+        "type": "object",
+        "description": "Resposta de login por e-mail e senha.",
+        "properties": {
+          "redirect": { "type": "boolean", "example": false },
+          "token": { "type": "string" },
+          "user": { "$ref": "#/components/schemas/AuthUser" }
+        }
+      },
+      "AuthSignUpResponse": {
+        "type": "object",
+        "description": "Resposta de cadastro. O token fica nulo enquanto o e-mail não é verificado.",
+        "properties": {
+          "token": { "type": "string", "nullable": true, "example": null },
+          "user": { "$ref": "#/components/schemas/AuthUser" }
+        }
+      },
+      "Membership": {
+        "type": "object",
+        "description": "Vínculo de um usuário com um workspace.",
+        "properties": {
+          "workspaceId": { "type": "string", "example": "clx2ws456" },
+          "slug": { "type": "string", "example": "acme" },
+          "name": { "type": "string", "example": "ACME" },
+          "role": {
+            "type": "string",
+            "enum": ["OWNER", "ADMIN", "MEMBER", "VIEWER"],
+            "example": "OWNER"
+          }
+        }
+      },
+      "UserProfile": {
+        "type": "object",
+        "description": "Perfil do usuário autenticado (retornado por /users/me).",
+        "properties": {
+          "id": { "type": "string", "example": "clx1abc123" },
+          "name": { "type": "string", "example": "João Silva" },
+          "email": {
+            "type": "string",
+            "format": "email",
+            "example": "joao@exemplo.com"
+          },
+          "emailVerified": { "type": "boolean", "example": true },
+          "image": { "type": "string", "nullable": true, "example": null },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time",
+            "example": "2026-01-01T00:00:00.000Z"
+          },
+          "deletionScheduledAt": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true,
+            "example": null
+          },
+          "acceptedTermsAt": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true,
+            "example": "2026-01-01T00:00:00.000Z"
+          },
+          "acceptedPrivacyAt": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true,
+            "example": "2026-01-01T00:00:00.000Z"
+          },
+          "memberships": {
+            "type": "array",
+            "items": { "$ref": "#/components/schemas/Membership" }
           }
         }
       },
@@ -450,58 +1656,355 @@
           }
         }
       },
-      "AuthSessionResponse": {
+      "Workspace": {
         "type": "object",
         "properties": {
-          "session": {
-            "type": "object",
-            "properties": {
-              "id": { "type": "string" },
-              "userId": { "type": "string" },
-              "token": { "type": "string" },
-              "expiresAt": { "type": "string", "format": "date-time" }
-            }
+          "id": { "type": "string", "example": "clx2ws456" },
+          "name": { "type": "string", "example": "ACME" },
+          "slug": { "type": "string", "example": "acme" },
+          "activePlan": {
+            "type": "string",
+            "enum": ["BASIC", "PRO", "ENTERPRISE"],
+            "example": "BASIC"
           },
-          "user": {
-            "$ref": "#/components/schemas/User"
+          "createdAt": { "type": "string", "format": "date-time" },
+          "updatedAt": { "type": "string", "format": "date-time" }
+        }
+      },
+      "CreateWorkspaceInput": {
+        "type": "object",
+        "required": ["name", "slug"],
+        "properties": {
+          "name": {
+            "type": "string",
+            "minLength": 2,
+            "maxLength": 100,
+            "example": "ACME"
+          },
+          "slug": {
+            "type": "string",
+            "minLength": 2,
+            "maxLength": 50,
+            "pattern": "^[a-z0-9-]+$",
+            "description": "Apenas letras minúsculas, números e hífens.",
+            "example": "acme"
+          }
+        }
+      },
+      "UpdateWorkspaceInput": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "minLength": 2,
+            "maxLength": 100,
+            "example": "ACME Corp"
+          },
+          "slug": {
+            "type": "string",
+            "minLength": 2,
+            "maxLength": 50,
+            "pattern": "^[a-z0-9-]+$",
+            "example": "acme-corp"
+          }
+        }
+      },
+      "ShortLink": {
+        "type": "object",
+        "properties": {
+          "id": { "type": "string", "example": "clx3sl789" },
+          "title": { "type": "string", "example": "Documentação" },
+          "url": {
+            "type": "string",
+            "format": "uri",
+            "example": "https://nexo.coodee.dev/docs"
+          },
+          "userId": { "type": "string", "example": "clx1abc123" },
+          "createdAt": { "type": "string", "format": "date-time" },
+          "updatedAt": { "type": "string", "format": "date-time" }
+        }
+      },
+      "CreateShortLinkInput": {
+        "type": "object",
+        "required": ["title", "url"],
+        "properties": {
+          "title": {
+            "type": "string",
+            "minLength": 2,
+            "maxLength": 100,
+            "example": "Documentação"
+          },
+          "url": {
+            "type": "string",
+            "format": "uri",
+            "maxLength": 2048,
+            "example": "https://nexo.coodee.dev/docs"
+          }
+        }
+      },
+      "UpdateShortLinkInput": {
+        "type": "object",
+        "properties": {
+          "title": {
+            "type": "string",
+            "minLength": 2,
+            "maxLength": 100,
+            "example": "Docs"
+          },
+          "url": {
+            "type": "string",
+            "format": "uri",
+            "maxLength": 2048,
+            "example": "https://nexo.coodee.dev/docs/v2"
+          }
+        }
+      },
+      "Subscription": {
+        "type": "object",
+        "properties": {
+          "id": { "type": "string", "example": "clx4sub012" },
+          "billId": { "type": "string", "example": "bill_abc123" },
+          "plan": {
+            "type": "string",
+            "enum": ["PRO", "ENTERPRISE"],
+            "example": "PRO"
+          },
+          "status": {
+            "type": "string",
+            "enum": ["PENDING", "PAID", "CANCELLED", "EXPIRED", "REFUNDED"],
+            "example": "PENDING"
+          },
+          "amount": {
+            "type": "integer",
+            "description": "Valor em centavos.",
+            "example": 4990
+          },
+          "paymentUrl": {
+            "type": "string",
+            "format": "uri",
+            "example": "https://abacatepay.com/pay/abc123"
+          },
+          "workspaceId": { "type": "string", "example": "clx2ws456" },
+          "createdAt": { "type": "string", "format": "date-time" },
+          "updatedAt": { "type": "string", "format": "date-time" }
+        }
+      },
+      "CreateSubscriptionInput": {
+        "type": "object",
+        "required": ["plan", "workspaceId"],
+        "properties": {
+          "plan": {
+            "type": "string",
+            "enum": ["PRO", "ENTERPRISE"],
+            "example": "PRO"
+          },
+          "workspaceId": { "type": "string", "example": "clx2ws456" }
+        }
+      },
+      "ComponentKey": {
+        "type": "string",
+        "enum": [
+          "app",
+          "database",
+          "cache",
+          "auth",
+          "payment",
+          "email",
+          "storage"
+        ],
+        "example": "app"
+      },
+      "ComponentStatus": {
+        "type": "string",
+        "enum": [
+          "OPERATIONAL",
+          "DEGRADED",
+          "PARTIAL_OUTAGE",
+          "MAJOR_OUTAGE",
+          "MAINTENANCE"
+        ],
+        "example": "OPERATIONAL"
+      },
+      "DailyPoint": {
+        "type": "object",
+        "properties": {
+          "day": {
+            "type": "string",
+            "format": "date",
+            "example": "2026-05-20"
+          },
+          "status": { "$ref": "#/components/schemas/ComponentStatus" },
+          "uptimePct": { "type": "number", "example": 99.95 },
+          "incidentId": {
+            "type": "string",
+            "description": "Presente apenas quando houve incidente no dia.",
+            "example": "clx5inc345"
+          }
+        }
+      },
+      "ComponentSnapshot": {
+        "type": "object",
+        "properties": {
+          "key": { "$ref": "#/components/schemas/ComponentKey" },
+          "name": { "type": "string", "example": "Aplicação" },
+          "description": { "type": "string", "example": "Servidor web" },
+          "tier": {
+            "type": "string",
+            "enum": ["core", "peripheral"],
+            "example": "core"
+          },
+          "currentStatus": { "$ref": "#/components/schemas/ComponentStatus" },
+          "uptime90d": { "type": "number", "example": 99.98 },
+          "history": {
+            "type": "array",
+            "items": { "$ref": "#/components/schemas/DailyPoint" }
+          }
+        }
+      },
+      "Snapshot": {
+        "type": "object",
+        "properties": {
+          "overallStatus": { "$ref": "#/components/schemas/ComponentStatus" },
+          "generatedAt": { "type": "string", "format": "date-time" },
+          "components": {
+            "type": "array",
+            "items": { "$ref": "#/components/schemas/ComponentSnapshot" }
           }
         }
       },
       "SuccessResponse": {
         "type": "object",
+        "description": "Envelope padrão de sucesso.",
         "properties": {
-          "success": {
-            "type": "boolean",
-            "example": true
-          },
-          "statusCode": {
-            "type": "integer",
-            "example": 200
-          },
-          "data": {
-            "type": "object"
-          }
+          "success": { "type": "boolean", "example": true },
+          "statusCode": { "type": "integer", "example": 200 },
+          "message": { "type": "string" },
+          "data": {}
         }
+      },
+      "EmptySuccessResponse": {
+        "type": "object",
+        "properties": {
+          "success": { "type": "boolean", "example": true },
+          "statusCode": { "type": "integer", "example": 200 },
+          "data": { "type": "null", "example": null }
+        }
+      },
+      "WorkspaceResponse": {
+        "allOf": [
+          { "$ref": "#/components/schemas/SuccessResponse" },
+          {
+            "type": "object",
+            "properties": {
+              "data": { "$ref": "#/components/schemas/Workspace" }
+            }
+          }
+        ]
+      },
+      "UserProfileResponse": {
+        "allOf": [
+          { "$ref": "#/components/schemas/SuccessResponse" },
+          {
+            "type": "object",
+            "properties": {
+              "data": { "$ref": "#/components/schemas/UserProfile" }
+            }
+          }
+        ]
+      },
+      "ShortLinkResponse": {
+        "allOf": [
+          { "$ref": "#/components/schemas/SuccessResponse" },
+          {
+            "type": "object",
+            "properties": {
+              "data": { "$ref": "#/components/schemas/ShortLink" }
+            }
+          }
+        ]
+      },
+      "ShortLinkListResponse": {
+        "allOf": [
+          { "$ref": "#/components/schemas/SuccessResponse" },
+          {
+            "type": "object",
+            "properties": {
+              "data": {
+                "type": "array",
+                "items": { "$ref": "#/components/schemas/ShortLink" }
+              }
+            }
+          }
+        ]
+      },
+      "SubscriptionResponse": {
+        "allOf": [
+          { "$ref": "#/components/schemas/SuccessResponse" },
+          {
+            "type": "object",
+            "properties": {
+              "data": { "$ref": "#/components/schemas/Subscription" }
+            }
+          }
+        ]
+      },
+      "StatusSnapshotResponse": {
+        "allOf": [
+          { "$ref": "#/components/schemas/SuccessResponse" },
+          {
+            "type": "object",
+            "properties": {
+              "data": { "$ref": "#/components/schemas/Snapshot" }
+            }
+          }
+        ]
+      },
+      "StatusHistoryResponse": {
+        "allOf": [
+          { "$ref": "#/components/schemas/SuccessResponse" },
+          {
+            "type": "object",
+            "properties": {
+              "data": {
+                "type": "array",
+                "items": { "$ref": "#/components/schemas/DailyPoint" }
+              }
+            }
+          }
+        ]
+      },
+      "StatusCollectResponse": {
+        "allOf": [
+          { "$ref": "#/components/schemas/SuccessResponse" },
+          {
+            "type": "object",
+            "properties": {
+              "data": {
+                "type": "object",
+                "properties": {
+                  "tier": {
+                    "type": "string",
+                    "enum": ["core", "peripheral"]
+                  },
+                  "collectedAt": { "type": "string", "format": "date-time" }
+                }
+              }
+            }
+          }
+        ]
       },
       "ErrorResponse": {
         "type": "object",
+        "description": "Envelope padrão de erro.",
         "properties": {
-          "success": {
-            "type": "boolean",
-            "example": false
-          },
-          "statusCode": {
-            "type": "integer",
-            "example": 400
-          },
-          "message": {
-            "type": "string"
-          },
+          "success": { "type": "boolean", "example": false },
+          "statusCode": { "type": "integer", "example": 400 },
+          "message": { "type": "string" },
           "error": {
             "type": "object",
             "properties": {
               "code": { "type": "string" },
-              "details": { "type": "object" }
+              "details": {}
             }
           }
         }
@@ -509,25 +2012,13 @@
       "ValidationErrorResponse": {
         "type": "object",
         "properties": {
-          "success": {
-            "type": "boolean",
-            "example": false
-          },
-          "statusCode": {
-            "type": "integer",
-            "example": 422
-          },
-          "message": {
-            "type": "string",
-            "example": "Dados inválidos"
-          },
+          "success": { "type": "boolean", "example": false },
+          "statusCode": { "type": "integer", "example": 422 },
+          "message": { "type": "string", "example": "Dados inválidos" },
           "error": {
             "type": "object",
             "properties": {
-              "code": {
-                "type": "string",
-                "example": "VALIDATION_ERROR"
-              },
+              "code": { "type": "string", "example": "VALIDATION_ERROR" },
               "details": {
                 "type": "array",
                 "items": {
@@ -551,16 +2042,54 @@
         "description": "Não autenticado — sessão ausente ou expirada",
         "content": {
           "application/json": {
-            "schema": {
-              "$ref": "#/components/schemas/ErrorResponse"
-            },
+            "schema": { "$ref": "#/components/schemas/ErrorResponse" },
             "example": {
               "success": false,
               "statusCode": 401,
-              "message": "Nao autenticado",
-              "error": {
-                "code": "UNAUTHORIZED"
-              }
+              "message": "Não autenticado",
+              "error": { "code": "UNAUTHORIZED" }
+            }
+          }
+        }
+      },
+      "ForbiddenError": {
+        "description": "Sem permissão para acessar ou modificar o recurso",
+        "content": {
+          "application/json": {
+            "schema": { "$ref": "#/components/schemas/ErrorResponse" },
+            "example": {
+              "success": false,
+              "statusCode": 403,
+              "message": "Acesso negado",
+              "error": { "code": "FORBIDDEN" }
+            }
+          }
+        }
+      },
+      "NotFoundError": {
+        "description": "Recurso não encontrado",
+        "content": {
+          "application/json": {
+            "schema": { "$ref": "#/components/schemas/ErrorResponse" },
+            "example": {
+              "success": false,
+              "statusCode": 404,
+              "message": "Recurso não encontrado",
+              "error": { "code": "RESOURCE_NOT_FOUND" }
+            }
+          }
+        }
+      },
+      "ConflictError": {
+        "description": "Conflito com o estado atual do recurso",
+        "content": {
+          "application/json": {
+            "schema": { "$ref": "#/components/schemas/ErrorResponse" },
+            "example": {
+              "success": false,
+              "statusCode": 409,
+              "message": "E-mail já está em uso",
+              "error": { "code": "CONFLICT" }
             }
           }
         }
@@ -574,21 +2103,44 @@
             }
           }
         }
+      },
+      "RateLimitError": {
+        "description": "Limite de requisições excedido. O header `Retry-After` indica os segundos até a próxima tentativa.",
+        "headers": {
+          "Retry-After": {
+            "description": "Segundos até liberar novas requisições",
+            "schema": { "type": "integer" }
+          }
+        },
+        "content": {
+          "application/json": {
+            "schema": { "$ref": "#/components/schemas/ErrorResponse" },
+            "example": {
+              "success": false,
+              "statusCode": 429,
+              "message": "Muitas requisições",
+              "error": {
+                "code": "RATE_LIMITED",
+                "details": { "retryAfterSeconds": 30 }
+              }
+            }
+          }
+        }
+      },
+      "InternalServerError": {
+        "description": "Erro interno do servidor",
+        "content": {
+          "application/json": {
+            "schema": { "$ref": "#/components/schemas/ErrorResponse" },
+            "example": {
+              "success": false,
+              "statusCode": 500,
+              "message": "Erro interno",
+              "error": { "code": "INTERNAL_SERVER_ERROR" }
+            }
+          }
+        }
       }
     }
-  },
-  "tags": [
-    {
-      "name": "Autenticação",
-      "description": "Sign-up, sign-in, sign-out e sessão (Better Auth)"
-    },
-    {
-      "name": "Usuário",
-      "description": "Perfil do usuário autenticado"
-    },
-    {
-      "name": "E-mails",
-      "description": "Envio de e-mails transacionais via Resend"
-    }
-  ]
+  }
 }

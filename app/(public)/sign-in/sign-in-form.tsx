@@ -172,7 +172,10 @@ export function SignInForm() {
               <div className='flex items-center justify-center'>
                 <Muted className='text-center text-sm p-4'>
                   Esqueceu sua senha?{' '}
-                  <Link href='#' className='text-primary hover:underline'>
+                  <Link
+                    href='/forget-password'
+                    className='text-primary hover:underline'
+                  >
                     Redefinir senha
                   </Link>
                   .

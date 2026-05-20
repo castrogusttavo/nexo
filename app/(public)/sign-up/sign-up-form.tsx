@@ -54,8 +54,8 @@ export function SignUpForm() {
     if (!name || name.length < 2)
       errors.name = 'Nome deve ter ao menos 2 caracteres'
     if (!submittedEmail) errors.email = 'E-mail é obrigatório'
-    if (!password || password.length < 6)
-      errors.password = 'Senha deve ter ao menos 6 caracteres'
+    if (!password || password.length < 8)
+      errors.password = 'Senha deve ter ao menos 8 caracteres'
     if (!acceptedTerms || !acceptedPrivacy)
       errors.consent =
         'Você precisa aceitar os Termos de Serviço e a Política de Privacidade'
