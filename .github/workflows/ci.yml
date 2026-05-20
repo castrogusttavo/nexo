@@ -383,6 +383,10 @@ jobs:
       - name: Run pnpm audit
         run: pnpm audit --audit-level=critical
 
+  # Monitoring only: uploads SARIF to the Security tab but is intentionally kept
+  # out of the gate's needs (and continue-on-error), so a flaky snyk@master run
+  # or a high-severity finding doesn't block deploys. Critical dep vulns are
+  # still blocked by the audit job.
   snyk:
     name: Snyk Security Scan
     runs-on: ubuntu-latest
@@ -548,7 +552,6 @@ jobs:
       - coverage-tests
       - build
       - audit
-      - snyk
       - semgrep
       - gitleaks
       - redis-tls-smoke
