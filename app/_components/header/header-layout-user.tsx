@@ -7,7 +7,7 @@ import { ShortCutButton } from '@/components/shortcut-button'
 import { Button } from '@/components/ui/button'
 import { UserDropdownHelper } from '../user/user-dropdown-helper'
 import { UserDropdownProfile } from '../user/user-dropdown-profile'
-import { WorkSpaceDropdown } from '../workspace/workspace-dropdown'
+import { WorkSpaceDropdown } from '../workspace/workspace-dropdown/workspace-dropdown-selector'
 
 export function UserHeader({ slug }: { slug: string }) {
   return (

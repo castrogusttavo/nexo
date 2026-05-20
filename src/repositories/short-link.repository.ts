@@ -1,7 +1,7 @@
 import type { ShortLink } from '@prisma/client'
 import { prisma } from '@/src/lib/prisma'
 import { err, ok, type Result } from '@/src/lib/result'
-import { databaseError, notFound } from '../errors'
+import { databaseError, notFound } from '../errors/app-error'
 
 export const ShortLinkRepository = {
   async findById(id: string): Promise<Result<ShortLink>> {

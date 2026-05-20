@@ -4,7 +4,7 @@ import type {
   UpdateShortLinkDTO,
 } from '@/src/schemas/short-link.schema'
 import type { ShortLinkDTO } from '@/types/short-link'
-import { forbidden } from '../errors'
+import { forbidden } from '../errors/app-error'
 import { err, ok, type Result } from '../lib/result'
 import { toShortLinkDTO } from '../mappers/short-link.mapper'
 import { ShortLinkRepository } from '../repositories/short-link.repository'
