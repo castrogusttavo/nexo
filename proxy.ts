@@ -57,7 +57,9 @@ export function proxy(request: NextRequest, event: NextFetchEvent) {
     return NextResponse.next({ request: { headers: requestHeaders } })
   }
 
-  const isPublic = PUBLIC_ROUTES.some((route) => pathname.startsWith(route))
+  const isPublic = PUBLIC_ROUTES.some(
+    (route) => pathname === route || pathname.startsWith(`${route}/`),
+  )
 
   if (isPublic) {
     return withSecurityHeaders(
