@@ -1,0 +1,18 @@
+coverage:
+  status:
+    # Bloqueia se a cobertura do projeto cair em relação à base (sem cravar um número).
+    project:
+      default:
+        target: auto
+        threshold: 1%
+        if_ci_failed: error
+    # Cobre o código novo/alterado do PR. Só conta arquivos dentro do `include`
+    # do vite.config (services, mappers, schemas, repositories, cache, etc.).
+    patch:
+      default:
+        target: 70%
+        threshold: 5%
+
+comment:
+  layout: 'reach, diff, flags, files'
+  require_changes: true
