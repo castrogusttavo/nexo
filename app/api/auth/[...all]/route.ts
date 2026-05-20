@@ -9,7 +9,7 @@ const PROTECTED_AUTH_PREFIXES = [
   '/api/auth/sign-in/',
   '/api/auth/sign-up/',
   '/api/auth/two-factor/',
-  '/api/auth/forget-password',
+  '/api/auth/request-password-reset',
   '/api/auth/reset-password',
   '/api/auth/email-otp/',
 ] as const

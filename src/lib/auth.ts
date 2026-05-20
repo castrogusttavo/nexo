@@ -13,6 +13,7 @@ import {
   GOOGLE_CLIENT_SECRET,
 } from '@/lib/env/server'
 import { PRIVACY_VERSION, TERMS_VERSION } from '@/lib/legal/versions'
+import { sendResetPasswordEmail } from '@/src/lib/mail/user/send-reset-password'
 import { sendVerify2faAccessOtp } from '@/src/lib/mail/user/send-verify-2fa-access-otp'
 import { sendVerifyEmailWithOtp } from '@/src/lib/mail/user/send-verify-email-with-otp'
 import { sendWelcomeEmail } from '@/src/lib/mail/user/send-welcome'
@@ -34,6 +35,33 @@ export const auth = betterAuth({
     password: {
       hash: async (password) => hash(password),
       verify: async ({ hash: hashed, password }) => verify(hashed, password),
+    },
+    // A redefinição de senha costuma ocorrer após comprometimento da conta;
+    // derrubar as demais sessões expulsa um eventual atacante.
+    revokeSessionsOnPasswordReset: true,
+    // `url` is the full reset link better-auth builds for us: it points at
+    // the API verification endpoint that validates the token and then
+    // redirects to the `redirectTo` page (/reset-password) with `?token=`.
+    // Without this callback, POST /auth/request-password-reset is a no-op.
+    sendResetPassword: async ({ user, url }) => {
+      auditAuth({ event: 'auth.reset_password.requested', userId: user.id })
+      try {
+        await sendResetPasswordEmail({
+          email: user.email,
+          username: user.name ?? undefined,
+          redirectUrl: url,
+        })
+      } catch (error) {
+        auditAuth({
+          event: 'auth.reset_password.send_failed',
+          userId: user.id,
+          outcome: 'failure',
+          reason: error instanceof Error ? error.message : String(error),
+        })
+      }
+    },
+    onPasswordReset: async ({ user }) => {
+      auditAuth({ event: 'auth.reset_password.completed', userId: user.id })
     },
   },
   emailVerification: {
