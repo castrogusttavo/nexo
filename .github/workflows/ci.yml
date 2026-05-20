@@ -7,7 +7,6 @@ on:
 
 permissions:
   contents: read
-  security-events: write
 
 concurrency:
   group: ci-${{ github.workflow }}-${{ github.ref }}
@@ -387,6 +386,9 @@ jobs:
   snyk:
     name: Snyk Security Scan
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      security-events: write
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -425,6 +427,9 @@ jobs:
   semgrep:
     name: Semgrep SAST
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      security-events: write
     container:
       image: semgrep/semgrep
     steps:
