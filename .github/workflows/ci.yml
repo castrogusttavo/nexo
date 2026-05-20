@@ -172,6 +172,10 @@ jobs:
       BETTER_AUTH_SECRET: ci-test-secret-not-real
       BETTER_AUTH_URL: http://localhost:3000
       SKIP_ENV_VALIDATION: 'true'
+      # Shared by the server and the test process so the secret-checked routes
+      # (status collector, payment webhook) accept the requests the e2e tests send.
+      STATUS_COLLECTOR_SECRET: ci-status-collector-secret
+      ABACATE_PAY_WEBHOOK_SECRET: ci-abacate-webhook-secret
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -198,6 +202,27 @@ jobs:
 
       - name: Push database schema
         run: pnpm prisma db push
+
+      - name: Build application
+        run: pnpm build
+
+      - name: Start server
+        run: pnpm start &
+        env:
+          PORT: 3000
+
+      - name: Wait for server to be ready
+        run: |
+          for i in $(seq 1 30); do
+            if curl -s http://localhost:3000 > /dev/null 2>&1; then
+              echo "Server is ready"
+              exit 0
+            fi
+            echo "Waiting for server... ($i/30)"
+            sleep 2
+          done
+          echo "Server failed to start"
+          exit 1
 
       - name: Run e2e tests
         run: pnpm test:e2e
