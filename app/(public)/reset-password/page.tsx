@@ -9,8 +9,15 @@ export const metadata: Metadata = {
 export default async function ResetPasswordPage({
   searchParams,
 }: {
-  searchParams: Promise<{ token?: string; error?: string }>
+  searchParams: Promise<{
+    token?: string | string[]
+    error?: string | string[]
+  }>
 }) {
-  const { token, error } = await searchParams
+  const params = await searchParams
+  // Next.js may surface a repeated query param as an array; the form expects a
+  // single value, so collapse to the first element.
+  const token = Array.isArray(params.token) ? params.token[0] : params.token
+  const error = Array.isArray(params.error) ? params.error[0] : params.error
   return <ResetPasswordForm token={token} linkError={error} />
 }

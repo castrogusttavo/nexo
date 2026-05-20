@@ -317,7 +317,7 @@ export default function SettingsPage() {
             </div>
             <p className='text-sm text-muted-foreground pt-2'>
               Para revogar o aceite dos Termos ou da Política de Privacidade,
-              você precisa excluir sua conta — não é possível manter a conta
+              você precisa excluir sua conta: não é possível manter a conta
               ativa sem esses aceites.
             </p>
           </div>

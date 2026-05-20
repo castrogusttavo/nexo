@@ -25,12 +25,14 @@ export interface DataExportRequested {
   requestedAt: string
 }
 
+const DELETION_DATE_FORMATTER = new Intl.DateTimeFormat('pt-BR', {
+  day: '2-digit',
+  month: 'long',
+  year: 'numeric',
+})
+
 function formatDeletionDate(date: Date): string {
-  return new Intl.DateTimeFormat('pt-BR', {
-    day: '2-digit',
-    month: 'long',
-    year: 'numeric',
-  }).format(date)
+  return DELETION_DATE_FORMATTER.format(date)
 }
 
 export const UserService = {

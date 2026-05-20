@@ -30,26 +30,29 @@ export function ForgetPasswordForm() {
     }
 
     setIsPending(true)
-    const { error: requestError } = await authClient.requestPasswordReset({
-      email,
-      redirectTo: '/reset-password',
-    })
-    setIsPending(false)
+    try {
+      const { error: requestError } = await authClient.requestPasswordReset({
+        email,
+        redirectTo: '/reset-password',
+      })
 
-    if (requestError) {
-      setError(
-        requestError.message ??
-          'Não foi possível enviar o e-mail de redefinição',
-      )
-      return
+      if (requestError) {
+        setError(
+          requestError.message ??
+            'Não foi possível enviar o e-mail de redefinição',
+        )
+        return
+      }
+
+      // Neutral confirmation: never reveal whether the address has an account.
+      setSent(true)
+    } finally {
+      setIsPending(false)
     }
-
-    // Neutral confirmation: never reveal whether the address has an account.
-    setSent(true)
   }
 
   return (
-    <div className='min-h-screen flex flex-col items-center justiyf-center p-4 pb-12'>
+    <div className='min-h-screen flex flex-col items-center justify-center p-4 pb-12'>
       <HeaderLogin path='sign-up' pathname='Cadastre-se' />
       <div className='flex-1 w-full flex flex-col justify-center gap-y-6 max-w-90'>
         {sent ? (

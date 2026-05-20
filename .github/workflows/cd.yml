@@ -80,6 +80,7 @@ jobs:
           push: false
           load: true
           tags: ${{ env.IMAGE_NAME }}:scan
+          labels: ${{ steps.meta.outputs.labels }}
           cache-from: type=registry,ref=${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:buildcache
           cache-to: type=registry,ref=${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:buildcache,mode=max
           build-args: |
@@ -98,20 +99,13 @@ jobs:
           ignore-unfixed: true
           exit-code: '1'
 
-      - name: Push Docker image
-        uses: docker/build-push-action@v5
-        with:
-          context: .
-          push: true
-          tags: ${{ steps.meta.outputs.tags }}
-          labels: ${{ steps.meta.outputs.labels }}
-          cache-from: type=registry,ref=${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:buildcache
-          build-args: |
-            NEXT_PUBLIC_URL=https://nexo.coodee.dev
-            NEXT_PUBLIC_AXIOM_TOKEN=${{ secrets.NEXT_PUBLIC_AXIOM_TOKEN }}
-            NEXT_PUBLIC_AXIOM_DATASET=${{ secrets.NEXT_PUBLIC_AXIOM_DATASET }}
-          secrets: |
-            hugeicons_token=${{ secrets.HUGEICONS_TOKEN }}
+      - name: Push scanned image
+        run: |
+          while IFS= read -r tag; do
+            [ -z "$tag" ] && continue
+            docker tag "${{ env.IMAGE_NAME }}:scan" "$tag"
+            docker push "$tag"
+          done <<< "${{ steps.meta.outputs.tags }}"
 
       - name: Decrypt production secrets
         run: |
