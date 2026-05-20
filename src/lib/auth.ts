@@ -4,6 +4,7 @@ import { betterAuth } from 'better-auth'
 import { prismaAdapter } from 'better-auth/adapters/prisma'
 import { emailOTP, twoFactor } from 'better-auth/plugins'
 import { auditAuth, auditMutation } from '@/lib/axiom/audit'
+import { NODE_ENV } from '@/lib/env/env'
 import {
   BETTER_AUTH_SECRET,
   BETTER_AUTH_URL,
@@ -26,6 +27,17 @@ export const auth = betterAuth({
     database: {
       generateId: () => createId(),
     },
+  },
+  // O app já aplica rate limit próprio (Redis) nas rotas de auth via route.ts.
+  // O limiter embutido do better-auth (em memória, ativo só em produção) é
+  // redundante e, no e2e — que roda `next start` em modo produção — bloqueia os
+  // sign-ups da suíte inteira a partir do mesmo IP. Preserva o default em
+  // produção real e desliga apenas quando o e2e seta o flag.
+  rateLimit: {
+    enabled:
+      process.env.DISABLE_AUTH_RATE_LIMIT === 'true'
+        ? false
+        : NODE_ENV === 'production',
   },
   baseURL: BETTER_AUTH_URL,
   trustedOrigins: [BETTER_AUTH_URL],

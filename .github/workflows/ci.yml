@@ -176,6 +176,10 @@ jobs:
       # (status collector, payment webhook) accept the requests the e2e tests send.
       STATUS_COLLECTOR_SECRET: ci-status-collector-secret
       ABACATE_PAY_WEBHOOK_SECRET: ci-abacate-webhook-secret
+      # `next start` runs in production mode, where better-auth's built-in rate
+      # limiter is on and would 429 the suite's repeated sign-ups. The app keeps
+      # its own auth rate limiting; disable only better-auth's here.
+      DISABLE_AUTH_RATE_LIMIT: 'true'
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
