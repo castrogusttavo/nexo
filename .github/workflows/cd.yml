@@ -124,6 +124,35 @@ jobs:
           docker compose up -d
           docker image prune -f
 
+  release:
+    name: Tag & Release
+    needs: [migrate, deploy]
+    if: ${{ github.event.workflow_run.conclusion == 'success' }}
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.workflow_run.head_sha }}
+          fetch-depth: 0
+
+      - name: Create CalVer tag and GitHub Release
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          SHA: ${{ github.event.workflow_run.head_sha }}
+        run: |
+          # CalVer YYYY.MM.DD[.N] (UTC). First release of the day has no suffix;
+          # subsequent deploys the same day get .1, .2, ... (see versioning doc).
+          TODAY=$(date -u +%Y.%m.%d)
+          EXISTING=$(git tag --list "$TODAY" "$TODAY.*" | wc -l)
+          if [ "$EXISTING" -eq 0 ]; then TAG="$TODAY"; else TAG="$TODAY.$EXISTING"; fi
+          echo "Releasing $TAG at $SHA (existing today: $EXISTING)"
+          # gh creates the tag at $SHA and the release together; --generate-notes
+          # builds the body from merged PRs/commits since the previous release.
+          gh release create "$TAG" --target "$SHA" --title "$TAG" --generate-notes
+
   notify-slack:
     name: Notify Slack
     needs: [migrate, deploy]
