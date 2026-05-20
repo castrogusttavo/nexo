@@ -150,15 +150,17 @@ async function gatherAuditLog(userId: string): Promise<ExportAuditEntry[]> {
   }
 }
 
+const EXPIRES_AT_FORMATTER = new Intl.DateTimeFormat('pt-BR', {
+  day: '2-digit',
+  month: 'long',
+  year: 'numeric',
+  hour: '2-digit',
+  minute: '2-digit',
+  timeZone: 'America/Sao_Paulo',
+})
+
 function formatExpiresAt(expiresAt: Date): string {
-  return new Intl.DateTimeFormat('pt-BR', {
-    day: '2-digit',
-    month: 'long',
-    year: 'numeric',
-    hour: '2-digit',
-    minute: '2-digit',
-    timeZone: 'America/Sao_Paulo',
-  }).format(expiresAt)
+  return EXPIRES_AT_FORMATTER.format(expiresAt)
 }
 
 function formatFileSize(bytes: number): string {
