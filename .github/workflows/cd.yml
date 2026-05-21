@@ -133,10 +133,15 @@ jobs:
       contents: write
     steps:
       - name: Checkout repository
+        # Checkout do branch padrão (main), não do head_sha do workflow_run:
+        # o job roda com contents:write e o checkout do ref não-confiável do
+        # evento é o padrão "pwn request" (Semgrep workflow-run-target-code-checkout).
+        # O release é fixado no commit certo via `gh release create --target "$SHA"`,
+        # e `git tag --list` só precisa das tags (presentes em qualquer checkout).
         uses: actions/checkout@v4
         with:
-          ref: ${{ github.event.workflow_run.head_sha }}
           fetch-depth: 0
+          persist-credentials: false
 
       - name: Create CalVer tag and GitHub Release
         env:
