@@ -12,10 +12,10 @@ const PUBLIC_ROUTES = ['/sign-in', '/sign-up', '/forget-password', '/reset-passw
 function buildCspHeader(nonce: string): string {
   return `
     default-src 'self';
-    script-src 'self' 'nonce-${nonce}' 'strict-dynamic';
-    style-src 'self' 'unsafe-inline' https://fonts.googleapis.com;
+    script-src 'self' 'nonce-${nonce}' 'strict-dynamic'${NODE_ENV === 'development' ? " 'unsafe-eval'" : ''};
+    style-src 'self' 'unsafe-inline';
     img-src 'self' blob: data: https:;
-    font-src 'self' https://fonts.gstatic.com;
+    font-src 'self';
     connect-src 'self' https://*.axiom.co https://va.vercel-scripts.com${NODE_ENV === 'development' ? ' ws://localhost:4444' : ''};
     frame-ancestors 'none';
     form-action 'self';

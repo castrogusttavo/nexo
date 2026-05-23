@@ -68,6 +68,7 @@
     "cmdk": "^1.1.1",
     "eslint-config-next": "^16.2.5",
     "frimousse": "^0.3.0",
+    "geist": "^1.7.1",
     "input-otp": "^1.4.2",
     "ioredis": "^5.10.1",
     "lucide-react": "^1.14.0",

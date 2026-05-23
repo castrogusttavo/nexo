@@ -1,5 +1,5 @@
+import { GeistSans } from 'geist/font/sans'
 import type { Metadata } from 'next'
-import { Geist } from 'next/font/google'
 import './globals.css'
 import { Suspense } from 'react'
 import { Toaster } from '@/components/ui/sonner'
@@ -9,8 +9,6 @@ import { Providers } from './_components/providers'
 import { CookieConsentBanner } from './_components/user/cookie-consent/banner'
 import { ConsentedTrackers } from './_components/user/cookie-consent/consented-trackers'
 import { CookieConsentInit } from './_components/user/cookie-consent/init'
-
-const geist = Geist({ subsets: ['latin'], variable: '--font-sans' })
 
 export const metadata: Metadata = {
   title: 'AI-native project management | Nexo',
@@ -24,7 +22,7 @@ export default function RootLayout({
   children: React.ReactNode
 }>) {
   return (
-    <html lang='en' className={cn('dark', geist.variable)}>
+    <html lang='en' className={cn('dark', GeistSans.variable)}>
       <body className='root antialiased bg-background text-primary h-screen'>
         <Suspense>
           <Providers>
