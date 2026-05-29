@@ -1,5 +1,5 @@
 import { Shapes01Icon } from '@hugeicons-pro/core-solid-rounded'
-import { Add01Icon, Home09Icon } from '@hugeicons-pro/core-stroke-rounded'
+import { Home09Icon } from '@hugeicons-pro/core-stroke-rounded'
 import type { Metadata } from 'next'
 import { cacheLife, cacheTag } from 'next/cache'
 import {
@@ -9,7 +9,8 @@ import {
 import HeaderInternalNavigation from '@/app/_components/header/header-internal-navigation'
 import { UserShortcutLinkList } from '@/app/_components/user/shortcut-link/user-shortcut-link-list'
 import { UserShortcutLinkModal } from '@/app/_components/user/shortcut-link/user-shortcut-link-modal'
-import { UserStick } from '@/app/_components/user/sticky/user-sticky'
+import { UserStickyCreateButton } from '@/app/_components/user/sticky/user-sticky-create-button'
+import { UserStickyList } from '@/app/_components/user/sticky/user-sticky-list'
 import { NexoIcon } from '@/components/icon/icon'
 import { H4 } from '@/components/typography/heading/h4'
 import { Muted } from '@/components/typography/text/muted'
@@ -94,13 +95,10 @@ export default async function Page() {
         <div className='flex flex-col flex-wrap w-full gap-y-3'>
           <div className='w-full flex items-center justify-between'>
             <Small>Suas anotações</Small>
-            <Button size='xs' variant='link'>
-              <NexoIcon icon={Add01Icon} strokeWidth={2} />
-              Adicionar sticky
-            </Button>
+            <UserStickyCreateButton />
           </div>
           <div>
-            <UserStick />
+            <UserStickyList />
           </div>
         </div>
       </div>

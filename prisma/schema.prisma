@@ -266,15 +266,25 @@ model ShortLink {
   @@map("short_links")
 }
 
+enum StickyColor {
+  RED
+  YELLOW
+  BLUE
+  GREEN
+  PURPLE
+  ZINC
+}
+
 model StickyNote {
   id        String        @id @default(cuid())
-  content   String        @map("content")
+  content   Json          @map("content")
+  color     StickyColor   @default(ZINC) @map("color")
   createdAt DateTime      @default(now()) @map("created_at")
   updatedAt DateTime      @updatedAt @map("updated_at")
 
   user      User          @relation(fields: [userId], references: [id], onDelete: Cascade)
   userId    String        @map("user_id")
 
-  @@index([createdAt])
+  @@index([userId, updatedAt])
   @@map("sticky_notes")
 }
