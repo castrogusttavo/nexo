@@ -1,4 +1,3 @@
-import { BreadcrumbItem } from '@/components/ui/breadcrumb'
 import {
   Tooltip,
   TooltipContent,
@@ -16,9 +15,9 @@ export function HeaderBreadcrumbCrumb({
     <Tooltip>
       <TooltipTrigger
         render={
-          <BreadcrumbItem className='font-semibold text-xs'>
+          <li className='gap-1.5 inline-flex items-center font-semibold text-xs'>
             {children} {title}
-          </BreadcrumbItem>
+          </li>
         }
       />
       <TooltipContent
