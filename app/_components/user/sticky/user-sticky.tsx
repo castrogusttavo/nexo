@@ -9,9 +9,15 @@ import {
 } from '@hugeicons-pro/core-stroke-rounded'
 import TaskItem from '@tiptap/extension-task-item'
 import TaskList from '@tiptap/extension-task-list'
-import { EditorContent, useEditor } from '@tiptap/react'
+import { EditorContent, type JSONContent, useEditor } from '@tiptap/react'
 import StarterKit from '@tiptap/starter-kit'
-import { type ComponentProps, type ReactNode, useState } from 'react'
+import {
+  type ComponentProps,
+  type ReactNode,
+  useEffect,
+  useRef,
+  useState,
+} from 'react'
 import { NexoIcon } from '@/components/icon/icon'
 import { Button } from '@/components/ui/button'
 import {
@@ -20,41 +26,103 @@ import {
   PopoverTrigger,
 } from '@/components/ui/popover'
 import { cn } from '@/lib/utils'
+import { useUpdateStickyNote } from '@/src/hooks/use-sticky-note'
+import type { StickyColorDTO, StickyNoteDTO } from '@/types/sticky-note'
 
-const STICKY_COLORS = [
-  'bg-red-950',
-  'bg-yellow-950',
-  'bg-blue-950',
-  'bg-green-950',
-  'bg-purple-950',
-  'bg-zinc-900',
+const STICKY_COLORS: Array<{ value: StickyColorDTO; bg: string }> = [
+  { value: 'RED', bg: 'bg-red-950' },
+  { value: 'YELLOW', bg: 'bg-yellow-950' },
+  { value: 'BLUE', bg: 'bg-blue-950' },
+  { value: 'GREEN', bg: 'bg-green-950' },
+  { value: 'PURPLE', bg: 'bg-purple-950' },
+  { value: 'ZINC', bg: 'bg-zinc-950' },
 ]
-export function UserStick() {
-  const [color, setColor] = useState('bg-red-950')
+
+const SAVE_DEBOUNCE_MS = 800
+
+function colorToBg(color: StickyColorDTO): string {
+  return STICKY_COLORS.find((c) => c.value === color)?.bg ?? 'bg-zinc-950'
+}
+
+interface UserStickyProps {
+  sticky: StickyNoteDTO
+}
+
+export function UserStick({ sticky }: UserStickyProps) {
+  const [color, setColor] = useState<StickyColorDTO>(sticky.color)
+  const update = useUpdateStickyNote(sticky.id)
+
+  const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+  const pendingContentRef = useRef<JSONContent | null>(null)
+
+  const flushContent = () => {
+    if (timeoutRef.current) {
+      clearTimeout(timeoutRef.current)
+      timeoutRef.current = null
+    }
+    if (pendingContentRef.current) {
+      const content = pendingContentRef.current
+      pendingContentRef.current = null
+      update.mutate({ content })
+    }
+  }
+
+  const scheduleContentSave = (content: JSONContent) => {
+    pendingContentRef.current = content
+    if (timeoutRef.current) clearTimeout(timeoutRef.current)
+    timeoutRef.current = setTimeout(flushContent, SAVE_DEBOUNCE_MS)
+  }
+
+  useEffect(() => {
+    return () => {
+      if (timeoutRef.current) clearTimeout(timeoutRef.current)
+    }
+  }, [])
 
   const editor = useEditor({
     immediatelyRender: false,
     extensions: [StarterKit, TaskList, TaskItem.configure({ nested: false })],
-    content: '',
+    content: sticky.content,
     editorProps: {
       attributes: {
         class:
           'w-full min-h-[256px] max-h-[588px] overflow-y-scroll focus:outline-none',
       },
     },
+    onUpdate: ({ editor, transaction }) => {
+      if (!transaction.docChanged) return
+      scheduleContentSave(editor.getJSON())
+    },
+    onBlur: () => {
+      flushContent()
+    },
   })
+
+  const handleColorChange = (next: StickyColorDTO) => {
+    setColor(next)
+    update.mutate({ color: next })
+  }
+
+  const handleClear = () => {
+    editor?.commands.clearContent()
+    flushContent()
+    update.mutate({ content: { type: 'doc', content: [] } })
+  }
 
   return (
     <div
       className={cn(
-        'w-[270px] flex flex-col p-4 rounded-sm group/sticky',
-        color,
+        'w-67.5 flex flex-col p-4 rounded-sm group/sticky',
+        colorToBg(color),
       )}
     >
       <EditorContent editor={editor} />
       <div className='w-full flex items-center justify-between'>
         <div className='flex items-center gap-2'>
-          <StickPickerColor onColorChange={setColor} />
+          <StickPickerColor
+            currentColor={color}
+            onColorChange={handleColorChange}
+          />
           <StickTextPropsButton
             onClick={() => editor?.chain().focus().toggleBold().run()}
           >
@@ -71,7 +139,7 @@ export function UserStick() {
             <NexoIcon icon={CheckListIcon} strokeWidth={2} />
           </StickTextPropsButton>
         </div>
-        <StickTextPropsButton onClick={() => editor?.commands.clearContent()}>
+        <StickTextPropsButton onClick={handleClear}>
           <NexoIcon icon={Delete02Icon} strokeWidth={2} />
         </StickTextPropsButton>
       </div>
@@ -100,9 +168,11 @@ function StickTextPropsButton({
 }
 
 function StickPickerColor({
+  currentColor,
   onColorChange,
 }: {
-  onColorChange: (color: string) => void
+  currentColor: StickyColorDTO
+  onColorChange: (color: StickyColorDTO) => void
 }) {
   return (
     <Popover>
@@ -117,9 +187,14 @@ function StickPickerColor({
         <div className='flex flex-wrap gap-2'>
           {STICKY_COLORS.map((color) => (
             <button
-              key={color}
-              onClick={() => onColorChange(color)}
-              className={cn('size-6 rounded-sm cursor-pointer', color)}
+              key={color.value}
+              type='button'
+              onClick={() => onColorChange(color.value)}
+              className={cn(
+                'size-6 rounded-sm cursor-pointer',
+                color.bg,
+                currentColor === color.value && 'ring-2 ring-primary',
+              )}
             />
           ))}
         </div>
