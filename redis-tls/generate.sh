@@ -93,6 +93,13 @@ openssl x509 -req \
 # ---------------------------------------------------------------------------
 rm -f redis.csr ca.srl openssl.cnf
 
+# The Bitnami Redis image runs as uid 1001; the host user owning these files
+# is uid 1000, so a default 0600 redis.key is unreadable inside the container
+# and Redis crash-loops on "Failed to load private key ... Permission denied".
+# Self-signed key bound to localhost in a gitignored dev folder — fine to
+# widen to world-readable so any container uid can read it.
+chmod 644 redis.key
+
 echo ""
 echo "✅  Certificates generated in $(pwd):"
 echo "    ca.crt    – CA certificate  (mount into app + Redis container)"
