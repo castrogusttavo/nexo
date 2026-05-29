@@ -5,8 +5,9 @@ import {
   HeaderBreadcrumbList,
 } from '@/app/_components/header/breadcrumb-page'
 import HeaderInternalNavigation from '@/app/_components/header/header-internal-navigation'
+import { UserStickyCreateButton } from '@/app/_components/user/sticky/user-sticky-create-button'
+import { UserStickyList } from '@/app/_components/user/sticky/user-sticky-list'
 import { NexoIcon } from '@/components/icon/icon'
-import { Button } from '@/components/ui/button'
 
 export const metadata: Metadata = {
   title: 'Stickies | Nexo',
@@ -15,7 +16,7 @@ export const metadata: Metadata = {
 
 export default function StickiesPage() {
   return (
-    <div className='w-full'>
+    <div className='w-full overflow-y-scroll'>
       <HeaderInternalNavigation>
         <HeaderBreadcrumbList>
           <HeaderBreadcrumbCrumb title={'Stickies'}>
@@ -26,10 +27,15 @@ export default function StickiesPage() {
             />
           </HeaderBreadcrumbCrumb>
         </HeaderBreadcrumbList>
-        <Button variant='default' size='xs'>
-          Adicionar sticky
-        </Button>
+        <UserStickyCreateButton
+          variant='default'
+          size='xs'
+          label='Adicionar sticky'
+        />
       </HeaderInternalNavigation>
+      <div className='w-full p-6'>
+        <UserStickyList />
+      </div>
     </div>
   )
 }

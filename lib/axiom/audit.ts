@@ -9,6 +9,7 @@ type AuditEntity =
   | 'status_check'
   | 'storage_object'
   | 'short_link'
+  | 'sticky_note'
   | 'consent'
 
 type AuditAction =
