@@ -1,6 +1,7 @@
 import type { NextRequest } from 'next/server'
 import { withAxiom } from '@/lib/axiom/server'
 import { getAuthSession } from '@/src/lib/auth-session'
+import { requireConsent } from '@/src/lib/consent'
 import { apiLimiter, consume } from '@/src/lib/rate-limit'
 import { CreateShortLinkSchema } from '@/src/schemas/short-link.schema'
 import { ShortLinkService } from '@/src/services/short-link.service'
@@ -29,6 +30,9 @@ export const POST = withAxiom(async (request: NextRequest) => {
 
   const limit = await consume(apiLimiter, `user:${auth.value.user.id}`)
   if (!limit.ok) return handleError(limit.error)
+
+  const consent = await requireConsent(auth.value.user.id, 'page:(private)')
+  if (!consent.ok) return handleError(consent.error)
 
   const body = await request.json()
   const parsed = CreateShortLinkSchema.safeParse(body)

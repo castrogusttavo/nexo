@@ -1,6 +1,7 @@
 import type { NextRequest } from 'next/server'
 import { withAxiom } from '@/lib/axiom/server'
 import { getAuthSession } from '@/src/lib/auth-session'
+import { requireConsent } from '@/src/lib/consent'
 import { apiLimiter, consume } from '@/src/lib/rate-limit'
 import { UpdateShortLinkSchema } from '@/src/schemas/short-link.schema'
 import { ShortLinkService } from '@/src/services/short-link.service'
@@ -18,6 +19,9 @@ export const PATCH = withAxiom(async (request: NextRequest, ctx: Params) => {
 
   const limit = await consume(apiLimiter, `user:${auth.value.user.id}`)
   if (!limit.ok) return handleError(limit.error)
+
+  const consent = await requireConsent(auth.value.user.id, 'page:(private)')
+  if (!consent.ok) return handleError(consent.error)
 
   const [{ id }, body] = await Promise.all([ctx.params, request.json()])
   const parsed = UpdateShortLinkSchema.safeParse(body)
@@ -47,6 +51,9 @@ export const DELETE = withAxiom(async (_request: NextRequest, ctx: Params) => {
 
   const limit = await consume(apiLimiter, `user:${auth.value.user.id}`)
   if (!limit.ok) return handleError(limit.error)
+
+  const consent = await requireConsent(auth.value.user.id, 'page:(private)')
+  if (!consent.ok) return handleError(consent.error)
 
   const { id } = await ctx.params
 
