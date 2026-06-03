@@ -115,6 +115,57 @@ describe('StatusService.getCurrentSnapshot()', () => {
     expect(value.overallStatus).toBe('DEGRADED')
   })
 
+  it('attaches incident ids to history days within an incident window', async () => {
+    const today = new Date()
+    today.setUTCHours(0, 0, 0, 0)
+
+    mockedCache.get.mockResolvedValue(null)
+    mockedCache.set.mockResolvedValue(undefined)
+    mockedStatusRepo.findDailiesForKeys.mockResolvedValue(
+      ok([
+        {
+          id: 'd1',
+          componentKey: 'database',
+          day: today,
+          worstStatus: 'MAJOR_OUTAGE',
+          totalChecks: 10,
+          upChecks: 0,
+          uptimePct: { toString: () => '0' } as unknown as never,
+          avgLatencyMs: 0,
+          updatedAt: today,
+        },
+      ]),
+    )
+    mockedStatusRepo.findLatestPerComponent.mockResolvedValue(ok([]))
+    mockedPrismaIncident.mockResolvedValue([
+      {
+        id: 'inc-db',
+        componentKey: 'database',
+        startedAt: today,
+        resolvedAt: null,
+      },
+    ] as never)
+
+    const result = await StatusService.getCurrentSnapshot()
+
+    const value = expectOk(result)
+    const db = value.components.find((c) => c.key === 'database')
+    expect(db?.history).toHaveLength(1)
+    expect(db?.history[0]?.incidentId).toBe('inc-db')
+  })
+
+  it('should still return snapshot when cache write throws', async () => {
+    mockedCache.get.mockResolvedValue(null)
+    mockedStatusRepo.findDailiesForKeys.mockResolvedValue(ok([]))
+    mockedStatusRepo.findLatestPerComponent.mockResolvedValue(ok([]))
+    mockedCache.set.mockRejectedValue(new Error('redis down'))
+    vi.spyOn(console, 'error').mockImplementation(() => {})
+
+    const result = await StatusService.getCurrentSnapshot()
+
+    expectOk(result)
+  })
+
   it('should fall back to repo when cache read throws', async () => {
     mockedCache.get.mockRejectedValue(new Error('redis down'))
     mockedStatusRepo.findDailiesForKeys.mockResolvedValue(ok([]))
@@ -438,5 +489,65 @@ describe('StatusService.collect()', () => {
 
     expectErr(result, 'DATABASE_ERROR')
     expect(mockedStatusRepo.aggregateForDay).not.toHaveBeenCalled()
+  })
+
+  it('should log and continue when incident evaluation fails', async () => {
+    mockedRunProbes.mockResolvedValue({
+      app: { status: 'OPERATIONAL', latencyMs: 5, error: null },
+      database: { status: 'MAJOR_OUTAGE', latencyMs: 10, error: 'fail' },
+      cache: { status: 'OPERATIONAL', latencyMs: 3, error: null },
+      auth: { status: 'OPERATIONAL', latencyMs: 20, error: null },
+    })
+    mockedStatusRepo.recordChecks.mockResolvedValue(ok(undefined))
+    mockedStatusRepo.aggregateForDay.mockResolvedValue(ok(null))
+    mockedIncidentRepo.findOpenByComponent.mockResolvedValue(
+      err(databaseError()),
+    )
+    mockedStatusRepo.pruneOldChecks.mockResolvedValue(ok(0))
+    mockedCache.invalidate.mockResolvedValue(undefined)
+    vi.spyOn(console, 'error').mockImplementation(() => {})
+
+    const result = await StatusService.collect('core')
+
+    expectOk(result)
+    expect(mockedIncidentRepo.create).not.toHaveBeenCalled()
+  })
+
+  it('should log and still succeed when pruning old checks fails', async () => {
+    mockedRunProbes.mockResolvedValue({
+      app: { status: 'OPERATIONAL', latencyMs: 5, error: null },
+      database: { status: 'OPERATIONAL', latencyMs: 10, error: null },
+      cache: { status: 'OPERATIONAL', latencyMs: 3, error: null },
+      auth: { status: 'OPERATIONAL', latencyMs: 20, error: null },
+    })
+    mockedStatusRepo.recordChecks.mockResolvedValue(ok(undefined))
+    mockedStatusRepo.aggregateForDay.mockResolvedValue(ok(null))
+    mockedIncidentRepo.findOpenByComponent.mockResolvedValue(ok(null))
+    mockedStatusRepo.pruneOldChecks.mockResolvedValue(err(databaseError()))
+    mockedCache.invalidate.mockResolvedValue(undefined)
+    vi.spyOn(console, 'error').mockImplementation(() => {})
+
+    const result = await StatusService.collect('core')
+
+    expectOk(result)
+  })
+
+  it('should log and still succeed when cache invalidation throws', async () => {
+    mockedRunProbes.mockResolvedValue({
+      app: { status: 'OPERATIONAL', latencyMs: 5, error: null },
+      database: { status: 'OPERATIONAL', latencyMs: 10, error: null },
+      cache: { status: 'OPERATIONAL', latencyMs: 3, error: null },
+      auth: { status: 'OPERATIONAL', latencyMs: 20, error: null },
+    })
+    mockedStatusRepo.recordChecks.mockResolvedValue(ok(undefined))
+    mockedStatusRepo.aggregateForDay.mockResolvedValue(ok(null))
+    mockedIncidentRepo.findOpenByComponent.mockResolvedValue(ok(null))
+    mockedStatusRepo.pruneOldChecks.mockResolvedValue(ok(0))
+    mockedCache.invalidate.mockRejectedValue(new Error('redis down'))
+    vi.spyOn(console, 'error').mockImplementation(() => {})
+
+    const result = await StatusService.collect('core')
+
+    expectOk(result)
   })
 })
