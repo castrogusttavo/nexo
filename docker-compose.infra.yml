@@ -20,7 +20,11 @@ services:
       - app-network
 
   nexo-redis:
-    image: bitnami/redis:latest
+    # Pinned to the last working bitnami/redis latest (2026-05-11, Redis 8.6.3).
+    # The newer hardened "Bitnami Secure Images" latest crash-loops on TLS setup
+    # (chmod redis.conf: Operation not permitted). Versioned tags were removed
+    # from Docker Hub, so we pin by digest. Do not change to :latest.
+    image: bitnami/redis@sha256:1347d526ecec0c6537e99eac09e7c3405c21664f6044ff60e78b0898da37abd2
     container_name: nexo-redis
     restart: unless-stopped
     environment:
