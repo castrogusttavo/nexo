@@ -68,6 +68,20 @@ export default defineConfig({
       {
         extends: true,
         test: {
+          name: 'component',
+          environment: 'jsdom',
+          globals: true,
+          include: ['app/**/__tests__/*.component.test.tsx'],
+          setupFiles: [
+            './src/__tests__/setup.ts',
+            './src/__tests__/setup.component.ts',
+          ],
+          testTimeout: 5000,
+        },
+      },
+      {
+        extends: true,
+        test: {
           name: 'redis-tls',
           environment: 'node',
           globals: true,

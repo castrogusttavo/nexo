@@ -80,6 +80,9 @@ jobs:
       - name: Run unit tests
         run: pnpm test:unit
 
+      - name: Run component tests
+        run: pnpm test:component
+
   integration-tests:
     name: Integration Tests
     runs-on: ubuntu-latest
