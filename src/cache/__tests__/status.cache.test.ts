@@ -1,5 +1,14 @@
-import { afterAll, afterEach, beforeAll, describe, expect, it } from 'vitest'
+import {
+  afterAll,
+  afterEach,
+  beforeAll,
+  describe,
+  expect,
+  it,
+  vi,
+} from 'vitest'
 import { StatusCache } from '@/src/cache/status.cache'
+import * as redisModule from '@/src/lib/redis'
 import { ensureRedisConnected, redis } from '@/src/lib/redis'
 import type { Snapshot } from '@/types/status'
 
@@ -10,6 +19,7 @@ beforeAll(async () => {
 })
 
 afterEach(async () => {
+  vi.restoreAllMocks()
   await redis.del(SNAPSHOT_KEY)
 })
 
@@ -50,5 +60,32 @@ describe('StatusCache', () => {
     const ttl = await redis.ttl(SNAPSHOT_KEY)
     expect(ttl).toBeGreaterThan(25)
     expect(ttl).toBeLessThanOrEqual(30)
+  })
+
+  describe('Redis failure handling', () => {
+    it('get() should return null when redis is unavailable', async () => {
+      vi.spyOn(redisModule, 'ensureRedisConnected').mockRejectedValue(
+        new Error('redis down'),
+      )
+
+      expect(await StatusCache.get()).toBeNull()
+    })
+
+    it('set() should swallow non-Error rejections when redis is unavailable', async () => {
+      // Reject with a non-Error value to exercise the String(cause) branch.
+      vi.spyOn(redisModule, 'ensureRedisConnected').mockRejectedValue(
+        'redis down',
+      )
+
+      await expect(StatusCache.set(buildSnapshot())).resolves.toBeUndefined()
+    })
+
+    it('invalidate() should swallow errors when redis is unavailable', async () => {
+      vi.spyOn(redisModule, 'ensureRedisConnected').mockRejectedValue(
+        new Error('redis down'),
+      )
+
+      await expect(StatusCache.invalidate()).resolves.toBeUndefined()
+    })
   })
 })

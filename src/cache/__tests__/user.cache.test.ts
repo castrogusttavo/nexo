@@ -1,6 +1,15 @@
-import { afterAll, afterEach, beforeAll, describe, expect, it } from 'vitest'
+import {
+  afterAll,
+  afterEach,
+  beforeAll,
+  describe,
+  expect,
+  it,
+  vi,
+} from 'vitest'
 import { createFakeUserDTO } from '@/src/__tests__/factories/user.factory'
 import { UserCache } from '@/src/cache/user.cache'
+import * as redisModule from '@/src/lib/redis'
 import { ensureRedisConnected, redis } from '@/src/lib/redis'
 
 beforeAll(async () => {
@@ -8,6 +17,7 @@ beforeAll(async () => {
 })
 
 afterEach(async () => {
+  vi.restoreAllMocks()
   const keys = await redis.keys('user:*')
   if (keys.length > 0) {
     await redis.del(keys)
@@ -82,6 +92,39 @@ describe('UserCache', () => {
 
       expect(await UserCache.get('cache-user-4')).toBeNull()
       expect(await UserCache.get('cache-user-5')).toEqual(dto2)
+    })
+  })
+
+  describe('Redis failure handling', () => {
+    it('get() should return null when redis is unavailable', async () => {
+      vi.spyOn(redisModule, 'ensureRedisConnected').mockRejectedValue(
+        new Error('redis down'),
+      )
+
+      const cached = await UserCache.get('cache-user-fail')
+
+      expect(cached).toBeNull()
+    })
+
+    it('set() should swallow non-Error rejections when redis is unavailable', async () => {
+      // Reject with a non-Error value to exercise the String(cause) branch.
+      vi.spyOn(redisModule, 'ensureRedisConnected').mockRejectedValue(
+        'redis down',
+      )
+
+      await expect(
+        UserCache.set('cache-user-fail', createFakeUserDTO()),
+      ).resolves.toBeUndefined()
+    })
+
+    it('invalidate() should swallow errors when redis is unavailable', async () => {
+      vi.spyOn(redisModule, 'ensureRedisConnected').mockRejectedValue(
+        new Error('redis down'),
+      )
+
+      await expect(
+        UserCache.invalidate('cache-user-fail'),
+      ).resolves.toBeUndefined()
     })
   })
 
