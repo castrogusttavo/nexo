@@ -1,6 +1,15 @@
-import { afterAll, afterEach, beforeAll, describe, expect, it } from 'vitest'
+import {
+  afterAll,
+  afterEach,
+  beforeAll,
+  describe,
+  expect,
+  it,
+  vi,
+} from 'vitest'
 import { createFakeWorkspaceDTO } from '@/src/__tests__/factories/workspace.factory'
 import { WorkspaceCache } from '@/src/cache/workspace.cache'
+import * as redisModule from '@/src/lib/redis'
 import { ensureRedisConnected, redis } from '@/src/lib/redis'
 
 beforeAll(async () => {
@@ -8,6 +17,7 @@ beforeAll(async () => {
 })
 
 afterEach(async () => {
+  vi.restoreAllMocks()
   const keys = await redis.keys('workspace:*')
   if (keys.length > 0) await redis.del(keys)
 })
@@ -51,6 +61,37 @@ describe('WorkspaceCache', () => {
       const ttl = await redis.ttl('workspace:ws-cache-ttl')
       expect(ttl).toBeGreaterThan(895)
       expect(ttl).toBeLessThanOrEqual(900)
+    })
+  })
+
+  describe('Redis failure handling', () => {
+    it('get() should return null when redis is unavailable', async () => {
+      vi.spyOn(redisModule, 'ensureRedisConnected').mockRejectedValue(
+        new Error('redis down'),
+      )
+
+      expect(await WorkspaceCache.get('ws-cache-fail')).toBeNull()
+    })
+
+    it('set() should swallow non-Error rejections when redis is unavailable', async () => {
+      // Reject with a non-Error value to exercise the String(cause) branch.
+      vi.spyOn(redisModule, 'ensureRedisConnected').mockRejectedValue(
+        'redis down',
+      )
+
+      await expect(
+        WorkspaceCache.set('ws-cache-fail', createFakeWorkspaceDTO()),
+      ).resolves.toBeUndefined()
+    })
+
+    it('invalidate() should swallow errors when redis is unavailable', async () => {
+      vi.spyOn(redisModule, 'ensureRedisConnected').mockRejectedValue(
+        new Error('redis down'),
+      )
+
+      await expect(
+        WorkspaceCache.invalidate('ws-cache-fail'),
+      ).resolves.toBeUndefined()
     })
   })
 })

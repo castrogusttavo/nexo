@@ -25,6 +25,58 @@ describe('UserRepository', () => {
     })
   })
 
+  describe('findByIdWithMemberships()', () => {
+    it('should return memberships ordered by createdAt asc with workspace', async () => {
+      const user = await seedUser()
+      const wsA = await seedWorkspace({ name: 'WS A' })
+      const wsB = await seedWorkspace({ name: 'WS B' })
+
+      // Insert the newer membership first to prove ordering is by createdAt,
+      // not by insertion order.
+      await prisma.membership.create({
+        data: {
+          userId: user.id,
+          workspaceId: wsB.id,
+          role: 'MEMBER',
+          createdAt: new Date('2025-02-01T00:00:00.000Z'),
+        },
+      })
+      await prisma.membership.create({
+        data: {
+          userId: user.id,
+          workspaceId: wsA.id,
+          role: 'OWNER',
+          createdAt: new Date('2025-01-01T00:00:00.000Z'),
+        },
+      })
+
+      const result = await UserRepository.findByIdWithMemberships(user.id)
+
+      const found = expectOk(result)
+      expect(found.id).toBe(user.id)
+      expect(found.memberships).toHaveLength(2)
+      expect(found.memberships[0]?.workspaceId).toBe(wsA.id)
+      expect(found.memberships[0]?.workspace.name).toBe('WS A')
+      expect(found.memberships[1]?.workspaceId).toBe(wsB.id)
+    })
+
+    it('should return an empty memberships array when user has none', async () => {
+      const user = await seedUser()
+
+      const result = await UserRepository.findByIdWithMemberships(user.id)
+
+      const found = expectOk(result)
+      expect(found.memberships).toEqual([])
+    })
+
+    it('should return RESOURCE_NOT_FOUND when user does not exist', async () => {
+      const result =
+        await UserRepository.findByIdWithMemberships('nonexistent-id')
+
+      expectErr(result, 'RESOURCE_NOT_FOUND')
+    })
+  })
+
   describe('findByEmail()', () => {
     it('should return user when email exists', async () => {
       const seeded = await seedUser({ email: 'exists@example.com' })
@@ -122,6 +174,11 @@ describe('UserRepository', () => {
 
       const user = expectOk(result)
       expect(user.deletionScheduledAt).toBeNull()
+    })
+
+    it('should return RESOURCE_NOT_FOUND for unknown user', async () => {
+      const result = await UserRepository.clearDeletionSchedule('nonexistent')
+      expectErr(result, 'RESOURCE_NOT_FOUND')
     })
   })
 
