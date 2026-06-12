@@ -24,6 +24,24 @@ services:
     # The newer hardened "Bitnami Secure Images" latest crash-loops on TLS setup
     # (chmod redis.conf: Operation not permitted). Versioned tags were removed
     # from Docker Hub, so we pin by digest. Do not change to :latest.
+    #
+    # Digest verified: linux/amd64 manifest of bitnami/redis@sha256:1347d526...
+    #   org.opencontainers.image.version=8.6.3
+    #   org.opencontainers.image.created=2026-05-11T14:42:18Z
+    #
+    # To bump this digest in the future:
+    #   1. Monitor https://hub.docker.com/r/bitnami/redis/tags or Bitnami release notes
+    #      for a patched build that restores TLS compatibility.
+    #   2. Find the new digest:
+    #        docker pull bitnami/redis:<candidate-tag> --quiet
+    #        docker inspect bitnami/redis:<candidate-tag> --format '{{index .RepoDigests 0}}'
+    #      or: skopeo inspect --raw docker://bitnami/redis:<tag> | sha256sum
+    #   3. Replace the sha256 below with the new digest.
+    #   4. Validate before committing:
+    #        pnpm infra                              # starts containers
+    #        pnpm vitest --project integration src/lib/__tests__/redis-tls.smoke.test.ts
+    #        docker compose -f docker-compose.infra.yml logs nexo-redis | grep -i tls
+    #   5. Run CI — do NOT revert to :latest.
     image: bitnami/redis@sha256:1347d526ecec0c6537e99eac09e7c3405c21664f6044ff60e78b0898da37abd2
     container_name: nexo-redis
     restart: unless-stopped
