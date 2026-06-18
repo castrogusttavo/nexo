@@ -16,10 +16,11 @@ function Checkbox({ className, ...props }: CheckboxPrimitive.Root.Props) {
     >
       <CheckboxPrimitive.Indicator
         data-slot="checkbox-indicator"
-        className="[&>svg]:size-3.5 grid place-content-center text-current transition-none"
+        className="grid place-content-center transition-none"
       >
-        <HugeiconsIcon icon={Tick02Icon} strokeWidth={2} />
+        <HugeiconsIcon icon={Tick02Icon} strokeWidth={2} size={8} />
       </CheckboxPrimitive.Indicator>
+
     </CheckboxPrimitive.Root>
   )
 }
