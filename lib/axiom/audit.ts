@@ -11,6 +11,7 @@ type AuditEntity =
   | 'short_link'
   | 'sticky_note'
   | 'consent'
+  | 'project'
 
 type AuditAction =
   | 'create'
@@ -25,6 +26,8 @@ type AuditAction =
   | 'revoke'
   | 'export_requested'
   | 'export_completed'
+  | 'archive'
+  | 'restore'
 
 type AuditOutcome = 'success' | 'failure'
 
