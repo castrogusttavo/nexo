@@ -45,3 +45,14 @@ export const rateLimited = (
   retryAfterSeconds: number,
   message = 'Muitas requisições',
 ): AppError => appError('RATE_LIMITED', message, { retryAfterSeconds })
+
+export const projectNotFound = (): AppError =>
+  appError('PROJECT_NOT_FOUND', 'Project not found')
+
+export const projectForbidden = (
+  message = 'Sem acesso a este projeto',
+): AppError => appError('PROJECT_FORBIDDEN', message)
+
+export const projectSlugConflict = (
+  message = 'Slug já está em uso neste workspace',
+): AppError => appError('PROJECT_SLUG_CONFLICT', message)
