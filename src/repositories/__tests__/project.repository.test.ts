@@ -44,6 +44,7 @@ describe('ProjectRepository', () => {
       const result = await ProjectRepository.findByWorkspaceAndSlug(
         ws.id,
         'my-proj',
+        user.id,
       )
 
       const p = expectOk(result)
@@ -52,10 +53,12 @@ describe('ProjectRepository', () => {
     })
 
     it('should return PROJECT_NOT_FOUND for unknown slug', async () => {
+      const user = await seedUser()
       const ws = await seedWorkspace()
       const result = await ProjectRepository.findByWorkspaceAndSlug(
         ws.id,
         'ghost',
+        user.id,
       )
       expectErr(result, 'PROJECT_NOT_FOUND')
     })

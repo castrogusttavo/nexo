@@ -17,8 +17,6 @@ describe('CreateProjectSchema', () => {
   })
 
   it('should default isPublic to false when omitted', () => {
-    const result = CreateProjectSchema.safeParse({ name: 'P', slug: 'p1' })
-    // name too short — just checking default logic is separate from validation
     const valid = CreateProjectSchema.safeParse({ name: 'Proj', slug: 'proj' })
     expect(valid.data?.isPublic).toBe(false)
   })

@@ -29,7 +29,7 @@ describe('ProjectService', () => {
   describe('list()', () => {
     it('should return projects as DTOs for workspace member', async () => {
       const projects = [
-        { ...createFakeProject({ workspaceId: 'ws1' }), favourites: [] as [] },
+        { ...createFakeProject({ workspaceId: 'ws1' }), members: [] as[], favourites: [] as [] },
       ]
       mockedMembership.findByUserAndWorkspace.mockResolvedValue(
         ok(memberMembership),
