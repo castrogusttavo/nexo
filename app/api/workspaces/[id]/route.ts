@@ -36,7 +36,10 @@ export const PATCH = withAxiom(async (request: NextRequest, ctx: Params) => {
   const limit = await consume(apiLimiter, `user:${auth.value.user.id}`)
   if (!limit.ok) return handleError(limit.error)
 
-  const consent = await requireConsent(auth.value.user.id, 'POST /api/workspaces')
+  const consent = await requireConsent(
+    auth.value.user.id,
+    'POST /api/workspaces',
+  )
   if (!consent.ok) return handleError(consent.error)
 
   const [{ id }, body] = await Promise.all([ctx.params, request.json()])
@@ -68,7 +71,10 @@ export const DELETE = withAxiom(async (_request: NextRequest, ctx: Params) => {
   const limit = await consume(apiLimiter, `user:${auth.value.user.id}`)
   if (!limit.ok) return handleError(limit.error)
 
-  const consent = await requireConsent(auth.value.user.id, 'POST /api/workspaces')
+  const consent = await requireConsent(
+    auth.value.user.id,
+    'POST /api/workspaces',
+  )
   if (!consent.ok) return handleError(consent.error)
 
   const { id } = await ctx.params

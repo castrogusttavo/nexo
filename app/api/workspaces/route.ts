@@ -18,7 +18,10 @@ export const POST = withAxiom(async (request: NextRequest) => {
   const limit = await consume(apiLimiter, `user:${auth.value.user.id}`)
   if (!limit.ok) return handleError(limit.error)
 
-  const consent = await requireConsent(auth.value.user.id, 'POST /api/workspaces')
+  const consent = await requireConsent(
+    auth.value.user.id,
+    'POST /api/workspaces',
+  )
   if (!consent.ok) return handleError(consent.error)
 
   const body = await request.json()
