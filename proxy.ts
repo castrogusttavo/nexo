@@ -16,7 +16,7 @@ function buildCspHeader(nonce: string): string {
     style-src 'self' 'unsafe-inline';
     img-src 'self' blob: data: https:;
     font-src 'self';
-    connect-src 'self' https://*.axiom.co https://va.vercel-scripts.com${NODE_ENV === 'development' ? ' ws://localhost:4444' : ''};
+    connect-src 'self' https://*.axiom.co https://va.vercel-scripts.com https://cdn.jsdelivr.net${NODE_ENV === 'development' ? ' ws://localhost:4444' : ''};
     frame-ancestors 'none';
     form-action 'self';
     base-uri 'self';
