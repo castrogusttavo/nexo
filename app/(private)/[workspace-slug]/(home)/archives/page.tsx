@@ -66,7 +66,7 @@ export default async function ArchivesPage({ params }: Props) {
           </div>
         </TabsList>
         <TabsContent value='projects'>
-          <ArchivedProjectList workspaceId={workspaceId} workspaceSlug={slug} />
+          <ArchivedProjectList workspaceId={workspaceId} />
         </TabsContent>
       </Tabs>
     </div>

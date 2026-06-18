@@ -10,13 +10,9 @@ import { ArchivedProjectCard } from './card/workspace-archived-project-card'
 
 interface ArchivedProjectListProps {
   workspaceId: string
-  workspaceSlug: string
 }
 
-export function ArchivedProjectList({
-  workspaceId,
-  workspaceSlug,
-}: ArchivedProjectListProps) {
+export function ArchivedProjectList({ workspaceId }: ArchivedProjectListProps) {
   const { data: projects, isLoading, isError } = useProjects(workspaceId, true)
   const [{ sortField, sortOrder }] = useQueryStates({
     sortField: sortFieldParser,

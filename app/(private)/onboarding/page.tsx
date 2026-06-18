@@ -4,3 +4,7 @@
 // Fase 4 - Join invites or create a workspace (fazer funcionar já para workspace e para planos) + botão de criar workspace (página remodelada)
 //
 // Salvar estado que o usuário parou
+
+export default function OnboardingPage() {
+  return <div>onboarding</div>
+}
