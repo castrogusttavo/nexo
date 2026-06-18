@@ -1,6 +1,7 @@
 import { GeistSans } from 'geist/font/sans'
 import type { Metadata } from 'next'
 import './globals.css'
+import { NuqsAdapter } from 'nuqs/adapters/next/app'
 import { Suspense } from 'react'
 import { Toaster } from '@/components/ui/sonner'
 import { TooltipProvider } from '@/components/ui/tooltip'
@@ -25,16 +26,18 @@ export default function RootLayout({
     <html lang='en' className={cn('dark', GeistSans.variable)}>
       <body className='root antialiased bg-background text-primary h-screen'>
         <Suspense>
-          <Providers>
-            <CookieConsentInit>
-              <TooltipProvider>
-                {children}
-                <Toaster />
-              </TooltipProvider>
-              <ConsentedTrackers />
-              <CookieConsentBanner />
-            </CookieConsentInit>
-          </Providers>
+          <NuqsAdapter>
+            <Providers>
+              <CookieConsentInit>
+                <TooltipProvider>
+                  {children}
+                  <Toaster />
+                </TooltipProvider>
+                <ConsentedTrackers />
+                <CookieConsentBanner />
+              </CookieConsentInit>
+            </Providers>
+          </NuqsAdapter>
         </Suspense>
       </body>
     </html>
