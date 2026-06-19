@@ -1,0 +1,15 @@
+packages:
+  - '.'
+
+overrides:
+  effect: '^3.21.0'
+  ioredis: '5.10.1'
+
+onlyBuiltDependencies:
+  - '@prisma/engines'
+  - argon2
+  - esbuild
+  - msw
+  - prisma
+  - sharp
+  - unrs-resolver
