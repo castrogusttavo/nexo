@@ -26,7 +26,7 @@ export function NavItem({
     <Link href={href} className='block'>
       <Button
         variant={isActive ? 'secondary' : 'ghost'}
-        size='default'
+        size='sm'
         {...props}
         className={cn('w-full justify-start', className)}
       >

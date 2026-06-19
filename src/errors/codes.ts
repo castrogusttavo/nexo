@@ -6,6 +6,7 @@ export const ERROR_CODES = {
   INVALID_CREDENTIALS: { code: 'INVALID_CREDENTIALS', status: 401 },
   FORBIDDEN: { code: 'FORBIDDEN', status: 403 },
   INSUFFICIENT_PERMISSIONS: { code: 'INSUFFICIENT_PERMISSIONS', status: 403 },
+  PROJECT_FORBIDDEN: { code: 'PROJECT_FORBIDDEN', status: 403 },
 
   // Client Errors (400, 404, 409, 422, 429)
   BAD_REQUEST: { code: 'BAD_REQUEST', status: 400 },
@@ -13,6 +14,8 @@ export const ERROR_CODES = {
   RESOURCE_NOT_FOUND: { code: 'RESOURCE_NOT_FOUND', status: 404 },
   CONFLICT: { code: 'CONFLICT', status: 409 },
   RATE_LIMITED: { code: 'RATE_LIMITED', status: 429 },
+  PROJECT_NOT_FOUND: { code: 'PROJECT_NOT_FOUND', status: 404 },
+  PROJECT_SLUG_CONFLICT: { code: 'PROJECT_SLUG_CONFLICT', status: 409 },
 
   // Server Errors (500)
   INTERNAL_SERVER_ERROR: { code: 'INTERNAL_SERVER_ERROR', status: 500 },

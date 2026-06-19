@@ -26,6 +26,9 @@ model User {
   shortLinks    ShortLink[]
   stickyNotes   StickyNote[]
   consentEvents ConsentEvent[]
+  projectsLed   Project[]       @relation("ProjectLead")
+  projectMemberships  ProjectMember[]
+  projectFavourites ProjectFavorite[]
 
   @@index([deletionScheduledAt])
   @@map("users")
@@ -124,6 +127,7 @@ model Workspace {
   updatedAt     DateTime       @updatedAt @map("updated_at")
   memberships   Membership[]
   subscriptions Subscription[]
+  projects      Project[]
 
   @@map("workspaces")
 }
@@ -287,4 +291,59 @@ model StickyNote {
 
   @@index([userId, updatedAt])
   @@map("sticky_notes")
+}
+
+model Project {
+  id          String    @id @default(cuid())
+  name        String
+  slug        String
+  description String?
+  emoji       String?
+  coverImage  String?   @map("cover_image")
+  isPublic    Boolean   @default(false) @map("is_public")
+  leadId      String    @map("lead_id")
+  workspaceId String    @map("workspace_id")
+  archivedAt  DateTime? @map("archived_at")
+  createdAt   DateTime  @default(now()) @map("created_at")
+  updatedAt   DateTime  @updatedAt @map("updated_at")
+
+  lead      User            @relation("ProjectLead", fields: [leadId], references: [id])
+  workspace Workspace       @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  members   ProjectMember[]
+  favourites ProjectFavorite[]
+
+  @@unique([workspaceId, slug])
+  @@index([workspaceId, archivedAt])
+  @@index([leadId])
+  @@map("projects")
+}
+
+model ProjectMember {
+  id        String   @id @default(cuid())
+  userId    String   @map("user_id")
+  projectId String   @map("project_id")
+  createdAt DateTime @default(now()) @map("created_at")
+
+  user    User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  project Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, projectId])
+  @@index([projectId])
+  @@index([userId])
+  @@map("project_members")
+}
+
+model ProjectFavorite {
+  id        String   @id @default(cuid())
+  userId    String   @map("user_id")
+  projectId String   @map("project_id")
+  createdAt DateTime @default(now()) @map("created_at")
+
+  user    User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  project Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, projectId])
+  @@index([userId])
+  @@index([projectId])
+  @@map("project_favorites")
 }

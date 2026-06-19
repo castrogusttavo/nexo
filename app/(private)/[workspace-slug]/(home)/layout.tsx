@@ -1,5 +1,6 @@
 import {
   Analytics01Icon,
+  Archive03Icon,
   Home03Icon,
   KeyframesMultipleAddIcon,
   LayerMask01Icon,
@@ -18,10 +19,14 @@ import {
   ContextPrimaryAction,
   ContextSidebar,
   NavGroup,
+  NavGroupAccordion,
   NavItem,
 } from '@/app/_components/navigation/sidebar-context'
+import { SidebarProjects } from '@/app/_components/navigation/sidebar-project/sidebar-projects'
 import { NexoIcon } from '@/components/icon/icon'
 import { Button } from '@/components/ui/button'
+import { getAuthSession } from '@/src/lib/auth-session'
+import { MembershipRepository } from '@/src/repositories/membership.repository'
 
 export default async function HomeLayout({
   children,
@@ -32,6 +37,18 @@ export default async function HomeLayout({
 }) {
   const { 'workspace-slug': slug } = await params
   const base = `/${slug}`
+
+  const session = await getAuthSession()
+  let workspaceId: string | null = null
+  if (session.ok) {
+    const membership = await MembershipRepository.findByUserAndSlug(
+      session.value.user.id,
+      slug,
+    )
+    if (membership.ok && membership.value) {
+      workspaceId = membership.value.workspaceId
+    }
+  }
 
   return (
     <>
@@ -69,18 +86,21 @@ export default async function HomeLayout({
             Notas adesivas
           </NavItem>
         </NavGroup>
-        <NavGroup>
+        <NavGroupAccordion label='Espaço de trabalho' defaultOpen={true}>
           <NavItem href={`${base}/projects`} icon={WorkIcon}>
             Projetos
-          </NavItem>
-          <NavItem href={`${base}/active-cycles`} icon={LayerMask01Icon}>
-            Ciclos
           </NavItem>
           <NavItem href={`${base}/workspace-views`} icon={Layers01Icon}>
             Visualizações
           </NavItem>
+          <NavItem href={`${base}/active-cycles`} icon={LayerMask01Icon}>
+            Ciclos
+          </NavItem>
           <NavItem href={`${base}/analytics`} icon={Analytics01Icon}>
             Análises
+          </NavItem>
+          <NavItem href={`${base}/archives`} icon={Archive03Icon}>
+            Arquivados
           </NavItem>
           <NavItem
             href={`${base}/dashboards`}
@@ -88,7 +108,10 @@ export default async function HomeLayout({
           >
             Dashboards
           </NavItem>
-        </NavGroup>
+        </NavGroupAccordion>
+        {workspaceId && (
+          <SidebarProjects workspaceId={workspaceId} base={base} />
+        )}
       </ContextSidebar>
       {children}
     </>

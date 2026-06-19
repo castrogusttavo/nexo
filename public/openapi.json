@@ -49,8 +49,12 @@
       "description": "Página de status pública e coleta de health checks dos componentes"
     },
     {
-      "name": "Armazenamento",
-      "description": "Upload de objetos para o bucket (S3/MinIO)"
+      "name": "Sticky Notes",
+      "description": "Notas rápidas pessoais do usuário autenticado"
+    },
+    {
+      "name": "Projetos",
+      "description": "Projetos dentro de um workspace — criação, edição, arquivamento e exclusão"
     }
   ],
   "paths": {
@@ -1413,74 +1417,342 @@
         }
       }
     },
-    "/storage/upload": {
+    "/sticky-notes": {
+      "get": {
+        "tags": ["Sticky Notes"],
+        "summary": "Listar sticky notes",
+        "description": "Retorna todas as sticky notes do usuário autenticado.",
+        "security": [{ "cookieAuth": [] }],
+        "responses": {
+          "200": {
+            "description": "Lista de sticky notes retornada com sucesso.",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/StickyNoteListResponse" }
+              }
+            }
+          },
+          "401": { "$ref": "#/components/responses/UnauthorizedError" },
+          "429": { "$ref": "#/components/responses/RateLimitError" }
+        }
+      },
       "post": {
-        "tags": ["Armazenamento"],
-        "summary": "Upload de objeto",
-        "description": "Envia um arquivo de texto (markdown) para o bucket de armazenamento e retorna o conteúdo persistido. Limitado por rate limit por IP.",
+        "tags": ["Sticky Notes"],
+        "summary": "Criar sticky note",
+        "description": "Cria uma nova sticky note para o usuário autenticado. Requer consentimento de cookies.",
+        "security": [{ "cookieAuth": [] }],
         "requestBody": {
           "required": true,
           "content": {
             "application/json": {
-              "schema": {
-                "type": "object",
-                "required": ["content", "filename"],
-                "properties": {
-                  "content": {
-                    "type": "string",
-                    "example": "# Documento\n\nConteúdo em markdown."
-                  },
-                  "filename": {
-                    "type": "string",
-                    "example": "doc.md"
-                  }
-                }
+              "schema": { "$ref": "#/components/schemas/CreateStickyNoteInput" }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Sticky note criada com sucesso.",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/StickyNoteResponse" }
               }
+            }
+          },
+          "401": { "$ref": "#/components/responses/UnauthorizedError" },
+          "422": { "$ref": "#/components/responses/ValidationError" },
+          "429": { "$ref": "#/components/responses/RateLimitError" }
+        }
+      }
+    },
+    "/sticky-notes/{id}": {
+      "parameters": [
+        {
+          "name": "id",
+          "in": "path",
+          "required": true,
+          "description": "ID da sticky note (cuid2).",
+          "schema": { "type": "string" }
+        }
+      ],
+      "patch": {
+        "tags": ["Sticky Notes"],
+        "summary": "Atualizar sticky note",
+        "description": "Atualiza o conteúdo e/ou cor de uma sticky note. Apenas o dono pode editar. Requer consentimento de cookies.",
+        "security": [{ "cookieAuth": [] }],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/UpdateStickyNoteInput" }
             }
           }
         },
         "responses": {
           "200": {
-            "description": "Arquivo enviado",
+            "description": "Sticky note atualizada com sucesso.",
             "content": {
               "application/json": {
-                "schema": {
-                  "allOf": [
-                    { "$ref": "#/components/schemas/SuccessResponse" },
-                    {
-                      "type": "object",
-                      "properties": {
-                        "data": {
-                          "type": "object",
-                          "properties": {
-                            "filename": { "type": "string" },
-                            "content": { "type": "string" }
-                          }
-                        }
-                      }
-                    }
-                  ]
-                },
-                "example": {
-                  "success": true,
-                  "statusCode": 200,
-                  "data": {
-                    "filename": "doc.md",
-                    "content": "# Documento\n\nConteúdo em markdown."
-                  }
-                }
+                "schema": { "$ref": "#/components/schemas/StickyNoteResponse" }
               }
             }
           },
-          "422": {
-            "$ref": "#/components/responses/ValidationError"
+          "401": { "$ref": "#/components/responses/UnauthorizedError" },
+          "403": { "$ref": "#/components/responses/ForbiddenError" },
+          "404": { "$ref": "#/components/responses/NotFoundError" },
+          "422": { "$ref": "#/components/responses/ValidationError" },
+          "429": { "$ref": "#/components/responses/RateLimitError" }
+        }
+      },
+      "delete": {
+        "tags": ["Sticky Notes"],
+        "summary": "Excluir sticky note",
+        "description": "Remove permanentemente uma sticky note. Apenas o dono pode excluir. Requer consentimento de cookies.",
+        "security": [{ "cookieAuth": [] }],
+        "responses": {
+          "200": {
+            "description": "Sticky note excluída com sucesso.",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/EmptySuccessResponse" }
+              }
+            }
           },
-          "429": {
-            "$ref": "#/components/responses/RateLimitError"
-          },
-          "500": {
-            "$ref": "#/components/responses/InternalServerError"
+          "401": { "$ref": "#/components/responses/UnauthorizedError" },
+          "403": { "$ref": "#/components/responses/ForbiddenError" },
+          "404": { "$ref": "#/components/responses/NotFoundError" },
+          "429": { "$ref": "#/components/responses/RateLimitError" }
+        }
+      }
+    },
+    "/workspaces/{id}/projects": {
+      "parameters": [
+        {
+          "name": "id",
+          "in": "path",
+          "required": true,
+          "description": "ID do workspace (cuid2).",
+          "schema": { "type": "string" }
+        }
+      ],
+      "get": {
+        "tags": ["Projetos"],
+        "summary": "Listar projetos do workspace",
+        "description": "Retorna os projetos do workspace. OWNER/ADMIN veem todos; demais membros veem apenas projetos públicos ou dos quais são lead/membro. Use `?archived=true` para listar arquivados.",
+        "security": [{ "cookieAuth": [] }],
+        "parameters": [
+          {
+            "name": "archived",
+            "in": "query",
+            "required": false,
+            "description": "Quando `true`, retorna projetos arquivados em vez dos ativos.",
+            "schema": { "type": "boolean", "default": false }
           }
+        ],
+        "responses": {
+          "200": {
+            "description": "Lista de projetos retornada com sucesso.",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ProjectListResponse" }
+              }
+            }
+          },
+          "401": { "$ref": "#/components/responses/UnauthorizedError" },
+          "403": { "$ref": "#/components/responses/ForbiddenError" },
+          "429": { "$ref": "#/components/responses/RateLimitError" }
+        }
+      },
+      "post": {
+        "tags": ["Projetos"],
+        "summary": "Criar projeto",
+        "description": "Cria um novo projeto no workspace. O usuário autenticado torna-se automaticamente o lead. Qualquer membro do workspace pode criar projetos.",
+        "security": [{ "cookieAuth": [] }],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/CreateProjectInput" }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Projeto criado com sucesso.",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ProjectResponse" }
+              }
+            }
+          },
+          "401": { "$ref": "#/components/responses/UnauthorizedError" },
+          "403": { "$ref": "#/components/responses/ForbiddenError" },
+          "409": { "$ref": "#/components/responses/ConflictError" },
+          "422": { "$ref": "#/components/responses/ValidationError" },
+          "429": { "$ref": "#/components/responses/RateLimitError" }
+        }
+      }
+    },
+    "/workspaces/{id}/projects/{slug}": {
+      "parameters": [
+        {
+          "name": "id",
+          "in": "path",
+          "required": true,
+          "description": "ID do workspace (cuid2).",
+          "schema": { "type": "string" }
+        },
+        {
+          "name": "slug",
+          "in": "path",
+          "required": true,
+          "description": "Slug do projeto.",
+          "schema": { "type": "string" }
+        }
+      ],
+      "get": {
+        "tags": ["Projetos"],
+        "summary": "Buscar projeto por slug",
+        "description": "Retorna os detalhes de um projeto. Projetos privados exigem que o usuário seja OWNER/ADMIN, lead ou membro do projeto.",
+        "security": [{ "cookieAuth": [] }],
+        "responses": {
+          "200": {
+            "description": "Projeto retornado com sucesso.",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ProjectResponse" }
+              }
+            }
+          },
+          "401": { "$ref": "#/components/responses/UnauthorizedError" },
+          "403": { "$ref": "#/components/responses/ForbiddenError" },
+          "404": { "$ref": "#/components/responses/NotFoundError" },
+          "429": { "$ref": "#/components/responses/RateLimitError" }
+        }
+      },
+      "patch": {
+        "tags": ["Projetos"],
+        "summary": "Atualizar projeto",
+        "description": "Atualiza os metadados de um projeto. Requer role OWNER/ADMIN ou ser o lead do projeto. Requer consentimento de cookies.",
+        "security": [{ "cookieAuth": [] }],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/UpdateProjectInput" }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Projeto atualizado com sucesso.",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ProjectResponse" }
+              }
+            }
+          },
+          "401": { "$ref": "#/components/responses/UnauthorizedError" },
+          "403": { "$ref": "#/components/responses/ForbiddenError" },
+          "404": { "$ref": "#/components/responses/NotFoundError" },
+          "409": { "$ref": "#/components/responses/ConflictError" },
+          "422": { "$ref": "#/components/responses/ValidationError" },
+          "429": { "$ref": "#/components/responses/RateLimitError" }
+        }
+      },
+      "delete": {
+        "tags": ["Projetos"],
+        "summary": "Excluir projeto permanentemente",
+        "description": "Remove o projeto de forma irreversível. Exclusivo para o OWNER do workspace. Requer consentimento de cookies.",
+        "security": [{ "cookieAuth": [] }],
+        "responses": {
+          "200": {
+            "description": "Projeto excluído com sucesso.",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/EmptySuccessResponse" }
+              }
+            }
+          },
+          "401": { "$ref": "#/components/responses/UnauthorizedError" },
+          "403": { "$ref": "#/components/responses/ForbiddenError" },
+          "404": { "$ref": "#/components/responses/NotFoundError" },
+          "429": { "$ref": "#/components/responses/RateLimitError" }
+        }
+      }
+    },
+    "/workspaces/{id}/projects/{slug}/archive": {
+      "parameters": [
+        {
+          "name": "id",
+          "in": "path",
+          "required": true,
+          "description": "ID do workspace (cuid2).",
+          "schema": { "type": "string" }
+        },
+        {
+          "name": "slug",
+          "in": "path",
+          "required": true,
+          "description": "Slug do projeto.",
+          "schema": { "type": "string" }
+        }
+      ],
+      "patch": {
+        "tags": ["Projetos"],
+        "summary": "Arquivar projeto",
+        "description": "Marca o projeto como arquivado (`archivedAt` é preenchido). Requer role OWNER/ADMIN ou ser o lead do projeto. Requer consentimento de cookies.",
+        "security": [{ "cookieAuth": [] }],
+        "responses": {
+          "200": {
+            "description": "Projeto arquivado com sucesso.",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ProjectResponse" }
+              }
+            }
+          },
+          "401": { "$ref": "#/components/responses/UnauthorizedError" },
+          "403": { "$ref": "#/components/responses/ForbiddenError" },
+          "404": { "$ref": "#/components/responses/NotFoundError" },
+          "429": { "$ref": "#/components/responses/RateLimitError" }
+        }
+      }
+    },
+    "/workspaces/{id}/projects/{slug}/restore": {
+      "parameters": [
+        {
+          "name": "id",
+          "in": "path",
+          "required": true,
+          "description": "ID do workspace (cuid2).",
+          "schema": { "type": "string" }
+        },
+        {
+          "name": "slug",
+          "in": "path",
+          "required": true,
+          "description": "Slug do projeto.",
+          "schema": { "type": "string" }
+        }
+      ],
+      "patch": {
+        "tags": ["Projetos"],
+        "summary": "Restaurar projeto arquivado",
+        "description": "Remove o arquivamento do projeto (`archivedAt` volta a `null`). Requer role OWNER/ADMIN ou ser o lead do projeto. Requer consentimento de cookies.",
+        "security": [{ "cookieAuth": [] }],
+        "responses": {
+          "200": {
+            "description": "Projeto restaurado com sucesso.",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ProjectResponse" }
+              }
+            }
+          },
+          "401": { "$ref": "#/components/responses/UnauthorizedError" },
+          "403": { "$ref": "#/components/responses/ForbiddenError" },
+          "404": { "$ref": "#/components/responses/NotFoundError" },
+          "429": { "$ref": "#/components/responses/RateLimitError" }
         }
       }
     }
@@ -2038,6 +2310,165 @@
             }
           }
         }
+      },
+      "StickyColor": {
+        "type": "string",
+        "enum": ["RED", "YELLOW", "BLUE", "GREEN", "PURPLE", "ZINC"],
+        "example": "YELLOW"
+      },
+      "StickyNote": {
+        "type": "object",
+        "properties": {
+          "id": { "type": "string", "example": "clx0v5k2p0000qwer1234abcd" },
+          "content": {
+            "type": "object",
+            "description": "Conteúdo TipTap serializado como JSON (ProseMirror doc node).",
+            "example": { "type": "doc", "content": [] }
+          },
+          "color": { "$ref": "#/components/schemas/StickyColor" },
+          "userId": { "type": "string", "example": "clx0v5k2p0000qwer5678efgh" },
+          "createdAt": { "type": "string", "format": "date-time" },
+          "updatedAt": { "type": "string", "format": "date-time" }
+        }
+      },
+      "CreateStickyNoteInput": {
+        "type": "object",
+        "properties": {
+          "content": {
+            "type": "object",
+            "description": "Conteúdo TipTap serializado como JSON. Máximo de 100.000 caracteres serializado.",
+            "example": { "type": "doc", "content": [] }
+          },
+          "color": { "$ref": "#/components/schemas/StickyColor" }
+        }
+      },
+      "UpdateStickyNoteInput": {
+        "type": "object",
+        "properties": {
+          "content": {
+            "type": "object",
+            "description": "Conteúdo TipTap serializado como JSON. Máximo de 100.000 caracteres serializado.",
+            "example": { "type": "doc", "content": [{ "type": "paragraph", "content": [{ "type": "text", "text": "Nota atualizada" }] }] }
+          },
+          "color": { "$ref": "#/components/schemas/StickyColor" }
+        }
+      },
+      "StickyNoteResponse": {
+        "allOf": [
+          { "$ref": "#/components/schemas/SuccessResponse" },
+          {
+            "type": "object",
+            "properties": {
+              "data": { "$ref": "#/components/schemas/StickyNote" }
+            }
+          }
+        ]
+      },
+      "StickyNoteListResponse": {
+        "allOf": [
+          { "$ref": "#/components/schemas/SuccessResponse" },
+          {
+            "type": "object",
+            "properties": {
+              "data": {
+                "type": "array",
+                "items": { "$ref": "#/components/schemas/StickyNote" }
+              }
+            }
+          }
+        ]
+      },
+      "Project": {
+        "type": "object",
+        "properties": {
+          "id": { "type": "string", "example": "clx0v5k2p0000qwer1234abcd" },
+          "name": { "type": "string", "example": "Redesign do onboarding" },
+          "slug": { "type": "string", "example": "redesign-onboarding" },
+          "description": { "type": "string", "nullable": true, "example": "Melhoria no fluxo de cadastro e ativação" },
+          "emoji": { "type": "string", "nullable": true, "example": "🚀" },
+          "coverImage": { "type": "string", "format": "uri", "nullable": true, "example": null },
+          "isPublic": { "type": "boolean", "example": false },
+          "leadId": { "type": "string", "example": "clx0v5k2p0000qwer5678efgh" },
+          "workspaceId": { "type": "string", "example": "clx0v5k2p0000qwer9012ijkl" },
+          "archivedAt": { "type": "string", "format": "date-time", "nullable": true, "example": null },
+          "createdAt": { "type": "string", "format": "date-time" },
+          "updatedAt": { "type": "string", "format": "date-time" }
+        }
+      },
+      "CreateProjectInput": {
+        "type": "object",
+        "required": ["name", "slug"],
+        "properties": {
+          "name": {
+            "type": "string",
+            "minLength": 2,
+            "maxLength": 100,
+            "example": "Redesign do onboarding"
+          },
+          "slug": {
+            "type": "string",
+            "minLength": 2,
+            "maxLength": 100,
+            "pattern": "^[a-z0-9-]+$",
+            "description": "Apenas letras minúsculas, números e hífens.",
+            "example": "redesign-onboarding"
+          },
+          "description": {
+            "type": "string",
+            "maxLength": 500,
+            "example": "Melhoria no fluxo de cadastro e ativação"
+          },
+          "emoji": { "type": "string", "maxLength": 10, "example": "🚀" },
+          "coverImage": { "type": "string", "format": "uri", "example": "https://exemplo.com/capa.png" },
+          "isPublic": { "type": "boolean", "default": false }
+        }
+      },
+      "UpdateProjectInput": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "minLength": 2,
+            "maxLength": 100,
+            "example": "Redesign do onboarding v2"
+          },
+          "slug": {
+            "type": "string",
+            "minLength": 2,
+            "maxLength": 100,
+            "pattern": "^[a-z0-9-]+$",
+            "example": "redesign-onboarding-v2"
+          },
+          "description": { "type": "string", "maxLength": 500 },
+          "emoji": { "type": "string", "maxLength": 10 },
+          "coverImage": { "type": "string", "format": "uri" },
+          "isPublic": { "type": "boolean" }
+        }
+      },
+      "ProjectResponse": {
+        "allOf": [
+          { "$ref": "#/components/schemas/SuccessResponse" },
+          {
+            "type": "object",
+            "properties": {
+              "data": { "$ref": "#/components/schemas/Project" }
+            }
+          }
+        ]
+      },
+      "ProjectListResponse": {
+        "allOf": [
+          { "$ref": "#/components/schemas/SuccessResponse" },
+          {
+            "type": "object",
+            "properties": {
+              "data": {
+                "type": "array",
+                "items": { "$ref": "#/components/schemas/Project" }
+              }
+            }
+          }
+        ]
       }
     },
     "responses": {

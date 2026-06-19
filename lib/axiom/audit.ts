@@ -11,6 +11,7 @@ type AuditEntity =
   | 'short_link'
   | 'sticky_note'
   | 'consent'
+  | 'project'
 
 type AuditAction =
   | 'create'
@@ -25,6 +26,8 @@ type AuditAction =
   | 'revoke'
   | 'export_requested'
   | 'export_completed'
+  | 'archive'
+  | 'restore'
 
 type AuditOutcome = 'success' | 'failure'
 
@@ -102,4 +105,27 @@ export function auditAuth(input: AuditAuthInput): void {
   } else {
     logger.info(`audit.auth.${input.event}`, fields)
   }
+}
+
+type AuditAccessEvent = 'consent.gate.blocked'
+
+interface AuditAccessInput {
+  event: AuditAccessEvent
+  actorId: string | null
+  resource: string
+  reason: 'CONSENT_MISSING' | 'USER_LOOKUP_FAILED'
+  meta?: Record<string, unknown>
+}
+
+export function auditAccess(input: AuditAccessInput): void {
+  logger.warn(`audit.access.${input.event}`, {
+    category: 'audit',
+    auditType: 'access',
+    event: input.event,
+    actorId: input.actorId,
+    resource: input.resource,
+    reason: input.reason,
+    timestamp: new Date().toISOString(),
+    ...(input.meta ?? {}),
+  })
 }

@@ -1,7 +1,7 @@
 import { redirect } from 'next/navigation'
 import type { ReactNode } from 'react'
 import { getAuthSession } from '@/src/lib/auth-session'
-import { UserRepository } from '@/src/repositories/user.repository'
+import { requireConsent } from '@/src/lib/consent'
 
 export default async function PrivateLayout({
   children,
@@ -11,19 +11,14 @@ export default async function PrivateLayout({
   const session = await getAuthSession()
   if (!session.ok) redirect('/sign-in')
 
-  // Consent gate: any authenticated path under (private) requires
-  // accepted terms + privacy. Covers OAuth signup (which skips the
-  // checkbox form) and any curl-bypass of the email signup. Failure
-  // to load the user is treated as no-consent — safer to over-prompt
-  // than to silently let an unconsented user through.
-  const user = await UserRepository.findById(session.value.user.id)
-  if (
-    !user.ok ||
-    !user.value.acceptedTermsAt ||
-    !user.value.acceptedPrivacyAt
-  ) {
-    redirect('/onboarding/consent')
-  }
+  // SECURITY GATE (STR-61 ) - do not remove or weaken.
+  // Every authenticated path under (private) requires accepted Terms + Policy.
+  // requiresConsent() is the SAME gate enforced on the API mutation routes:
+  // keeping both in sync prevents the "UI blocked, API open" bypass. It also
+  // audits the blocked attempt (Axiom). Covers OAuth signup (which skips the
+  // checkbox) and any direct-URL bypass.
+  const consent = await requireConsent(session.value.user.id, 'page:(private)')
+  if (!consent.ok) redirect('/onboarding/consent')
 
   return <>{children}</>
 }
