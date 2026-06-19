@@ -1,1 +1,2 @@
-export const baseEmailUrl = 'https://nexo.coodee.dev'
+export const baseEmailUrl =
+  process.env.NEXT_PUBLIC_URL ?? 'https://nexo.coodee.dev'
