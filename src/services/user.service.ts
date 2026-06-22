@@ -1,3 +1,4 @@
+import type { OnboardingStep, UserGoal } from '@prisma/client'
 import { auditMutation } from '@/lib/axiom/audit'
 import { logger } from '@/lib/axiom/logger'
 import { UserCache } from '@/src/cache/user.cache'
@@ -14,7 +15,11 @@ import { consume, exportLimiter } from '@/src/lib/rate-limit'
 import { err, ok, type Result } from '@/src/lib/result'
 import { toUserDTO } from '@/src/mappers/user.mapper'
 import { UserRepository } from '@/src/repositories/user.repository'
-import type { UpdateUserDTO } from '@/src/schemas/user.schema'
+import type {
+  SaveGoalsDTO,
+  SaveRoleDTO,
+  UpdateUserDTO,
+} from '@/src/schemas/user.schema'
 import type { UserDTO } from '@/types/user'
 
 export interface AccountDeletionScheduled {
@@ -33,6 +38,13 @@ const DELETION_DATE_FORMATTER = new Intl.DateTimeFormat('pt-BR', {
 
 function formatDeletionDate(date: Date): string {
   return DELETION_DATE_FORMATTER.format(date)
+}
+
+const NEXT_STEP: Record<OnboardingStep, OnboardingStep | null> = {
+  PROFILE: 'ROLE',
+  ROLE: 'BRINGS',
+  BRINGS: 'WORKSPACE',
+  WORKSPACE: null,
 }
 
 export const UserService = {
@@ -102,6 +114,70 @@ export const UserService = {
     })
 
     return ok(userDTO)
+  },
+
+  async saveOnboardingRole(
+    actorId: string,
+    dto: SaveRoleDTO,
+  ): Promise<Result<void>> {
+    const result = await UserRepository.saveRole(actorId, dto.role, 'BRINGS')
+    if (!result.ok) {
+      auditMutation({
+        entity: 'user',
+        action: 'onboarding_role_saved',
+        actorId,
+        targetId: actorId,
+        outcome: 'failure',
+        reason: result.error.code,
+      })
+      return result
+    }
+
+    await UserCache.invalidate(actorId)
+
+    auditMutation({
+      entity: 'user',
+      action: 'onboarding_role_saved',
+      actorId,
+      targetId: actorId,
+      meta: { role: dto.role },
+    })
+
+    return ok(undefined)
+  },
+
+  async saveOnboardingGoals(
+    actorId: string,
+    dto: SaveGoalsDTO,
+  ): Promise<Result<void>> {
+    const result = await UserRepository.saveGaols(
+      actorId,
+      dto.goals as UserGoal[],
+      'WORKSPACE',
+    )
+    if (!result.ok) {
+      auditMutation({
+        entity: 'user',
+        action: 'onboarding_goals_saved',
+        actorId,
+        targetId: actorId,
+        outcome: 'failure',
+        reason: result.error.code,
+      })
+      return result
+    }
+
+    await UserCache.invalidate(actorId)
+
+    auditMutation({
+      entity: 'user',
+      action: 'onboarding_goals_saved',
+      actorId,
+      targetId: actorId,
+      meta: { goals: dto.goals },
+    })
+
+    return ok(undefined)
   },
 
   async deleteAccount(
@@ -263,5 +339,28 @@ export const UserService = {
     })
 
     return ok({ canceled: true })
+  },
+
+  async completeOnboardingStep(
+    actorId: string,
+    step: OnboardingStep,
+  ): Promise<Result<void>> {
+    const result = await UserRepository.updateOnboardingStep(
+      actorId,
+      NEXT_STEP[step],
+    )
+    if (!result.ok) return result
+
+    await UserCache.invalidate(actorId)
+
+    auditMutation({
+      entity: 'user',
+      action: 'onboarding_step_completed',
+      actorId,
+      targetId: actorId,
+      meta: { step },
+    })
+
+    return ok(undefined)
   },
 }

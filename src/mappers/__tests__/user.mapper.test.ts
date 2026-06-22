@@ -52,6 +52,9 @@ describe('toUserDTO()', () => {
       deletionScheduledAt: null,
       acceptedTermsAt: null,
       acceptedPrivacyAt: null,
+      goals: [],
+      onboardingStep: null,
+      role: null,
       memberships: [
         {
           workspaceId: 'ws-1',
