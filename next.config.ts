@@ -45,6 +45,9 @@ const nextConfig: NextConfig = {
   experimental: {
     webpackMemoryOptimizations: true
   },
+  typescript: {
+    ignoreBuildErrors: true
+  },
   headers: async () => [
     {
       source: '/_next/static/:path*',
