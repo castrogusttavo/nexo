@@ -6,6 +6,7 @@ import { HeaderPromotionBanner } from '@/app/_components/header/header-promotion
 import { GlobalSidebarNavigation } from '@/app/_components/navigation/sidebar-global'
 import { getAuthSession } from '@/src/lib/auth-session'
 import { MembershipRepository } from '@/src/repositories/membership.repository'
+import { UserRepository } from '@/src/repositories/user.repository'
 
 type WorkspaceLayoutProps = {
   children: ReactNode
@@ -34,6 +35,11 @@ export default async function WorkspaceLayout({
   ])
 
   if (!session.ok) redirect('/sign-in')
+
+  const userResult = await UserRepository.findById(session.value.user.id)
+  if (userResult.ok && userResult.value.onboardingStep !== null) {
+    redirect('/onboarding')
+  }
 
   const membership = await MembershipRepository.findByUserAndSlug(
     session.value.user.id,

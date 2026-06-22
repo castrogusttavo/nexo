@@ -18,7 +18,7 @@ function Checkbox({ className, ...props }: CheckboxPrimitive.Root.Props) {
         data-slot="checkbox-indicator"
         className="grid place-content-center transition-none"
       >
-        <HugeiconsIcon icon={Tick02Icon} strokeWidth={2} size={8} />
+        <HugeiconsIcon icon={Tick02Icon} strokeWidth={2} size={16} />
       </CheckboxPrimitive.Indicator>
 
     </CheckboxPrimitive.Root>

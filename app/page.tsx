@@ -18,5 +18,5 @@ export default async function Page() {
   if (memberships.ok && memberships.value.length > 0) {
     redirect(`/${memberships.value[0].workspace.slug}`)
   }
-  redirect('/create-workspace')
+  redirect('/onboarding')
 }
