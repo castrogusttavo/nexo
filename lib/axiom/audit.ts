@@ -28,6 +28,9 @@ type AuditAction =
   | 'export_completed'
   | 'archive'
   | 'restore'
+  | 'onboarding_step_completed'
+  | 'onboarding_role_saved'
+  | 'onboarding_goals_saved'
 
 type AuditOutcome = 'success' | 'failure'
 
