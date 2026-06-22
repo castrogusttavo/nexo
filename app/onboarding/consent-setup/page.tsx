@@ -21,7 +21,7 @@ export default async function OnboardingConsentPage() {
   if (!userResult.ok) redirect('/sign-in')
 
   if (userResult.value.acceptedTermsAt && userResult.value.acceptedPrivacyAt) {
-    redirect('/')
+    redirect('/onboarding')
   }
 
   return (

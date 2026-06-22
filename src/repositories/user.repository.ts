@@ -1,4 +1,11 @@
-import type { Membership, User, Workspace } from '@prisma/client'
+import type {
+  Membership,
+  OnboardingStep,
+  User,
+  UserGoal,
+  UserRole,
+  Workspace,
+} from '@prisma/client'
 import { conflict, databaseError, notFound } from '@/src/errors'
 import { prisma } from '@/src/lib/prisma'
 import { err, ok, type Result } from '@/src/lib/result'
@@ -76,6 +83,62 @@ export const UserRepository = {
       return ok(user)
     } catch {
       return err(databaseError('Failed to update user'))
+    }
+  },
+
+  async updateOnboardingStep(
+    id: string,
+    step: OnboardingStep | null,
+  ): Promise<Result<User>> {
+    try {
+      const user = await prisma.user.update({
+        where: { id },
+        data: { onboardingStep: step },
+      })
+      return ok(user)
+    } catch (error) {
+      if (error instanceof Error && 'code' in error && error.code === 'P2025') {
+        return err(notFound('User'))
+      }
+      return err(databaseError('Failed to update onboarding step'))
+    }
+  },
+
+  async saveRole(
+    id: string,
+    role: UserRole,
+    nextStep: OnboardingStep,
+  ): Promise<Result<User>> {
+    try {
+      const user = await prisma.user.update({
+        where: { id },
+        data: { role, onboardingStep: nextStep },
+      })
+      return ok(user)
+    } catch (error) {
+      if (error instanceof Error && 'code' in error && error.code === 'P2025') {
+        return err(notFound('User'))
+      }
+      return err(databaseError('Failed to save user role'))
+    }
+  },
+
+  async saveGaols(
+    id: string,
+    goals: UserGoal[],
+    nextStep: OnboardingStep,
+  ): Promise<Result<User>> {
+    try {
+      const user = await prisma.user.update({
+        where: { id },
+        data: { goals, onboardingStep: nextStep },
+      })
+      return ok(user)
+    } catch (error) {
+      if (error instanceof Error && 'code' in error && error.code === 'P2025') {
+        return err(notFound('User'))
+      }
+      return err(databaseError('Failed to save user goals'))
     }
   },
 

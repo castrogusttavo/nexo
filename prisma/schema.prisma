@@ -18,6 +18,9 @@ model User {
   acceptedPrivacyAt    DateTime? @map("accepted_privacy_at")
   createdAt            DateTime  @default(now()) @map("created_at")
   updatedAt            DateTime  @updatedAt @map("updated_at")
+  onboardingStep       OnboardingStep?      @default(PROFILE) @map("onboarding_step")
+  role                 UserRole?  @map("role")
+  goals                UserGoal[] @map("goals")
 
   memberships   Membership[]
   sessions      Session[]
@@ -43,6 +46,31 @@ enum ConsentDocument {
 enum ConsentAction {
   GRANTED
   REVOKED
+}
+
+enum OnboardingStep {
+  PROFILE
+  ROLE
+  BRINGS
+  WORKSPACE
+}
+
+enum UserRole {
+  PRODUCT_MANAGER
+  ENGINEERING_MANAGER
+  DESIGNER
+  DEVELOPER
+  FOUNDER_EXECUTIVE
+  OPERATIONS_MANAGER
+  OTHER
+}
+
+enum UserGoal {
+  ROADMAP
+  SPRINTS
+  CROSS_FUNCTIONAL
+  REPLACE_TOOL
+  EXPLORING
 }
 
 model ConsentEvent {

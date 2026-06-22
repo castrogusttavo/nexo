@@ -1,5 +1,5 @@
 import type { UserWithMemberships } from '@/src/repositories/user.repository'
-import type { UserDTO } from '@/types/user'
+import type { UserDTO, UserGoal } from '@/types/user'
 
 export function toUserDTO(user: UserWithMemberships): UserDTO {
   return {
@@ -12,6 +12,9 @@ export function toUserDTO(user: UserWithMemberships): UserDTO {
     deletionScheduledAt: user.deletionScheduledAt?.toISOString() ?? null,
     acceptedTermsAt: user.acceptedTermsAt?.toISOString() ?? null,
     acceptedPrivacyAt: user.acceptedPrivacyAt?.toISOString() ?? null,
+    onboardingStep: user.onboardingStep,
+    role: user.role ?? null,
+    goals: user.goals as UserGoal[],
     memberships: user.memberships.map((m) => ({
       workspaceId: m.workspaceId,
       slug: m.workspace.slug,

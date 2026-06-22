@@ -18,7 +18,7 @@ export default async function PrivateLayout({
   // audits the blocked attempt (Axiom). Covers OAuth signup (which skips the
   // checkbox) and any direct-URL bypass.
   const consent = await requireConsent(session.value.user.id, 'page:(private)')
-  if (!consent.ok) redirect('/onboarding/consent')
+  if (!consent.ok) redirect('/onboarding/consent-setup')
 
   return <>{children}</>
 }

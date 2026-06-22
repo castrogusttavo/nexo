@@ -115,5 +115,5 @@ export async function acceptOnboardingConsent(
     },
   })
 
-  redirect('/')
+  redirect('/onboarding')
 }
