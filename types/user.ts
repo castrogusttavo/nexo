@@ -5,6 +5,22 @@ export interface MembershipDTO {
   role: string
 }
 
+export type UserRole =
+  | 'PRODUCT_MANAGER'
+  | 'ENGINEERING_MANAGER'
+  | 'DESIGNER'
+  | 'DEVELOPER'
+  | 'FOUNDER_EXECUTIVE'
+  | 'OPERATIONS_MANAGER'
+  | 'OTHER'
+
+export type UserGoal =
+  | 'ROADMAP'
+  | 'SPRINTS'
+  | 'CROSS_FUNCTIONAL'
+  | 'REPLACE_TOOL'
+  | 'EXPLORING'
+
 export interface UserDTO {
   id: string
   name: string
@@ -15,5 +31,8 @@ export interface UserDTO {
   deletionScheduledAt: string | null
   acceptedTermsAt: string | null
   acceptedPrivacyAt: string | null
+  onboardingStep: 'PROFILE' | 'ROLE' | 'BRINGS' | 'WORKSPACE' | null
+  role: UserRole | null
+  goals: UserGoal[]
   memberships: MembershipDTO[]
 }
