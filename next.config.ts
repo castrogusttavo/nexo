@@ -38,6 +38,12 @@ const nextConfig: NextConfig = {
       {
         protocol: 'https',
         hostname: 'nexo.coodee.dev'
+      },
+      {
+        protocol: 'http',
+        hostname: 'localhost',
+        port: '9000',
+        pathname: '/{avatars,user-covers}/**',
       }
     ],
   },

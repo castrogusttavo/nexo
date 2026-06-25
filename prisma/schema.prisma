@@ -10,8 +10,10 @@ model User {
   id                   String    @id @default(cuid())
   name                 String
   email                String    @unique
+  username             String    @unique
   emailVerified        Boolean   @default(false) @map("email_verified")
   image                String?
+  coverImage           String?   @map("cover_image")
   twoFactorEnabled     Boolean   @default(false) @map("two_factor_enabled")
   deletionScheduledAt  DateTime? @map("deletion_scheduled_at")
   acceptedTermsAt      DateTime? @map("accepted_terms_at")
@@ -21,6 +23,7 @@ model User {
   onboardingStep       OnboardingStep?      @default(PROFILE) @map("onboarding_step")
   role                 UserRole?  @map("role")
   goals                UserGoal[] @map("goals")
+  preference           UserPreference?
 
   memberships   Membership[]
   sessions      Session[]
@@ -73,6 +76,32 @@ enum UserGoal {
   EXPLORING
 }
 
+enum Theme {
+  LIGHT
+  DARK
+  SYSTEM
+}
+
+enum QuickSendShortcut {
+  ENTER
+  CTRL_ENTER
+}
+
+model UserPreference {
+  id       String          @id @default(cuid())
+  userId   String          @unique @map("user_id")
+  theme    Theme           @default(SYSTEM)
+  smoothCursor  Boolean    @default(false) @map("smooth_cursor")
+  quickSendShortcut   QuickSendShortcut    @default(ENTER) @map("quick_send_shortcut")
+  timezone  String    @default("UTC")
+  weekStartsOn  Int   @default(1) @map("week_starts_on")
+  weekendDays   Int[] @default([0, 6]) @map("weekend_days")
+  createdAt     DateTime    @default(now()) @map("created_at")
+  updatedAt     DateTime    @updatedAt @map("updated_at")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
 model ConsentEvent {
   id        String          @id @default(cuid())
   userId    String          @map("user_id")
@@ -95,6 +124,7 @@ model TwoFactor {
   backupCodes String   @map("backup_codes")
   userId      String   @map("user_id")
   user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  verified    Boolean  @default(true)
   createdAt   DateTime @default(now()) @map("created_at")
   updatedAt   DateTime @updatedAt @map("updated_at")
 

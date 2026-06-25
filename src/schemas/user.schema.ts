@@ -1,16 +1,5 @@
 import { z } from 'zod'
 
-export const UpdateUserSchema = z.object({
-  name: z
-    .string()
-    .min(2, 'Nome deve ter ao menos 2 caracteres')
-    .max(100)
-    .optional(),
-  email: z.email('E-mail inválido').optional(),
-})
-
-export type UpdateUserDTO = z.infer<typeof UpdateUserSchema>
-
 export const UserRoleValues = [
   'PRODUCT_MANAGER',
   'ENGINEERING_MANAGER',
@@ -29,6 +18,33 @@ export const UserGoalValues = [
   'EXPLORING',
 ]
 
+const usernameRegex = /^[a-z0-9._-]+$/
+
+export const UpdateUserSchema = z.object({
+  name: z
+    .string()
+    .min(2, 'Nome deve ter ao menos 2 caracteres')
+    .max(100)
+    .optional(),
+  email: z.email('E-mail inválido').optional(),
+  username: z
+    .string()
+    .min(3, 'Username deve ter ao menos 3 caracteres')
+    .max(39, 'Username deve ter no máximo 39 caracteres')
+    .regex(
+      usernameRegex,
+      'Username deve conter apenas letras minúsculas, números, ponto, hífen e underscore',
+    )
+    .optional(),
+  coverImage: z
+    .string()
+    .refine(
+      (v) => v.startsWith('/') || z.url().safeParse(v).success,
+      'URL de capa inválida',
+    )
+    .optional(),
+})
+
 export const SaveRoleSchema = z.object({
   role: z.enum(UserRoleValues),
 })
@@ -39,5 +55,6 @@ export const SaveGoalsSchema = z.object({
     .min(1, 'Selecione ao menos um objetivo'),
 })
 
+export type UpdateUserDTO = z.infer<typeof UpdateUserSchema>
 export type SaveRoleDTO = z.infer<typeof SaveRoleSchema>
 export type SaveGoalsDTO = z.infer<typeof SaveGoalsSchema>

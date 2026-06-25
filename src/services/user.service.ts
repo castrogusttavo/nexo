@@ -2,7 +2,7 @@ import type { OnboardingStep, UserGoal } from '@prisma/client'
 import { auditMutation } from '@/lib/axiom/audit'
 import { logger } from '@/lib/axiom/logger'
 import { UserCache } from '@/src/cache/user.cache'
-import { conflict, databaseError } from '@/src/errors'
+import { conflict, databaseError, usernameConflict } from '@/src/errors'
 import { sendDeleteAccountEmail } from '@/src/lib/mail/user/send-delete-account'
 import { prisma } from '@/src/lib/prisma'
 import {
@@ -80,6 +80,24 @@ export const UserService = {
           meta: { fields: Object.keys(dto) },
         })
         return err(conflict('E-mail já está em uso'))
+      }
+    }
+
+    if (dto.username) {
+      const existingResult = await UserRepository.findByUsername(dto.username)
+      if (!existingResult.ok) return existingResult
+
+      if (existingResult.value && existingResult.value.id !== actorId) {
+        auditMutation({
+          entity: 'user',
+          action: 'update',
+          actorId,
+          targetId: actorId,
+          outcome: 'failure',
+          reason: 'username_conflict',
+          meta: { fields: Object.keys(dto) },
+        })
+        return err(usernameConflict())
       }
     }
 

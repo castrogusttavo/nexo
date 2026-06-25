@@ -9,6 +9,7 @@ import {
   notFound,
   rateLimited,
   unauthorized,
+  usernameConflict,
   validationError,
 } from '@/src/errors/app-error'
 
@@ -90,6 +91,22 @@ describe('AppError factories', () => {
 
       expect(error.code).toBe('CONFLICT')
       expect(error.message).toBe('E-mail já está em uso')
+    })
+  })
+
+  describe('usernameConflict()', () => {
+    it('should use default message', () => {
+      const error = usernameConflict()
+
+      expect(error.code).toBe('USERNAME_CONFLICT')
+      expect(error.message).toBe('Username já está em uso')
+    })
+
+    it('should use custom message', () => {
+      const error = usernameConflict('Esse @ já foi escolhido')
+
+      expect(error.code).toBe('USERNAME_CONFLICT')
+      expect(error.message).toBe('Esse @ já foi escolhido')
     })
   })
 

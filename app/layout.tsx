@@ -17,13 +17,22 @@ export const metadata: Metadata = {
     'Nexo brings projects, docs, and AI-powered workflows into one unified workspace so teams and agents can plan, execute, and stay aligned.',
 }
 
+const THEME_INIT_SCRIPT = `(function(){try{var m=document.cookie.match(/(?:^|; )nexo\\.theme=([^;]+)/);var t=m?decodeURIComponent(m[1]):'SYSTEM';var dark=t==='DARK'||(t==='SYSTEM'&&matchMedia('(prefers-color-scheme: dark)').matches);document.documentElement.classList.toggle('dark',dark)}catch(e){}})()`
+
 export default function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode
 }>) {
   return (
-    <html lang='en' className={cn('dark', GeistSans.variable)}>
+    <html
+      lang='en'
+      className={cn('dark', GeistSans.variable)}
+      suppressHydrationWarning
+    >
+      <head>
+        <script dangerouslySetInnerHTML={{ __html: THEME_INIT_SCRIPT }} />
+      </head>
       <body className='root antialiased bg-background text-primary h-screen'>
         <Suspense>
           <NuqsAdapter>

@@ -197,6 +197,68 @@ describe('UserService', () => {
       expect(mockedRepo.update).not.toHaveBeenCalled()
     })
 
+    it('should return USERNAME_CONFLICT when username belongs to another user', async () => {
+      const existingUser = createFakeUser({
+        id: 'other-user',
+        username: 'taken',
+      })
+      mockedRepo.findByUsername.mockResolvedValue(ok(existingUser))
+
+      const result = await UserService.updateProfile('user-1', {
+        username: 'taken',
+      })
+
+      expectErr(result, 'USERNAME_CONFLICT')
+      expect(mockedRepo.update).not.toHaveBeenCalled()
+    })
+
+    it('should allow keeping own current username', async () => {
+      const currentUser = createFakeUser({ id: 'user-1', username: 'mine' })
+      mockedRepo.findByUsername.mockResolvedValue(ok(currentUser))
+      mockedRepo.update.mockResolvedValue(ok(currentUser))
+      mockedRepo.findByIdWithMemberships.mockResolvedValue(
+        ok(withMemberships(currentUser)),
+      )
+      mockedCache.invalidate.mockResolvedValue(undefined)
+      mockedCache.set.mockResolvedValue(undefined)
+
+      const result = await UserService.updateProfile('user-1', {
+        username: 'mine',
+      })
+
+      expectOk(result)
+      expect(mockedRepo.update).toHaveBeenCalled()
+    })
+
+    it('should allow username update when it is not taken', async () => {
+      const updatedUser = createFakeUser({ id: 'user-1', username: 'fresh' })
+      mockedRepo.findByUsername.mockResolvedValue(ok(null))
+      mockedRepo.update.mockResolvedValue(ok(updatedUser))
+      mockedRepo.findByIdWithMemberships.mockResolvedValue(
+        ok(withMemberships(updatedUser)),
+      )
+      mockedCache.invalidate.mockResolvedValue(undefined)
+      mockedCache.set.mockResolvedValue(undefined)
+
+      const result = await UserService.updateProfile('user-1', {
+        username: 'fresh',
+      })
+
+      const value = expectOk(result)
+      expect(value.username).toBe('fresh')
+    })
+
+    it('should propagate findByUsername repository error', async () => {
+      mockedRepo.findByUsername.mockResolvedValue(err(databaseError()))
+
+      const result = await UserService.updateProfile('user-1', {
+        username: 'whatever',
+      })
+
+      expectErr(result, 'DATABASE_ERROR')
+      expect(mockedRepo.update).not.toHaveBeenCalled()
+    })
+
     it('should propagate update repository error', async () => {
       mockedRepo.update.mockResolvedValue(err(databaseError()))
       mockedCache.invalidate.mockResolvedValue(undefined)

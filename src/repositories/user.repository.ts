@@ -62,7 +62,20 @@ export const UserRepository = {
     }
   },
 
-  async create(data: { name: string; email: string }): Promise<Result<User>> {
+  async findByUsername(username: string): Promise<Result<User | null>> {
+    try {
+      const user = await prisma.user.findUnique({ where: { username } })
+      return ok(user)
+    } catch {
+      return err(databaseError('Failed to find user by username'))
+    }
+  },
+
+  async create(data: {
+    name: string
+    email: string
+    username: string
+  }): Promise<Result<User>> {
     try {
       const user = await prisma.user.create({ data })
       return ok(user)
@@ -76,12 +89,20 @@ export const UserRepository = {
 
   async update(
     id: string,
-    data: { name?: string; email?: string },
+    data: {
+      name?: string
+      email?: string
+      username?: string
+      coverImage?: string
+    },
   ): Promise<Result<User>> {
     try {
       const user = await prisma.user.update({ where: { id }, data })
       return ok(user)
-    } catch {
+    } catch (error) {
+      if (error instanceof Error && 'code' in error && error.code === 'P2002') {
+        return err(conflict('Username ou e-mail já está em uso'))
+      }
       return err(databaseError('Failed to update user'))
     }
   },

@@ -20,6 +20,7 @@ import { sendVerifyEmailWithOtp } from '@/src/lib/mail/user/send-verify-email-wi
 import { sendWelcomeEmail } from '@/src/lib/mail/user/send-welcome'
 import { UserService } from '@/src/services/user.service'
 import { prisma } from './prisma'
+import { generateUniqueUsername } from './username'
 
 export const auth = betterAuth({
   database: prismaAdapter(prisma, { provider: 'postgresql' }),
@@ -114,6 +115,7 @@ export const auth = betterAuth({
       // accepts the fields and persists them; OAuth flows skip
       // parseUserInput entirely, so these stay null for social
       // signups until the consent gate (Onda 4) collects them.
+      username: { type: 'string', input: false, required: false },
       acceptedTermsAt: { type: 'date', input: true, required: false },
       acceptedPrivacyAt: { type: 'date', input: true, required: false },
     },
@@ -138,15 +140,24 @@ export const auth = betterAuth({
     user: {
       create: {
         before: async (data) => {
+          // Derive a unique username from the email local-part. Runs for
+          // every signup path (email/password + OAuth), so the column is
+          // always populated before insert (it's NOT NULL @unique)
+          const username = await generateUniqueUsername(
+            data.email,
+            async (u) =>
+              (await prisma.user.count({ where: { username: u } })) > 0,
+          )
+
           // Trust the server clock, not the client. The signup form
           // sends `new Date()` for each accepted document; we replace
           // those with the server's `now` so a tampered client can't
           // backdate (or postdate) its acceptance.
-          if (!data.acceptedTermsAt && !data.acceptedPrivacyAt) return
           const now = new Date()
           return {
             data: {
               ...data,
+              username,
               ...(data.acceptedTermsAt ? { acceptedTermsAt: now } : {}),
               ...(data.acceptedPrivacyAt ? { acceptedPrivacyAt: now } : {}),
             },

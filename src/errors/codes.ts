@@ -13,6 +13,7 @@ export const ERROR_CODES = {
   VALIDATION_ERROR: { code: 'VALIDATION_ERROR', status: 422 },
   RESOURCE_NOT_FOUND: { code: 'RESOURCE_NOT_FOUND', status: 404 },
   CONFLICT: { code: 'CONFLICT', status: 409 },
+  USERNAME_CONFLICT: { code: 'USERNAME_CONFLICT', status: 409 },
   RATE_LIMITED: { code: 'RATE_LIMITED', status: 429 },
   PROJECT_NOT_FOUND: { code: 'PROJECT_NOT_FOUND', status: 404 },
   PROJECT_SLUG_CONFLICT: { code: 'PROJECT_SLUG_CONFLICT', status: 409 },

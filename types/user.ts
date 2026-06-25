@@ -25,8 +25,10 @@ export interface UserDTO {
   id: string
   name: string
   email: string
+  username: string
   emailVerified: boolean
   image: string | null
+  coverImage: string | null
   createdAt: string
   deletionScheduledAt: string | null
   acceptedTermsAt: string | null

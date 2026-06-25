@@ -79,6 +79,9 @@
 			"correctness": {
 				"useExhaustiveDependencies": "off",
 				"useUniqueElementIds": "off"
+			},
+			"security": {
+				"noDangerouslySetInnerHtml": "off"
 			}
 		}
 	},
