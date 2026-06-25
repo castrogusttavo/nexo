@@ -92,7 +92,7 @@ describe('PATCH /api/users/me/preferences', () => {
       body: JSON.stringify({
         theme: 'DARK',
         smoothCursor: true,
-        quickSendShortcut: 'CTRL_END',
+        quickSendShortcut: 'CTRL_ENTER',
         timezone: 'America/Sao_Paulo',
         weekStartsOn: 0,
         weekendDays: [5, 6],
@@ -104,7 +104,7 @@ describe('PATCH /api/users/me/preferences', () => {
     expect(patchBody.success).toBe(true)
     expect(patchBody.data.theme).toBe('DARK')
     expect(patchBody.data.smoothCursor).toBe(true)
-    expect(patchBody.data.quickSendShortcut).toBe('CTRL_END')
+    expect(patchBody.data.quickSendShortcut).toBe('CTRL_ENTER')
     expect(patchBody.data.timezone).toBe('America/Sao_Paulo')
     expect(patchBody.data.weekStartsOn).toBe(0)
     expect(patchBody.data.weekendDays).toEqual([5, 6])
