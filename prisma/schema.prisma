@@ -10,8 +10,10 @@ model User {
   id                   String    @id @default(cuid())
   name                 String
   email                String    @unique
+  username             String    @unique
   emailVerified        Boolean   @default(false) @map("email_verified")
   image                String?
+  coverImage           String?   @map("cover_image")
   twoFactorEnabled     Boolean   @default(false) @map("two_factor_enabled")
   deletionScheduledAt  DateTime? @map("deletion_scheduled_at")
   acceptedTermsAt      DateTime? @map("accepted_terms_at")

@@ -32,6 +32,10 @@ export const notFound = (resource: string): AppError =>
 export const conflict = (message: string): AppError =>
   appError('CONFLICT', message)
 
+export const usernameConflict = (
+  message = 'Username já está em uso',
+): AppError => appError('USERNAME_CONFLICT', message)
+
 export const validationError = (message: string, details?: unknown): AppError =>
   appError('VALIDATION_ERROR', message, details)
 

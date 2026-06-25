@@ -17,8 +17,10 @@ describe('toUserDTO()', () => {
         id: 'user-1',
         name: 'John Doe',
         email: 'john@example.com',
+        username: 'johndoe',
         emailVerified: true,
         image: 'https://example.com/avatar.png',
+        coverImage: null,
       }),
       [
         {
@@ -46,8 +48,10 @@ describe('toUserDTO()', () => {
       id: 'user-1',
       name: 'John Doe',
       email: 'john@example.com',
+      username: 'johndoe',
       emailVerified: true,
       image: 'https://example.com/avatar.png',
+      coverImage: null,
       createdAt: user.createdAt.toISOString(),
       deletionScheduledAt: null,
       acceptedTermsAt: null,

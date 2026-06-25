@@ -101,6 +101,7 @@ describe('UserRepository', () => {
       const result = await UserRepository.create({
         name: 'New User',
         email: 'new@example.com',
+        username: 'new-user',
       })
 
       const user = expectOk(result)
@@ -115,6 +116,7 @@ describe('UserRepository', () => {
       const result = await UserRepository.create({
         name: 'Duplicate',
         email: 'dup@example.com',
+        username: 'duplicate-user',
       })
 
       expectErr(result, 'CONFLICT')

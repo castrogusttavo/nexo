@@ -10,5 +10,6 @@ export {
   projectSlugConflict,
   rateLimited,
   unauthorized,
+  usernameConflict,
   validationError,
 } from './app-error'
