@@ -96,6 +96,24 @@ describe('UserRepository', () => {
     })
   })
 
+  describe('findByUsername()', () => {
+    it('should return user when username exists', async () => {
+      const seeded = await seedUser()
+
+      const result = await UserRepository.findByUsername(seeded.username)
+
+      const user = expectOk(result)
+      expect(user?.id).toBe(seeded.id)
+    })
+
+    it('should return null when username does not exist', async () => {
+      const result = await UserRepository.findByUsername('ghost-username')
+
+      const user = expectOk(result)
+      expect(user).toBeNull()
+    })
+  })
+
   describe('create()', () => {
     it('should create a user successfully', async () => {
       const result = await UserRepository.create({
@@ -144,6 +162,17 @@ describe('UserRepository', () => {
 
       const user = expectOk(result)
       expect(user.email).toBe('new@example.com')
+    })
+
+    it('should return CONFLICT when the username is already taken', async () => {
+      const taken = await seedUser()
+      const seeded = await seedUser()
+
+      const result = await UserRepository.update(seeded.id, {
+        username: taken.username,
+      })
+
+      expectErr(result, 'CONFLICT')
     })
   })
 

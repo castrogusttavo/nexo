@@ -61,4 +61,50 @@ describe('UpdateUserSchema', () => {
 
     expect(result.success).toBe(true)
   })
+
+  it('should accept a valid username', () => {
+    const result = UpdateUserSchema.safeParse({ username: 'john.doe_01' })
+
+    expect(result.success).toBe(true)
+  })
+
+  it('should reject a username shorter than 3 characters', () => {
+    const result = UpdateUserSchema.safeParse({ username: 'ab' })
+
+    expect(result.success).toBe(false)
+  })
+
+  it('should reject a username longer than 39 characters', () => {
+    const result = UpdateUserSchema.safeParse({ username: 'a'.repeat(40) })
+
+    expect(result.success).toBe(false)
+  })
+
+  it('should reject a username with uppercase or invalid characters', () => {
+    expect(UpdateUserSchema.safeParse({ username: 'John' }).success).toBe(false)
+    expect(UpdateUserSchema.safeParse({ username: 'jo hn' }).success).toBe(
+      false,
+    )
+    expect(UpdateUserSchema.safeParse({ username: 'joão' }).success).toBe(false)
+  })
+
+  it('should accept a coverImage as a relative path', () => {
+    const result = UpdateUserSchema.safeParse({ coverImage: '/covers/1.jpg' })
+
+    expect(result.success).toBe(true)
+  })
+
+  it('should accept a coverImage as an absolute URL', () => {
+    const result = UpdateUserSchema.safeParse({
+      coverImage: 'https://cdn.example.com/c.jpg',
+    })
+
+    expect(result.success).toBe(true)
+  })
+
+  it('should reject a coverImage that is neither a path nor a URL', () => {
+    const result = UpdateUserSchema.safeParse({ coverImage: 'not-a-url' })
+
+    expect(result.success).toBe(false)
+  })
 })

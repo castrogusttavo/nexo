@@ -17,7 +17,7 @@ export const UserPreferenceRepository = {
 
       return ok(preference)
     } catch {
-      return err(databaseError('Faield to find user preference'))
+      return err(databaseError('Failed to find user preference'))
     }
   },
 

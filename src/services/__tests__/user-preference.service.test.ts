@@ -62,6 +62,16 @@ describe('UserPreferenceService', () => {
       )
       expect(repo.upsert).not.toHaveBeenCalled()
     })
+
+    it('should propagate database errors when lazy creation fails', async () => {
+      repo.findByUserId.mockResolvedValue(err(notFound('UserPreference')))
+      repo.upsert.mockResolvedValue(err(databaseError()))
+
+      expect(expectErr(await UserPreferenceService.get('user_123')).code).toBe(
+        'DATABASE_ERROR',
+      )
+      expect(cache.set).not.toHaveBeenCalled()
+    })
   })
 
   describe('update()', () => {

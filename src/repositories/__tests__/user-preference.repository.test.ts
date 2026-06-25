@@ -1,7 +1,11 @@
-import { describe, expect, it } from 'vitest'
+import { afterEach, describe, expect, it, vi } from 'vitest'
 import { expectErr, expectOk } from '@/src/__tests__/helpers/result.helpers'
 import { prisma } from '@/src/lib/prisma'
 import { UserPreferenceRepository } from '../user-preference.repository'
+
+afterEach(() => {
+  vi.restoreAllMocks()
+})
 
 async function seedUser(id = 'user_pref_test') {
   return prisma.user.create({
@@ -31,6 +35,16 @@ describe('UserPreferenceRepository', () => {
       const result = await UserPreferenceRepository.findByUserId(user.id)
 
       expect(expectOk(result).theme).toBe('DARK')
+    })
+
+    it('should return DATABASE_ERROR when the query throws', async () => {
+      vi.spyOn(prisma.userPreference, 'findUnique').mockRejectedValueOnce(
+        new Error('connection lost'),
+      )
+
+      const result = await UserPreferenceRepository.findByUserId('user_x')
+
+      expect(expectErr(result).code).toBe('DATABASE_ERROR')
     })
   })
 
@@ -62,6 +76,17 @@ describe('UserPreferenceRepository', () => {
       expect(updated.theme).toBe('DARK')
       expect(updated.timezone).toBe('America/Sao_Paulo')
       expect(updated.weekendDays).toEqual([5, 6])
+    })
+
+    it('should return DATABASE_ERROR when the upsert fails (unknown user)', async () => {
+      const result = await UserPreferenceRepository.upsert(
+        'non-existent-user',
+        {
+          theme: 'DARK',
+        },
+      )
+
+      expect(expectErr(result).code).toBe('DATABASE_ERROR')
     })
   })
 })
