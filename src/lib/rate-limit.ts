@@ -26,6 +26,9 @@ const API_DURATION_SECONDS = 60
 const EXPORT_POINTS = 1
 const EXPORT_DURATION_SECONDS = 24 * 60 * 60
 
+const UPLOAD_POINTS = 10
+const UPLOAD_DURATION_SECONDS = 60
+
 const authInsurance = new RateLimiterMemory({
   points: AUTH_POINTS,
   duration: AUTH_DURATION_SECONDS,
@@ -87,6 +90,15 @@ export const exportLimiter = new RateLimiterRedis({
   duration: EXPORT_DURATION_SECONDS,
 })
 
+export const uploadLimiter = new RateLimiterRedis({
+  storeClient: redis,
+  storeType: 'redis',
+  useRedisPackage: true,
+  keyPrefix: 'rl:upload',
+  points: UPLOAD_POINTS,
+  duration: UPLOAD_DURATION_SECONDS,
+})
+
 export type Limiter = RateLimiterRedis
 
 const limiterNames = new WeakMap<Limiter, string>([
@@ -95,6 +107,7 @@ const limiterNames = new WeakMap<Limiter, string>([
   [emailLimiter, 'email'],
   [apiLimiter, 'api'],
   [exportLimiter, 'export'],
+  [uploadLimiter, 'upload'],
 ])
 
 let connectionEnsured: Promise<unknown> | null = null

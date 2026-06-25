@@ -13,7 +13,7 @@ import {
   successResponse,
 } from '@/utils/http-response'
 
-const AVATAR_BUCKET = 'avatars'
+const COVER_BUCKET = 'user-covers'
 const MAX_BYTES = 5 * 1024 * 1024 // 5 MB
 const ALLOWED_TYPES: Record<string, string> = {
   'image/jpeg': 'jpg',
@@ -35,8 +35,8 @@ export const POST = withAxiom(async (request: NextRequest) => {
     return standardError('VALIDATION_ERROR', 'Corpo da requisição inválido')
   }
 
-  const file = formData.get('avatars')
-  if (!file || !(file instanceof File))
+  const file = formData.get('cover')
+  if (!(file instanceof File))
     return standardError('VALIDATION_ERROR', 'Arquivo inválido')
 
   const ext = ALLOWED_TYPES[file.type]
@@ -53,22 +53,22 @@ export const POST = withAxiom(async (request: NextRequest) => {
     )
 
   const userId = auth.value.user.id
-  const key = `users/${userId}/avatar.${ext}`
+  const key = `users/${userId}/cover.${ext}`
   const buffer = Buffer.from(await file.arrayBuffer())
 
-  await ensurePublicBucket(AVATAR_BUCKET)
+  await ensurePublicBucket(COVER_BUCKET)
   await putObject({
-    bucket: AVATAR_BUCKET,
+    bucket: COVER_BUCKET,
     key,
     body: buffer,
     contentType: file.type,
   })
 
-  const url = `${MINIO_ENDPOINT}/${AVATAR_BUCKET}/${key}`
+  const url = `${MINIO_ENDPOINT}/${COVER_BUCKET}/${key}`
 
   await prisma.user.update({
     where: { id: userId },
-    data: { image: url },
+    data: { coverImage: url },
   })
   await UserCache.invalidate(userId)
 
@@ -77,7 +77,7 @@ export const POST = withAxiom(async (request: NextRequest) => {
     action: 'update',
     actorId: userId,
     targetId: userId,
-    meta: { fields: ['image'] },
+    meta: { fields: ['coverImage'] },
   })
 
   return successResponse({ url })
