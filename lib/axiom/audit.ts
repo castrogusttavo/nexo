@@ -12,6 +12,7 @@ type AuditEntity =
   | 'sticky_note'
   | 'consent'
   | 'project'
+  | 'user_preference'
 
 type AuditAction =
   | 'create'
