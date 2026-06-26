@@ -62,5 +62,5 @@ export const projectSlugConflict = (
 ): AppError => appError('PROJECT_SLUG_CONFLICT', message)
 
 export const storageError = (
-  message: 'Falha ao armazenar o arquivo',
+  message = 'Falha ao armazenar o arquivo',
 ): AppError => appError('STORAGE_ERROR', message)
