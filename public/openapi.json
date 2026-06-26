@@ -786,24 +786,24 @@
         }
       }
     },
-    "/users/me/cookie-consent": {
+    "/users/me/avatar": {
       "post": {
-        "tags": ["Privacidade (LGPD)"],
-        "summary": "Registrar consentimento de cookies",
-        "description": "Registra um evento de consentimento (concedido ou revogado) para a versão vigente da política de cookies, junto com IP e user-agent.",
+        "tags": ["Usuário"],
+        "summary": "Enviar avatar do usuário",
+        "description": "Faz upload do avatar do usuário autenticado via `multipart/form-data` no campo `avatars`. Aceita JPEG, PNG ou WebP, até 5 MB. A imagem é armazenada e a URL pública é gravada no perfil. Rate limit dedicado de upload.",
         "security": [{ "cookieAuth": [] }],
         "requestBody": {
           "required": true,
           "content": {
-            "application/json": {
+            "multipart/form-data": {
               "schema": {
                 "type": "object",
-                "required": ["accepted"],
+                "required": ["avatars"],
                 "properties": {
-                  "accepted": {
-                    "type": "boolean",
-                    "description": "`true` registra GRANTED; `false` registra REVOKED.",
-                    "example": true
+                  "avatars": {
+                    "type": "string",
+                    "format": "binary",
+                    "description": "Arquivo de imagem (JPEG, PNG ou WebP), máximo 5 MB."
                   }
                 }
               }
@@ -812,39 +812,103 @@
         },
         "responses": {
           "200": {
-            "description": "Consentimento registrado",
+            "description": "Avatar enviado com sucesso.",
             "content": {
               "application/json": {
-                "schema": {
-                  "allOf": [
-                    { "$ref": "#/components/schemas/SuccessResponse" },
-                    {
-                      "type": "object",
-                      "properties": {
-                        "data": {
-                          "type": "object",
-                          "properties": {
-                            "accepted": { "type": "boolean" }
-                          }
-                        }
-                      }
-                    }
-                  ]
-                },
-                "example": {
-                  "success": true,
-                  "statusCode": 200,
-                  "data": { "accepted": true }
-                }
+                "schema": { "$ref": "#/components/schemas/MediaUploadResponse" }
               }
             }
           },
-          "401": {
-            "$ref": "#/components/responses/UnauthorizedError"
-          },
-          "422": {
-            "$ref": "#/components/responses/ValidationError"
+          "401": { "$ref": "#/components/responses/UnauthorizedError" },
+          "422": { "$ref": "#/components/responses/ValidationError" },
+          "429": { "$ref": "#/components/responses/RateLimitError" },
+          "500": { "$ref": "#/components/responses/StorageError" }
+        }
+      }
+    },
+    "/users/me/cover": {
+      "post": {
+        "tags": ["Usuário"],
+        "summary": "Enviar capa do perfil",
+        "description": "Faz upload da imagem de capa do perfil do usuário autenticado via `multipart/form-data` no campo `cover`. Aceita JPEG, PNG ou WebP, até 5 MB. A URL pública é gravada no perfil. Rate limit dedicado de upload.",
+        "security": [{ "cookieAuth": [] }],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "type": "object",
+                "required": ["cover"],
+                "properties": {
+                  "cover": {
+                    "type": "string",
+                    "format": "binary",
+                    "description": "Arquivo de imagem (JPEG, PNG ou WebP), máximo 5 MB."
+                  }
+                }
+              }
+            }
           }
+        },
+        "responses": {
+          "200": {
+            "description": "Capa enviada com sucesso.",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/MediaUploadResponse" }
+              }
+            }
+          },
+          "401": { "$ref": "#/components/responses/UnauthorizedError" },
+          "422": { "$ref": "#/components/responses/ValidationError" },
+          "429": { "$ref": "#/components/responses/RateLimitError" },
+          "500": { "$ref": "#/components/responses/StorageError" }
+        }
+      }
+    },
+    "/users/me/preferences": {
+      "get": {
+        "tags": ["Usuário"],
+        "summary": "Obter preferências do usuário",
+        "description": "Retorna as preferências do usuário autenticado (tema, cursor suave, atalho de envio rápido, fuso horário e configuração de semana). Na primeira leitura, a linha é materializada com os valores padrão. Espelha as preferências em cookies na resposta.",
+        "security": [{ "cookieAuth": [] }],
+        "responses": {
+          "200": {
+            "description": "Preferências retornadas com sucesso.",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/UserPreferenceResponse" }
+              }
+            }
+          },
+          "401": { "$ref": "#/components/responses/UnauthorizedError" }
+        }
+      },
+      "patch": {
+        "tags": ["Usuário"],
+        "summary": "Atualizar preferências do usuário",
+        "description": "Atualiza uma ou mais preferências do usuário autenticado. Ao menos um campo deve ser informado. Espelha as preferências em cookies na resposta.",
+        "security": [{ "cookieAuth": [] }],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/UpdateUserPreferenceInput" }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Preferências atualizadas com sucesso.",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/UserPreferenceResponse" }
+              }
+            }
+          },
+          "401": { "$ref": "#/components/responses/UnauthorizedError" },
+          "422": { "$ref": "#/components/responses/ValidationError" },
+          "429": { "$ref": "#/components/responses/RateLimitError" }
         }
       }
     },
@@ -1755,6 +1819,114 @@
           "429": { "$ref": "#/components/responses/RateLimitError" }
         }
       }
+    },
+    "/workspaces/{id}/projects/cover-image": {
+      "parameters": [
+        {
+          "name": "id",
+          "in": "path",
+          "required": true,
+          "description": "ID do workspace (cuid2).",
+          "schema": { "type": "string" }
+        }
+      ],
+      "post": {
+        "tags": ["Projetos"],
+        "summary": "Enviar capa de projeto",
+        "description": "Faz upload de uma imagem de capa para projetos do workspace via `multipart/form-data` no campo `file`. Aceita JPEG, PNG ou WebP, até 5 MB. Exige que o usuário seja membro do workspace. Retorna a URL pública armazenada — a associação ao projeto é feita depois ao criar/editar o projeto.",
+        "security": [{ "cookieAuth": [] }],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "type": "object",
+                "required": ["file"],
+                "properties": {
+                  "file": {
+                    "type": "string",
+                    "format": "binary",
+                    "description": "Arquivo de imagem (JPEG, PNG ou WebP), máximo 5 MB."
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Capa de projeto enviada com sucesso.",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/MediaUploadResponse" }
+              }
+            }
+          },
+          "401": { "$ref": "#/components/responses/UnauthorizedError" },
+          "403": { "$ref": "#/components/responses/ForbiddenError" },
+          "422": { "$ref": "#/components/responses/ValidationError" },
+          "429": { "$ref": "#/components/responses/RateLimitError" },
+          "500": { "$ref": "#/components/responses/StorageError" }
+        }
+      }
+    },
+    "/workspaces/{id}/projects/{slug}/favorite": {
+      "parameters": [
+        {
+          "name": "id",
+          "in": "path",
+          "required": true,
+          "description": "ID do workspace (cuid2).",
+          "schema": { "type": "string" }
+        },
+        {
+          "name": "slug",
+          "in": "path",
+          "required": true,
+          "description": "Slug do projeto.",
+          "schema": { "type": "string" }
+        }
+      ],
+      "post": {
+        "tags": ["Projetos"],
+        "summary": "Favoritar projeto",
+        "description": "Marca o projeto como favorito do usuário autenticado. Requer consentimento de cookies.",
+        "security": [{ "cookieAuth": [] }],
+        "responses": {
+          "200": {
+            "description": "Projeto favoritado com sucesso.",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/FavoriteResponse" }
+              }
+            }
+          },
+          "401": { "$ref": "#/components/responses/UnauthorizedError" },
+          "403": { "$ref": "#/components/responses/ForbiddenError" },
+          "404": { "$ref": "#/components/responses/NotFoundError" },
+          "429": { "$ref": "#/components/responses/RateLimitError" }
+        }
+      },
+      "delete": {
+        "tags": ["Projetos"],
+        "summary": "Desfavoritar projeto",
+        "description": "Remove o projeto dos favoritos do usuário autenticado. Requer consentimento de cookies.",
+        "security": [{ "cookieAuth": [] }],
+        "responses": {
+          "200": {
+            "description": "Projeto desfavoritado com sucesso.",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/FavoriteResponse" }
+              }
+            }
+          },
+          "401": { "$ref": "#/components/responses/UnauthorizedError" },
+          "403": { "$ref": "#/components/responses/ForbiddenError" },
+          "404": { "$ref": "#/components/responses/NotFoundError" },
+          "429": { "$ref": "#/components/responses/RateLimitError" }
+        }
+      }
     }
   },
   "components": {
@@ -2144,6 +2316,130 @@
           "components": {
             "type": "array",
             "items": { "$ref": "#/components/schemas/ComponentSnapshot" }
+          }
+        }
+      },
+      "MediaUploadResponse": {
+        "type": "object",
+        "description": "Resposta dos uploads de mídia (avatar, capa de perfil, capa de projeto).",
+        "allOf": [
+          { "$ref": "#/components/schemas/SuccessResponse" },
+          {
+            "type": "object",
+            "properties": {
+              "data": {
+                "type": "object",
+                "properties": {
+                  "url": {
+                    "type": "string",
+                    "format": "uri",
+                    "example": "http://localhost:9000/avatars/users/clx1abc123/avatar.webp"
+                  }
+                }
+              }
+            }
+          }
+        ]
+      },
+      "FavoriteResponse": {
+        "type": "object",
+        "description": "Estado de favorito de um projeto após a operação.",
+        "allOf": [
+          { "$ref": "#/components/schemas/SuccessResponse" },
+          {
+            "type": "object",
+            "properties": {
+              "data": {
+                "type": "object",
+                "properties": {
+                  "favorited": { "type": "boolean", "example": true }
+                }
+              }
+            }
+          }
+        ]
+      },
+      "UserPreference": {
+        "type": "object",
+        "description": "Preferências do usuário autenticado.",
+        "properties": {
+          "theme": {
+            "type": "string",
+            "enum": ["LIGHT", "DARK", "SYSTEM"],
+            "example": "SYSTEM"
+          },
+          "smoothCursor": { "type": "boolean", "example": false },
+          "quickSendShortcut": {
+            "type": "string",
+            "enum": ["ENTER", "CTRL_ENTER"],
+            "example": "ENTER"
+          },
+          "timezone": {
+            "type": "string",
+            "description": "Identificador IANA de fuso horário.",
+            "example": "America/Sao_Paulo"
+          },
+          "weekStartsOn": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 6,
+            "description": "Dia de início da semana (0 = domingo … 6 = sábado).",
+            "example": 0
+          },
+          "weekendDays": {
+            "type": "array",
+            "items": { "type": "integer", "minimum": 0, "maximum": 6 },
+            "maxItems": 7,
+            "description": "Dias considerados fim de semana, sem repetição.",
+            "example": [0, 6]
+          }
+        }
+      },
+      "UserPreferenceResponse": {
+        "type": "object",
+        "allOf": [
+          { "$ref": "#/components/schemas/SuccessResponse" },
+          {
+            "type": "object",
+            "properties": {
+              "data": { "$ref": "#/components/schemas/UserPreference" }
+            }
+          }
+        ]
+      },
+      "UpdateUserPreferenceInput": {
+        "type": "object",
+        "description": "Pelo menos um campo deve ser informado.",
+        "minProperties": 1,
+        "properties": {
+          "theme": {
+            "type": "string",
+            "enum": ["LIGHT", "DARK", "SYSTEM"],
+            "example": "DARK"
+          },
+          "smoothCursor": { "type": "boolean", "example": true },
+          "quickSendShortcut": {
+            "type": "string",
+            "enum": ["ENTER", "CTRL_ENTER"],
+            "example": "CTRL_ENTER"
+          },
+          "timezone": {
+            "type": "string",
+            "description": "Identificador IANA de fuso horário válido.",
+            "example": "America/Sao_Paulo"
+          },
+          "weekStartsOn": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 6,
+            "example": 1
+          },
+          "weekendDays": {
+            "type": "array",
+            "items": { "type": "integer", "minimum": 0, "maximum": 6 },
+            "maxItems": 7,
+            "description": "Dias de fim de semana, sem valores repetidos.",
+            "example": [0, 6]
           }
         }
       },
@@ -2557,6 +2853,20 @@
                 "code": "RATE_LIMITED",
                 "details": { "retryAfterSeconds": 30 }
               }
+            }
+          }
+        }
+      },
+      "StorageError": {
+        "description": "Falha ao armazenar o arquivo no storage de objetos.",
+        "content": {
+          "application/json": {
+            "schema": { "$ref": "#/components/schemas/ErrorResponse" },
+            "example": {
+              "success": false,
+              "statusCode": 500,
+              "message": "Falha ao armazenar o arquivo",
+              "error": { "code": "STORAGE_ERROR" }
             }
           }
         }
