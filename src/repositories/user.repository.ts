@@ -93,6 +93,7 @@ export const UserRepository = {
       name?: string
       email?: string
       username?: string
+      image?: string
       coverImage?: string
     },
   ): Promise<Result<User>> {

@@ -60,3 +60,7 @@ export const projectForbidden = (
 export const projectSlugConflict = (
   message = 'Slug já está em uso neste workspace',
 ): AppError => appError('PROJECT_SLUG_CONFLICT', message)
+
+export const storageError = (
+  message = 'Falha ao armazenar o arquivo',
+): AppError => appError('STORAGE_ERROR', message)

@@ -1,25 +1,13 @@
 import type { NextRequest } from 'next/server'
-import { auditMutation } from '@/lib/axiom/audit'
 import { withAxiom } from '@/lib/axiom/server'
-import { MINIO_ENDPOINT } from '@/lib/env/_server'
-import { UserCache } from '@/src/cache/user.cache'
 import { getAuthSession } from '@/src/lib/auth-session'
-import { prisma } from '@/src/lib/prisma'
 import { consume, uploadLimiter } from '@/src/lib/rate-limit'
-import { ensurePublicBucket, putObject } from '@/src/lib/storage/s3'
+import { UserMediaService } from '@/src/services/media/user-media.service'
 import {
   handleError,
   standardError,
   successResponse,
 } from '@/utils/http-response'
-
-const AVATAR_BUCKET = 'avatars'
-const MAX_BYTES = 5 * 1024 * 1024 // 5 MB
-const ALLOWED_TYPES: Record<string, string> = {
-  'image/jpeg': 'jpg',
-  'image/png': 'png',
-  'image/webp': 'webp',
-}
 
 export const POST = withAxiom(async (request: NextRequest) => {
   const auth = await getAuthSession()
@@ -39,46 +27,13 @@ export const POST = withAxiom(async (request: NextRequest) => {
   if (!file || !(file instanceof File))
     return standardError('VALIDATION_ERROR', 'Arquivo inválido')
 
-  const ext = ALLOWED_TYPES[file.type]
-  if (!ext)
-    return standardError(
-      'VALIDATION_ERROR',
-      'Formato não suportado. Use JPEG, PNG ou WebP',
-    )
-
-  if (file.size > MAX_BYTES)
-    return standardError(
-      'VALIDATION_ERROR',
-      'Arquivo muito grande. Máximo 5 MB',
-    )
-
-  const userId = auth.value.user.id
-  const key = `users/${userId}/avatar.${ext}`
-  const buffer = Buffer.from(await file.arrayBuffer())
-
-  await ensurePublicBucket(AVATAR_BUCKET)
-  await putObject({
-    bucket: AVATAR_BUCKET,
-    key,
-    body: buffer,
+  const result = await UserMediaService.uploadAvatar({
+    userId: auth.value.user.id,
     contentType: file.type,
+    byteSize: file.size,
+    readBody: async () => Buffer.from(await file.arrayBuffer()),
   })
+  if (!result.ok) return handleError(result.error)
 
-  const url = `${MINIO_ENDPOINT}/${AVATAR_BUCKET}/${key}`
-
-  await prisma.user.update({
-    where: { id: userId },
-    data: { image: url },
-  })
-  await UserCache.invalidate(userId)
-
-  auditMutation({
-    entity: 'user',
-    action: 'update',
-    actorId: userId,
-    targetId: userId,
-    meta: { fields: ['image'] },
-  })
-
-  return successResponse({ url })
+  return successResponse(result.value)
 })

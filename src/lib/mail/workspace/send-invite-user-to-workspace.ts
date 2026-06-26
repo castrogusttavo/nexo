@@ -1,7 +1,7 @@
-import { InviteUserToWorkspace } from '@/components/emails/workspace/invite-user-to-workspace'
+import InviteUserToWorkspace from '@/components/emails/workspace/invite-user-to-workspace'
 import { NEXT_PUBLIC_URL } from '@/lib/env/env'
-import { defaultFrom, resend } from '@/src/lib/mail/client'
 import type { InviteUserToWorkspaceProps } from '@/types/mail'
+import { sendEmail } from '../send'
 
 export async function sendInviteUserToWorkspaceEmail({
   email,
@@ -12,10 +12,9 @@ export async function sendInviteUserToWorkspaceEmail({
   workspaceName,
   workspaceImage,
 }: InviteUserToWorkspaceProps) {
-  const { data, error } = await resend.emails.send({
-    from: defaultFrom,
+  return sendEmail({
     to: [email],
-    subject: `Junte-se à ${workspaceName} no Nexo`,
+    subject: `Junte-se À ${workspaceName} no Nexo`,
     react: InviteUserToWorkspace({
       email,
       redirectUrl: redirectUrl ?? NEXT_PUBLIC_URL,
@@ -26,10 +25,4 @@ export async function sendInviteUserToWorkspaceEmail({
       workspaceImage,
     }),
   })
-
-  if (error) {
-    throw new Error(error.message)
-  }
-
-  return data
 }
