@@ -182,6 +182,7 @@ jobs:
       # limiter is on and would 429 the suite's repeated sign-ups. The app keeps
       # its own auth rate limiting; disable only better-auth's here.
       DISABLE_AUTH_RATE_LIMIT: 'true'
+      MAIL_DRY_RUN: 'true'
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4

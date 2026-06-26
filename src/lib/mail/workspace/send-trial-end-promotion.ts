@@ -1,6 +1,6 @@
 import { TrialEndPromotion } from '@/components/emails/workspace/trial-end-promotion'
-import { defaultFrom, resend } from '@/src/lib/mail/client'
 import type { TrialEndPromotionProps } from '@/types/mail'
+import { sendEmail } from '../send'
 
 export async function sendTrialEndPromotionEmail({
   email,
@@ -12,8 +12,7 @@ export async function sendTrialEndPromotionEmail({
   discountLabel,
   itemsCreated,
 }: TrialEndPromotionProps) {
-  const { data, error } = await resend.emails.send({
-    from: defaultFrom,
+  return sendEmail({
     to: [email],
     subject: `Seu trial acaba em ${daysRemaining} dias`,
     react: TrialEndPromotion({
@@ -27,10 +26,4 @@ export async function sendTrialEndPromotionEmail({
       itemsCreated,
     }),
   })
-
-  if (error) {
-    throw new Error(error.message)
-  }
-
-  return data
 }
