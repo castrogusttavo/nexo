@@ -1,11 +1,10 @@
 import type { NextRequest } from 'next/server'
 import { withAxiom } from '@/lib/axiom/server'
-import { MINIO_ENDPOINT } from '@/lib/env/_server'
 import { forbidden } from '@/src/errors'
 import { getAuthSession } from '@/src/lib/auth-session'
 import { apiLimiter, consume } from '@/src/lib/rate-limit'
-import { ensurePublicBucket, putObject } from '@/src/lib/storage/s3'
 import { MembershipRepository } from '@/src/repositories/membership.repository'
+import { ProjectMediaService } from '@/src/services/media/project-media.service'
 import {
   handleError,
   standardError,
@@ -13,9 +12,6 @@ import {
 } from '@/utils/http-response'
 
 type Params = { params: Promise<{ id: string }> }
-
-const BUCKET = 'projects-covers'
-const MAX_SIZE = 5 * 1024 * 1024
 
 export const POST = withAxiom(async (request: NextRequest, ctx: Params) => {
   const auth = await getAuthSession()
@@ -45,20 +41,14 @@ export const POST = withAxiom(async (request: NextRequest, ctx: Params) => {
     return standardError('VALIDATION_ERROR', 'Arquivo não enviado')
   }
 
-  if (!file.type.startsWith('image/')) {
-    return standardError('VALIDATION_ERROR', 'Arquivo inválido')
-  }
+  const result = await ProjectMediaService.uploadCover({
+    actorId: auth.value.user.id,
+    workspaceId: id,
+    contentType: file.type,
+    byteSize: file.size,
+    readBody: async () => Buffer.from(await file.arrayBuffer()),
+  })
+  if (!result.ok) return handleError(result.error)
 
-  if (file.size > MAX_SIZE) {
-    return standardError('VALIDATION_ERROR', 'Arquivo muito grande (máx. 5 MB')
-  }
-
-  const ext = file.name.split('.').pop()?.toLowerCase() ?? 'jpg'
-  const key = `${id}/${crypto.randomUUID()}.${ext}`
-
-  await ensurePublicBucket(BUCKET)
-  const buffer = Buffer.from(await file.arrayBuffer())
-  await putObject({ bucket: BUCKET, key, body: buffer, contentType: file.type })
-
-  return successResponse({ url: `${MINIO_ENDPOINT}/${BUCKET}/${key}` }, 201)
+  return successResponse(result.value, 201)
 })

@@ -9,6 +9,7 @@ export {
   projectNotFound,
   projectSlugConflict,
   rateLimited,
+  storageError,
   unauthorized,
   usernameConflict,
   validationError,
