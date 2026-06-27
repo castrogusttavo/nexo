@@ -45,6 +45,7 @@ export const auth = betterAuth({
   secret: BETTER_AUTH_SECRET,
   emailAndPassword: {
     enabled: true,
+    requireEmailVerification: true,
     password: {
       hash: async (password) => hash(password),
       verify: async ({ hash: hashed, password }) => verify(hashed, password),
