@@ -35,21 +35,43 @@ export async function createAuthenticatedUser(overrides?: {
     body.acceptedPrivacyAt = now
   }
 
-  const res = await fetch(`${BASE_URL}/api/auth/sign-up/email`, {
+  const signUpRes = await fetch(`${BASE_URL}/api/auth/sign-up/email`, {
     method: 'POST',
     headers: { ...defaultHeaders, 'x-forwarded-for': uniqueClientIp() },
     body: JSON.stringify(body),
   })
 
-  if (!res.ok) {
-    throw new Error(`Sign-up failed (${res.status}): ${await res.text()}`)
+  if (!signUpRes.ok) {
+    throw new Error(
+      `Sign-up failed (${signUpRes.status}): ${await signUpRes.text()}`,
+    )
   }
 
-  const cookie = res.headers.get('set-cookie')
-  if (!cookie) throw new Error('No session cookie after sign-up')
+  // requireEmailVerification is on, so sign-up no longer issues a session.
+  // The OTP email is a no-op in tests, so mark the email verified directly
+  // and sign in to obtain the session cookie.
+  const user = await prisma.user.update({
+    where: { email },
+    data: { emailVerified: true },
+    select: { id: true },
+  })
 
-  const responseBody = (await res.json()) as { user: { id: string } }
-  return { id: responseBody.user.id, name, email, cookie }
+  const signInRes = await fetch(`${BASE_URL}/api/auth/sign-in/email`, {
+    method: 'POST',
+    headers: { ...defaultHeaders, 'x-forwarded-for': uniqueClientIp() },
+    body: JSON.stringify({ email, password }),
+  })
+
+  if (!signInRes.ok) {
+    throw new Error(
+      `Sign-in failed (${signInRes.status}): ${await signInRes.text()}`,
+    )
+  }
+
+  const cookie = signInRes.headers.get('set-cookie')
+  if (!cookie) throw new Error('No session cookie after sign-in')
+
+  return { id: user.id, name, email, cookie }
 }
 
 export async function createWorkspaceForUser(
