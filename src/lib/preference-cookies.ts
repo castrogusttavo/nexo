@@ -25,13 +25,17 @@ export function mirrorPreferenceCookies(
     secure: NODE_ENV === 'production',
   }
 
+  // nosemgrep: javascript.koa.web.cookies-httponly-false-koa -- non-sensitive UI preference, read client-side for anti-FOUC
   response.cookies.set(PREFERENCE_COOKIES.theme, dto.theme, base)
+  // nosemgrep: javascript.koa.web.cookies-httponly-false-koa -- non-sensitive UI preference, read client-side for anti-FOUC
   response.cookies.set(PREFERENCE_COOKIES.timezone, dto.timezone, base)
+  // nosemgrep: javascript.koa.web.cookies-httponly-false-koa -- non-sensitive UI preference, read client-side for anti-FOUC
   response.cookies.set(
     PREFERENCE_COOKIES.weekStartsOn,
     String(dto.weekStartsOn),
     base,
   )
+  // nosemgrep: javascript.koa.web.cookies-httponly-false-koa -- non-sensitive UI preference, read client-side for anti-FOUC
   response.cookies.set(
     PREFERENCE_COOKIES.weekendDays,
     dto.weekendDays.join(','),
