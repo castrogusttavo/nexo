@@ -1,37 +1,10 @@
 import { describe, expect, it } from 'vitest'
+import { createAuthenticatedUser } from '@/src/__tests__/helpers/e2e'
 import { BASE_URL } from '@/src/__tests__/setup.e2e'
 
 const defaultHeaders = {
   'Content-Type': 'application/json',
   Origin: BASE_URL,
-}
-
-async function createAuthenticatedUser(overrides?: {
-  name?: string
-  email?: string
-}) {
-  const name = overrides?.name ?? 'E2E User'
-  const email = overrides?.email ?? `e2e-${Date.now()}@example.com`
-  const password = 'Test@12345678'
-
-  const signUpRes = await fetch(`${BASE_URL}/api/auth/sign-up/email`, {
-    method: 'POST',
-    headers: defaultHeaders,
-    body: JSON.stringify({ name, email, password }),
-  })
-
-  if (!signUpRes.ok) {
-    throw new Error(
-      `Sign-up failed: ${signUpRes.status} ${await signUpRes.text()}`,
-    )
-  }
-
-  const setCookie = signUpRes.headers.get('set-cookie')
-  if (!setCookie) {
-    throw new Error('No session cookie returned from sign-up')
-  }
-
-  return { name, email, cookie: setCookie }
 }
 
 describe('GET /api/users/me', () => {
