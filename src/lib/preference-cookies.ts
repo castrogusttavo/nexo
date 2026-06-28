@@ -25,20 +25,20 @@ export function mirrorPreferenceCookies(
     secure: NODE_ENV === 'production',
   }
 
-  // nosemgrep: javascript.koa.web.cookies-httponly-false-koa -- non-sensitive UI preference, read client-side for anti-FOUC
-  response.cookies.set(PREFERENCE_COOKIES.theme, dto.theme, base)
-  // nosemgrep: javascript.koa.web.cookies-httponly-false-koa -- non-sensitive UI preference, read client-side for anti-FOUC
-  response.cookies.set(PREFERENCE_COOKIES.timezone, dto.timezone, base)
-  // nosemgrep: javascript.koa.web.cookies-httponly-false-koa -- non-sensitive UI preference, read client-side for anti-FOUC
+  // These are non-sensitive UI preference cookies read client-side (theme script +
+  // hydration, anti-FOUC), not session/auth cookies, so httpOnly:false is intentional.
+  // Semgrep reports on the line passing `base` (httpOnly:false), so the suppression is
+  // placed there — on the `.set()` line for single-line calls, on `base,` for multiline.
+  response.cookies.set(PREFERENCE_COOKIES.theme, dto.theme, base) // nosemgrep
+  response.cookies.set(PREFERENCE_COOKIES.timezone, dto.timezone, base) // nosemgrep
   response.cookies.set(
     PREFERENCE_COOKIES.weekStartsOn,
     String(dto.weekStartsOn),
-    base,
+    base, // nosemgrep
   )
-  // nosemgrep: javascript.koa.web.cookies-httponly-false-koa -- non-sensitive UI preference, read client-side for anti-FOUC
   response.cookies.set(
     PREFERENCE_COOKIES.weekendDays,
     dto.weekendDays.join(','),
-    base,
+    base, // nosemgrep
   )
 }
