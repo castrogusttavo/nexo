@@ -3,11 +3,8 @@ import { withAxiom } from '@/lib/axiom/server'
 import { getAuthSession } from '@/src/lib/auth-session'
 import { consume, uploadLimiter } from '@/src/lib/rate-limit'
 import { UserMediaService } from '@/src/services/media/user-media.service'
-import {
-  handleError,
-  standardError,
-  successResponse,
-} from '@/utils/http-response'
+import { readUploadFile } from '@/utils/form-data'
+import { handleError, successResponse } from '@/utils/http-response'
 
 export const POST = withAxiom(async (request: NextRequest) => {
   const auth = await getAuthSession()
@@ -16,22 +13,14 @@ export const POST = withAxiom(async (request: NextRequest) => {
   const limit = await consume(uploadLimiter, `user:${auth.value.user.id}`)
   if (!limit.ok) return handleError(limit.error)
 
-  let formData: FormData
-  try {
-    formData = await request.formData()
-  } catch {
-    return standardError('VALIDATION_ERROR', 'Corpo da requisição inválido')
-  }
+  const file = await readUploadFile(request, 'cover')
+  if (!file.ok) return handleError(file.error)
 
-  const file = formData.get('cover')
-  if (!(file instanceof File))
-    return standardError('VALIDATION_ERROR', 'Arquivo inválido')
-
-  const result = await UserMediaService.uploadCover({
+  const result = await UserMediaService.uploadAvatar({
     userId: auth.value.user.id,
-    contentType: file.type,
-    byteSize: file.size,
-    readBody: async () => Buffer.from(await file.arrayBuffer()),
+    contentType: file.value.type,
+    byteSize: file.value.size,
+    readBody: async () => Buffer.from(await file.value.arrayBuffer()),
   })
   if (!result.ok) return handleError(result.error)
 
