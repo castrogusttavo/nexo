@@ -4,9 +4,8 @@ import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { useState } from 'react'
 import { EmailValidationWithOtp } from '@/components/form/email-validation-with-otp'
-import { GitHubLoginButton } from '@/components/github-login-button'
-import { GoogleLoginButton } from '@/components/google-login-button'
 import { HeaderLogin } from '@/components/header-login'
+import { SocialLoginButtonProps } from '@/components/social-login-button'
 import { H4 } from '@/components/typography/heading/h4'
 import { Muted } from '@/components/typography/text/muted'
 import { Button } from '@/components/ui/button'
@@ -135,8 +134,8 @@ export function SignUpForm() {
             </div>
 
             <div className='flex flex-col gap-3'>
-              <GoogleLoginButton isPending={isPending} />
-              <GitHubLoginButton isPending={isPending} />
+              <SocialLoginButtonProps provider='google' isPending={isPending} />
+              <SocialLoginButtonProps provider='github' isPending={isPending} />
             </div>
 
             <div className='relative'>
