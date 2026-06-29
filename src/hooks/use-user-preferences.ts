@@ -3,22 +3,22 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import type { UserPreferenceDTO } from '@/types/user-preference.factory'
 import { authClient } from '../lib/auth-client'
 import type { UpdateUserPreferenceDTO } from '../schemas/user-preference.schema'
+import { apiFetch } from './_fetch'
 
-const QUERY_KEY = ['user-preferences']
-
-async function getPreferences(): Promise<UserPreferenceDTO> {
-  const res = await fetch('/api/users/me/preferences')
-  if (!res.ok) throw new Error('Erro ao buscar preferências')
-
-  return (await res.json()).data as UserPreferenceDTO
-}
+const PREFERENCE_KEY = ['user-preferences']
+const BASE_API_ROUTE = '/api/users/me/preferences'
 
 export function useUserPreferences() {
   const { data: session } = authClient.useSession()
 
   return useQuery({
-    queryKey: QUERY_KEY,
-    queryFn: getPreferences,
+    queryKey: PREFERENCE_KEY,
+    queryFn: () =>
+      apiFetch<UserPreferenceDTO>(
+        BASE_API_ROUTE,
+        undefined,
+        'Erro ao buscar preferências',
+      ),
     enabled: !!session?.user.id,
     staleTime: 5 * 60 * 1000,
   })
@@ -28,26 +28,23 @@ export function useUpdateUserPreferences() {
   const queryClient = useQueryClient()
 
   return useMutation({
-    mutationFn: async (
-      data: UpdateUserPreferenceDTO,
-    ): Promise<UserPreferenceDTO> => {
-      const res = await fetch('/api/users/me/preferences', {
-        method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(data),
-      })
-      if (!res.ok) {
-        const json = await res.json().catch(() => null)
-        throw new Error(json?.message ?? 'Erro ao salvar preferências')
-      }
-      return (await res.json()).data as UserPreferenceDTO
-    },
+    mutationFn: (data: UpdateUserPreferenceDTO) =>
+      apiFetch<UserPreferenceDTO>(
+        BASE_API_ROUTE,
+        {
+          method: 'PATCH',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(data),
+        },
+        'Erro ao salvar preferências',
+      ),
     // Optimistic
     onMutate: async (data) => {
-      await queryClient.cancelQueries({ queryKey: QUERY_KEY })
-      const previous = queryClient.getQueryData<UserPreferenceDTO>(QUERY_KEY)
+      await queryClient.cancelQueries({ queryKey: PREFERENCE_KEY })
+      const previous =
+        queryClient.getQueryData<UserPreferenceDTO>(PREFERENCE_KEY)
       if (previous) {
-        queryClient.setQueryData<UserPreferenceDTO>(QUERY_KEY, {
+        queryClient.setQueryData<UserPreferenceDTO>(PREFERENCE_KEY, {
           ...previous,
           ...data,
         })
@@ -57,12 +54,12 @@ export function useUpdateUserPreferences() {
     },
     onError: (_err, _data, ctx) => {
       if (ctx?.previous) {
-        queryClient.setQueryData(QUERY_KEY, ctx.previous)
+        queryClient.setQueryData(PREFERENCE_KEY, ctx.previous)
         applyTheme(ctx.previous.theme)
       }
     },
     onSuccess: (dto) => {
-      queryClient.setQueryData(QUERY_KEY, dto)
+      queryClient.setQueryData(PREFERENCE_KEY, dto)
     },
   })
 }
