@@ -100,6 +100,15 @@ describe('CreateProjectSchema', () => {
     expect(result.success).toBe(false)
   })
 
+  it('should accept coverImage as an absolute path', () => {
+    const result = CreateProjectSchema.safeParse({
+      name: 'Proj',
+      slug: 'proj',
+      coverImage: '/uploads/cover.png',
+    })
+    expect(result.success).toBe(true)
+  })
+
   it('should reject description longer than 500 chars', () => {
     const result = CreateProjectSchema.safeParse({
       name: 'Proj',
@@ -138,6 +147,25 @@ describe('UpdateProjectSchema', () => {
 
   it('should reject name shorter than 2 chars', () => {
     const result = UpdateProjectSchema.safeParse({ name: 'X' })
+    expect(result.success).toBe(false)
+  })
+
+  it('should accept coverImage as an absolute path', () => {
+    const result = UpdateProjectSchema.safeParse({
+      coverImage: '/uploads/cover.png',
+    })
+    expect(result.success).toBe(true)
+  })
+
+  it('should accept coverImage as a valid URL', () => {
+    const result = UpdateProjectSchema.safeParse({
+      coverImage: 'https://example.com/cover.jpg',
+    })
+    expect(result.success).toBe(true)
+  })
+
+  it('should reject coverImage that is neither a path nor a URL', () => {
+    const result = UpdateProjectSchema.safeParse({ coverImage: 'not-a-url' })
     expect(result.success).toBe(false)
   })
 })

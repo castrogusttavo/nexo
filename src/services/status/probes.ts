@@ -18,8 +18,7 @@ export type ProbeMap = Record<ComponentKey, ProbeResult>
 const TIMEOUT_MS = 5_000
 const DEGRADED_THRESHOLD_MS = 1_500
 
-function classify(latencyMs: number, error: string | null): ProbeStatus {
-  if (error) return 'MAJOR_OUTAGE'
+function classify(latencyMs: number): ProbeStatus {
   if (latencyMs > DEGRADED_THRESHOLD_MS) return 'DEGRADED'
   return 'OPERATIONAL'
 }
@@ -29,7 +28,7 @@ async function timed(fn: () => Promise<void>): Promise<ProbeResult> {
   try {
     await fn()
     const latencyMs = Date.now() - start
-    return { status: classify(latencyMs, null), latencyMs, error: null }
+    return { status: classify(latencyMs), latencyMs, error: null }
   } catch (e) {
     const latencyMs = Date.now() - start
     const error = e instanceof Error ? e.message : String(e)

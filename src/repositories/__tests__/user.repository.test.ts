@@ -1,10 +1,14 @@
-import { describe, expect, it } from 'vitest'
+import { afterEach, describe, expect, it, vi } from 'vitest'
 import { seedMembership } from '@/src/__tests__/factories/membership.factory'
 import { seedUser } from '@/src/__tests__/factories/user.factory'
 import { seedWorkspace } from '@/src/__tests__/factories/workspace.factory'
 import { expectErr, expectOk } from '@/src/__tests__/helpers/result.helpers'
 import { prisma } from '@/src/lib/prisma'
 import { UserRepository } from '@/src/repositories/user.repository'
+
+afterEach(() => {
+  vi.restoreAllMocks()
+})
 
 describe('UserRepository', () => {
   describe('findById()', () => {
@@ -328,6 +332,187 @@ describe('UserRepository', () => {
       )
 
       expect(expectOk(result)).toBe(0)
+    })
+
+    it('returns DATABASE_ERROR when the count query throws', async () => {
+      vi.spyOn(prisma.workspace, 'count').mockRejectedValueOnce(
+        new Error('boom'),
+      )
+
+      const result = await UserRepository.countBlockingSoleOwnerWorkspaces('u')
+
+      expectErr(result, 'DATABASE_ERROR')
+    })
+  })
+
+  describe('updateOnboardingStep()', () => {
+    it('should advance the onboarding step', async () => {
+      const seeded = await seedUser()
+
+      const result = await UserRepository.updateOnboardingStep(
+        seeded.id,
+        'WORKSPACE',
+      )
+
+      const user = expectOk(result)
+      expect(user.onboardingStep).toBe('WORKSPACE')
+    })
+
+    it('should return RESOURCE_NOT_FOUND for unknown user', async () => {
+      const result = await UserRepository.updateOnboardingStep('nope', 'ROLE')
+      expectErr(result, 'RESOURCE_NOT_FOUND')
+    })
+
+    it('should return DATABASE_ERROR on non-P2025 failures', async () => {
+      vi.spyOn(prisma.user, 'update').mockRejectedValueOnce(new Error('boom'))
+
+      const result = await UserRepository.updateOnboardingStep('u', 'ROLE')
+
+      expectErr(result, 'DATABASE_ERROR')
+    })
+  })
+
+  describe('saveRole()', () => {
+    it('should persist the role and next step', async () => {
+      const seeded = await seedUser()
+
+      const result = await UserRepository.saveRole(
+        seeded.id,
+        'DEVELOPER',
+        'BRINGS',
+      )
+
+      const user = expectOk(result)
+      expect(user.role).toBe('DEVELOPER')
+      expect(user.onboardingStep).toBe('BRINGS')
+    })
+
+    it('should return RESOURCE_NOT_FOUND for unknown user', async () => {
+      const result = await UserRepository.saveRole(
+        'nope',
+        'DEVELOPER',
+        'BRINGS',
+      )
+      expectErr(result, 'RESOURCE_NOT_FOUND')
+    })
+
+    it('should return DATABASE_ERROR on non-P2025 failures', async () => {
+      vi.spyOn(prisma.user, 'update').mockRejectedValueOnce(new Error('boom'))
+
+      const result = await UserRepository.saveRole('u', 'DEVELOPER', 'BRINGS')
+
+      expectErr(result, 'DATABASE_ERROR')
+    })
+  })
+
+  describe('saveGaols()', () => {
+    it('should persist the goals and next step', async () => {
+      const seeded = await seedUser()
+
+      const result = await UserRepository.saveGaols(
+        seeded.id,
+        ['ROADMAP', 'SPRINTS'],
+        'WORKSPACE',
+      )
+
+      const user = expectOk(result)
+      expect(user.goals).toEqual(['ROADMAP', 'SPRINTS'])
+      expect(user.onboardingStep).toBe('WORKSPACE')
+    })
+
+    it('should return RESOURCE_NOT_FOUND for unknown user', async () => {
+      const result = await UserRepository.saveGaols(
+        'nope',
+        ['ROADMAP'],
+        'WORKSPACE',
+      )
+      expectErr(result, 'RESOURCE_NOT_FOUND')
+    })
+
+    it('should return DATABASE_ERROR on non-P2025 failures', async () => {
+      vi.spyOn(prisma.user, 'update').mockRejectedValueOnce(new Error('boom'))
+
+      const result = await UserRepository.saveGaols(
+        'u',
+        ['ROADMAP'],
+        'WORKSPACE',
+      )
+
+      expectErr(result, 'DATABASE_ERROR')
+    })
+  })
+
+  describe('read and write query failures', () => {
+    it('findById() returns DATABASE_ERROR when the query throws', async () => {
+      vi.spyOn(prisma.user, 'findUnique').mockRejectedValueOnce(
+        new Error('boom'),
+      )
+      expectErr(await UserRepository.findById('x'), 'DATABASE_ERROR')
+    })
+
+    it('findByIdWithMemberships() returns DATABASE_ERROR when the query throws', async () => {
+      vi.spyOn(prisma.user, 'findUnique').mockRejectedValueOnce(
+        new Error('boom'),
+      )
+      expectErr(
+        await UserRepository.findByIdWithMemberships('x'),
+        'DATABASE_ERROR',
+      )
+    })
+
+    it('findByEmail() returns DATABASE_ERROR when the query throws', async () => {
+      vi.spyOn(prisma.user, 'findUnique').mockRejectedValueOnce(
+        new Error('boom'),
+      )
+      expectErr(await UserRepository.findByEmail('a@b.test'), 'DATABASE_ERROR')
+    })
+
+    it('findByUsername() returns DATABASE_ERROR when the query throws', async () => {
+      vi.spyOn(prisma.user, 'findUnique').mockRejectedValueOnce(
+        new Error('boom'),
+      )
+      expectErr(await UserRepository.findByUsername('user'), 'DATABASE_ERROR')
+    })
+
+    it('create() returns DATABASE_ERROR on non-unique-constraint failures', async () => {
+      vi.spyOn(prisma.user, 'create').mockRejectedValueOnce(new Error('boom'))
+      expectErr(
+        await UserRepository.create({
+          name: 'X',
+          email: 'x@y.test',
+          username: 'x',
+        }),
+        'DATABASE_ERROR',
+      )
+    })
+
+    it('update() returns DATABASE_ERROR on non-unique-constraint failures', async () => {
+      vi.spyOn(prisma.user, 'update').mockRejectedValueOnce(new Error('boom'))
+      expectErr(
+        await UserRepository.update('u', { name: 'X' }),
+        'DATABASE_ERROR',
+      )
+    })
+
+    it('scheduleDeletion() returns DATABASE_ERROR on non-P2025 failures', async () => {
+      vi.spyOn(prisma.user, 'update').mockRejectedValueOnce(new Error('boom'))
+      expectErr(
+        await UserRepository.scheduleDeletion('u', new Date()),
+        'DATABASE_ERROR',
+      )
+    })
+
+    it('clearDeletionSchedule() returns DATABASE_ERROR on non-P2025 failures', async () => {
+      vi.spyOn(prisma.user, 'update').mockRejectedValueOnce(new Error('boom'))
+      expectErr(
+        await UserRepository.clearDeletionSchedule('u'),
+        'DATABASE_ERROR',
+      )
+    })
+
+    it('deleteHard() returns DATABASE_ERROR on non-P2025 failures', async () => {
+      vi.spyOn(prisma.user, 'delete').mockRejectedValueOnce(new Error('boom'))
+      expectErr(await UserRepository.deleteHard('u'), 'DATABASE_ERROR')
     })
   })
 })

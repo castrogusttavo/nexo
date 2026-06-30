@@ -90,6 +90,22 @@ describe('WorkspaceService', () => {
 
       expectErr(result, 'DATABASE_ERROR')
     })
+
+    it('should propagate repo error on cache miss', async () => {
+      const membership = createFakeMembership({
+        userId: 'u1',
+        workspaceId: 'ws1',
+      })
+      mockedMembershipRepo.findByUserAndWorkspace.mockResolvedValue(
+        ok(membership),
+      )
+      mockedWorkspaceCache.get.mockResolvedValue(null)
+      mockedWorkspaceRepo.findById.mockResolvedValue(err(databaseError()))
+
+      const result = await WorkspaceService.getById('u1', 'ws1')
+
+      expectErr(result, 'DATABASE_ERROR')
+    })
   })
 
   describe('create()', () => {
@@ -219,6 +235,38 @@ describe('WorkspaceService', () => {
 
       expectErr(result, 'FORBIDDEN')
     })
+
+    it('should propagate membership lookup error', async () => {
+      mockedMembershipRepo.findByUserAndWorkspace.mockResolvedValue(
+        err(databaseError()),
+      )
+
+      const result = await WorkspaceService.update('owner', 'ws1', {
+        name: 'X',
+      })
+
+      expectErr(result, 'DATABASE_ERROR')
+      expect(mockedWorkspaceRepo.update).not.toHaveBeenCalled()
+    })
+
+    it('should propagate repo update error', async () => {
+      const membership = createFakeMembership({
+        userId: 'owner',
+        workspaceId: 'ws1',
+        role: 'OWNER',
+      })
+      mockedMembershipRepo.findByUserAndWorkspace.mockResolvedValue(
+        ok(membership),
+      )
+      mockedWorkspaceRepo.update.mockResolvedValue(err(databaseError()))
+
+      const result = await WorkspaceService.update('owner', 'ws1', {
+        name: 'X',
+      })
+
+      expectErr(result, 'DATABASE_ERROR')
+      expect(mockedWorkspaceCache.invalidate).not.toHaveBeenCalled()
+    })
   })
 
   describe('delete()', () => {
@@ -285,6 +333,17 @@ describe('WorkspaceService', () => {
 
       expectErr(result, 'DATABASE_ERROR')
       expect(mockedWorkspaceCache.invalidate).not.toHaveBeenCalled()
+    })
+
+    it('should propagate membership lookup error', async () => {
+      mockedMembershipRepo.findByUserAndWorkspace.mockResolvedValue(
+        err(databaseError()),
+      )
+
+      const result = await WorkspaceService.delete('owner', 'ws1')
+
+      expectErr(result, 'DATABASE_ERROR')
+      expect(mockedWorkspaceRepo.delete).not.toHaveBeenCalled()
     })
   })
 })

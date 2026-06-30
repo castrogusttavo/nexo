@@ -1,4 +1,4 @@
-import { describe, expect, it } from 'vitest'
+import { afterEach, describe, expect, it, vi } from 'vitest'
 import { seedMembership } from '@/src/__tests__/factories/membership.factory'
 import {
   seedProject,
@@ -7,7 +7,12 @@ import {
 import { seedUser } from '@/src/__tests__/factories/user.factory'
 import { seedWorkspace } from '@/src/__tests__/factories/workspace.factory'
 import { expectErr, expectOk } from '@/src/__tests__/helpers/result.helpers'
+import { prisma } from '@/src/lib/prisma'
 import { ProjectRepository } from '../project.repository'
+
+afterEach(() => {
+  vi.restoreAllMocks()
+})
 
 describe('ProjectRepository', () => {
   describe('findById()', () => {
@@ -213,6 +218,149 @@ describe('ProjectRepository', () => {
 
       const check = await ProjectRepository.findById(project.id)
       expectErr(check, 'PROJECT_NOT_FOUND')
+    })
+
+    it('should return DATABASE_ERROR when deleting a non-existent project', async () => {
+      const result = await ProjectRepository.delete('nonexistent')
+      expectErr(result, 'DATABASE_ERROR')
+    })
+  })
+
+  describe('update()', () => {
+    it('should update fields and return the project', async () => {
+      const user = await seedUser()
+      const ws = await seedWorkspace()
+      const project = await seedProject(ws.id, user.id, { name: 'Before' })
+
+      const result = await ProjectRepository.update(project.id, {
+        name: 'After',
+      })
+
+      const updated = expectOk(result)
+      expect(updated.name).toBe('After')
+    })
+
+    it('should return PROJECT_SLUG_CONFLICT when slug collides in the workspace', async () => {
+      const user = await seedUser()
+      const ws = await seedWorkspace()
+      await seedProject(ws.id, user.id, { slug: 'taken' })
+      const other = await seedProject(ws.id, user.id, { slug: 'free' })
+
+      const result = await ProjectRepository.update(other.id, { slug: 'taken' })
+
+      expectErr(result, 'PROJECT_SLUG_CONFLICT')
+    })
+
+    it('should return DATABASE_ERROR when the update query throws', async () => {
+      vi.spyOn(prisma.project, 'update').mockRejectedValueOnce(
+        new Error('boom'),
+      )
+
+      const result = await ProjectRepository.update('any', { name: 'X' })
+
+      expectErr(result, 'DATABASE_ERROR')
+    })
+  })
+
+  describe('addFavorite() / removeFavorite()', () => {
+    it('should add and then remove a favorite', async () => {
+      const user = await seedUser()
+      const ws = await seedWorkspace()
+      const project = await seedProject(ws.id, user.id)
+
+      expectOk(await ProjectRepository.addFavorite(user.id, project.id))
+      // upsert is idempotent: adding twice still succeeds
+      expectOk(await ProjectRepository.addFavorite(user.id, project.id))
+      expectOk(await ProjectRepository.removeFavorite(user.id, project.id))
+    })
+
+    it('should return DATABASE_ERROR when adding a favorite throws', async () => {
+      vi.spyOn(prisma.projectFavorite, 'upsert').mockRejectedValueOnce(
+        new Error('boom'),
+      )
+
+      const result = await ProjectRepository.addFavorite('u', 'p')
+
+      expectErr(result, 'DATABASE_ERROR')
+    })
+
+    it('should return DATABASE_ERROR when removing a favorite throws', async () => {
+      vi.spyOn(prisma.projectFavorite, 'deleteMany').mockRejectedValueOnce(
+        new Error('boom'),
+      )
+
+      const result = await ProjectRepository.removeFavorite('u', 'p')
+
+      expectErr(result, 'DATABASE_ERROR')
+    })
+  })
+
+  describe('archive() / restore() error paths', () => {
+    it('should return DATABASE_ERROR when archiving a non-existent project', async () => {
+      const result = await ProjectRepository.archive('nonexistent')
+      expectErr(result, 'DATABASE_ERROR')
+    })
+
+    it('should return DATABASE_ERROR when restoring a non-existent project', async () => {
+      const result = await ProjectRepository.restore('nonexistent')
+      expectErr(result, 'DATABASE_ERROR')
+    })
+  })
+
+  describe('read query failures', () => {
+    it('findById() returns DATABASE_ERROR when the query throws', async () => {
+      vi.spyOn(prisma.project, 'findUnique').mockRejectedValueOnce(
+        new Error('boom'),
+      )
+
+      const result = await ProjectRepository.findById('x')
+
+      expectErr(result, 'DATABASE_ERROR')
+    })
+
+    it('findByWorkspaceAndSlug() returns DATABASE_ERROR when the query throws', async () => {
+      vi.spyOn(prisma.project, 'findUnique').mockRejectedValueOnce(
+        new Error('boom'),
+      )
+
+      const result = await ProjectRepository.findByWorkspaceAndSlug(
+        'ws',
+        'slug',
+        'actor',
+      )
+
+      expectErr(result, 'DATABASE_ERROR')
+    })
+
+    it('listByWorkspace() returns DATABASE_ERROR when the query throws', async () => {
+      vi.spyOn(prisma.project, 'findMany').mockRejectedValueOnce(
+        new Error('boom'),
+      )
+
+      const result = await ProjectRepository.listByWorkspace(
+        'ws',
+        'actor',
+        false,
+        {
+          archived: false,
+        },
+      )
+
+      expectErr(result, 'DATABASE_ERROR')
+    })
+
+    it('create() returns DATABASE_ERROR on non-unique-constraint failures', async () => {
+      vi.spyOn(prisma, '$transaction').mockRejectedValueOnce(new Error('boom'))
+
+      const result = await ProjectRepository.create({
+        name: 'X',
+        slug: 'x',
+        isPublic: false,
+        leadId: 'u',
+        workspaceId: 'ws',
+      })
+
+      expectErr(result, 'DATABASE_ERROR')
     })
   })
 })
