@@ -396,6 +396,31 @@ describe('UserService', () => {
       expectOk(result)
       expect(mockedScheduleDeletion).toHaveBeenCalled()
     })
+
+    it('propagates error when counting blocking workspaces fails', async () => {
+      const user = createFakeUser({ id: 'user-1' })
+      mockedRepo.findById.mockResolvedValue(ok(user))
+      mockedRepo.countBlockingSoleOwnerWorkspaces.mockResolvedValue(
+        err(databaseError()),
+      )
+
+      const result = await UserService.deleteAccount('user-1')
+
+      expectErr(result, 'DATABASE_ERROR')
+      expect(mockedRepo.scheduleDeletion).not.toHaveBeenCalled()
+    })
+
+    it('propagates error when scheduling deletion in the DB fails', async () => {
+      const user = createFakeUser({ id: 'user-1' })
+      mockedRepo.findById.mockResolvedValue(ok(user))
+      mockedRepo.countBlockingSoleOwnerWorkspaces.mockResolvedValue(ok(0))
+      mockedRepo.scheduleDeletion.mockResolvedValue(err(databaseError()))
+
+      const result = await UserService.deleteAccount('user-1')
+
+      expectErr(result, 'DATABASE_ERROR')
+      expect(mockedScheduleDeletion).not.toHaveBeenCalled()
+    })
   })
 
   describe('requestExport()', () => {
@@ -499,6 +524,112 @@ describe('UserService', () => {
       const result = await UserService.cancelDeletion('user-1')
 
       expectErr(result, 'RESOURCE_NOT_FOUND')
+    })
+
+    it('propagates error when clearing the deletion schedule fails', async () => {
+      const user = createFakeUser({
+        id: 'user-1',
+        deletionScheduledAt: new Date('2026-06-01T00:00:00Z'),
+      })
+      mockedRepo.findById.mockResolvedValue(ok(user))
+      mockedCancelDeletion.mockResolvedValue(true)
+      mockedRepo.clearDeletionSchedule.mockResolvedValue(err(databaseError()))
+
+      const result = await UserService.cancelDeletion('user-1')
+
+      expectErr(result, 'DATABASE_ERROR')
+      expect(mockedCache.invalidate).not.toHaveBeenCalled()
+    })
+  })
+
+  describe('saveOnboardingRole()', () => {
+    it('saves the role, invalidates cache and returns ok', async () => {
+      mockedRepo.saveRole.mockResolvedValue(
+        ok(createFakeUser({ id: 'user-1' })),
+      )
+      mockedCache.invalidate.mockResolvedValue(undefined)
+
+      const result = await UserService.saveOnboardingRole('user-1', {
+        role: 'DEVELOPER',
+      })
+
+      expectOk(result)
+      expect(mockedRepo.saveRole).toHaveBeenCalledWith(
+        'user-1',
+        'DEVELOPER',
+        'BRINGS',
+      )
+      expect(mockedCache.invalidate).toHaveBeenCalledWith('user-1')
+    })
+
+    it('propagates repository error and skips cache invalidation', async () => {
+      mockedRepo.saveRole.mockResolvedValue(err(databaseError()))
+
+      const result = await UserService.saveOnboardingRole('user-1', {
+        role: 'DEVELOPER',
+      })
+
+      expectErr(result, 'DATABASE_ERROR')
+      expect(mockedCache.invalidate).not.toHaveBeenCalled()
+    })
+  })
+
+  describe('saveOnboardingGoals()', () => {
+    it('saves the goals, invalidates cache and returns ok', async () => {
+      mockedRepo.saveGaols.mockResolvedValue(
+        ok(createFakeUser({ id: 'user-1' })),
+      )
+      mockedCache.invalidate.mockResolvedValue(undefined)
+
+      const result = await UserService.saveOnboardingGoals('user-1', {
+        goals: ['ROADMAP', 'SPRINTS'],
+      })
+
+      expectOk(result)
+      expect(mockedRepo.saveGaols).toHaveBeenCalledWith(
+        'user-1',
+        ['ROADMAP', 'SPRINTS'],
+        'WORKSPACE',
+      )
+      expect(mockedCache.invalidate).toHaveBeenCalledWith('user-1')
+    })
+
+    it('propagates repository error and skips cache invalidation', async () => {
+      mockedRepo.saveGaols.mockResolvedValue(err(databaseError()))
+
+      const result = await UserService.saveOnboardingGoals('user-1', {
+        goals: ['ROADMAP'],
+      })
+
+      expectErr(result, 'DATABASE_ERROR')
+      expect(mockedCache.invalidate).not.toHaveBeenCalled()
+    })
+  })
+
+  describe('completeOnboardingStep()', () => {
+    it('advances to the next step, invalidates cache and returns ok', async () => {
+      mockedRepo.updateOnboardingStep.mockResolvedValue(
+        ok(createFakeUser({ id: 'user-1' })),
+      )
+      mockedCache.invalidate.mockResolvedValue(undefined)
+
+      const result = await UserService.completeOnboardingStep('user-1', 'ROLE')
+
+      expectOk(result)
+      expect(mockedRepo.updateOnboardingStep).toHaveBeenCalledWith(
+        'user-1',
+        'BRINGS',
+      )
+      expect(mockedCache.invalidate).toHaveBeenCalledWith('user-1')
+    })
+
+    it('propagates repository error and skips cache invalidation', async () => {
+      mockedRepo.updateOnboardingStep.mockResolvedValue(err(databaseError()))
+
+      const result = await UserService.completeOnboardingStep('user-1', 'ROLE')
+
+      expectErr(result, 'DATABASE_ERROR')
+      expect(mockedCache.invalidate).not.toHaveBeenCalled()
     })
   })
 })

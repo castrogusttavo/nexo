@@ -1,9 +1,14 @@
-import { describe, expect, it } from 'vitest'
+import { afterEach, describe, expect, it, vi } from 'vitest'
 import { seedMembership } from '@/src/__tests__/factories/membership.factory'
 import { seedUser } from '@/src/__tests__/factories/user.factory'
 import { seedWorkspace } from '@/src/__tests__/factories/workspace.factory'
 import { expectErr, expectOk } from '@/src/__tests__/helpers/result.helpers'
+import { prisma } from '@/src/lib/prisma'
 import { MembershipRepository } from '@/src/repositories/membership.repository'
+
+afterEach(() => {
+  vi.restoreAllMocks()
+})
 
 describe('MembershipRepository', () => {
   describe('findByUserAndWorkspace()', () => {
@@ -144,6 +149,35 @@ describe('MembershipRepository', () => {
       })
 
       expectErr(result, 'DATABASE_ERROR')
+    })
+  })
+
+  describe('read query failures', () => {
+    it('findByUserAndWorkspace() returns DATABASE_ERROR when the query throws', async () => {
+      vi.spyOn(prisma.membership, 'findUnique').mockRejectedValueOnce(
+        new Error('boom'),
+      )
+      expectErr(
+        await MembershipRepository.findByUserAndWorkspace('u', 'ws'),
+        'DATABASE_ERROR',
+      )
+    })
+
+    it('findByUserAndSlug() returns DATABASE_ERROR when the query throws', async () => {
+      vi.spyOn(prisma.membership, 'findFirst').mockRejectedValueOnce(
+        new Error('boom'),
+      )
+      expectErr(
+        await MembershipRepository.findByUserAndSlug('u', 'slug'),
+        'DATABASE_ERROR',
+      )
+    })
+
+    it('listByUser() returns DATABASE_ERROR when the query throws', async () => {
+      vi.spyOn(prisma.membership, 'findMany').mockRejectedValueOnce(
+        new Error('boom'),
+      )
+      expectErr(await MembershipRepository.listByUser('u'), 'DATABASE_ERROR')
     })
   })
 })

@@ -1,9 +1,13 @@
-import { describe, expect, it } from 'vitest'
+import { afterEach, describe, expect, it, vi } from 'vitest'
 import { seedStickyNote } from '@/src/__tests__/factories/sticky-note.factory'
 import { seedUser } from '@/src/__tests__/factories/user.factory'
 import { expectErr, expectOk } from '@/src/__tests__/helpers/result.helpers'
 import { prisma } from '@/src/lib/prisma'
 import { StickyNoteRepository } from '../sticky-note.repository'
+
+afterEach(() => {
+  vi.restoreAllMocks()
+})
 
 describe('StickyNoteRepository', () => {
   describe('findById()', () => {
@@ -16,6 +20,18 @@ describe('StickyNoteRepository', () => {
       const sticky = expectOk(result)
       expect(sticky.id).toBe(seeded.id)
       expect(sticky.color).toBe('BLUE')
+    })
+
+    it('should return RESOURCE_NOT_FOUND when it does not exist', async () => {
+      const result = await StickyNoteRepository.findById('nonexistent')
+      expectErr(result, 'RESOURCE_NOT_FOUND')
+    })
+
+    it('should return DATABASE_ERROR when the query throws', async () => {
+      vi.spyOn(prisma.stickyNote, 'findUnique').mockRejectedValueOnce(
+        new Error('boom'),
+      )
+      expectErr(await StickyNoteRepository.findById('x'), 'DATABASE_ERROR')
     })
   })
 
@@ -64,6 +80,13 @@ describe('StickyNoteRepository', () => {
       const result = await StickyNoteRepository.listByUserId(user.id)
       const list = expectOk(result)
       expect(list).toEqual([])
+    })
+
+    it('should return DATABASE_ERROR when the query throws', async () => {
+      vi.spyOn(prisma.stickyNote, 'findMany').mockRejectedValueOnce(
+        new Error('boom'),
+      )
+      expectErr(await StickyNoteRepository.listByUserId('u'), 'DATABASE_ERROR')
     })
   })
 

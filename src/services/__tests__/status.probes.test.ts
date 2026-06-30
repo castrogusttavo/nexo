@@ -24,6 +24,7 @@ vi.mock('@/src/lib/prisma', () => ({
   },
 }))
 
+import { ensureRedisConnected } from '@/src/lib/redis'
 import {
   componentsForTier,
   probeApp,
@@ -81,6 +82,34 @@ describe('probe primitives', () => {
     expect(result.status).toBe('OPERATIONAL')
   })
 
+  it('probeCache() returns MAJOR_OUTAGE when Redis does not reply PONG', async () => {
+    vi.mocked(ensureRedisConnected).mockResolvedValueOnce({
+      ping: vi.fn().mockResolvedValue('NOPE'),
+    } as never)
+
+    const result = await probeCache()
+    expect(result.status).toBe('MAJOR_OUTAGE')
+    expect(result.error).toContain('Unexpected reply')
+  })
+
+  it('probeCache() reports MAJOR_OUTAGE when the client throws a non-Error', async () => {
+    vi.mocked(ensureRedisConnected).mockRejectedValueOnce('redis exploded')
+
+    const result = await probeCache()
+    expect(result.status).toBe('MAJOR_OUTAGE')
+    expect(result.error).toBe('redis exploded')
+  })
+
+  it('classifies a slow probe as DEGRADED', async () => {
+    const nowSpy = vi.spyOn(Date, 'now')
+    nowSpy.mockReturnValueOnce(1000).mockReturnValueOnce(3000)
+
+    const result = await probeDatabase()
+
+    expect(result.status).toBe('DEGRADED')
+    expect(result.latencyMs).toBe(2000)
+  })
+
   it('probeAuth() returns OPERATIONAL when getSession resolves', async () => {
     const result = await probeAuth()
     expect(result.status).toBe('OPERATIONAL')
@@ -118,5 +147,14 @@ describe('runProbesForTier()', () => {
 
     expect(Object.keys(result).sort()).toEqual(['email', 'payment', 'storage'])
     expect(result.payment?.status).toBe('OPERATIONAL')
+  })
+
+  it('marks payment as MAJOR_OUTAGE when AbacatePay returns 5xx', async () => {
+    fetchSpy.mockResolvedValue(new Response('err', { status: 502 }))
+
+    const result = await runProbesForTier('peripheral')
+
+    expect(result.payment?.status).toBe('MAJOR_OUTAGE')
+    expect(result.payment?.error).toContain('AbacatePay HTTP 502')
   })
 })

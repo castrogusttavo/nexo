@@ -71,6 +71,15 @@ describe('StatusCache', () => {
       expect(await StatusCache.get()).toBeNull()
     })
 
+    it('get() should swallow non-Error rejections', async () => {
+      // Reject with a non-Error value to exercise the String(cause) branch.
+      vi.spyOn(redisModule, 'ensureRedisConnected').mockRejectedValue(
+        'redis down',
+      )
+
+      expect(await StatusCache.get()).toBeNull()
+    })
+
     it('set() should swallow non-Error rejections when redis is unavailable', async () => {
       // Reject with a non-Error value to exercise the String(cause) branch.
       vi.spyOn(redisModule, 'ensureRedisConnected').mockRejectedValue(
@@ -80,9 +89,25 @@ describe('StatusCache', () => {
       await expect(StatusCache.set(buildSnapshot())).resolves.toBeUndefined()
     })
 
+    it('set() should swallow Error rejections', async () => {
+      vi.spyOn(redisModule, 'ensureRedisConnected').mockRejectedValue(
+        new Error('redis down'),
+      )
+
+      await expect(StatusCache.set(buildSnapshot())).resolves.toBeUndefined()
+    })
+
     it('invalidate() should swallow errors when redis is unavailable', async () => {
       vi.spyOn(redisModule, 'ensureRedisConnected').mockRejectedValue(
         new Error('redis down'),
+      )
+
+      await expect(StatusCache.invalidate()).resolves.toBeUndefined()
+    })
+
+    it('invalidate() should swallow non-Error rejections', async () => {
+      vi.spyOn(redisModule, 'ensureRedisConnected').mockRejectedValue(
+        'redis down',
       )
 
       await expect(StatusCache.invalidate()).resolves.toBeUndefined()

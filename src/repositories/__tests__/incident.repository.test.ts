@@ -1,7 +1,11 @@
-import { describe, expect, it } from 'vitest'
+import { afterEach, describe, expect, it, vi } from 'vitest'
 import { expectErr, expectOk } from '@/src/__tests__/helpers/result.helpers'
 import { prisma } from '@/src/lib/prisma'
 import { IncidentRepository } from '@/src/repositories/incident.repository'
+
+afterEach(() => {
+  vi.restoreAllMocks()
+})
 
 describe('IncidentRepository', () => {
   describe('create() + findOpenByComponent()', () => {
@@ -209,9 +213,78 @@ describe('IncidentRepository', () => {
       expect(found?.updates.length).toBeGreaterThanOrEqual(2)
     })
 
+    it('should return DATABASE_ERROR when the query throws', async () => {
+      vi.spyOn(prisma.incident, 'findUnique').mockRejectedValueOnce(
+        new Error('boom'),
+      )
+      expectErr(await IncidentRepository.findById('x'), 'DATABASE_ERROR')
+    })
+
     it('should return null for unknown id', async () => {
       const result = await IncidentRepository.findById('missing')
       expect(expectOk(result)).toBeNull()
+    })
+  })
+
+  describe('query failures', () => {
+    it('findOpenByComponent() returns DATABASE_ERROR when the query throws', async () => {
+      vi.spyOn(prisma.incident, 'findFirst').mockRejectedValueOnce(
+        new Error('boom'),
+      )
+      expectErr(
+        await IncidentRepository.findOpenByComponent('database'),
+        'DATABASE_ERROR',
+      )
+    })
+
+    it('create() returns DATABASE_ERROR when the query throws', async () => {
+      vi.spyOn(prisma.incident, 'create').mockRejectedValueOnce(
+        new Error('boom'),
+      )
+      expectErr(
+        await IncidentRepository.create({
+          componentKey: 'database',
+          severity: 'MAJOR_OUTAGE',
+          title: 'x',
+          startedAt: new Date(),
+          initialMessage: 'x',
+        }),
+        'DATABASE_ERROR',
+      )
+    })
+
+    it('bumpSeverity() returns DATABASE_ERROR for a non-existent incident', async () => {
+      expectErr(
+        await IncidentRepository.bumpSeverity('nope', 'MAJOR_OUTAGE'),
+        'DATABASE_ERROR',
+      )
+    })
+
+    it('addUpdate() returns DATABASE_ERROR when the query throws', async () => {
+      vi.spyOn(prisma.incidentUpdate, 'create').mockRejectedValueOnce(
+        new Error('boom'),
+      )
+      expectErr(
+        await IncidentRepository.addUpdate('nope', 'IDENTIFIED', 'x'),
+        'DATABASE_ERROR',
+      )
+    })
+
+    it('close() returns DATABASE_ERROR for a non-existent incident', async () => {
+      expectErr(
+        await IncidentRepository.close('nope', new Date(), 'x'),
+        'DATABASE_ERROR',
+      )
+    })
+
+    it('findInWindow() returns DATABASE_ERROR when the query throws', async () => {
+      vi.spyOn(prisma.incident, 'findMany').mockRejectedValueOnce(
+        new Error('boom'),
+      )
+      expectErr(
+        await IncidentRepository.findInWindow(new Date()),
+        'DATABASE_ERROR',
+      )
     })
   })
 })

@@ -115,6 +115,29 @@ describe('StatusService.getCurrentSnapshot()', () => {
     expect(value.overallStatus).toBe('DEGRADED')
   })
 
+  it('should compute PARTIAL_OUTAGE when a core component is degraded', async () => {
+    mockedCache.get.mockResolvedValue(null)
+    mockedStatusRepo.findDailiesForKeys.mockResolvedValue(ok([]))
+    mockedStatusRepo.findLatestPerComponent.mockResolvedValue(
+      ok([
+        {
+          id: 'h1',
+          componentKey: 'database',
+          status: 'DEGRADED',
+          latencyMs: 1800,
+          error: null,
+          checkedAt: new Date(),
+        },
+      ]),
+    )
+    mockedCache.set.mockResolvedValue(undefined)
+
+    const result = await StatusService.getCurrentSnapshot()
+
+    const value = expectOk(result)
+    expect(value.overallStatus).toBe('PARTIAL_OUTAGE')
+  })
+
   it('attaches incident ids to history days within an incident window', async () => {
     const today = new Date()
     today.setUTCHours(0, 0, 0, 0)
@@ -186,6 +209,18 @@ describe('StatusService.getCurrentSnapshot()', () => {
 
     expectErr(result, 'DATABASE_ERROR')
   })
+
+  it('should propagate error when findLatestPerComponent fails', async () => {
+    mockedCache.get.mockResolvedValue(null)
+    mockedStatusRepo.findDailiesForKeys.mockResolvedValue(ok([]))
+    mockedStatusRepo.findLatestPerComponent.mockResolvedValue(
+      err(databaseError()),
+    )
+
+    const result = await StatusService.getCurrentSnapshot()
+
+    expectErr(result, 'DATABASE_ERROR')
+  })
 })
 
 describe('StatusService.getHistory()', () => {
@@ -221,6 +256,14 @@ describe('StatusService.getHistory()', () => {
     expect(value).toHaveLength(1)
     expect(value[0]?.day).toBe('2025-01-01')
     expect(value[0]?.uptimePct).toBe(100)
+  })
+
+  it('should propagate repo error', async () => {
+    mockedStatusRepo.findDailies.mockResolvedValue(err(databaseError()))
+
+    const result = await StatusService.getHistory('app', 30)
+
+    expectErr(result, 'DATABASE_ERROR')
   })
 })
 
@@ -549,5 +592,127 @@ describe('StatusService.collect()', () => {
     const result = await StatusService.collect('core')
 
     expectOk(result)
+  })
+
+  it('should log and succeed when creating a new incident fails', async () => {
+    mockedRunProbes.mockResolvedValue({
+      app: { status: 'OPERATIONAL', latencyMs: 5, error: null },
+      database: { status: 'MAJOR_OUTAGE', latencyMs: 10, error: 'fail' },
+      cache: { status: 'OPERATIONAL', latencyMs: 3, error: null },
+      auth: { status: 'OPERATIONAL', latencyMs: 20, error: null },
+    })
+    mockedStatusRepo.recordChecks.mockResolvedValue(ok(undefined))
+    mockedStatusRepo.aggregateForDay.mockResolvedValue(ok(null))
+    mockedIncidentRepo.findOpenByComponent.mockResolvedValue(ok(null))
+    mockedIncidentRepo.create.mockResolvedValue(err(databaseError()))
+    mockedStatusRepo.pruneOldChecks.mockResolvedValue(ok(0))
+    mockedCache.invalidate.mockResolvedValue(undefined)
+    vi.spyOn(console, 'error').mockImplementation(() => {})
+
+    const result = await StatusService.collect('core')
+
+    expectOk(result)
+    expect(mockedIncidentRepo.create).toHaveBeenCalled()
+  })
+
+  it('should log and succeed when bumping severity fails', async () => {
+    mockedRunProbes.mockResolvedValue({
+      app: { status: 'OPERATIONAL', latencyMs: 5, error: null },
+      database: { status: 'MAJOR_OUTAGE', latencyMs: 10, error: 'fatal' },
+      cache: { status: 'OPERATIONAL', latencyMs: 3, error: null },
+      auth: { status: 'OPERATIONAL', latencyMs: 20, error: null },
+    })
+    mockedStatusRepo.recordChecks.mockResolvedValue(ok(undefined))
+    mockedStatusRepo.aggregateForDay.mockResolvedValue(ok(null))
+    mockedIncidentRepo.findOpenByComponent.mockImplementation(async (key) =>
+      key === 'database'
+        ? ok({
+            id: 'open-i',
+            componentKey: 'database',
+            severity: 'DEGRADED',
+            title: 'x',
+            startedAt: new Date(),
+            resolvedAt: null,
+          })
+        : ok(null),
+    )
+    mockedIncidentRepo.bumpSeverity.mockResolvedValue(err(databaseError()))
+    mockedStatusRepo.pruneOldChecks.mockResolvedValue(ok(0))
+    mockedCache.invalidate.mockResolvedValue(undefined)
+    vi.spyOn(console, 'error').mockImplementation(() => {})
+
+    const result = await StatusService.collect('core')
+
+    expectOk(result)
+    expect(mockedIncidentRepo.addUpdate).not.toHaveBeenCalled()
+  })
+
+  it('should log and succeed when posting the severity update fails', async () => {
+    mockedRunProbes.mockResolvedValue({
+      app: { status: 'OPERATIONAL', latencyMs: 5, error: null },
+      database: { status: 'MAJOR_OUTAGE', latencyMs: 10, error: 'fatal' },
+      cache: { status: 'OPERATIONAL', latencyMs: 3, error: null },
+      auth: { status: 'OPERATIONAL', latencyMs: 20, error: null },
+    })
+    mockedStatusRepo.recordChecks.mockResolvedValue(ok(undefined))
+    mockedStatusRepo.aggregateForDay.mockResolvedValue(ok(null))
+    mockedIncidentRepo.findOpenByComponent.mockImplementation(async (key) =>
+      key === 'database'
+        ? ok({
+            id: 'open-i',
+            componentKey: 'database',
+            severity: 'DEGRADED',
+            title: 'x',
+            startedAt: new Date(),
+            resolvedAt: null,
+          })
+        : ok(null),
+    )
+    mockedIncidentRepo.bumpSeverity.mockResolvedValue(ok(undefined))
+    mockedIncidentRepo.addUpdate.mockResolvedValue(err(databaseError()))
+    mockedStatusRepo.pruneOldChecks.mockResolvedValue(ok(0))
+    mockedCache.invalidate.mockResolvedValue(undefined)
+    vi.spyOn(console, 'error').mockImplementation(() => {})
+
+    const result = await StatusService.collect('core')
+
+    expectOk(result)
+    expect(mockedIncidentRepo.addUpdate).toHaveBeenCalled()
+  })
+
+  it('should propagate aggregateForDay error', async () => {
+    mockedRunProbes.mockResolvedValue({
+      app: { status: 'OPERATIONAL', latencyMs: 5, error: null },
+      database: { status: 'OPERATIONAL', latencyMs: 10, error: null },
+      cache: { status: 'OPERATIONAL', latencyMs: 3, error: null },
+      auth: { status: 'OPERATIONAL', latencyMs: 20, error: null },
+    })
+    mockedStatusRepo.recordChecks.mockResolvedValue(ok(undefined))
+    mockedStatusRepo.aggregateForDay.mockResolvedValue(err(databaseError()))
+
+    const result = await StatusService.collect('core')
+
+    expectErr(result, 'DATABASE_ERROR')
+  })
+
+  it('should skip components missing from the probe map', async () => {
+    mockedRunProbes.mockResolvedValue({
+      app: { status: 'OPERATIONAL', latencyMs: 5, error: null },
+      database: { status: 'OPERATIONAL', latencyMs: 10, error: null },
+      cache: { status: 'OPERATIONAL', latencyMs: 3, error: null },
+      // 'auth' intentionally omitted from the probe map
+    })
+    mockedStatusRepo.recordChecks.mockResolvedValue(ok(undefined))
+    mockedStatusRepo.aggregateForDay.mockResolvedValue(ok(null))
+    mockedIncidentRepo.findOpenByComponent.mockResolvedValue(ok(null))
+    mockedStatusRepo.pruneOldChecks.mockResolvedValue(ok(0))
+    mockedCache.invalidate.mockResolvedValue(undefined)
+
+    const result = await StatusService.collect('core')
+
+    expectOk(result)
+    const rows = mockedStatusRepo.recordChecks.mock.calls[0]?.[0]
+    expect(rows).toHaveLength(3)
+    expect(rows?.map((r) => r.componentKey)).not.toContain('auth')
   })
 })

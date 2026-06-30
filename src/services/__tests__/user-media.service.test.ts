@@ -132,6 +132,20 @@ describe('UserMediaService.uploadAvatar()', () => {
     expect(repo.update).not.toHaveBeenCalled()
     expect(cache.invalidate).not.toHaveBeenCalled()
   })
+
+  it('should return STORAGE_ERROR when the upload throws a non-Error value', async () => {
+    s3Put.mockRejectedValue('connection refused')
+
+    const error = expectErr(
+      await UserMediaService.uploadAvatar({
+        userId: 'u1',
+        readBody: fakeBody,
+        ...PNG,
+      }),
+    )
+
+    expect(error.code).toBe('STORAGE_ERROR')
+  })
 })
 
 describe('UserMediaService.uploadCover()', () => {

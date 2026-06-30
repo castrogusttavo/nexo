@@ -1,3 +1,4 @@
+import type { ProjectMember } from '@prisma/client'
 import { describe, expect, it, vi } from 'vitest'
 import { createFakeMembership } from '@/src/__tests__/factories/membership.factory'
 import { createFakeProject } from '@/src/__tests__/factories/project.factory'
@@ -62,6 +63,31 @@ describe('ProjectService', () => {
       })
 
       expectErr(result, 'FORBIDDEN')
+    })
+
+    it('should propagate membership repository error', async () => {
+      mockedMembership.findByUserAndWorkspace.mockResolvedValue(
+        err(databaseError()),
+      )
+
+      const result = await ProjectService.list('actor', 'ws1', {
+        archived: false,
+      })
+
+      expectErr(result, 'DATABASE_ERROR')
+    })
+
+    it('should propagate listByWorkspace repository error', async () => {
+      mockedMembership.findByUserAndWorkspace.mockResolvedValue(
+        ok(memberMembership),
+      )
+      mockedProject.listByWorkspace.mockResolvedValue(err(databaseError()))
+
+      const result = await ProjectService.list('actor', 'ws1', {
+        archived: false,
+      })
+
+      expectErr(result, 'DATABASE_ERROR')
     })
   })
 
@@ -153,6 +179,55 @@ describe('ProjectService', () => {
 
       expectOk(result)
     })
+
+    it('should return private project to a project member', async () => {
+      const project = createFakeProject({
+        isPublic: false,
+        workspaceId: 'ws1',
+        leadId: 'other',
+      })
+      mockedMembership.findByUserAndWorkspace.mockResolvedValue(
+        ok(memberMembership),
+      )
+      mockedProject.findByWorkspaceAndSlug.mockResolvedValue(
+        ok({
+          ...project,
+          members: [{ userId: 'actor' }] as ProjectMember[],
+          favourites: [] as [],
+        }),
+      )
+
+      const result = await ProjectService.getBySlug(
+        'actor',
+        'ws1',
+        project.slug,
+      )
+
+      expectOk(result)
+    })
+
+    it('should propagate membership repository error', async () => {
+      mockedMembership.findByUserAndWorkspace.mockResolvedValue(
+        err(databaseError()),
+      )
+
+      const result = await ProjectService.getBySlug('actor', 'ws1', 'any-slug')
+
+      expectErr(result, 'DATABASE_ERROR')
+    })
+
+    it('should propagate findByWorkspaceAndSlug error', async () => {
+      mockedMembership.findByUserAndWorkspace.mockResolvedValue(
+        ok(memberMembership),
+      )
+      mockedProject.findByWorkspaceAndSlug.mockResolvedValue(
+        err(databaseError()),
+      )
+
+      const result = await ProjectService.getBySlug('actor', 'ws1', 'any-slug')
+
+      expectErr(result, 'DATABASE_ERROR')
+    })
   })
 
   describe('create()', () => {
@@ -185,6 +260,36 @@ describe('ProjectService', () => {
         isPublic: false,
       })
       expectErr(result, 'FORBIDDEN')
+    })
+
+    it('should propagate membership repository error', async () => {
+      mockedMembership.findByUserAndWorkspace.mockResolvedValue(
+        err(databaseError()),
+      )
+
+      const result = await ProjectService.create('actor', 'ws1', {
+        name: 'New Project',
+        slug: 'new-project',
+        isPublic: false,
+      })
+
+      expectErr(result, 'DATABASE_ERROR')
+      expect(mockedProject.create).not.toHaveBeenCalled()
+    })
+
+    it('should audit failure and propagate create repository error', async () => {
+      mockedMembership.findByUserAndWorkspace.mockResolvedValue(
+        ok(memberMembership),
+      )
+      mockedProject.create.mockResolvedValue(err(databaseError()))
+
+      const result = await ProjectService.create('actor', 'ws1', {
+        name: 'New Project',
+        slug: 'new-project',
+        isPublic: false,
+      })
+
+      expectErr(result, 'DATABASE_ERROR')
     })
   })
 
@@ -242,6 +347,68 @@ describe('ProjectService', () => {
 
       expectOk(result)
     })
+
+    it('should return FORBIDDEN when actor is not a workspace member', async () => {
+      const project = createFakeProject({ workspaceId: 'ws1' })
+      mockedMembership.findByUserAndWorkspace.mockResolvedValue(ok(null))
+      mockedProject.findByWorkspaceAndSlug.mockResolvedValue(
+        ok({ ...project, members: [], favourites: [] as [] }),
+      )
+
+      const result = await ProjectService.update('actor', 'ws1', project.slug, {
+        name: 'X',
+      })
+
+      expectErr(result, 'FORBIDDEN')
+    })
+
+    it('should propagate membership repository error', async () => {
+      const project = createFakeProject({ workspaceId: 'ws1' })
+      mockedMembership.findByUserAndWorkspace.mockResolvedValue(
+        err(databaseError()),
+      )
+      mockedProject.findByWorkspaceAndSlug.mockResolvedValue(
+        ok({ ...project, members: [], favourites: [] as [] }),
+      )
+
+      const result = await ProjectService.update('actor', 'ws1', project.slug, {
+        name: 'X',
+      })
+
+      expectErr(result, 'DATABASE_ERROR')
+    })
+
+    it('should propagate findByWorkspaceAndSlug error', async () => {
+      mockedMembership.findByUserAndWorkspace.mockResolvedValue(
+        ok(memberMembership),
+      )
+      mockedProject.findByWorkspaceAndSlug.mockResolvedValue(
+        err(databaseError()),
+      )
+
+      const result = await ProjectService.update('actor', 'ws1', 'slug', {
+        name: 'X',
+      })
+
+      expectErr(result, 'DATABASE_ERROR')
+    })
+
+    it('should audit failure and propagate update repository error', async () => {
+      const project = createFakeProject({ leadId: 'actor', workspaceId: 'ws1' })
+      mockedMembership.findByUserAndWorkspace.mockResolvedValue(
+        ok(memberMembership),
+      )
+      mockedProject.findByWorkspaceAndSlug.mockResolvedValue(
+        ok({ ...project, members: [], favourites: [] as [] }),
+      )
+      mockedProject.update.mockResolvedValue(err(databaseError()))
+
+      const result = await ProjectService.update('actor', 'ws1', project.slug, {
+        name: 'X',
+      })
+
+      expectErr(result, 'DATABASE_ERROR')
+    })
   })
 
   describe('archive()', () => {
@@ -275,6 +442,60 @@ describe('ProjectService', () => {
       const result = await ProjectService.archive('actor', 'ws1', project.slug)
 
       expectErr(result, 'PROJECT_FORBIDDEN')
+    })
+
+    it('should return FORBIDDEN when actor is not a workspace member', async () => {
+      const project = createFakeProject({ workspaceId: 'ws1' })
+      mockedMembership.findByUserAndWorkspace.mockResolvedValue(ok(null))
+      mockedProject.findByWorkspaceAndSlug.mockResolvedValue(
+        ok({ ...project, members: [], favourites: [] as [] }),
+      )
+
+      const result = await ProjectService.archive('actor', 'ws1', project.slug)
+
+      expectErr(result, 'FORBIDDEN')
+    })
+
+    it('should propagate membership repository error', async () => {
+      const project = createFakeProject({ workspaceId: 'ws1' })
+      mockedMembership.findByUserAndWorkspace.mockResolvedValue(
+        err(databaseError()),
+      )
+      mockedProject.findByWorkspaceAndSlug.mockResolvedValue(
+        ok({ ...project, members: [], favourites: [] as [] }),
+      )
+
+      const result = await ProjectService.archive('actor', 'ws1', project.slug)
+
+      expectErr(result, 'DATABASE_ERROR')
+    })
+
+    it('should propagate findByWorkspaceAndSlug error', async () => {
+      mockedMembership.findByUserAndWorkspace.mockResolvedValue(
+        ok(memberMembership),
+      )
+      mockedProject.findByWorkspaceAndSlug.mockResolvedValue(
+        err(databaseError()),
+      )
+
+      const result = await ProjectService.archive('actor', 'ws1', 'slug')
+
+      expectErr(result, 'DATABASE_ERROR')
+    })
+
+    it('should propagate archive repository error', async () => {
+      const project = createFakeProject({ leadId: 'actor', workspaceId: 'ws1' })
+      mockedMembership.findByUserAndWorkspace.mockResolvedValue(
+        ok(memberMembership),
+      )
+      mockedProject.findByWorkspaceAndSlug.mockResolvedValue(
+        ok({ ...project, members: [], favourites: [] as [] }),
+      )
+      mockedProject.archive.mockResolvedValue(err(databaseError()))
+
+      const result = await ProjectService.archive('actor', 'ws1', project.slug)
+
+      expectErr(result, 'DATABASE_ERROR')
     })
   })
 
@@ -313,6 +534,60 @@ describe('ProjectService', () => {
 
       expectErr(result, 'PROJECT_FORBIDDEN')
       expect(mockedProject.restore).not.toHaveBeenCalled()
+    })
+
+    it('should return FORBIDDEN when actor is not a workspace member', async () => {
+      const project = createFakeProject({ workspaceId: 'ws1' })
+      mockedMembership.findByUserAndWorkspace.mockResolvedValue(ok(null))
+      mockedProject.findByWorkspaceAndSlug.mockResolvedValue(
+        ok({ ...project, members: [], favourites: [] as [] }),
+      )
+
+      const result = await ProjectService.restore('actor', 'ws1', project.slug)
+
+      expectErr(result, 'FORBIDDEN')
+    })
+
+    it('should propagate membership repository error', async () => {
+      const project = createFakeProject({ workspaceId: 'ws1' })
+      mockedMembership.findByUserAndWorkspace.mockResolvedValue(
+        err(databaseError()),
+      )
+      mockedProject.findByWorkspaceAndSlug.mockResolvedValue(
+        ok({ ...project, members: [], favourites: [] as [] }),
+      )
+
+      const result = await ProjectService.restore('actor', 'ws1', project.slug)
+
+      expectErr(result, 'DATABASE_ERROR')
+    })
+
+    it('should propagate findByWorkspaceAndSlug error', async () => {
+      mockedMembership.findByUserAndWorkspace.mockResolvedValue(
+        ok(memberMembership),
+      )
+      mockedProject.findByWorkspaceAndSlug.mockResolvedValue(
+        err(databaseError()),
+      )
+
+      const result = await ProjectService.restore('actor', 'ws1', 'slug')
+
+      expectErr(result, 'DATABASE_ERROR')
+    })
+
+    it('should propagate restore repository error', async () => {
+      const project = createFakeProject({ leadId: 'actor', workspaceId: 'ws1' })
+      mockedMembership.findByUserAndWorkspace.mockResolvedValue(
+        ok(memberMembership),
+      )
+      mockedProject.findByWorkspaceAndSlug.mockResolvedValue(
+        ok({ ...project, members: [], favourites: [] as [] }),
+      )
+      mockedProject.restore.mockResolvedValue(err(databaseError()))
+
+      const result = await ProjectService.restore('actor', 'ws1', project.slug)
+
+      expectErr(result, 'DATABASE_ERROR')
     })
   })
 
@@ -359,6 +634,243 @@ describe('ProjectService', () => {
       mockedProject.delete.mockResolvedValue(err(databaseError()))
 
       const result = await ProjectService.delete('actor', 'ws1', project.slug)
+
+      expectErr(result, 'DATABASE_ERROR')
+    })
+
+    it('should return FORBIDDEN when actor is not a workspace member', async () => {
+      const project = createFakeProject({ workspaceId: 'ws1' })
+      mockedMembership.findByUserAndWorkspace.mockResolvedValue(ok(null))
+      mockedProject.findByWorkspaceAndSlug.mockResolvedValue(
+        ok({ ...project, members: [], favourites: [] as [] }),
+      )
+
+      const result = await ProjectService.delete('actor', 'ws1', project.slug)
+
+      expectErr(result, 'FORBIDDEN')
+    })
+
+    it('should propagate membership repository error', async () => {
+      const project = createFakeProject({ workspaceId: 'ws1' })
+      mockedMembership.findByUserAndWorkspace.mockResolvedValue(
+        err(databaseError()),
+      )
+      mockedProject.findByWorkspaceAndSlug.mockResolvedValue(
+        ok({ ...project, members: [], favourites: [] as [] }),
+      )
+
+      const result = await ProjectService.delete('actor', 'ws1', project.slug)
+
+      expectErr(result, 'DATABASE_ERROR')
+    })
+
+    it('should propagate findByWorkspaceAndSlug error', async () => {
+      mockedMembership.findByUserAndWorkspace.mockResolvedValue(
+        ok(ownerMembership),
+      )
+      mockedProject.findByWorkspaceAndSlug.mockResolvedValue(
+        err(databaseError()),
+      )
+
+      const result = await ProjectService.delete('actor', 'ws1', 'slug')
+
+      expectErr(result, 'DATABASE_ERROR')
+    })
+  })
+
+  describe('favorite()', () => {
+    it('should favorite a public project for any workspace member', async () => {
+      const project = createFakeProject({
+        isPublic: true,
+        workspaceId: 'ws1',
+        leadId: 'other',
+      })
+      mockedMembership.findByUserAndWorkspace.mockResolvedValue(
+        ok(memberMembership),
+      )
+      mockedProject.findByWorkspaceAndSlug.mockResolvedValue(
+        ok({ ...project, members: [], favourites: [] as [] }),
+      )
+
+      mockedProject.addFavorite.mockResolvedValue(ok(undefined))
+
+      const result = await ProjectService.favorite('actor', 'ws1', project.slug)
+
+      const value = expectOk(result)
+      expect(value.favorited).toBe(true)
+      expect(mockedProject.addFavorite).toHaveBeenCalledWith(
+        'actor',
+        project.id,
+      )
+    })
+
+    it('should return FORBIDDEN when actor is not a workspace member', async () => {
+      mockedMembership.findByUserAndWorkspace.mockResolvedValue(ok(null))
+
+      const result = await ProjectService.favorite('actor', 'ws1', 'any-slug')
+
+      expectErr(result, 'FORBIDDEN')
+      expect(mockedProject.addFavorite).not.toHaveBeenCalled()
+    })
+
+    it('should return PROJECT_FORBIDDEN when a non-member targets a private project', async () => {
+      const project = createFakeProject({
+        isPublic: false,
+        workspaceId: 'ws1',
+        leadId: 'other',
+      })
+      mockedMembership.findByUserAndWorkspace.mockResolvedValue(
+        ok(memberMembership),
+      )
+      mockedProject.findByWorkspaceAndSlug.mockResolvedValue(
+        ok({ ...project, members: [], favourites: [] as [] }),
+      )
+
+      const result = await ProjectService.favorite('actor', 'ws1', project.slug)
+
+      expectErr(result, 'PROJECT_FORBIDDEN')
+      expect(mockedProject.addFavorite).not.toHaveBeenCalled()
+    })
+
+    it('should propagate addFavorite repository error', async () => {
+      const project = createFakeProject({
+        isPublic: true,
+        workspaceId: 'ws1',
+        leadId: 'other',
+      })
+      mockedMembership.findByUserAndWorkspace.mockResolvedValue(
+        ok(memberMembership),
+      )
+      mockedProject.findByWorkspaceAndSlug.mockResolvedValue(
+        ok({ ...project, members: [], favourites: [] as [] }),
+      )
+
+      mockedProject.addFavorite.mockResolvedValue(err(databaseError()))
+
+      const result = await ProjectService.favorite('actor', 'ws1', project.slug)
+
+      expectErr(result, 'DATABASE_ERROR')
+    })
+
+    it('should favorite a private project for a project member', async () => {
+      const project = createFakeProject({
+        isPublic: false,
+        workspaceId: 'ws1',
+        leadId: 'other',
+      })
+      mockedMembership.findByUserAndWorkspace.mockResolvedValue(
+        ok(memberMembership),
+      )
+      mockedProject.findByWorkspaceAndSlug.mockResolvedValue(
+        ok({
+          ...project,
+          members: [{ userId: 'actor' }] as ProjectMember[],
+          favourites: [] as [],
+        }),
+      )
+      mockedProject.addFavorite.mockResolvedValue(ok(undefined))
+
+      const result = await ProjectService.favorite('actor', 'ws1', project.slug)
+
+      expectOk(result)
+    })
+
+    it('should propagate membership repository error', async () => {
+      mockedMembership.findByUserAndWorkspace.mockResolvedValue(
+        err(databaseError()),
+      )
+
+      const result = await ProjectService.favorite('actor', 'ws1', 'slug')
+
+      expectErr(result, 'DATABASE_ERROR')
+    })
+
+    it('should propagate findByWorkspaceAndSlug error', async () => {
+      mockedMembership.findByUserAndWorkspace.mockResolvedValue(
+        ok(memberMembership),
+      )
+      mockedProject.findByWorkspaceAndSlug.mockResolvedValue(
+        err(databaseError()),
+      )
+
+      const result = await ProjectService.favorite('actor', 'ws1', 'slug')
+
+      expectErr(result, 'DATABASE_ERROR')
+    })
+  })
+
+  describe('unfavorite()', () => {
+    it('should unfavorite a project for a workspace member', async () => {
+      const project = createFakeProject({ workspaceId: 'ws1', leadId: 'actor' })
+      mockedMembership.findByUserAndWorkspace.mockResolvedValue(
+        ok(memberMembership),
+      )
+      mockedProject.findByWorkspaceAndSlug.mockResolvedValue(
+        ok({ ...project, members: [], favourites: [] as [] }),
+      )
+      mockedProject.removeFavorite.mockResolvedValue(ok(undefined))
+
+      const result = await ProjectService.unfavorite(
+        'actor',
+        'ws1',
+        project.slug,
+      )
+
+      const value = expectOk(result)
+      expect(value.favorited).toBe(false)
+      expect(mockedProject.removeFavorite).toHaveBeenCalledWith(
+        'actor',
+        project.id,
+      )
+    })
+
+    it('should return FORBIDDEN when actor is not a workspace member', async () => {
+      mockedMembership.findByUserAndWorkspace.mockResolvedValue(ok(null))
+
+      const result = await ProjectService.unfavorite('actor', 'ws1', 'any-slug')
+
+      expectErr(result, 'FORBIDDEN')
+      expect(mockedProject.removeFavorite).not.toHaveBeenCalled()
+    })
+
+    it('should propagate removeFavorite repository error', async () => {
+      const project = createFakeProject({ workspaceId: 'ws1', leadId: 'actor' })
+      mockedMembership.findByUserAndWorkspace.mockResolvedValue(
+        ok(memberMembership),
+      )
+      mockedProject.findByWorkspaceAndSlug.mockResolvedValue(
+        ok({ ...project, members: [], favourites: [] as [] }),
+      )
+      mockedProject.removeFavorite.mockResolvedValue(err(databaseError()))
+
+      const result = await ProjectService.unfavorite(
+        'actor',
+        'ws1',
+        project.slug,
+      )
+
+      expectErr(result, 'DATABASE_ERROR')
+    })
+
+    it('should propagate membership repository error', async () => {
+      mockedMembership.findByUserAndWorkspace.mockResolvedValue(
+        err(databaseError()),
+      )
+
+      const result = await ProjectService.unfavorite('actor', 'ws1', 'slug')
+
+      expectErr(result, 'DATABASE_ERROR')
+    })
+
+    it('should propagate findByWorkspaceAndSlug error', async () => {
+      mockedMembership.findByUserAndWorkspace.mockResolvedValue(
+        ok(memberMembership),
+      )
+      mockedProject.findByWorkspaceAndSlug.mockResolvedValue(
+        err(databaseError()),
+      )
+
+      const result = await ProjectService.unfavorite('actor', 'ws1', 'slug')
 
       expectErr(result, 'DATABASE_ERROR')
     })
