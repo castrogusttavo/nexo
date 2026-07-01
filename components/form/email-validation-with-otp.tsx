@@ -22,6 +22,7 @@ interface EmailValidationWithOtpProps {
   onResend: () => Promise<void> | void
   isPending?: boolean
   error?: string | null
+  onUseBackupCode?: () => void
 }
 
 export function EmailValidationWithOtp({
@@ -31,6 +32,7 @@ export function EmailValidationWithOtp({
   onResend,
   isPending,
   error,
+  onUseBackupCode
 }: EmailValidationWithOtpProps) {
   const [otp, setOtp] = useState('')
   const [cooldown, setCooldown] = useState(RESEND_COOLDOWN_SECONDS)
@@ -133,6 +135,15 @@ export function EmailValidationWithOtp({
               ? 'Reenviando...'
               : 'Reenviar código'}
         </Button>
+        {onUseBackupCode && (
+          <button
+            type='button'
+            onClick={onUseBackupCode}
+            className='text-sm text-primary hover:underline'
+          >
+            Não consegue acessar o e-mail? Usar um código de backup
+          </button>
+        )}
       </div>
     </div>
   )

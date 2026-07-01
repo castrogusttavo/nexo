@@ -24,6 +24,7 @@ model User {
   role                 UserRole?  @map("role")
   goals                UserGoal[] @map("goals")
   preference           UserPreference?
+  notificationSetting NotificationSetting?
 
   memberships   Membership[]
   sessions      Session[]
@@ -100,6 +101,21 @@ model UserPreference {
   updatedAt     DateTime    @updatedAt @map("updated_at")
 
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model NotificationSetting {
+  id              String   @id @default(cuid())
+  userId          String   @unique @map("user_id")
+  priorityChanges Boolean  @default(true) @map("priority_changes")
+  stateChanges    Boolean  @default(true) @map("state_changes")
+  comments        Boolean  @default(true)
+  mentions        Boolean  @default(true)
+  createdAt       DateTime @default(now()) @map("created_at")
+  updatedAt       DateTime @updatedAt @map("updated_at")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("notification_setting")
 }
 
 model ConsentEvent {
