@@ -13,7 +13,7 @@ import { Field, FieldError, FieldLabel } from '@/components/ui/field'
 import { Input } from '@/components/ui/input'
 import { authClient } from '@/src/lib/auth-client'
 
-type Step = 'form' | 'otp'
+type Step = 'form' | 'otp' | 'backup'
 
 export function SignInForm() {
   const { push } = useRouter()
@@ -27,6 +27,7 @@ export function SignInForm() {
   }>({})
   const [isPending, setIsPending] = useState(false)
   const [isVerifying, setIsVerifying] = useState(false)
+  const [backupCode, setBackupCode] = useState('')
 
   async function handleSubmit(e: React.SyntheticEvent<HTMLFormElement>) {
     e.preventDefault()
@@ -99,6 +100,25 @@ export function SignInForm() {
     }
   }
 
+  async function handleVerifyBackupCode(e: React.FormEvent<HTMLFormElement>) {
+    e.preventDefault()
+    if (!backupCode.trim()) {
+      setOtpError('Informe um código de backup')
+      return
+    }
+    setOtpError(null)
+    setIsVerifying(true)
+    const { error: verifyError } = await authClient.twoFactor.verifyBackupCode({
+      code: backupCode.trim(),
+    })
+    setIsVerifying(false)
+    if (verifyError) {
+      setOtpError(verifyError.message ?? 'Código de backup inválido')
+      return
+    }
+    push('/')
+  }
+
   function handleBack() {
     setStep('form')
     setOtpError(null)
@@ -108,7 +128,7 @@ export function SignInForm() {
     <div className='min-h-screen flex flex-col items-center justiyf-center p-4 pb-12'>
       <HeaderLogin path='sign-up' pathname='Cadastre-se' />
       <div className='flex-1 w-full flex flex-col justify-center gap-y-6 max-w-90'>
-        {step === 'form' ? (
+        {step === 'form' && (
           <>
             <div>
               <H4>Trabalhe em todas as dimensões.</H4>
@@ -182,7 +202,9 @@ export function SignInForm() {
               </div>
             </form>
           </>
-        ) : (
+        )}
+
+        {step === 'otp' && (
           <EmailValidationWithOtp
             email={email}
             onBack={handleBack}
@@ -190,7 +212,55 @@ export function SignInForm() {
             onResend={handleResend}
             isPending={isVerifying}
             error={otpError}
+            onUseBackupCode={() => {
+              setStep('backup')
+              setOtpError(null)
+            }}
           />
+        )}
+
+        {step === 'backup' && (
+          <>
+            <div>
+              <H4>Use um código de backup.</H4>
+              <H4 className='text-muted-foreground'>
+                Digite um dos códigos que você guardou ao ativar a verificação
+                em duas etapas.
+              </H4>
+            </div>
+            <form
+              onSubmit={handleVerifyBackupCode}
+              className='w-full space-y-4'
+            >
+              <Field data-invalid={!!otpError || undefined}>
+                <FieldLabel>Código de backup</FieldLabel>
+                <Input
+                  value={backupCode}
+                  onChange={(e) => setBackupCode(e.target.value)}
+                  placeholder='xxxxxxxx'
+                  autoFocus
+                  disabled={isVerifying}
+                />
+                {otpError && <FieldError>{otpError}</FieldError>}
+              </Field>
+              <Button type='submit' className='w-full' disabled={isVerifying}>
+                {isVerifying ? 'Verificando...' : 'Verificar código'}
+              </Button>
+              <div className='text-center text-sm'>
+                <button
+                  type='button'
+                  onClick={() => {
+                    setStep('otp')
+                    setOtpError(null)
+                    setBackupCode('')
+                  }}
+                  className='text-primary hover:underline'
+                >
+                  Usar o código enviado por e-mail
+                </button>
+              </div>
+            </form>
+          </>
         )}
       </div>
       <div>

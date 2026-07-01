@@ -310,6 +310,11 @@ export const auth = betterAuth({
       },
     }),
     twoFactor({
+      // O 2º fator é OTP por e-mail (enviado ao e-mail já verificado da
+      // conta), não TOTP/authenticator — não há etapa de scan/verify no
+      // toggle. Sem isso, `twoFactor.enable()` não persiste `twoFactorEnabled`
+      // e a ativação "some" ao recarregar a sessão.
+      skipVerificationOnEnable: true,
       otpOptions: {
         period: 5,
         async sendOTP({ user, otp }) {

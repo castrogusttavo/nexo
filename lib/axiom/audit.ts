@@ -13,6 +13,7 @@ type AuditEntity =
   | 'consent'
   | 'project'
   | 'user_preference'
+  | 'notification_setting'
 
 type AuditAction =
   | 'create'

@@ -67,6 +67,7 @@ export function ResetPasswordForm({
         return
       }
 
+      await authClient.signOut()
       push('/sign-in')
     } finally {
       setIsPending(false)
