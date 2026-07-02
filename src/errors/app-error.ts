@@ -65,7 +65,7 @@ export const storageError = (
   message = 'Falha ao armazenar o arquivo',
 ): AppError => appError('STORAGE_ERROR', message)
 export const invitationNotFound = (): AppError =>
-  appError('INVITATION_NOT_FOUND', 'Contvite não encontrado')
+  appError('INVITATION_NOT_FOUND', 'Convite não encontrado')
 
 export const invitationNotPending = (
   message = 'Este convite não está mais disponível',
