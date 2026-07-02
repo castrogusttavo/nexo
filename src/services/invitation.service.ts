@@ -2,7 +2,7 @@ import { createId } from '@paralleldrive/cuid2'
 import { auditMutation } from '@/lib/axiom/audit'
 import { logger } from '@/lib/axiom/logger'
 import { NEXT_PUBLIC_URL } from '@/lib/env/env'
-import type { InvitationDTO } from '@/types/invitation'
+import type { InvitationDTO, InviteToProjectResult } from '@/types/invitation'
 import {
   forbidden,
   invitationAlreadyMember,
@@ -11,15 +11,21 @@ import {
   invitationExpired,
   invitationNotFound,
   invitationNotPending,
+  projectForbidden,
 } from '../errors'
 import { sendInviteUserToWorkspaceEmail } from '../lib/mail/workspace/send-invite-user-to-workspace'
 import { err, ok, type Result } from '../lib/result'
 import { toInvitationDTO } from '../mappers/invitation.mapper'
+import { toProjectMemberDTO } from '../mappers/project.mapper'
 import { InvitationRepository } from '../repositories/invitation.repository'
 import { MembershipRepository } from '../repositories/membership.repository'
+import { ProjectRepository } from '../repositories/project.repository'
 import { UserRepository } from '../repositories/user.repository'
 import { WorkspaceRepository } from '../repositories/workspace.repository'
-import type { CreateInvitationDTO } from '../schemas/invitation.schema'
+import type {
+  CreateInvitationDTO,
+  InviteToProjectDTO,
+} from '../schemas/invitation.schema'
 
 const PRIVILEGED_ROLES = ['OWNER', 'ADMIN'] as const
 const INVITATION_TTL_MS = 7 * 24 * 60 * 60 * 1000
@@ -272,5 +278,165 @@ export const InvitationService = {
         error: error instanceof Error ? error.message : 'unknown',
       })
     }
+  },
+
+  async createForProject(
+    actorId: string,
+    workspaceId: string,
+    slug: string,
+    dto: InviteToProjectDTO,
+  ): Promise<Result<InviteToProjectResult>> {
+    const gate = await this.assertProjectManager(actorId, workspaceId, slug)
+    if (!gate.ok) return gate
+    const project = gate.value
+
+    const email = dto.email.trim().toLowerCase()
+
+    const existingUser = await UserRepository.findByEmail(email)
+    if (!existingUser.ok) return existingUser
+
+    if (existingUser.value) {
+      const targetMembership =
+        await MembershipRepository.findByUserAndWorkspace(
+          existingUser.value.id,
+          workspaceId,
+        )
+      if (!targetMembership.ok) return targetMembership
+      if (targetMembership.value) {
+        const added = await ProjectRepository.addMember(
+          existingUser.value.id,
+          project.id,
+        )
+        if (!added.ok) return added
+
+        auditMutation({
+          entity: 'project',
+          action: 'update',
+          actorId,
+          targetId: project.id,
+          reason: 'member_added_direct',
+          meta: { targetUserId: existingUser.value.id },
+        })
+
+        return ok({
+          kind: 'added',
+          member: toProjectMemberDTO(added.value, project.leadId),
+        })
+      }
+    }
+
+    const pending = await InvitationRepository.findPendingByWorkspaceAndEmail(
+      workspaceId,
+      email,
+    )
+    if (!pending.ok) return pending
+    if (pending.value) {
+      if (isExpired(pending.value.expiresAt)) {
+        await InvitationRepository.updateStatus(pending.value.id, 'EXPIRED')
+      } else {
+        return err(invitationDuplicate())
+      }
+    }
+
+    const created = await InvitationRepository.create({
+      email,
+      role: dto.role,
+      expiresAt: expiresAt(),
+      invitedById: actorId,
+      workspaceId,
+      projectId: project.id,
+    })
+    if (!created.ok) return created
+
+    await this.dispatchEmail(actorId, workspaceId, created.value.token, email)
+
+    auditMutation({
+      entity: 'invitation',
+      action: 'create',
+      actorId,
+      targetId: created.value.id,
+      meta: { workspaceId, projectId: project.id, email, role: dto.role },
+    })
+
+    return ok({ kind: 'invited', invitation: toInvitationDTO(created.value) })
+  },
+
+  async listForProject(
+    actorId: string,
+    workspaceId: string,
+    slug: string,
+  ): Promise<Result<InvitationDTO[]>> {
+    const gate = await this.assertProjectManager(actorId, workspaceId, slug)
+    if (!gate.ok) return gate
+
+    const result = await InvitationRepository.listByProject(gate.value.id)
+    if (!result.ok) return result
+
+    return ok(result.value.map(toInvitationDTO))
+  },
+
+  async revokeForProject(
+    actorId: string,
+    workspaceId: string,
+    slug: string,
+    invitationId: string,
+  ): Promise<Result<InvitationDTO>> {
+    const gate = await this.assertProjectManager(actorId, workspaceId, slug)
+    if (!gate.ok) return gate
+
+    const invitation = await InvitationRepository.findById(invitationId)
+    if (!invitation.ok) return invitation
+    if (!invitation.value || invitation.value.projectId !== gate.value.id) {
+      return err(invitationNotFound())
+    }
+    if (invitation.value.status !== 'PENDING') {
+      return err(invitationNotPending())
+    }
+
+    const updated = await InvitationRepository.updateStatus(
+      invitationId,
+      'REVOKED',
+    )
+    if (!updated.ok) return updated
+
+    auditMutation({
+      entity: 'invitation',
+      action: 'revoke',
+      actorId,
+      targetId: invitationId,
+      meta: { workspaceId, projectId: gate.value.id },
+    })
+
+    return ok(toInvitationDTO(updated.value))
+  },
+
+  async assertProjectManager(
+    actorId: string,
+    workspaceId: string,
+    slug: string,
+  ): Promise<Result<{ id: string; leadId: string }>> {
+    const membership = await MembershipRepository.findByUserAndWorkspace(
+      actorId,
+      workspaceId,
+    )
+    if (!membership.ok) return membership
+    if (!membership.value) return err(forbidden())
+
+    const projectResult = await ProjectRepository.findByWorkspaceAndSlug(
+      workspaceId,
+      slug,
+      actorId,
+    )
+    if (!projectResult.ok) return projectResult
+    const project = projectResult.value
+
+    const isPrivileged = PRIVILEGED_ROLES.includes(
+      membership.value.role as never,
+    )
+    if (!isPrivileged && project.leadId !== actorId) {
+      return err(projectForbidden('sem permissão para gerenciar membros'))
+    }
+
+    return ok({ id: project.id, leadId: project.leadId })
   },
 }

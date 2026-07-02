@@ -1,3 +1,5 @@
+import type { ProjectMemberDTO } from './project'
+
 export interface InvitationDTO {
   id: string,
   email: string,
@@ -10,3 +12,7 @@ export interface InvitationDTO {
   createdAt: string,
   updatedAt: string
 }
+
+export type InviteToProjectResult =
+  | { kind: 'added'; member: ProjectMemberDTO }
+  | { kind: 'invited'; invitation: InvitationDTO }
