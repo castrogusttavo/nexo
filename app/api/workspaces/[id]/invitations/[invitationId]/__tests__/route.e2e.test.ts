@@ -28,7 +28,7 @@ describe('DELETE /api/workspaces/[id]/invitations/[invitationId]', () => {
   it('should return 404 when the invite belongs to another workspace', async () => {
     const { user, workspace } = await authenticatedOwner()
     const other = await authenticatedOwner()
-    const foreign = await seedInvite(workspace.id, other.user.cookie)
+    const foreign = await seedInvite(other.workspace.id, other.user.cookie)
 
     const res = await deleteJson(
       `/api/workspaces/${workspace.id}/invitations/${foreign.id}`,
