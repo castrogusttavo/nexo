@@ -1,8 +1,12 @@
 import { auditMutation } from '@/lib/axiom/audit'
-import type { ProjectDTO } from '@/types/project'
-import { forbidden, projectForbidden } from '../errors'
+import type { ProjectDTO, ProjectMemberDTO } from '@/types/project'
+import {
+  forbidden,
+  projectForbidden,
+  projectMemberNotInWorkspace,
+} from '../errors'
 import { err, ok, type Result } from '../lib/result'
-import { toProjectDTO } from '../mappers/project.mapper'
+import { toProjectDTO, toProjectMemberDTO } from '../mappers/project.mapper'
 import { MembershipRepository } from '../repositories/membership.repository'
 import { ProjectRepository } from '../repositories/project.repository'
 import type {
@@ -72,6 +76,143 @@ export const ProjectService = {
     }
 
     return ok(toProjectDTO(project, project.favourites.length > 0))
+  },
+
+  async listMembers(
+    actorId: string,
+    workspaceId: string,
+    slug: string,
+  ): Promise<Result<ProjectMemberDTO[]>> {
+    const membership = await MembershipRepository.findByUserAndWorkspace(
+      actorId,
+      workspaceId,
+    )
+    if (!membership.ok) return membership
+    if (!membership.value) return err(forbidden())
+
+    const projectResult = await ProjectRepository.findByWorkspaceAndSlug(
+      workspaceId,
+      slug,
+      actorId,
+    )
+    if (!projectResult.ok) return projectResult
+    const project = projectResult.value
+
+    const isPrivileged = PRIVILEGED_ROLES.includes(
+      membership.value.role as never,
+    )
+    const isLead = project.leadId === actorId
+    const isMember = project.members.some((m) => m.userId === actorId)
+    if (!project.isPublic && !isPrivileged && !isLead && !isMember) {
+      return err(projectForbidden())
+    }
+
+    const result = await ProjectRepository.listMembers(project.id)
+    if (!result.ok) return result
+
+    return ok(result.value.map((m) => toProjectMemberDTO(m, project.leadId)))
+  },
+
+  async addMember(
+    actorId: string,
+    workspaceId: string,
+    slug: string,
+    targetUserId: string,
+  ): Promise<Result<ProjectMemberDTO>> {
+    const membership = await MembershipRepository.findByUserAndWorkspace(
+      actorId,
+      workspaceId,
+    )
+    if (!membership.ok) return membership
+    if (!membership.value) return err(forbidden())
+
+    const projectResult = await ProjectRepository.findByWorkspaceAndSlug(
+      workspaceId,
+      slug,
+      actorId,
+    )
+    if (!projectResult.ok) return projectResult
+    const project = projectResult.value
+
+    const isPrivileged = PRIVILEGED_ROLES.includes(
+      membership.value.role as never,
+    )
+    const isLead = project.leadId === actorId
+    if (!isPrivileged && !isLead) {
+      return err(projectForbidden('Sem permissão para gerenciar membero'))
+    }
+
+    const targetMembership = await MembershipRepository.findByUserAndWorkspace(
+      targetUserId,
+      workspaceId,
+    )
+    if (!targetMembership.ok) return targetMembership
+    if (!targetMembership.value) return err(projectMemberNotInWorkspace())
+
+    const result = await ProjectRepository.addMember(targetUserId, project.id)
+    if (!result.ok) return result
+
+    auditMutation({
+      entity: 'project',
+      action: 'update',
+      actorId,
+      targetId: project.id,
+      reason: 'member_added',
+      meta: { targetUserId },
+    })
+
+    return ok(toProjectMemberDTO(result.value, project.leadId))
+  },
+
+  async removeMember(
+    actorId: string,
+    workspaceId: string,
+    slug: string,
+    targetUserId: string,
+  ): Promise<Result<void>> {
+    const membership = await MembershipRepository.findByUserAndWorkspace(
+      actorId,
+      workspaceId,
+    )
+    if (!membership.ok) return membership
+    if (!membership.value) return err(forbidden())
+
+    const projectResult = await ProjectRepository.findByWorkspaceAndSlug(
+      workspaceId,
+      slug,
+      actorId,
+    )
+    if (!projectResult.ok) return projectResult
+    const project = projectResult.value
+
+    const isPrivileged = PRIVILEGED_ROLES.includes(
+      membership.value.role as never,
+    )
+    const isLead = project.leadId === actorId
+    if (!isPrivileged && !isLead) {
+      return err(projectForbidden('Sem permissão para gerenciar membro'))
+    }
+
+    if (targetUserId === project.leadId) {
+      return err(projectForbidden('Não é possível remover o lead do projeto'))
+    }
+
+    const result = await ProjectRepository.removeMember(
+      targetUserId,
+      project.id,
+    )
+    if (!result.ok) return result
+
+    auditMutation({
+      entity: 'project',
+      action: 'update',
+      actorId,
+      targetId: project.id,
+      reason: 'member_removed',
+      meta: { targetUserId },
+    })
+
+    return ok(undefined)
   },
 
   async create(

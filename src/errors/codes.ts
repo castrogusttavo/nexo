@@ -17,6 +17,15 @@ export const ERROR_CODES = {
   RATE_LIMITED: { code: 'RATE_LIMITED', status: 429 },
   PROJECT_NOT_FOUND: { code: 'PROJECT_NOT_FOUND', status: 404 },
   PROJECT_SLUG_CONFLICT: { code: 'PROJECT_SLUG_CONFLICT', status: 409 },
+  PROJECT_MEMBER_ALREADY_EXISTS: {
+    code: 'PROJECT_MEMBER_ALREADY_EXISTS',
+    status: 409,
+  },
+  PROJECT_MEMBER_NOT_FOUND: { code: 'PROJECT_MEMBER_NOT_FOUND', status: 404 },
+  PROJECT_MEMBER_NOT_IN_WORKSPACE: {
+    code: 'PROJECT_MEMBER_NOT_IN_WORKSPACE',
+    status: 409,
+  },
 
   // Server Errors (500)
   INTERNAL_SERVER_ERROR: { code: 'INTERNAL_SERVER_ERROR', status: 500 },
