@@ -1,4 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
+import type { InvitationDTO, InviteToProjectResult } from '@/types/invitation'
 import type { ProjectDTO, ProjectMemberDTO } from '@/types/project'
 import { apiFetch, apiSend } from './_fetch'
 
@@ -14,6 +15,10 @@ function projectKey(workspaceId: string, slug: string) {
 
 function membersKey(workspaceId: string, slug: string) {
   return [...projectKey(workspaceId, slug), 'members'] as const
+}
+
+function projectInvitationsKey(workspaceId: string, slug: string) {
+  return [...projectKey(workspaceId, slug), 'invitations'] as const
 }
 
 export function useUploadProjectCover(workspaceId: string) {
@@ -284,6 +289,60 @@ export function useRemoveProjectMember(workspaceId: string, slug: string) {
       ),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: membersKey(workspaceId, slug) })
+    },
+  })
+}
+
+export function useProjectInvitations(workspaceId: string, slug: string) {
+  return useQuery({
+    queryKey: projectInvitationsKey(workspaceId, slug),
+    queryFn: () =>
+      apiFetch<InvitationDTO[]>(
+        `/api/workspaces/${workspaceId}/projects/${slug}/members/invite`,
+        undefined,
+        'Erro ao buscar convites do projeto',
+      ),
+    enabled: !!workspaceId && !!slug,
+  })
+}
+
+export function useInviteToProject(workspaceId: string, slug: string) {
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationFn: (data: { email: string; role?: string }) =>
+      apiFetch<InviteToProjectResult>(
+        `/api/workspaces/${workspaceId}/projects/${slug}/members/invite`,
+        {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(data),
+        },
+        'Erro ao convidar para o projeto',
+      ),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: membersKey(workspaceId, slug) })
+      queryClient.invalidateQueries({
+        queryKey: projectInvitationsKey(workspaceId, slug),
+      })
+    },
+  })
+}
+
+export function useRevokeProjectInvitation(workspaceId: string, slug: string) {
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationFn: (invitationId: string) =>
+      apiSend(
+        `/api/workspaces/${workspaceId}/projects/${slug}/members/invite/${invitationId}`,
+        { method: 'DELETE' },
+        'Erro ao revogar convite',
+      ),
+    onSuccess: () => {
+      queryClient.invalidateQueries({
+        queryKey: projectInvitationsKey(workspaceId, slug),
+      })
     },
   })
 }

@@ -83,6 +83,20 @@ export const InvitationRepository = {
     }
   },
 
+  async listByProject(
+    projectId: string,
+  ): Promise<Result<WorkspaceInvitation[]>> {
+    try {
+      const invitations = await prisma.workspaceInvitation.findMany({
+        where: { projectId, status: 'PENDING' },
+        orderBy: { createdAt: 'desc' },
+      })
+      return ok(invitations)
+    } catch {
+      return err(databaseError('Failed to list project invitations'))
+    }
+  },
+
   async updateStatus(
     id: string,
     status: InviteStatus,
