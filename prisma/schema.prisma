@@ -36,6 +36,7 @@ model User {
   projectsLed   Project[]       @relation("ProjectLead")
   projectMemberships  ProjectMember[]
   projectFavourites ProjectFavorite[]
+  sentInvitations WorkspaceInvitation[] @relation("SentInvitations")
 
   @@index([deletionScheduledAt])
   @@map("users")
@@ -203,6 +204,8 @@ model Workspace {
   subscriptions Subscription[]
   projects      Project[]
 
+  invitations WorkspaceInvitation[]
+
   @@map("workspaces")
 }
 
@@ -238,6 +241,28 @@ model Subscription {
   @@map("subscriptions")
 }
 
+model WorkspaceInvitation {
+  id  String @id @default(cuid())
+  email String
+  role  Role  @default(MEMBER)
+  token String  @unique @default(cuid())
+  status  InviteStatus  @default(PENDING)
+  expiresAt DateTime  @map("expiresa_at")
+  invitedById  String  @map("invited_by_id")
+  workspaceId String  @map("workspace_id")
+  projectId String? @map("project_id")
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime  @updatedAt @map("updated_at")
+
+  workspace Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  inviter User  @relation("SentInvitations", fields: [invitedById], references: [id], onDelete: Cascade)
+  project Project? @relation(fields: [projectId], references: [id], onDelete: Cascade)
+
+  @@index([workspaceId, status])
+  @@index([email])
+  @@map("workspace_invitations")
+}
+
 enum Role {
   OWNER
   ADMIN
@@ -257,6 +282,13 @@ enum SubscriptionStatus {
   CANCELLED
   EXPIRED
   REFUNDED
+}
+
+enum InviteStatus {
+  PENDING
+  ACCEPTED
+  REVOKED
+  EXPIRED
 }
 
 enum ComponentStatus {
@@ -385,6 +417,7 @@ model Project {
   workspace Workspace       @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
   members   ProjectMember[]
   favourites ProjectFavorite[]
+  invitations WorkspaceInvitation[]
 
   @@unique([workspaceId, slug])
   @@index([workspaceId, archivedAt])
