@@ -1,6 +1,10 @@
 packages:
   - '.'
 
+minimumReleaseAge: 10080
+trustPolicy: no-downgrade
+blockExoticSubdeps: true
+
 overrides:
   effect: '^3.21.0'
   ioredis: '5.10.1'
