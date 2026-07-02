@@ -1,5 +1,16 @@
-import type { Project, ProjectFavorite, ProjectMember } from '@prisma/client'
-import { databaseError, projectNotFound, projectSlugConflict } from '../errors'
+import type {
+  Project,
+  ProjectFavorite,
+  ProjectMember,
+  User,
+} from '@prisma/client'
+import {
+  databaseError,
+  projectMemberAlreadyExists,
+  projectMemberNotFound,
+  projectNotFound,
+  projectSlugConflict,
+} from '../errors'
 import { prisma } from '../lib/prisma'
 import { err, ok, type Result } from '../lib/result'
 
@@ -7,6 +18,14 @@ export type ProjectWithDetails = Project & {
   members: Pick<ProjectMember, 'userId'>[]
   favourites: Pick<ProjectFavorite, 'id'>[]
 }
+
+export type ProjectMemberWithUser = ProjectMember & {
+  user: Pick<User, 'id' | 'name' | 'username' | 'image'>
+}
+
+const memberUserSelect = {
+  select: { id: true, name: true, username: true, image: true },
+} as const
 
 export const ProjectRepository = {
   async findById(id: string): Promise<Result<Project>> {
@@ -69,6 +88,51 @@ export const ProjectRepository = {
       return ok(projects)
     } catch {
       return err(databaseError('Failed to list projects'))
+    }
+  },
+
+  async listMembers(
+    projectId: string,
+  ): Promise<Result<ProjectMemberWithUser[]>> {
+    try {
+      const members = await prisma.projectMember.findMany({
+        where: { projectId },
+        include: { user: memberUserSelect },
+        orderBy: { createdAt: 'asc' },
+      })
+      return ok(members)
+    } catch {
+      return err(databaseError('Failed to list project members'))
+    }
+  },
+
+  async addMember(
+    userId: string,
+    projectId: string,
+  ): Promise<Result<ProjectMemberWithUser>> {
+    try {
+      const member = await prisma.projectMember.create({
+        data: { userId, projectId },
+        include: { user: memberUserSelect },
+      })
+      return ok(member)
+    } catch (error) {
+      if (error instanceof Error && 'code' in error && error.code === 'P2002') {
+        return err(projectMemberAlreadyExists())
+      }
+      return err(databaseError('Failed to add project member'))
+    }
+  },
+
+  async removeMember(userId: string, projectId: string): Promise<Result<void>> {
+    try {
+      const res = await prisma.projectMember.deleteMany({
+        where: { userId, projectId },
+      })
+      if (res.count === 0) return err(projectMemberNotFound())
+      return ok(undefined)
+    } catch {
+      return err(databaseError('Failed to remove project member'))
     }
   },
 

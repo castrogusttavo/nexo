@@ -1,6 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
-import type { ProjectDTO } from '@/types/project'
-import { apiFetch } from './_fetch'
+import type { ProjectDTO, ProjectMemberDTO } from '@/types/project'
+import { apiFetch, apiSend } from './_fetch'
 
 const PROJECTS_KEY = ['projects']
 
@@ -10,6 +10,10 @@ function projectsKey(workspaceId: string) {
 
 function projectKey(workspaceId: string, slug: string) {
   return [PROJECTS_KEY, workspaceId, slug] as const
+}
+
+function membersKey(workspaceId: string, slug: string) {
+  return [...projectKey(workspaceId, slug), 'members'] as const
 }
 
 export function useUploadProjectCover(workspaceId: string) {
@@ -231,6 +235,55 @@ export function useUnfavoriteProject(workspaceId: string) {
     onSettled: (_data, _err, slug) => {
       queryClient.invalidateQueries({ queryKey: projectsKey(workspaceId) })
       queryClient.invalidateQueries({ queryKey: projectKey(workspaceId, slug) })
+    },
+  })
+}
+
+export function useProjectMembers(workspaceId: string, slug: string) {
+  return useQuery({
+    queryKey: membersKey(workspaceId, slug),
+    queryFn: () =>
+      apiFetch<ProjectMemberDTO[]>(
+        `/api/workspaces/${workspaceId}/projects/${slug}/members`,
+        undefined,
+        'Erro ao buscar usuários',
+      ),
+    enabled: !!workspaceId && !!slug,
+  })
+}
+
+export function useAddProjectMember(workspaceId: string, slug: string) {
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationFn: (userId: string) =>
+      apiFetch<ProjectMemberDTO>(
+        `/api/workspaces/${workspaceId}/projects/${slug}/members`,
+        {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ userId }),
+        },
+        'Erro ao adicionar membro',
+      ),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: membersKey(workspaceId, slug) })
+    },
+  })
+}
+
+export function useRemoveProjectMember(workspaceId: string, slug: string) {
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationFn: (userId: string) =>
+      apiSend(
+        `/api/workspaces/${workspaceId}/projects/${slug}/members/${userId}`,
+        { method: 'DELETE' },
+        'Erro ao remover membro',
+      ),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: membersKey(workspaceId, slug) })
     },
   })
 }

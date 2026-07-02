@@ -13,3 +13,12 @@ export interface ProjectDTO {
   createdAt: string
   updatedAt: string
 }
+
+export interface ProjectMemberDTO {
+  userId: string
+  name: string
+  username: string
+  image: string | null
+  isLead: boolean
+  createdAt: string
+}

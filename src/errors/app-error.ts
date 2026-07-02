@@ -64,7 +64,6 @@ export const projectSlugConflict = (
 export const storageError = (
   message = 'Falha ao armazenar o arquivo',
 ): AppError => appError('STORAGE_ERROR', message)
-
 export const invitationNotFound = (): AppError =>
   appError('INVITATION_NOT_FOUND', 'Contvite não encontrado')
 
@@ -86,3 +85,15 @@ export const invitationDuplicate = (
 export const invitationAlreadyMember = (
   message = 'Este usuário já é membro do workspace',
 ): AppError => appError('INVITATION_ALREADY_MEMBER', message)
+
+export const projectMemberAlreadyExists = (
+  message = 'Usuário já é membro deste projeto',
+): AppError => appError('PROJECT_MEMBER_ALREADY_EXISTS', message)
+
+export const projectMemberNotFound = (
+  message = 'Membro não encontrado neste projeto',
+): AppError => appError('PROJECT_MEMBER_NOT_FOUND', message)
+
+export const projectMemberNotInWorkspace = (
+  message = 'Usuário não pertence a este workspace',
+): AppError => appError('PROJECT_MEMBER_NOT_IN_WORKSPACE', message)
