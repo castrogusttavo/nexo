@@ -64,6 +64,28 @@ export const projectSlugConflict = (
 export const storageError = (
   message = 'Falha ao armazenar o arquivo',
 ): AppError => appError('STORAGE_ERROR', message)
+export const invitationNotFound = (): AppError =>
+  appError('INVITATION_NOT_FOUND', 'Contvite não encontrado')
+
+export const invitationNotPending = (
+  message = 'Este convite não está mais disponível',
+): AppError => appError('INVITATION_NOT_PENDING', message)
+
+export const invitationExpired = (message = 'Este convite expirou'): AppError =>
+  appError('INVITATION_EXPIRED', message)
+
+export const invitationEmailMismatch = (
+  message = 'Este convite foi enviado para outro e-mail',
+): AppError => appError('INVITATION_EMAIL_MISMATCH', message)
+
+export const invitationDuplicate = (
+  message = 'Já existe um convite pendente para este e-mail',
+): AppError => appError('INVITATION_DUPLICATE', message)
+
+export const invitationAlreadyMember = (
+  message = 'Este usuário já é membro do workspace',
+): AppError => appError('INVITATION_ALREADY_MEMBER', message)
+
 export const projectMemberAlreadyExists = (
   message = 'Usuário já é membro deste projeto',
 ): AppError => appError('PROJECT_MEMBER_ALREADY_EXISTS', message)

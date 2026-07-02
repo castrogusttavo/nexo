@@ -194,3 +194,16 @@ export async function deleteJson(
     redirect: opts.redirect ?? 'manual',
   })
 }
+
+export async function createInvite(
+  workspaceId: string,
+  cookie: string,
+  email = 'invitee@example.com',
+  role: Role = 'MEMBER',
+) {
+  return postJson(
+    `/api/workspaces/${workspaceId}/invitations`,
+    { email, role },
+    cookie,
+  )
+}

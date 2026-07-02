@@ -14,6 +14,7 @@ type AuditEntity =
   | 'project'
   | 'user_preference'
   | 'notification_setting'
+  | 'invitation'
 
 type AuditAction =
   | 'create'
@@ -33,6 +34,7 @@ type AuditAction =
   | 'onboarding_step_completed'
   | 'onboarding_role_saved'
   | 'onboarding_goals_saved'
+  | 'accept'
 
 type AuditOutcome = 'success' | 'failure'
 
