@@ -20,7 +20,7 @@ describe('POST /api/workspaces/[id]/invitations/[invitationId]/resend', () => {
     const member = await addMember(workspace.id, 'MEMBER')
 
     const res = await postJson(
-      `/api/workspaces/${workspace.id}/invitations/${invite.id}/resned`,
+      `/api/workspaces/${workspace.id}/invitations/${invite.id}/resend`,
       {},
       member.cookie,
     )
@@ -32,7 +32,7 @@ describe('POST /api/workspaces/[id]/invitations/[invitationId]/resend', () => {
     const before = await seedInvite(workspace.id, user.cookie)
 
     const res = await postJson(
-      `/api/workspaces/${workspace.id}/invitations/${before.id}/resned`,
+      `/api/workspaces/${workspace.id}/invitations/${before.id}/resend`,
       {},
       user.cookie,
     )
@@ -50,12 +50,12 @@ describe('POST /api/workspaces/[id]/invitations/[invitationId]/resend', () => {
     const invite = await seedInvite(workspace.id, user.cookie)
 
     await deleteJson(
-      `/api/workspaces/${workspace.id}/invitations/${invite.id}/`,
+      `/api/workspaces/${workspace.id}/invitations/${invite.id}`,
       user.cookie,
     )
 
     const res = await postJson(
-      `/api/workspaces/${workspace.id}/invitations/${invite.id}/resned`,
+      `/api/workspaces/${workspace.id}/invitations/${invite.id}/resend`,
       {},
       user.cookie,
     )
