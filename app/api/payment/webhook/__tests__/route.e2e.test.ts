@@ -92,15 +92,20 @@ describe('POST /api/payment/webhook', () => {
     expect(ws?.activePlan).toBe('PRO')
   })
 
-  it('should mark subscription cancelled on subscription.cancelled', async () => {
-    const { workspace } = await authenticatedOwner({
-      slug: `wh-${createId().slice(0, 6)}`,
+  it('should cancel subscription and revert workspace to FREE on subscription.cancelled', async () => {
+    const workspace = await prisma.workspace.create({
+      data: {
+        name: 'E2E Cancel',
+        slug: `wh-${createId().slice(0, 6)}`,
+        activePlan: 'PRO',
+      },
     })
     const billId = `bill_cancel_${createId()}`
     await seedSubscription({
       workspaceId: workspace.id,
       billId,
-      status: 'PENDING',
+      plan: 'PRO',
+      status: 'PAID',
     })
 
     const res = await postWebhook({
@@ -111,6 +116,40 @@ describe('POST /api/payment/webhook', () => {
     expect(res.status).toBe(200)
     const sub = await prisma.subscription.findUnique({ where: { billId } })
     expect(sub?.status).toBe('CANCELLED')
+    const refreshed = await prisma.workspace.findUnique({
+      where: { id: workspace.id },
+    })
+    expect(refreshed?.activePlan).toBe('FREE')
+  })
+
+  it('should expire subscription and revert workspace to FREE on subscription.expired', async () => {
+    const workspace = await prisma.workspace.create({
+      data: {
+        name: 'E2E Expire',
+        slug: `wh-${createId().slice(0, 6)}`,
+        activePlan: 'BUSINESS',
+      },
+    })
+    const billId = `bill_expire_${createId()}`
+    await seedSubscription({
+      workspaceId: workspace.id,
+      billId,
+      plan: 'PRO',
+      status: 'PAID',
+    })
+
+    const res = await postWebhook({
+      event: 'subscription.expired',
+      data: { id: billId },
+    })
+
+    expect(res.status).toBe(200)
+    const sub = await prisma.subscription.findUnique({ where: { billId } })
+    expect(sub?.status).toBe('EXPIRED')
+    const refreshed = await prisma.workspace.findUnique({
+      where: { id: workspace.id },
+    })
+    expect(refreshed?.activePlan).toBe('FREE')
   })
 
   it('should accept unknown events without side effects', async () => {
