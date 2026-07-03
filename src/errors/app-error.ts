@@ -100,7 +100,7 @@ export const projectMemberNotInWorkspace = (
 
 export const seatLimitReached = (
   message = 'Limite de assentos do plano atingido',
-): AppError => appError('USERNAME_CONFLICT', message)
+): AppError => appError('SEAT_LIMIT_REACHED', message)
 
 export const featureNotInPlan = (
   message = 'Recurso não disponível no plano atual',
