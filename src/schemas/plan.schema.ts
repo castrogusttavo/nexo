@@ -113,6 +113,9 @@ export const PlanFeaturesSchema = z.object({
   slack: z.boolean(),
   sentry: z.boolean(),
   drawio: z.boolean(),
+  // Enterprise deployment & compliance
+  managedDeployment: z.boolean(),
+  apiAuditLogs: z.boolean(),
 })
 export type PlanFeatures = z.infer<typeof PlanFeaturesSchema>
 export type PlanFeatureKey = keyof PlanFeatures
@@ -123,7 +126,7 @@ export const PlanEntitlementsSchema = z.object({
   features: PlanFeaturesSchema,
   capabilities: PlanCapabilitiesSchema,
 })
-export type PlanEitlements = z.infer<typeof PlanEntitlementsSchema>
+export type PlanEntitlements = z.infer<typeof PlanEntitlementsSchema>
 
 // Catalog: every tier must define a complete entitlements object
 // Zod v4 'record' with an enum key enforces all 4 tiers are present.
