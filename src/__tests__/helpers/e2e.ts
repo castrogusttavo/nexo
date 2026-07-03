@@ -83,7 +83,7 @@ export async function createWorkspaceForUser(
     data: {
       name: data?.name ?? 'E2E Workspace',
       slug,
-      activePlan: data?.activePlan ?? 'BASIC',
+      activePlan: data?.activePlan ?? 'FREE',
     },
   })
   await prisma.membership.create({

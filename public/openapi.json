@@ -2111,8 +2111,8 @@
           "slug": { "type": "string", "example": "acme" },
           "activePlan": {
             "type": "string",
-            "enum": ["BASIC", "PRO", "ENTERPRISE"],
-            "example": "BASIC"
+            "enum": ["FREE", "PRO", "BUSINESS", "ENTERPRISE"],
+            "example": "FREE"
           },
           "createdAt": { "type": "string", "format": "date-time" },
           "updatedAt": { "type": "string", "format": "date-time" }
@@ -2213,7 +2213,7 @@
           "billId": { "type": "string", "example": "bill_abc123" },
           "plan": {
             "type": "string",
-            "enum": ["PRO", "ENTERPRISE"],
+            "enum": ["PRO", "BUSINESS", "ENTERPRISE"],
             "example": "PRO"
           },
           "status": {
@@ -2242,7 +2242,7 @@
         "properties": {
           "plan": {
             "type": "string",
-            "enum": ["PRO", "ENTERPRISE"],
+            "enum": ["PRO", "BUSINESS", "ENTERPRISE"],
             "example": "PRO"
           },
           "workspaceId": { "type": "string", "example": "clx2ws456" }

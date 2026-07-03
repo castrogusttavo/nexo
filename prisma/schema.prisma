@@ -197,7 +197,7 @@ model Workspace {
   id            String         @id @default(cuid())
   name          String
   slug          String         @unique
-  activePlan    Plan           @default(BASIC) @map("active_plan")
+  activePlan    Plan           @default(FREE) @map("active_plan")
   createdAt     DateTime       @default(now()) @map("created_at")
   updatedAt     DateTime       @updatedAt @map("updated_at")
   memberships   Membership[]
@@ -271,8 +271,9 @@ enum Role {
 }
 
 enum Plan {
-  BASIC
+  FREE
   PRO
+  BUSINESS
   ENTERPRISE
 }
 

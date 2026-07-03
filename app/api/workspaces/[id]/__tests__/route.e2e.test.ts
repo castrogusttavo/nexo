@@ -134,12 +134,12 @@ describe('PATCH /api/workspaces/[id]', () => {
     const taken = `taken-${createId().slice(0, 6)}`
     const ownerA = await createAuthenticatedUser()
     await prisma.workspace.create({
-      data: { name: 'A', slug: taken, activePlan: 'BASIC' },
+      data: { name: 'A', slug: taken, activePlan: 'FREE' },
     })
     const targetSlug = `mov-${createId().slice(0, 6)}`
     const ownerB = await createAuthenticatedUser()
     const target = await prisma.workspace.create({
-      data: { name: 'B', slug: targetSlug, activePlan: 'BASIC' },
+      data: { name: 'B', slug: targetSlug, activePlan: 'FREE' },
     })
     await prisma.membership.create({
       data: { userId: ownerB.id, workspaceId: target.id, role: 'OWNER' },

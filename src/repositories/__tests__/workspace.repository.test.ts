@@ -43,7 +43,7 @@ describe('WorkspaceRepository', () => {
   })
 
   describe('create()', () => {
-    it('should persist workspace with default plan BASIC', async () => {
+    it('should persist workspace with default plan FREE', async () => {
       const result = await WorkspaceRepository.create({
         name: 'New WS',
         slug: 'new-ws',
@@ -52,7 +52,7 @@ describe('WorkspaceRepository', () => {
       const ws = expectOk(result)
       expect(ws.name).toBe('New WS')
       expect(ws.slug).toBe('new-ws')
-      expect(ws.activePlan).toBe('BASIC')
+      expect(ws.activePlan).toBe('FREE')
     })
 
     it('should return CONFLICT when slug is already taken', async () => {

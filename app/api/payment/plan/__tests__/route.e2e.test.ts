@@ -44,11 +44,11 @@ describe('POST /api/payment/plan', () => {
     expect(res.status).toBe(422)
   })
 
-  it('should return 422 for BASIC plan (not purchasable)', async () => {
+  it('should return 422 for FREE plan (not purchasable)', async () => {
     const { cookie } = await createAuthenticatedUser()
     const res = await postJson(
       '/api/payment/plan',
-      { plan: 'BASIC', workspaceId: 'ws-x' },
+      { plan: 'FREE', workspaceId: 'ws-x' },
       cookie,
     )
     expect(res.status).toBe(422)

@@ -53,7 +53,7 @@ Two ways to run Nexo:
 
 - **Workspaces.** Multi-tenant from day one. Slug-based URLs, role-based access (`OWNER`, `ADMIN`, `MEMBER`, `VIEWER`), and isolated data per team.
 - **Authentication.** Email and password, Google and GitHub OAuth, two-factor auth via OTP, email verification, and password reset.
-- **Billing.** Plans (`BASIC`, `PRO`, `ENTERPRISE`) with AbacatePay integration and a webhook-driven subscription lifecycle.
+- **Billing.** Plans (`FREE`, `PRO`, `BUSINESS`, `ENTERPRISE`) with AbacatePay integration and a webhook-driven subscription lifecycle.
 - **Status page.** Built-in `/status` with proactive probes across seven components (app, database, cache, auth, payment, email, storage), incident timelines, post-mortems, and uptime history.
 - **Transactional email.** React Email templates for welcome, OTP, password reset, account deletion, data export, invites, trial promotions, and incident post-mortems.
 - **API documentation.** OpenAPI reference rendered with Scalar at `/docs`.

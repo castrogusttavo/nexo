@@ -128,7 +128,7 @@ describe('SubscriptionRepository', () => {
 
   describe('activateWithPlan()', () => {
     it('should mark subscription PAID and update workspace activePlan atomically', async () => {
-      const ws = await seedWorkspace({ activePlan: 'BASIC' })
+      const ws = await seedWorkspace({ activePlan: 'FREE' })
       await seedSubscription({
         workspaceId: ws.id,
         billId: 'bill_activate',
@@ -151,7 +151,7 @@ describe('SubscriptionRepository', () => {
     })
 
     it('should rollback when billId does not exist', async () => {
-      const ws = await seedWorkspace({ activePlan: 'BASIC' })
+      const ws = await seedWorkspace({ activePlan: 'FREE' })
 
       const result = await SubscriptionRepository.activateWithPlan(
         'bill_missing',
@@ -163,7 +163,7 @@ describe('SubscriptionRepository', () => {
       const refreshedWs = await prisma.workspace.findUnique({
         where: { id: ws.id },
       })
-      expect(refreshedWs?.activePlan).toBe('BASIC')
+      expect(refreshedWs?.activePlan).toBe('FREE')
     })
   })
 })

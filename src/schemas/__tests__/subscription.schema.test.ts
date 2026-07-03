@@ -21,9 +21,18 @@ describe('CreateSubscriptionSchema', () => {
     expect(result.success).toBe(true)
   })
 
-  it('should reject BASIC plan (not purchasable)', () => {
+  it('should accept BUSINESS plan', () => {
     const result = CreateSubscriptionSchema.safeParse({
-      plan: 'BASIC',
+      plan: 'BUSINESS',
+      workspaceId: 'ws-1',
+    })
+
+    expect(result.success).toBe(true)
+  })
+
+  it('should reject FREE plan (not purchasable)', () => {
+    const result = CreateSubscriptionSchema.safeParse({
+      plan: 'FREE',
       workspaceId: 'ws-1',
     })
 

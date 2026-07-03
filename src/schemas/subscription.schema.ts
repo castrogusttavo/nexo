@@ -1,7 +1,7 @@
 import { z } from 'zod'
 
 export const CreateSubscriptionSchema = z.object({
-  plan: z.enum(['PRO', 'ENTERPRISE']),
+  plan: z.enum(['PRO', 'BUSINESS', 'ENTERPRISE']),
   workspaceId: z.string().min(1, 'workspaceId é obrigatório'),
 })
 

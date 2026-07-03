@@ -34,9 +34,9 @@ describe('toWorkspaceDTO()', () => {
     expect(dto.updatedAt).toBe('2025-02-01T08:00:00.000Z')
   })
 
-  it('should default to BASIC plan when factory default is used', () => {
+  it('should default to FREE plan when factory default is used', () => {
     const dto = toWorkspaceDTO(createFakeWorkspace())
 
-    expect(dto.activePlan).toBe('BASIC')
+    expect(dto.activePlan).toBe('FREE')
   })
 })

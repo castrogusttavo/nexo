@@ -34,7 +34,7 @@ describe('toUserDTO()', () => {
             id: 'ws-1',
             name: 'Acme',
             slug: 'acme',
-            activePlan: 'BASIC',
+            activePlan: 'FREE',
             createdAt: new Date(),
             updatedAt: new Date(),
           },
