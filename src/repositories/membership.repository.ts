@@ -60,4 +60,15 @@ export const MembershipRepository = {
       return err(databaseError('Failed to create membership'))
     }
   },
+
+  async countByWorkspace(workspaceId: string): Promise<Result<number>> {
+    try {
+      const count = await prisma.membership.count({
+        where: { workspaceId },
+      })
+      return ok(count)
+    } catch {
+      return err(databaseError('Faield to count memberships'))
+    }
+  },
 }

@@ -166,4 +166,46 @@ describe('SubscriptionRepository', () => {
       expect(refreshedWs?.activePlan).toBe('FREE')
     })
   })
+
+  describe('deactivateByBillId', () => {
+    it('should set the status and revert workspace activePlan to FREE atomically', async () => {
+      const ws = await seedWorkspace({ activePlan: 'PRO' })
+      await seedSubscription({
+        workspaceId: ws.id,
+        billId: 'bill_deactivate',
+        plan: 'PRO',
+        status: 'PAID',
+      })
+
+      const sub = expectOk(
+        await SubscriptionRepository.deactivateByBillId(
+          'bill_deactivate',
+          'CANCELLED',
+        ),
+      )
+      expect(sub.status).toBe('CANCELLED')
+
+      const refreshedWs = await prisma.workspace.findUnique({
+        where: { id: ws.id },
+      })
+      expect(refreshedWs?.activePlan).toBe('FREE')
+    })
+
+    it('shoudl rollback when billId does not exist', async () => {
+      const ws = await seedWorkspace({ activePlan: 'PRO' })
+
+      expectErr(
+        await SubscriptionRepository.deactivateByBillId(
+          'bill_missing_deactivate',
+          'EXPIRED',
+        ),
+        'DATABASE_ERROR',
+      )
+
+      const refreshedWs = await prisma.workspace.findUnique({
+        where: { id: ws.id },
+      })
+      expect(refreshedWs?.activePlan).toBe('PRO')
+    })
+  })
 })

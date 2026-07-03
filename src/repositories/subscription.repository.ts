@@ -88,4 +88,28 @@ export const SubscriptionRepository = {
       return err(databaseError('Failed to activate subscription'))
     }
   },
+
+  async deactivateByBillId(
+    billId: string,
+    status: SubscriptionStatus,
+  ): Promise<Result<Subscription>> {
+    try {
+      const subscription = await prisma.$transaction(async (tx) => {
+        const sub = await tx.subscription.update({
+          where: { billId },
+          data: { status },
+        })
+
+        await tx.workspace.update({
+          where: { id: sub.workspaceId },
+          data: { activePlan: 'FREE' },
+        })
+
+        return sub
+      })
+      return ok(subscription)
+    } catch {
+      return err(databaseError('Failed to deactivate subscription'))
+    }
+  },
 }

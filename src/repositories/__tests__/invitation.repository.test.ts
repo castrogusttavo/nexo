@@ -123,4 +123,47 @@ describe('InvitationRepository', () => {
       expect(count).toBe(1)
     })
   })
+
+  describe('countPendingByWorkspace()', () => {
+    it('should count only PENDING invitations of the workspace', async () => {
+      const { inviter, ws } = await seedInviterAndWorkspace()
+      await seedInvitation({
+        invitedById: inviter.id,
+        workspaceId: ws.id,
+        email: 'p1@example.com',
+        status: 'PENDING',
+      })
+      await seedInvitation({
+        invitedById: inviter.id,
+        workspaceId: ws.id,
+        email: 'p2@example.com',
+        status: 'PENDING',
+      })
+      await seedInvitation({
+        invitedById: inviter.id,
+        workspaceId: ws.id,
+        email: 'r@example.com',
+        status: 'REVOKED',
+      })
+
+      expect(
+        expectOk(await InvitationRepository.countPendingByWorkspace(ws.id)),
+      ).toBe(2)
+    })
+
+    it('should not count invitations from toher workspaces', async () => {
+      const { inviter, ws } = await seedInviterAndWorkspace()
+      const other = await seedWorkspace()
+      await seedInvitation({
+        invitedById: inviter.id,
+        workspaceId: ws.id,
+        email: 'iso@example.com',
+        status: 'PENDING',
+      })
+
+      expect(
+        expectOk(await InvitationRepository.countPendingByWorkspace(other.id)),
+      ).toBe(0)
+    })
+  })
 })
