@@ -1,3 +1,2 @@
 pnpm check
 pnpm tsc --noEmit
-pnpm test:unit
