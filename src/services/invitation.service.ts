@@ -12,8 +12,10 @@ import {
   invitationNotFound,
   invitationNotPending,
   projectForbidden,
+  seatLimitReached,
 } from '../errors'
 import { sendInviteUserToWorkspaceEmail } from '../lib/mail/workspace/send-invite-user-to-workspace'
+import { limitOf } from '../lib/plans'
 import { err, ok, type Result } from '../lib/result'
 import { toInvitationDTO } from '../mappers/invitation.mapper'
 import { toProjectMemberDTO } from '../mappers/project.mapper'
@@ -54,6 +56,40 @@ async function assertPrivileged(
   return ok(true)
 }
 
+async function assertSeatAvailable(
+  workspaceId: string,
+  options: { includePending: boolean },
+): Promise<Result<true>> {
+  const workspace = await WorkspaceRepository.findById(workspaceId)
+  if (!workspace.ok) return workspace
+
+  const seats = limitOf(workspace.value.activePlan, 'seats')
+  if (seats === null) return ok(true) // unlimited plan
+
+  const members = await MembershipRepository.countByWorkspace(workspaceId)
+  if (!members.ok) return members
+
+  let used = members.value
+  if (options.includePending) {
+    const pending =
+      await InvitationRepository.countPendingByWorkspace(workspaceId)
+    if (!pending.ok) return pending
+    used += pending.value
+  }
+
+  if (used >= seats) {
+    logger.warn('invitation.seat_limit_reached', {
+      workspaceId,
+      plan: workspace.value.activePlan,
+      seats,
+      used,
+    })
+    return err(seatLimitReached())
+  }
+
+  return ok(true)
+}
+
 export const InvitationService = {
   async create(
     actorId: string,
@@ -88,6 +124,11 @@ export const InvitationService = {
         return err(invitationDuplicate())
       }
     }
+
+    const seat = await assertSeatAvailable(workspaceId, {
+      includePending: true,
+    })
+    if (!seat.ok) return seat
 
     const created = await InvitationRepository.create({
       email,
@@ -228,6 +269,11 @@ export const InvitationService = {
       return err(invitationEmailMismatch())
     }
 
+    const seat = await assertSeatAvailable(invite.workspaceId, {
+      includePending: false,
+    })
+    if (!seat.ok) return seat
+
     const accepted = await InvitationRepository.accept({
       invitationId: invite.id,
       userId: actorId,
@@ -337,6 +383,11 @@ export const InvitationService = {
         return err(invitationDuplicate())
       }
     }
+
+    const seat = await assertSeatAvailable(workspaceId, {
+      includePending: true,
+    })
+    if (!seat.ok) return seat
 
     const created = await InvitationRepository.create({
       email,

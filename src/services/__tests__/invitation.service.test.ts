@@ -44,6 +44,8 @@ beforeEach(() => {
     ok(createFakeWorkspace({ id: 'ws1', slug: 'acme' })),
   )
   mockedEmail.mockResolvedValue({ id: 'email-1' } as never)
+  mockedMembership.countByWorkspace.mockResolvedValue(ok(0))
+  mockedInvite.countPendingByWorkspace.mockResolvedValue(ok(0))
 })
 
 describe('InvitationService', () => {
@@ -222,6 +224,20 @@ describe('InvitationService', () => {
         }),
       )
     })
+
+    it('should return SEAT_LIMIT_REACHED when the workspace is full', async () => {
+      mockedInvite.findByToken.mockResolvedValue(ok(pendingInvite as never))
+      mockedMembership.countByWorkspace.mockResolvedValue(ok(12)) // FREE cap
+
+      const result = await InvitationService.accept(
+        'user',
+        'invitee@example.com',
+        pendingInvite.token,
+      )
+
+      expectErr(result, 'SEAT_LIMIT_REACHED')
+      expect(mockedInvite.accept).not.toHaveBeenCalled()
+    })
   })
 
   describe('revoke()', () => {
@@ -285,6 +301,69 @@ describe('InvitationService', () => {
         expect.any(Date),
       )
       expect(mockedEmail).toHaveBeenCalledTimes(1)
+    })
+  })
+
+  describe('seat limit', () => {
+    it('should return SEAT_LIMIT_REACHED on create when FREE cap is reached', async () => {
+      mockedMembership.findByUserAndWorkspace.mockResolvedValue(
+        ok(ownerMembership),
+      )
+      mockedUser.findByEmail.mockResolvedValue(ok(null))
+      mockedInvite.findPendingByWorkspaceAndEmail.mockResolvedValue(ok(null))
+      mockedMembership.countByWorkspace.mockResolvedValue(ok(12)) // FREE cap
+
+      const result = await InvitationService.create('actor', 'ws1', {
+        email: 'overflow@example.com',
+        role: 'MEMBER',
+      })
+
+      expectErr(result, 'SEAT_LIMIT_REACHED')
+      expect(mockedInvite.create).not.toHaveBeenCalled()
+    })
+
+    it('should count members + pending invites together against the cap', async () => {
+      mockedMembership.findByUserAndWorkspace.mockResolvedValue(
+        ok(ownerMembership),
+      )
+      mockedUser.findByEmail.mockResolvedValue(ok(null))
+      mockedInvite.findPendingByWorkspaceAndEmail.mockResolvedValue(ok(null))
+      mockedMembership.countByWorkspace.mockResolvedValue(ok(10))
+      mockedInvite.countPendingByWorkspace.mockResolvedValue(ok(2)) // 10 + 2 = 12
+
+      const result = await InvitationService.create('actor', 'ws1', {
+        email: 'twelfth@example.com',
+        role: 'MEMBER',
+      })
+
+      expectErr(result, 'SEAT_LIMIT_REACHED')
+    })
+
+    it('should allow create ona n unlimited (paid) plan', async () => {
+      mockedWorkspace.findById.mockResolvedValue(
+        ok(
+          createFakeWorkspace({
+            id: 'ws1',
+            slug: 'acme',
+            activePlan: 'PRO',
+          }),
+        ),
+      )
+      mockedMembership.findByUserAndWorkspace.mockResolvedValue(
+        ok(ownerMembership),
+      )
+      mockedUser.findByEmail.mockResolvedValue(ok(null))
+      mockedInvite.findPendingByWorkspaceAndEmail.mockResolvedValue(ok(null))
+      mockedMembership.countByWorkspace.mockResolvedValue(ok(9999))
+      mockedInvite.create.mockResolvedValue(ok(createFakeInvitation()))
+
+      const result = await InvitationService.create('actor', 'ws1', {
+        email: 'ok@example.com',
+        role: 'MEMBER',
+      })
+
+      expectOk(result)
+      expect(mockedInvite.create).toHaveBeenCalled()
     })
   })
 })

@@ -13,6 +13,7 @@ import type { SubscriptionDTO } from '@/types/subscription'
 
 const PLAN_PRODUCTS: Record<string, string> = {
   PRO: 'prod_0BcjnDNaGQZdpgnKbfnhzRJL',
+  BUSINESS: 'prod_business_placeholder',
   ENTERPRISE: 'prod_enterprise_placeholder',
 }
 
@@ -130,10 +131,13 @@ export const SubscriptionService = {
         return ok(undefined)
       }
 
-      case 'subscription.cancelled': {
-        const result = await SubscriptionRepository.updateStatusByBillId(
+      case 'subscription.cancelled':
+      case 'subscription.expired': {
+        const status =
+          event === 'subscription.expired' ? 'EXPIRED' : 'CANCELLED'
+        const result = await SubscriptionRepository.deactivateByBillId(
           billId,
-          'CANCELLED',
+          status,
         )
         if (!result.ok) {
           auditMutation({
@@ -143,10 +147,12 @@ export const SubscriptionService = {
             targetId: subscription.value.id,
             outcome: 'failure',
             reason: result.error.code,
-            meta: { billId, source: 'webhook' },
+            meta: { billId, event, source: 'webhook' },
           })
           return result
         }
+
+        await WorkspaceCache.invalidate(subscription.value.workspaceId)
         auditMutation({
           entity: 'subscription',
           action: 'cancel',
@@ -154,10 +160,12 @@ export const SubscriptionService = {
           targetId: subscription.value.id,
           meta: {
             billId,
+            event,
             workspaceId: subscription.value.workspaceId,
             source: 'webhook',
           },
         })
+
         return ok(undefined)
       }
 

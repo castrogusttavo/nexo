@@ -69,6 +69,8 @@ beforeEach(() => {
     ok(createFakeWorkspace({ id: 'ws1' })),
   )
   mockedEmail.mockResolvedValue({ id: 'email-1' } as never)
+  mockedMembership.countByWorkspace.mockResolvedValue(ok(0))
+  mockedInvite.countPendingByWorkspace.mockResolvedValue(ok(0))
 })
 
 describe('InvitationService.createForProject()', () => {

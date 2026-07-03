@@ -205,12 +205,16 @@ describe('SubscriptionService', () => {
       expect(mockedWorkspaceCache.invalidate).toHaveBeenCalledWith('ws1')
     })
 
-    it('should mark subscription cancelled on cancelled event', async () => {
-      const subscription = createFakeSubscription({ billId: 'bill_xyz' })
+    it('should revert plan to FREE and invalidate cache on cancelled', async () => {
+      const subscription = createFakeSubscription({
+        billId: 'bill_xyz',
+        workspaceId: 'ws1',
+      })
       mockedSubRepo.findByBillId.mockResolvedValue(ok(subscription))
-      mockedSubRepo.updateStatusByBillId.mockResolvedValue(
+      mockedSubRepo.deactivateByBillId.mockResolvedValue(
         ok({ ...subscription, status: 'CANCELLED' }),
       )
+      mockedWorkspaceCache.invalidate.mockResolvedValue(undefined)
 
       const result = await SubscriptionService.handleWebhookEvent(
         'subscription.cancelled',
@@ -218,11 +222,34 @@ describe('SubscriptionService', () => {
       )
 
       expectOk(result)
-      expect(mockedSubRepo.updateStatusByBillId).toHaveBeenCalledWith(
+      expect(mockedSubRepo.deactivateByBillId).toHaveBeenCalledWith(
         'bill_xyz',
         'CANCELLED',
       )
-      expect(mockedWorkspaceCache.invalidate).not.toHaveBeenCalled()
+      expect(mockedWorkspaceCache.invalidate).toHaveBeenCalledWith('ws1')
+    })
+
+    it('should revert plan to FREE on expired', async () => {
+      const subscription = createFakeSubscription({
+        billId: 'bill_exp',
+        workspaceId: 'ws1',
+      })
+      mockedSubRepo.findByBillId.mockResolvedValue(ok(subscription))
+      mockedSubRepo.deactivateByBillId.mockResolvedValue(
+        ok({ ...subscription, status: 'EXPIRED' }),
+      )
+      mockedWorkspaceCache.invalidate.mockResolvedValue(undefined)
+
+      const result = await SubscriptionService.handleWebhookEvent(
+        'subscription.expired',
+        'bill_exp',
+      )
+
+      expectOk(result)
+      expect(mockedSubRepo.deactivateByBillId).toHaveBeenCalledWith(
+        'bill_exp',
+        'EXPIRED',
+      )
     })
 
     it('should ignore unknown events without erroring', async () => {
