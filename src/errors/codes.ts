@@ -7,6 +7,8 @@ export const ERROR_CODES = {
   FORBIDDEN: { code: 'FORBIDDEN', status: 403 },
   INSUFFICIENT_PERMISSIONS: { code: 'INSUFFICIENT_PERMISSIONS', status: 403 },
   PROJECT_FORBIDDEN: { code: 'PROJECT_FORBIDDEN', status: 403 },
+  SET_LIMIT_REACHED: { code: 'SEAT_LIMIT_REACHED', status: 403 },
+  FEATURE_NOT_IN_PLAN: { code: 'FEATURE_NOT_IN_PLAN', status: 403 },
 
   // Client Errors (400, 404, 409, 422, 429)
   BAD_REQUEST: { code: 'BAD_REQUEST', status: 400 },

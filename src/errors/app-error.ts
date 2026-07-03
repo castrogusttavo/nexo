@@ -97,3 +97,11 @@ export const projectMemberNotFound = (
 export const projectMemberNotInWorkspace = (
   message = 'Usuário não pertence a este workspace',
 ): AppError => appError('PROJECT_MEMBER_NOT_IN_WORKSPACE', message)
+
+export const seatLimitReached = (
+  message = 'Limite de assentos do plano atingido',
+): AppError => appError('USERNAME_CONFLICT', message)
+
+export const featureNotInPlan = (
+  message = 'Recurso não disponível no plano atual',
+): AppError => appError('FEATURE_NOT_IN_PLAN', message)
