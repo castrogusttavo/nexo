@@ -15,7 +15,7 @@ import { authClient } from '@/src/lib/auth-client'
 
 type Step = 'form' | 'otp' | 'backup'
 
-export function SignInForm() {
+export function SignInForm({ redirectTo = '/' }: { redirectTo?: string }) {
   const { push } = useRouter()
   const [step, setStep] = useState<Step>('form')
   const [email, setEmail] = useState('')
@@ -73,7 +73,7 @@ export function SignInForm() {
       return
     }
 
-    push('/')
+    push(redirectTo)
   }
 
   async function handleVerify(otp: string) {
@@ -89,7 +89,7 @@ export function SignInForm() {
       return
     }
 
-    push('/')
+    push(redirectTo)
   }
 
   async function handleResend() {
@@ -116,7 +116,7 @@ export function SignInForm() {
       setOtpError(verifyError.message ?? 'Código de backup inválido')
       return
     }
-    push('/')
+    push(redirectTo)
   }
 
   function handleBack() {
@@ -138,8 +138,16 @@ export function SignInForm() {
             </div>
 
             <div className='flex flex-col gap-3'>
-              <SocialLoginButtonProps provider='google' isPending={isPending} />
-              <SocialLoginButtonProps provider='github' isPending={isPending} />
+              <SocialLoginButtonProps
+                provider='google'
+                isPending={isPending}
+                callbackURL={redirectTo}
+              />
+              <SocialLoginButtonProps
+                provider='github'
+                isPending={isPending}
+                callbackURL={redirectTo}
+              />
             </div>
 
             <div className='relative'>

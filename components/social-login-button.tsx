@@ -23,18 +23,20 @@ const PROVIDERS: Record<
 interface SocialLoginButtonProps {
   provider: SocialProvider
   isPending: boolean
+  callbackURL?: string
 }
 
 export function SocialLoginButtonProps({
   provider,
-  isPending
+  isPending,
+  callbackURL = '/'
 }: SocialLoginButtonProps) {
   const { label, logoAlt, logoSrc } = PROVIDERS[provider]
 
   async function handleSocialSignIn() {
     await authClient.signIn.social({
       provider,
-      callbackURL: '/'
+      callbackURL
     })
   }
 
