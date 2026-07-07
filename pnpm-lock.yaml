@@ -55,6 +55,9 @@ importers:
       '@hugeicons/react':
         specifier: ^1.1.9
         version: 1.1.9(react@19.2.5)
+      '@icons-pack/react-simple-icons':
+        specifier: ^13.13.0
+        version: 13.13.0(react@19.2.5)
       '@next/third-parties':
         specifier: ^16.2.10
         version: 16.2.10(next@16.2.6(@babel/core@7.29.7)(@opentelemetry/api@1.9.1)(react-dom@19.2.5(react@19.2.5))(react@19.2.5))(react@19.2.5)
@@ -1175,6 +1178,12 @@ packages:
   '@humanwhocodes/retry@0.4.3':
     resolution: {integrity: sha512-bV0Tgo9K4hfPCek+aMAn81RppFKv2ySDQeMoSZuvTASywNTnVJCArCZE2FWqpvIatKu7VMRLWlR1EazvVhDyhQ==}
     engines: {node: '>=18.18'}
+
+  '@icons-pack/react-simple-icons@13.13.0':
+    resolution: {integrity: sha512-B5HhQMIpcSH4z8IZ8HFhD59CboHceKYMpPC9kAwGyKntvPdyJJv26DLu4Z1wAjcCLyrJhf11tMhiQGom9Rxb9g==}
+    engines: {node: '>=24', pnpm: '>=10'}
+    peerDependencies:
+      react: ^16.13 || ^17 || ^18 || ^19
 
   '@img/colour@1.1.0':
     resolution: {integrity: sha512-Td76q7j57o/tLVdgS746cYARfSyxk8iEfRxewL9h4OMzYhbW4TAcppl0mT4eyqXddh6L/jwoM75mo7ixa/pCeQ==}
@@ -7434,6 +7443,10 @@ snapshots:
   '@humanwhocodes/module-importer@1.0.1': {}
 
   '@humanwhocodes/retry@0.4.3': {}
+
+  '@icons-pack/react-simple-icons@13.13.0(react@19.2.5)':
+    dependencies:
+      react: 19.2.5
 
   '@img/colour@1.1.0':
     optional: true
