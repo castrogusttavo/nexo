@@ -8,10 +8,12 @@ import { NODE_ENV } from '@/lib/env/env'
 import { transformMiddlewareRequest } from '@axiomhq/nextjs'
 
 const PUBLIC_ROUTES = [
-  '/sign-in', '/sign-up', '/forget-password',
+  // '/' casa apenas de forma exata (o startsWith vira '//', que nunca ocorre),
+  // então libera só a landing de marketing na raiz, não o app inteiro.
+  '/', '/sign-in', '/sign-up', '/forget-password',
   '/reset-password', '/api/auth', '/api/status',
   '/api/payment/webhook', '/docs', '/legals',
-  '/status', '/plan', '/invite'
+  '/status', '/pricing', '/talk-to-sales', '/marketplace', '/invite',
 ]
 
 function buildCspHeader(nonce: string): string {
@@ -95,5 +97,5 @@ export function proxy(request: NextRequest, event: NextFetchEvent) {
 }
 
 export const config = {
-  matcher: ['/((?!_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp|ico)$).*)'],
+  matcher: ['/((?!_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp|avif|ico)$).*)'],
 }
