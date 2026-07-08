@@ -231,6 +231,8 @@ model Subscription {
   plan        Plan
   status      SubscriptionStatus @default(PENDING)
   amount      Int
+  seats       Int                @default(1)
+  interval    BillingInterval    @default(MONTHLY)
   paymentUrl  String             @map("payment_url")
   workspaceId String             @map("workspace_id")
   workspace   Workspace          @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
@@ -239,6 +241,11 @@ model Subscription {
 
   @@index([workspaceId])
   @@map("subscriptions")
+}
+
+enum BillingInterval {
+  MONTHLY
+  YEARLY
 }
 
 model WorkspaceInvitation {

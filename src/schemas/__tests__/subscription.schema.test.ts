@@ -1,30 +1,26 @@
 import { describe, expect, it } from 'vitest'
 import { CreateSubscriptionSchema } from '@/src/schemas/subscription.schema'
 
+const valid = {
+  plan: 'PRO',
+  workspaceId: 'ws-1',
+  seats: 5,
+  interval: 'monthly',
+}
+
 describe('CreateSubscriptionSchema', () => {
-  it('should accept PRO plan', () => {
-    const result = CreateSubscriptionSchema.safeParse({
-      plan: 'PRO',
-      workspaceId: 'ws-1',
-    })
+  it('should accept PRO with seats and interval', () => {
+    const result = CreateSubscriptionSchema.safeParse(valid)
 
     expect(result.success).toBe(true)
-    expect(result.data).toEqual({ plan: 'PRO', workspaceId: 'ws-1' })
+    expect(result.data).toEqual(valid)
   })
 
-  it('should accept ENTERPRISE plan', () => {
+  it('should accept BUSINESS on yearly interval', () => {
     const result = CreateSubscriptionSchema.safeParse({
-      plan: 'ENTERPRISE',
-      workspaceId: 'ws-1',
-    })
-
-    expect(result.success).toBe(true)
-  })
-
-  it('should accept BUSINESS plan', () => {
-    const result = CreateSubscriptionSchema.safeParse({
+      ...valid,
       plan: 'BUSINESS',
-      workspaceId: 'ws-1',
+      interval: 'yearly',
     })
 
     expect(result.success).toBe(true)
@@ -32,33 +28,51 @@ describe('CreateSubscriptionSchema', () => {
 
   it('should reject FREE plan (not purchasable)', () => {
     const result = CreateSubscriptionSchema.safeParse({
+      ...valid,
       plan: 'FREE',
-      workspaceId: 'ws-1',
     })
 
     expect(result.success).toBe(false)
   })
 
-  it('should reject unknown plan', () => {
+  it('should reject ENTERPRISE plan (sales-led)', () => {
     const result = CreateSubscriptionSchema.safeParse({
-      plan: 'GOD_MODE',
-      workspaceId: 'ws-1',
+      ...valid,
+      plan: 'ENTERPRISE',
     })
 
     expect(result.success).toBe(false)
+  })
+
+  it('should reject zero, negative and fractional seats', () => {
+    for (const seats of [0, -1, 1.5]) {
+      const result = CreateSubscriptionSchema.safeParse({ ...valid, seats })
+      expect(result.success).toBe(false)
+    }
+  })
+
+  it('should reject an unknown interval', () => {
+    const result = CreateSubscriptionSchema.safeParse({
+      ...valid,
+      interval: 'weekly',
+    })
+
+    expect(result.success).toBe(false)
+  })
+
+  it('should reject when seats or interval are missing', () => {
+    const { seats: _s, ...noSeats } = valid
+    const { interval: _i, ...noInterval } = valid
+
+    expect(CreateSubscriptionSchema.safeParse(noSeats).success).toBe(false)
+    expect(CreateSubscriptionSchema.safeParse(noInterval).success).toBe(false)
   })
 
   it('should reject empty workspaceId', () => {
     const result = CreateSubscriptionSchema.safeParse({
-      plan: 'PRO',
+      ...valid,
       workspaceId: '',
     })
-
-    expect(result.success).toBe(false)
-  })
-
-  it('should reject when workspaceId is missing', () => {
-    const result = CreateSubscriptionSchema.safeParse({ plan: 'PRO' })
 
     expect(result.success).toBe(false)
   })
