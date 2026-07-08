@@ -3,7 +3,7 @@
 import { useState } from 'react'
 import { toast } from 'sonner'
 import { Button } from '@/components/ui/button'
-import { Field, FieldLabel } from '@/components/ui/field'
+import { Field, FieldError, FieldLabel } from '@/components/ui/field'
 import { Input } from '@/components/ui/input'
 import {
   Select,
@@ -22,10 +22,12 @@ const EMPTY = { name: '', email: '', message: '' }
 export function TalkToSalesForm() {
   const log = useLogger()
   const [fields, setFields] = useState(EMPTY)
-  const [teamSize, setTeamSize] = useState<string>('1-10')
+  const [teamSize, setTeamSize] = useState<string | null>(null)
+  const [teamSizeError, setTeamSizeError] = useState<string | null>(null)
   const [status, setStatus] = useState<'idle' | 'sending' | 'sent' | 'error'>(
     'idle',
   )
+  const [error, setError] = useState<string | null>(null)
 
   const sending = status === 'sending'
 
@@ -40,11 +42,10 @@ export function TalkToSalesForm() {
     e.preventDefault()
 
     if (!teamSize) {
-      toast.error('Selecione o tamanho da equipe')
+      setTeamSizeError('Selecione o tamanho da equipe')
       return
     }
-
-    toast.error(null)
+    setError(null)
     setStatus('sending')
 
     const form = new FormData(e.currentTarget)
@@ -124,14 +125,17 @@ export function TalkToSalesForm() {
           disabled={sending}
         />
       </Field>
-      <Field>
+      <Field data-invalid={!!teamSizeError || undefined}>
         <FieldLabel htmlFor='teamSize'>
           Quão grande é a sua equipe?{' '}
           <span className='text-destructive'>*</span>
         </FieldLabel>
         <Select
           value={teamSize}
-          onValueChange={(value) => setTeamSize(value ?? '')}
+          onValueChange={(value) => {
+            setTeamSize(value ?? '')
+            setTeamSizeError(null)
+          }}
         >
           <SelectTrigger id='teamSize'>
             <SelectValue placeholder='Selecione' />
@@ -146,6 +150,7 @@ export function TalkToSalesForm() {
             </SelectGroup>
           </SelectContent>
         </Select>
+        {teamSizeError && <FieldError>{teamSizeError}</FieldError>}
       </Field>
       <Field>
         <FieldLabel htmlFor='message' className='font-semibold'>
@@ -162,6 +167,7 @@ export function TalkToSalesForm() {
           disabled={sending}
         />
       </Field>
+      {error && <FieldError>{error}</FieldError>}
       <Button className='w-full' type='submit' disabled={status === 'sending'}>
         {status === 'sending' ? 'Enviando...' : 'Falar com vendas'}
       </Button>
