@@ -22,6 +22,8 @@ describe('toSubscriptionDTO()', () => {
       plan: 'PRO',
       status: 'PAID',
       amount: 4990,
+      seats: 1,
+      interval: 'monthly',
       paymentUrl: 'https://pay/c/1',
       workspaceId: 'ws-1',
       createdAt: sub.createdAt.toISOString(),
@@ -48,5 +50,14 @@ describe('toSubscriptionDTO()', () => {
 
     expect(dto.status).toBe('PENDING')
     expect(dto.plan).toBe('PRO')
+  })
+
+  it('should map interval to the lowercase API value', () => {
+    const monthly = createFakeSubscription({ interval: 'MONTHLY', seats: 3 })
+    const yearly = createFakeSubscription({ interval: 'YEARLY' })
+
+    expect(toSubscriptionDTO(monthly).interval).toBe('monthly')
+    expect(toSubscriptionDTO(monthly).seats).toBe(3)
+    expect(toSubscriptionDTO(yearly).interval).toBe('yearly')
   })
 })

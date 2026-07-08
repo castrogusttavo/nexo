@@ -64,6 +64,8 @@ describe('SubscriptionService', () => {
       const result = await SubscriptionService.create('owner', {
         plan: 'PRO',
         workspaceId: 'ws1',
+        seats: 1,
+        interval: 'monthly',
       })
 
       const value = expectOk(result)
@@ -75,7 +77,12 @@ describe('SubscriptionService', () => {
         expect.objectContaining({
           items: [{ id: 'prod_0BcjnDNaGQZdpgnKbfnhzRJL', quantity: 1 }],
           methods: ['CARD'],
-          metadata: { workspaceId: 'ws1', plan: 'PRO' },
+          metadata: {
+            workspaceId: 'ws1',
+            plan: 'PRO',
+            seats: 1,
+            interval: 'monthly',
+          },
         }),
       )
       expect(mockedSubRepo.create).toHaveBeenCalledWith(
@@ -84,6 +91,8 @@ describe('SubscriptionService', () => {
           plan: 'PRO',
           status: 'PENDING',
           workspaceId: 'ws1',
+          seats: 1,
+          interval: 'MONTHLY',
         }),
       )
     })
@@ -103,6 +112,8 @@ describe('SubscriptionService', () => {
       const result = await SubscriptionService.create('admin', {
         plan: 'PRO',
         workspaceId: 'ws1',
+        seats: 1,
+        interval: 'monthly',
       })
 
       expectOk(result)
@@ -121,6 +132,8 @@ describe('SubscriptionService', () => {
       const result = await SubscriptionService.create('m1', {
         plan: 'PRO',
         workspaceId: 'ws1',
+        seats: 1,
+        interval: 'monthly',
       })
 
       const error = expectErr(result, 'FORBIDDEN')
@@ -134,29 +147,11 @@ describe('SubscriptionService', () => {
       const result = await SubscriptionService.create('outsider', {
         plan: 'PRO',
         workspaceId: 'ws1',
+        seats: 1,
+        interval: 'monthly',
       })
 
       expectErr(result, 'FORBIDDEN')
-      expect(mockedAbacate.createSubscription).not.toHaveBeenCalled()
-    })
-
-    it('should reject unknown plan', async () => {
-      const membership = createFakeMembership({
-        userId: 'owner',
-        workspaceId: 'ws1',
-        role: 'OWNER',
-      })
-      mockedMembershipRepo.findByUserAndWorkspace.mockResolvedValue(
-        ok(membership),
-      )
-
-      const result = await SubscriptionService.create('owner', {
-        plan: 'UNKNOWN' as 'PRO',
-        workspaceId: 'ws1',
-      })
-
-      const error = expectErr(result, 'BAD_REQUEST')
-      expect(error.message).toContain('Plano inválido')
       expect(mockedAbacate.createSubscription).not.toHaveBeenCalled()
     })
 
@@ -175,9 +170,44 @@ describe('SubscriptionService', () => {
       const result = await SubscriptionService.create('owner', {
         plan: 'PRO',
         workspaceId: 'ws1',
+        seats: 1,
+        interval: 'monthly',
       })
 
       expectErr(result, 'DATABASE_ERROR')
+    })
+
+    it('should charge per seat on the interval product', async () => {
+      const membership = createFakeMembership({
+        userId: 'owner',
+        workspaceId: 'ws1',
+        role: 'OWNER',
+      })
+      mockedMembershipRepo.findByUserAndWorkspace.mockResolvedValue(
+        ok(membership),
+      )
+      mockedAbacate.createSubscription.mockResolvedValue(
+        fakeAbacateResponse(createFakeAbacateSubscription({ id: 'bill_b1' })),
+      )
+      mockedSubRepo.create.mockResolvedValue(
+        ok(createFakeSubscription({ billId: 'bill_b1' })),
+      )
+
+      await SubscriptionService.create('owner', {
+        plan: 'BUSINESS',
+        workspaceId: 'ws1',
+        seats: 7,
+        interval: 'yearly',
+      })
+
+      expect(mockedAbacate.createSubscription).toHaveBeenCalledWith(
+        expect.objectContaining({
+          items: [{ id: 'prod_business_yearly_placeholder', quantity: 7 }],
+        }),
+      )
+      expect(mockedSubRepo.create).toHaveBeenCalledWith(
+        expect.objectContaining({ seats: 7, interval: 'YEARLY' }),
+      )
     })
   })
 

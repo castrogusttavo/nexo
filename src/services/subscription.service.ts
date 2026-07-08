@@ -1,4 +1,4 @@
-import type { Plan } from '@prisma/client'
+import type { BillingInterval, Plan } from '@prisma/client'
 import { AbacatePayClient } from '@/lib/abacatepay'
 import { auditMutation } from '@/lib/axiom/audit'
 import { BETTER_AUTH_URL } from '@/lib/env/server'
@@ -11,10 +11,24 @@ import { SubscriptionRepository } from '@/src/repositories/subscription.reposito
 import type { CreateSubscriptionDTO } from '@/src/schemas/subscription.schema'
 import type { SubscriptionDTO } from '@/types/subscription'
 
-const PLAN_PRODUCTS: Record<string, string> = {
-  PRO: 'prod_0BcjnDNaGQZdpgnKbfnhzRJL',
-  BUSINESS: 'prod_business_placeholder',
-  ENTERPRISE: 'prod_enterprise_placeholder',
+const PLAN_PRODUCTS: Record<
+  CreateSubscriptionDTO['plan'],
+  Record<CreateSubscriptionDTO['interval'], string>
+> = {
+  PRO: {
+    monthly: 'prod_0BcjnDNaGQZdpgnKbfnhzRJL',
+    yearly: 'prod_pro_yearly_placeholder',
+  },
+  BUSINESS: {
+    monthly: 'prod_business_monthly_placeholder',
+    yearly: 'prod_business_yearly_placeholder',
+  },
+}
+
+function intervalToPrisma(
+  interval: CreateSubscriptionDTO['interval'],
+): BillingInterval {
+  return interval === 'yearly' ? 'YEARLY' : 'MONTHLY'
 }
 
 export const SubscriptionService = {
@@ -33,7 +47,7 @@ export const SubscriptionService = {
       return err(forbidden('Apenas OWNER ou ADMIN podem alterar o plano'))
     }
 
-    const productId = PLAN_PRODUCTS[dto.plan]
+    const productId = PLAN_PRODUCTS[dto.plan][dto.interval]
     if (!productId) {
       return err(badRequest(`Plano inválido: ${dto.plan}`))
     }
@@ -41,13 +55,15 @@ export const SubscriptionService = {
     const appUrl = BETTER_AUTH_URL
 
     const response = await AbacatePayClient.createSubscription({
-      items: [{ id: productId, quantity: 1 }],
+      items: [{ id: productId, quantity: dto.seats }],
       methods: ['CARD'],
       returnUrl: appUrl,
       completionUrl: appUrl,
       metadata: {
         workspaceId: dto.workspaceId,
         plan: dto.plan,
+        seats: dto.seats,
+        interval: dto.interval,
       },
     })
 
@@ -60,6 +76,8 @@ export const SubscriptionService = {
       amount: bill.amount,
       paymentUrl: bill.url,
       workspaceId: dto.workspaceId,
+      seats: dto.seats,
+      interval: intervalToPrisma(dto.interval),
     })
 
     if (!result.ok) {
@@ -69,7 +87,12 @@ export const SubscriptionService = {
         actorId,
         outcome: 'failure',
         reason: result.error.code,
-        meta: { workspaceId: dto.workspaceId, plan: dto.plan },
+        meta: {
+          workspaceId: dto.workspaceId,
+          plan: dto.plan,
+          seats: dto.seats,
+          interval: dto.interval,
+        },
       })
       return result
     }
@@ -83,6 +106,8 @@ export const SubscriptionService = {
         workspaceId: dto.workspaceId,
         plan: dto.plan,
         billId: bill.id,
+        seats: dto.seats,
+        interval: dto.interval,
       },
     })
 

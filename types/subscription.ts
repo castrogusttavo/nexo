@@ -1,3 +1,4 @@
+import { BillingInterval } from '@/src/config/plan-prices'
 import type { SubscriptionStatus } from '@prisma/client'
 
 export interface SubscriptionDTO {
@@ -6,6 +7,8 @@ export interface SubscriptionDTO {
   plan: string
   status: SubscriptionStatus
   amount: number
+  seats: number
+  interval: BillingInterval
   paymentUrl: string
   workspaceId: string
   createdAt: string

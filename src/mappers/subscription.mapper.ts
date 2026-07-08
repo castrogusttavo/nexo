@@ -8,6 +8,8 @@ export function toSubscriptionDTO(subscription: Subscription): SubscriptionDTO {
     plan: subscription.plan,
     status: subscription.status,
     amount: subscription.amount,
+    seats: subscription.seats,
+    interval: subscription.interval === 'YEARLY' ? 'yearly' : 'monthly',
     paymentUrl: subscription.paymentUrl,
     workspaceId: subscription.workspaceId,
     createdAt: subscription.createdAt.toISOString(),

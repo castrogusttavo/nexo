@@ -19,7 +19,12 @@ describe('POST /api/payment/plan', () => {
     const res = await fetch(`${BASE_URL}/api/payment/plan`, {
       method: 'POST',
       headers: defaultHeaders,
-      body: JSON.stringify({ plan: 'PRO', workspaceId: 'ws-x' }),
+      body: JSON.stringify({
+        plan: 'PRO',
+        workspaceId: 'ws-x',
+        seats: 1,
+        interval: 'monthly',
+      }),
     })
     expect(res.status).toBe(401)
   })
@@ -72,7 +77,7 @@ describe('POST /api/payment/plan', () => {
 
     const res = await postJson(
       '/api/payment/plan',
-      { plan: 'PRO', workspaceId: workspace.id },
+      { plan: 'PRO', workspaceId: workspace.id, seats: 1, interval: 'monthly' },
       stranger.cookie,
     )
     expect(res.status).toBe(403)
@@ -84,7 +89,7 @@ describe('POST /api/payment/plan', () => {
 
     const res = await postJson(
       '/api/payment/plan',
-      { plan: 'PRO', workspaceId: workspace.id },
+      { plan: 'PRO', workspaceId: workspace.id, seats: 1, interval: 'monthly' },
       member.cookie,
     )
     expect(res.status).toBe(403)
@@ -96,7 +101,7 @@ describe('POST /api/payment/plan', () => {
 
     const res = await postJson(
       '/api/payment/plan',
-      { plan: 'PRO', workspaceId: workspace.id },
+      { plan: 'PRO', workspaceId: workspace.id, seats: 1, interval: 'monthly' },
       viewer.cookie,
     )
     expect(res.status).toBe(403)

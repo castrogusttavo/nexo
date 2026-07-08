@@ -15,6 +15,8 @@ describe('SubscriptionRepository', () => {
         plan: 'PRO',
         status: 'PENDING',
         amount: 4990,
+        seats: 5,
+        interval: 'YEARLY',
         paymentUrl: 'https://pay/c/1',
         workspaceId: ws.id,
       })
@@ -23,6 +25,8 @@ describe('SubscriptionRepository', () => {
       expect(sub.billId).toBe('bill_create_1')
       expect(sub.workspaceId).toBe(ws.id)
       expect(sub.status).toBe('PENDING')
+      expect(sub.seats).toBe(5)
+      expect(sub.interval).toBe('YEARLY')
     })
 
     it('should return DATABASE_ERROR on duplicate billId', async () => {
@@ -34,6 +38,8 @@ describe('SubscriptionRepository', () => {
         plan: 'PRO',
         status: 'PENDING',
         amount: 100,
+        seats: 1,
+        interval: 'MONTHLY',
         paymentUrl: 'https://pay/c/x',
         workspaceId: ws.id,
       })

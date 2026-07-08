@@ -1,4 +1,9 @@
-import type { Plan, Subscription, SubscriptionStatus } from '@prisma/client'
+import type {
+  BillingInterval,
+  Plan,
+  Subscription,
+  SubscriptionStatus,
+} from '@prisma/client'
 import { databaseError, notFound } from '@/src/errors'
 import { prisma } from '@/src/lib/prisma'
 import { err, ok, type Result } from '@/src/lib/result'
@@ -9,6 +14,8 @@ export const SubscriptionRepository = {
     plan: Plan
     status: SubscriptionStatus
     amount: number
+    seats: number
+    interval: BillingInterval
     paymentUrl: string
     workspaceId: string
   }): Promise<Result<Subscription>> {
