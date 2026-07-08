@@ -39,6 +39,7 @@ export const ERROR_CODES = {
   INTERNAL_SERVER_ERROR: { code: 'INTERNAL_SERVER_ERROR', status: 500 },
   DATABASE_ERROR: { code: 'DATABASE_ERROR', status: 500 },
   STORAGE_ERROR: { code: 'STORAGE_ERROR', status: 500 },
+  PAYMENT_ERROR: { code: 'PAYMENT_ERROR', status: 502 },
 } as const
 
 export type ErrorCode = keyof typeof ERROR_CODES

@@ -41,14 +41,14 @@ describe('SubscriptionService', () => {
       })
       const bill = createFakeAbacateSubscription({
         id: 'bill_pro_1',
-        amount: 4990,
+        amount: 4302,
         url: 'https://pay.example.com/c/1',
       })
       const persisted = createFakeSubscription({
         billId: 'bill_pro_1',
         plan: 'PRO',
         status: 'PENDING',
-        amount: 4990,
+        amount: 4302,
         paymentUrl: 'https://pay.example.com/c/1',
         workspaceId: 'ws1',
       })
@@ -106,7 +106,9 @@ describe('SubscriptionService', () => {
       mockedMembershipRepo.findByUserAndWorkspace.mockResolvedValue(
         ok(membership),
       )
-      mockedAbacate.createSubscription.mockResolvedValue(fakeAbacateResponse())
+      mockedAbacate.createSubscription.mockResolvedValue(
+        fakeAbacateResponse(createFakeAbacateSubscription({ amount: 4302 })),
+      )
       mockedSubRepo.create.mockResolvedValue(ok(createFakeSubscription()))
 
       const result = await SubscriptionService.create('admin', {
@@ -164,7 +166,9 @@ describe('SubscriptionService', () => {
       mockedMembershipRepo.findByUserAndWorkspace.mockResolvedValue(
         ok(membership),
       )
-      mockedAbacate.createSubscription.mockResolvedValue(fakeAbacateResponse())
+      mockedAbacate.createSubscription.mockResolvedValue(
+        fakeAbacateResponse(createFakeAbacateSubscription({ amount: 4302 })),
+      )
       mockedSubRepo.create.mockResolvedValue(err(databaseError()))
 
       const result = await SubscriptionService.create('owner', {
@@ -187,7 +191,9 @@ describe('SubscriptionService', () => {
         ok(membership),
       )
       mockedAbacate.createSubscription.mockResolvedValue(
-        fakeAbacateResponse(createFakeAbacateSubscription({ id: 'bill_b1' })),
+        fakeAbacateResponse(
+          createFakeAbacateSubscription({ id: 'bill_b1', amount: 585767 }),
+        ),
       )
       mockedSubRepo.create.mockResolvedValue(
         ok(createFakeSubscription({ billId: 'bill_b1' })),
@@ -208,6 +214,57 @@ describe('SubscriptionService', () => {
       expect(mockedSubRepo.create).toHaveBeenCalledWith(
         expect.objectContaining({ seats: 7, interval: 'YEARLY' }),
       )
+    })
+
+    it('should return PAYMENT_ERROR when the gateway call fails', async () => {
+      mockedMembershipRepo.findByUserAndWorkspace.mockResolvedValue(
+        ok(
+          createFakeMembership({
+            userId: 'owner',
+            workspaceId: 'ws1',
+            role: 'OWNER',
+          }),
+        ),
+      )
+      mockedAbacate.createSubscription.mockRejectedValue(new Error('401'))
+
+      const result = await SubscriptionService.create('owner', {
+        plan: 'PRO',
+        workspaceId: 'ws1',
+        seats: 1,
+        interval: 'monthly',
+      })
+
+      expectErr(result, 'PAYMENT_ERROR')
+      expect(mockedSubRepo.create).not.toHaveBeenCalled()
+    })
+
+    it('should return PAYMENT_ERROR when charged amount diverges from expected', async () => {
+      mockedMembershipRepo.findByUserAndWorkspace.mockResolvedValue(
+        ok(
+          createFakeMembership({
+            userId: 'owner',
+            workspaceId: 'ws1',
+            role: 'OWNER',
+          }),
+        ),
+      )
+      mockedAbacate.createSubscription.mockResolvedValue(
+        // esperado p/ PRO monthly x2 = 8604; devolvemos 4302 (como se ignorasse seats)
+        fakeAbacateResponse(
+          createFakeAbacateSubscription({ id: 'bill_x', amount: 4302 }),
+        ),
+      )
+
+      const result = await SubscriptionService.create('owner', {
+        plan: 'PRO',
+        workspaceId: 'ws1',
+        seats: 2,
+        interval: 'monthly',
+      })
+
+      expectErr(result, 'PAYMENT_ERROR')
+      expect(mockedSubRepo.create).not.toHaveBeenCalled()
     })
   })
 

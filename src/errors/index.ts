@@ -12,6 +12,7 @@ export {
   invitationNotFound,
   invitationNotPending,
   notFound,
+  paymentError,
   projectForbidden,
   projectMemberAlreadyExists,
   projectMemberNotFound,

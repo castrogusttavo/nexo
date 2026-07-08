@@ -1,15 +1,17 @@
 import type { BillingInterval, Plan } from '@prisma/client'
 import { AbacatePayClient } from '@/lib/abacatepay'
 import { auditMutation } from '@/lib/axiom/audit'
+import { logger } from '@/lib/axiom/logger'
 import { BETTER_AUTH_URL } from '@/lib/env/server'
 import { WorkspaceCache } from '@/src/cache/workspace.cache'
-import { badRequest, forbidden } from '@/src/errors'
+import { forbidden, paymentError } from '@/src/errors'
 import { err, ok, type Result } from '@/src/lib/result'
 import { toSubscriptionDTO } from '@/src/mappers/subscription.mapper'
 import { MembershipRepository } from '@/src/repositories/membership.repository'
 import { SubscriptionRepository } from '@/src/repositories/subscription.repository'
 import type { CreateSubscriptionDTO } from '@/src/schemas/subscription.schema'
 import type { SubscriptionDTO } from '@/types/subscription'
+import { PAID_PLAN_PRICES } from '../config/plan-prices'
 
 const PLAN_PRODUCTS: Record<
   CreateSubscriptionDTO['plan'],
@@ -48,26 +50,70 @@ export const SubscriptionService = {
     }
 
     const productId = PLAN_PRODUCTS[dto.plan][dto.interval]
-    if (!productId) {
-      return err(badRequest(`Plano inválido: ${dto.plan}`))
-    }
-
     const appUrl = BETTER_AUTH_URL
 
-    const response = await AbacatePayClient.createSubscription({
-      items: [{ id: productId, quantity: dto.seats }],
-      methods: ['CARD'],
-      returnUrl: appUrl,
-      completionUrl: appUrl,
-      metadata: {
+    let bill: Awaited<
+      ReturnType<typeof AbacatePayClient.createSubscription>
+    >['data']
+    try {
+      const response = await AbacatePayClient.createSubscription({
+        items: [{ id: productId, quantity: dto.seats }],
+        methods: ['CARD'],
+        returnUrl: appUrl,
+        completionUrl: appUrl,
+        metadata: {
+          workspaceId: dto.workspaceId,
+          plan: dto.plan,
+          seats: dto.seats,
+          interval: dto.interval,
+        },
+      })
+      bill = response.data
+    } catch (error) {
+      logger.error('subscription.gateway_failed', {
         workspaceId: dto.workspaceId,
         plan: dto.plan,
-        seats: dto.seats,
         interval: dto.interval,
-      },
-    })
+        seats: dto.seats,
+        message: error instanceof Error ? error.message : String(error),
+      })
+      auditMutation({
+        entity: 'subscription',
+        action: 'create',
+        actorId,
+        outcome: 'failure',
+        reason: 'PAYMENT_ERROR',
+        meta: { workspaceId: dto.workspaceId, plan: dto.plan },
+      })
+      return err(paymentError())
+    }
 
-    const bill = response.data
+    const expectedAmount = PAID_PLAN_PRICES[dto.plan][dto.interval] * dto.seats
+    if (bill.amount !== expectedAmount) {
+      logger.error('subscription.amount_mismatch', {
+        workspaceId: dto.workspaceId,
+        plan: dto.plan,
+        interval: dto.interval,
+        seats: dto.seats,
+        expected: expectedAmount,
+        charged: bill.amount,
+        billId: bill.id,
+      })
+      auditMutation({
+        entity: 'subscription',
+        action: 'create',
+        actorId,
+        outcome: 'failure',
+        reason: 'PAYMENT_AMOUNT_MISMATCH',
+        meta: {
+          workspaceId: dto.workspaceId,
+          plan: dto.plan,
+          expected: expectedAmount,
+          charged: bill.amount,
+        },
+      })
+      return err(paymentError('Valor cobrado divergente do esperado'))
+    }
 
     const result = await SubscriptionRepository.create({
       billId: bill.id,
