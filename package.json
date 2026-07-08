@@ -34,7 +34,7 @@
     "worker:build": "esbuild worker/index.ts --bundle --platform=node --target=node20 --alias:server-only=./worker/server-only.shim.ts --outfile=dist/worker.cjs --external:argon2 --external:@prisma/client --external:.prisma/client",
     "worker": "node dist/worker.cjs",
     "prepare": "husky",
-    "email": "npx email dev --dir components/emails --port 3001"
+    "email": "ESBUILD_BINARY_PATH=node_modules/.pnpm/@esbuild+linux-x64@0.28.0/node_modules/@esbuild/linux-x64/bin/esbuild npx email dev --dir components/emails --port 3001"
   },
   "dependencies": {
     "@aws-sdk/s3-request-presigner": "^3.1079.0",
@@ -100,7 +100,7 @@
     "@commitlint/cli": "^20.5.3",
     "@commitlint/config-conventional": "^20.5.3",
     "@faker-js/faker": "^10.5.0",
-    "@react-email/ui": "6.6.3",
+    "@react-email/ui": "6.6.5",
     "@tailwindcss/postcss": "^4.3.2",
     "@testing-library/react": "^16.3.2",
     "@types/node": "^25.9.4",
