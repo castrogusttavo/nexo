@@ -8,12 +8,11 @@ import { NODE_ENV } from '@/lib/env/env'
 import { transformMiddlewareRequest } from '@axiomhq/nextjs'
 
 const PUBLIC_ROUTES = [
-  // '/' casa apenas de forma exata (o startsWith vira '//', que nunca ocorre),
-  // então libera só a landing de marketing na raiz, não o app inteiro.
   '/', '/sign-in', '/sign-up', '/forget-password',
   '/reset-password', '/api/auth', '/api/status',
   '/api/payment/webhook', '/docs', '/legals',
-  '/status', '/pricing', '/talk-to-sales', '/marketplace', '/invite',
+  '/status', '/pricing', '/talk-to-sales',
+  '/marketplace', '/invite', '/api/talk-to-sales'
 ]
 
 function buildCspHeader(nonce: string): string {
