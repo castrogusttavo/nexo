@@ -82,7 +82,7 @@ export function UpgradeForm({
       const response = await fetch('/api/payment/plan', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ plan, workspaceId }),
+        body: JSON.stringify({ plan, workspaceId, seats, interval: billing }),
       })
       const result = await response.json()
 
