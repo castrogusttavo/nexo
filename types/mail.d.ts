@@ -57,3 +57,10 @@ export interface ExportDataProps extends EmailProps {
   expiresAt: string
   fileSize?: string
 }
+
+export interface TalkToSalesEmailProps {
+  name: string
+  email: string
+  teamSize: string
+  message: string
+}

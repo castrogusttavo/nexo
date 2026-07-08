@@ -11,6 +11,7 @@ export {
   invitationExpired,
   invitationNotFound,
   invitationNotPending,
+  mailError,
   notFound,
   paymentError,
   projectForbidden,

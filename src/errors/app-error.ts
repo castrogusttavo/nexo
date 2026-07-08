@@ -109,3 +109,7 @@ export const featureNotInPlan = (
 export const paymentError = (
   message = 'Falha ao processar o pagamento',
 ): AppError => appError('PAYMENT_ERROR', message)
+
+export const mailError = (
+  message = 'Não foi possível enviar sua mensagem',
+): AppError => appError('MAIL_ERROR', message)
