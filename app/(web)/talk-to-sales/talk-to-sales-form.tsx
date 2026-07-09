@@ -22,8 +22,7 @@ const EMPTY = { name: '', email: '', message: '' }
 export function TalkToSalesForm() {
   const log = useLogger()
   const [fields, setFields] = useState(EMPTY)
-  const [teamSize, setTeamSize] = useState<string | null>(null)
-  const [teamSizeError, setTeamSizeError] = useState<string | null>(null)
+  const [teamSize, setTeamSize] = useState<string>('1-10')
   const [status, setStatus] = useState<'idle' | 'sending' | 'sent' | 'error'>(
     'idle',
   )
@@ -41,10 +40,6 @@ export function TalkToSalesForm() {
   ) {
     e.preventDefault()
 
-    if (!teamSize) {
-      setTeamSizeError('Selecione o tamanho da equipe')
-      return
-    }
     setError(null)
     setStatus('sending')
 
@@ -125,7 +120,7 @@ export function TalkToSalesForm() {
           disabled={sending}
         />
       </Field>
-      <Field data-invalid={!!teamSizeError || undefined}>
+      <Field>
         <FieldLabel htmlFor='teamSize'>
           Quão grande é a sua equipe?{' '}
           <span className='text-destructive'>*</span>
@@ -134,7 +129,6 @@ export function TalkToSalesForm() {
           value={teamSize}
           onValueChange={(value) => {
             setTeamSize(value ?? '')
-            setTeamSizeError(null)
           }}
         >
           <SelectTrigger id='teamSize'>
@@ -150,7 +144,6 @@ export function TalkToSalesForm() {
             </SelectGroup>
           </SelectContent>
         </Select>
-        {teamSizeError && <FieldError>{teamSizeError}</FieldError>}
       </Field>
       <Field>
         <FieldLabel htmlFor='message' className='font-semibold'>
