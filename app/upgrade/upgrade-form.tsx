@@ -64,6 +64,15 @@ export function UpgradeForm({
   const [isPending, setIsPending] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
+  const [couponInput, setCouponInput] = useState('')
+  const [appliedCoupon, setAppliedCoupon] = useState<{
+    code: string
+    discount: number
+    discountKind: 'PERCENTAGE' | 'FIXED'
+  } | null>(null)
+  const [couponError, setCouponError] = useState<string | null>(null)
+  const [couponPending, setCouponPending] = useState(false)
+
   const price = plan ? PAID_PLAN_PRICES[plan] : null
   const total = price
     ? (billing === 'yearly' ? price.yearly : price.monthly) * seats
@@ -75,6 +84,50 @@ export function UpgradeForm({
     yearlyDiscount(PAID_PLAN_PRICES.BUSINESS),
   )
 
+  const couponDiscount =
+    appliedCoupon && total > 0
+      ? appliedCoupon.discountKind === 'PERCENTAGE'
+        ? Math.round((total * appliedCoupon.discount) / 100)
+        : Math.min(total, appliedCoupon.discount)
+      : 0
+  const finalTotal = Math.max(0, total - couponDiscount)
+
+  async function applyCoupon() {
+    const code = couponInput.trim()
+    if (!code) return
+    setCouponError(null)
+    setCouponPending(true)
+
+    try {
+      const response = await fetch(
+        `/api/coupons/validate?code=${encodeURIComponent(code)}`,
+      )
+      const result = await response.json()
+
+      if (result.success && result.data) {
+        setAppliedCoupon(result.data)
+        setCouponInput(result.data.code)
+      } else {
+        setAppliedCoupon(null)
+        setCouponError(result.error?.message ?? 'Cupom inválido')
+      }
+    } catch (err) {
+      setCouponError('Não foi possível validar o cupom')
+      log.error('upgrade.coupon_failed', {
+        component: 'UpgradeForm',
+        message: err instanceof Error ? err.message : String(err),
+      })
+    } finally {
+      setCouponPending(false)
+    }
+  }
+
+  function removeCoupon() {
+    setAppliedCoupon(null)
+    setCouponInput('')
+    setCouponError(null)
+  }
+
   async function handleCheckout() {
     if (!plan || !workspaceId) return
     setError(null)
@@ -84,7 +137,13 @@ export function UpgradeForm({
       const response = await fetch('/api/payment/plan', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ plan, workspaceId, seats, interval: billing }),
+        body: JSON.stringify({
+          plan,
+          workspaceId,
+          seats,
+          interval: billing,
+          ...(appliedCoupon ? { coupon: appliedCoupon.code } : {}),
+        }),
       })
       const result = await response.json()
 
@@ -326,10 +385,63 @@ export function UpgradeForm({
                 </Tabs>
               </div>
               <div className='w-full h-px bg-border/80' />
+              <div className='flex flex-col gap-3'>
+                <div className='gap-2 text-sm font-medium flex w-fit items-center leading-snug'>
+                  Cupom de desconto
+                </div>
+                {appliedCoupon ? (
+                  <div className='flex items-center justify-between bg-card rounded-lg pl-3 pr-1.5 py-1.5 text-sm'>
+                    <span className='font-medium'>{appliedCoupon.code}</span>
+                    <Button
+                      variant='ghost'
+                      size='xs'
+                      className='hover:bg-transparent! text-muted-foreground'
+                      onClick={removeCoupon}
+                    >
+                      Remover
+                    </Button>
+                  </div>
+                ) : (
+                  <div className='flex items-center gap-2'>
+                    <Input
+                      value={couponInput}
+                      onChange={(e) => {
+                        setCouponInput(e.target.value)
+                        setCouponError(null)
+                      }}
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter') {
+                          e.preventDefault()
+                          applyCoupon()
+                        }
+                      }}
+                      placeholder='Insira o código'
+                      className='h-9 border border-border uppercase placeholder:normal-case'
+                    />
+                    <Button
+                      variant='outline'
+                      size='sm'
+                      onClick={applyCoupon}
+                      disabled={couponPending}
+                    >
+                      {couponPending ? 'Validando...' : 'Aplicar'}
+                    </Button>
+                  </div>
+                )}
+                {couponError && (
+                  <p className='text-sm text-destructive'>{couponError}</p>
+                )}
+              </div>
+              {couponDiscount > 0 && (
+                <div className='flex justify-between text-sm text-green-700 dark:text-green-200'>
+                  <span>Cupom {appliedCoupon?.code}</span>
+                  <span>-{formatCurrency(couponDiscount)}</span>
+                </div>
+              )}
               <div className='flex justify-between'>
                 <span className='font-medium'>Valor total a pagar</span>
                 <span className='font-medium'>
-                  {formatCurrency(total)}
+                  {formatCurrency(finalTotal)}
                   {billing === 'yearly' ? '/ano' : '/mês'}
                 </span>
               </div>
