@@ -1,4 +1,4 @@
-import type { AbacatePaySubscription } from '@/lib/abacatepay'
+import type { AbacatePayCoupon, AbacatePaySubscription } from '@/lib/abacatepay'
 
 interface AbacatePayResponse<T> {
   success: boolean
@@ -25,4 +25,18 @@ export function fakeAbacateResponse(
   bill: AbacatePaySubscription = createFakeAbacateSubscription(),
 ): AbacatePayResponse<AbacatePaySubscription> {
   return { success: true, data: bill, error: null }
+}
+
+export function createFakeAbacateCoupon(
+  overrides?: Partial<AbacatePayCoupon>,
+): AbacatePayCoupon {
+  return {
+    id: 'BLACKFRIDAY',
+    discount: 20,
+    discountKind: 'PERCENTAGE',
+    status: 'ACTIVE',
+    redeemsCount: 0,
+    maxRedeems: -1,
+    ...overrides,
+  }
 }

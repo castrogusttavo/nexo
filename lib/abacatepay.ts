@@ -26,6 +26,15 @@ export interface AbacatePaySubscription {
   updatedAt: string
 }
 
+export interface AbacatePayCoupon {
+  id: string
+  discount: number
+  discountKind: 'PERCENTAGE' | 'FIXED'
+  status: 'ACTIVE' | 'INACTIVE' | 'EXPIRED'
+  redeemsCount: number
+  maxRedeems: number
+}
+
 interface AbacatePayResponse<T> {
   success: boolean
   data: T
@@ -63,4 +72,26 @@ export const AbacatePayClient = {
       body: JSON.stringify(params),
     })
   },
+
+  async getCoupon(code: string): Promise<AbacatePayCoupon | null> {
+    const response = await fetch(
+      `${BASE_URL}/coupons/get?id=${encodeURIComponent(code)}`,
+      {
+        headers: {
+          Authorization: `Bearer ${ABACATE_PAY}`,
+          'Content-Type': 'application/json'
+        }
+      }
+    )
+
+    if (response.status === 404) return null
+
+    const data = await response.json()
+    if (!response.ok) {
+      throw new Error(
+        data.error ?? `AbacatePay coupon fetch failed: ${response.status}`
+      )
+    }
+    return data.data as AbacatePayCoupon
+  }
 }
