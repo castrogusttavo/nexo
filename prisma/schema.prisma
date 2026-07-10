@@ -234,6 +234,7 @@ model Subscription {
   amount      Int
   seats       Int                @default(1)
   interval    BillingInterval    @default(MONTHLY)
+  coupon      String?
   paymentUrl  String             @map("payment_url")
   workspaceId String             @map("workspace_id")
   workspace   Workspace          @relation(fields: [workspaceId], references: [id], onDelete: Cascade)

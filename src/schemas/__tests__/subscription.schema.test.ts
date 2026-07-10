@@ -76,4 +76,27 @@ describe('CreateSubscriptionSchema', () => {
 
     expect(result.success).toBe(false)
   })
+
+  it('should accept an optional coupon and normalize it', () => {
+    const result = CreateSubscriptionSchema.safeParse({
+      ...valid,
+      coupon: '  black-friday  ',
+    })
+
+    expect(result.success).toBe(true)
+    if (result.success) expect(result.data.coupon).toBe('BLACK-FRIDAY')
+  })
+
+  it('should accept a subscription without a coupon', () => {
+    expect(CreateSubscriptionSchema.safeParse(valid).success).toBe(true)
+  })
+
+  it('should reject a malformed coupon', () => {
+    const result = CreateSubscriptionSchema.safeParse({
+      ...valid,
+      coupon: 'no spaces allowed',
+    })
+
+    expect(result.success).toBe(false)
+  })
 })

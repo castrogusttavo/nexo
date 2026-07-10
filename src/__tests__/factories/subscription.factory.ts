@@ -20,6 +20,7 @@ export function createFakeSubscription(
     amount: 4990,
     seats: 1,
     interval: 'MONTHLY' as BillingInterval,
+    coupon: null,
     paymentUrl: 'https://pay.example.com/checkout',
     workspaceId: createId(),
     createdAt: now,
