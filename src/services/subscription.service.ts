@@ -19,12 +19,12 @@ const PLAN_PRODUCTS: Record<
   Record<CreateSubscriptionDTO['interval'], string>
 > = {
   PRO: {
-    monthly: 'prod_0BcjnDNaGQZdpgnKbfnhzRJL',
-    yearly: 'prod_pro_yearly_placeholder',
+    monthly: 'prod_hhYrXssxdQuRx1TcNAH4YpH3',
+    yearly: 'prod_3ShyESQSCAS4YtUhaPj6cJMR',
   },
   BUSINESS: {
-    monthly: 'prod_business_monthly_placeholder',
-    yearly: 'prod_business_yearly_placeholder',
+    monthly: 'prod_BgZbxqmJKdRgdFMBGjgJHWzh',
+    yearly: 'prod_pKMcBAhqDXZUyTcn4geBPDje',
   },
 }
 

@@ -79,7 +79,7 @@ describe('SubscriptionService', () => {
 
       expect(mockedAbacate.createSubscription).toHaveBeenCalledWith(
         expect.objectContaining({
-          items: [{ id: 'prod_0BcjnDNaGQZdpgnKbfnhzRJL', quantity: 1 }],
+          items: [{ id: 'prod_hhYrXssxdQuRx1TcNAH4YpH3', quantity: 1 }],
           methods: ['CARD'],
           metadata: {
             workspaceId: 'ws1',
@@ -212,7 +212,7 @@ describe('SubscriptionService', () => {
 
       expect(mockedAbacate.createSubscription).toHaveBeenCalledWith(
         expect.objectContaining({
-          items: [{ id: 'prod_business_yearly_placeholder', quantity: 7 }],
+          items: [{ id: 'prod_pKMcBAhqDXZUyTcn4geBPDje', quantity: 7 }],
         }),
       )
       expect(mockedSubRepo.create).toHaveBeenCalledWith(
