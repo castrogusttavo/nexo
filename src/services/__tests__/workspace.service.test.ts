@@ -124,7 +124,12 @@ describe('WorkspaceService', () => {
       const value = expectOk(result)
       expect(value.slug).toBe('acme')
       expect(mockedWorkspaceRepo.createWithOwner).toHaveBeenCalledWith(
-        { name: 'Acme', slug: 'acme' },
+        expect.objectContaining({
+          name: 'Acme',
+          slug: 'acme',
+          activePlan: 'BUSINESS',
+          trialEndsAt: expect.any(Date),
+        }),
         'owner-1',
       )
       expect(mockedUserCache.invalidate).toHaveBeenCalledWith('owner-1')
@@ -142,6 +147,26 @@ describe('WorkspaceService', () => {
 
       expectErr(result, 'DATABASE_ERROR')
       expect(mockedUserCache.invalidate).not.toHaveBeenCalled()
+    })
+
+    it('should grant a 14-day business trial on creation', async () => {
+      mockedWorkspaceRepo.createWithOwner.mockResolvedValue(
+        ok(createFakeWorkspace()),
+      )
+      mockedUserCache.invalidate.mockResolvedValue(undefined)
+
+      const before = Date.now()
+      await WorkspaceService.create('owner-1', { name: 'A', slug: 'a' })
+      const { trialEndsAt, activePlan } =
+        mockedWorkspaceRepo.createWithOwner.mock.calls[0][0]
+
+      expect(activePlan).toBe('BUSINESS')
+      expect(trialEndsAt).toBeInstanceOf(Date)
+      if (trialEndsAt instanceof Date) {
+        const days = (trialEndsAt.getTime() - before) / 86_400_000
+        expect(days).toBeGreaterThan(13.9)
+        expect(days).toBeLessThan(14.1)
+      }
     })
   })
 

@@ -112,6 +112,25 @@ describe('WorkspaceRepository', () => {
 
       expectErr(result, 'CONFLICT')
     })
+
+    it('should persist activePlan and trialEndsAt when provided', async () => {
+      const owner = await seedUser({ email: 'trial@example.com' })
+      const ends = new Date('2026-08-01T00:00:00.000Z')
+
+      const result = await WorkspaceRepository.createWithOwner(
+        {
+          name: 'Trial',
+          slug: 'trial-ws',
+          activePlan: 'BUSINESS',
+          trialEndsAt: ends,
+        },
+        owner.id,
+      )
+
+      const ws = expectOk(result)
+      expect(ws.activePlan).toBe('BUSINESS')
+      expect(ws.trialEndsAt?.toISOString()).toBe('2026-08-01T00:00:00.000Z')
+    })
   })
 
   describe('update()', () => {

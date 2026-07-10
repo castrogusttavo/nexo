@@ -1,3 +1,4 @@
+import type { Plan } from '@prisma/client'
 import { auditMutation } from '@/lib/axiom/audit'
 import { UserCache } from '@/src/cache/user.cache'
 import { WorkspaceCache } from '@/src/cache/workspace.cache'
@@ -11,6 +12,7 @@ import type {
   UpdateWorkspaceDTO,
 } from '@/src/schemas/workspace.schema'
 import type { WorkspaceDTO } from '@/types/workspace'
+import { TRIAL_PLAN, trialEndsAtFrom } from '../config/trial'
 
 export const WorkspaceService = {
   async getById(
@@ -40,7 +42,14 @@ export const WorkspaceService = {
     actorId: string,
     dto: CreateWorkspaceDTO,
   ): Promise<Result<WorkspaceDTO>> {
-    const result = await WorkspaceRepository.createWithOwner(dto, actorId)
+    const result = await WorkspaceRepository.createWithOwner(
+      {
+        ...dto,
+        activePlan: TRIAL_PLAN as Plan,
+        trialEndsAt: trialEndsAtFrom(),
+      },
+      actorId,
+    )
     if (!result.ok) {
       auditMutation({
         entity: 'workspace',
@@ -59,6 +68,7 @@ export const WorkspaceService = {
       action: 'create',
       actorId,
       targetId: result.value.id,
+      meta: { trialPlan: TRIAL_PLAN },
     })
 
     return ok(toWorkspaceDTO(result.value))

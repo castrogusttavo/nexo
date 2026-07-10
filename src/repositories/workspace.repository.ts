@@ -1,4 +1,4 @@
-import type { Workspace } from '@prisma/client'
+import type { Plan, Workspace } from '@prisma/client'
 import { conflict, databaseError, notFound } from '@/src/errors'
 import { prisma } from '@/src/lib/prisma'
 import { err, ok, type Result } from '@/src/lib/result'
@@ -43,7 +43,12 @@ export const WorkspaceRepository = {
   },
 
   async createWithOwner(
-    data: { name: string; slug: string },
+    data: {
+      name: string
+      slug: string
+      activePlan?: Plan
+      trialEndsAt?: Date | null
+    },
     userId: string,
   ): Promise<Result<Workspace>> {
     try {
