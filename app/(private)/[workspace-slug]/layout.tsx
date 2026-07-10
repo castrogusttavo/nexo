@@ -4,8 +4,10 @@ import type { ReactNode } from 'react'
 import { UserHeader } from '@/app/_components/header/header-layout-user'
 import { HeaderPromotionBanner } from '@/app/_components/header/header-promotion-banner'
 import { GlobalSidebarNavigation } from '@/app/_components/navigation/sidebar-global'
+import { TRIAL_BANNER_DAYS } from '@/src/config/trial'
 import { getAuthSession } from '@/src/lib/auth-session'
 import { MembershipRepository } from '@/src/repositories/membership.repository'
+import { SubscriptionRepository } from '@/src/repositories/subscription.repository'
 import { UserRepository } from '@/src/repositories/user.repository'
 
 type WorkspaceLayoutProps = {
@@ -56,9 +58,31 @@ export default async function WorkspaceLayout({
     notFound()
   }
 
+  const workspace = membership.value.workspace
+
+  // Banner só nos últimos TRIAL_BANNER_DAYS dias do trial.
+  const now = Date.now()
+  const trialEndingSoon =
+    workspace.trialEndsAt !== null &&
+    workspace.trialEndsAt.getTime() > now &&
+    workspace.trialEndsAt.getTime() <= now + TRIAL_BANNER_DAYS * 86_400_000
+  let showTrialBanner = false
+  if (trialEndingSoon) {
+    const activeSub = await SubscriptionRepository.findActiveByWorkspaceId(
+      workspace.id,
+    )
+    showTrialBanner = !(activeSub.ok && activeSub.value !== null)
+  }
+
   return (
     <div className='flex flex-col h-screen overflow-hidden gap-y-0.5'>
-      <HeaderPromotionBanner EndDate='2025-05-15' />
+      {showTrialBanner && workspace.trialEndsAt && (
+        <HeaderPromotionBanner
+          endDate={workspace.trialEndsAt.toISOString()}
+          plan={workspace.activePlan}
+          slug={slug}
+        />
+      )}
       <UserHeader slug={slug} />
       <div className='flex gap-x-1.5 flex-1 overflow-hidden min-h-0 pr-2 pb-2'>
         <GlobalSidebarNavigation slug={slug} />

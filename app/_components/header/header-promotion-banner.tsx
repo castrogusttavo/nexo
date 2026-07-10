@@ -1,11 +1,17 @@
 'use client'
 
+import Link from 'next/link'
+import {
+  formatPlanName,
+  type PlanGrid,
+} from '@/app/(web)/_components/pricing/plans'
 import { Muted } from '@/components/typography/text/muted'
 import { Button } from '@/components/ui/button'
 
-interface PromotionHeaderProps {
-  isTrial?: boolean
-  EndDate: string
+interface HeaderPromotionBannerProps {
+  endDate: string
+  plan: PlanGrid
+  slug: string
 }
 
 const dateFormatter = new Intl.DateTimeFormat('pt-BR', {
@@ -14,34 +20,38 @@ const dateFormatter = new Intl.DateTimeFormat('pt-BR', {
 })
 
 export function HeaderPromotionBanner({
-  isTrial,
-  EndDate,
-}: PromotionHeaderProps) {
-  const end = new Date(EndDate)
+  endDate,
+  plan,
+  slug,
+}: HeaderPromotionBannerProps) {
+  const end = new Date(endDate)
   const days = Math.max(0, Math.ceil((end.getTime() - Date.now()) / 86_400_000))
-  const formattedDate = dateFormatter.format(end)
   const dayLabel = days === 1 ? '1 dia' : `${days} dias`
-
-  const promotionDescription = isTrial
-    ? `Restam ${dayLabel} de teste. Depois de ${formattedDate}, automações e integrações param de rodar.`
-    : `Sua assinatura vence em ${dayLabel} (${formattedDate}). Você perde acesso a fluxos e integrações ativos.`
-
-  const promotionCTA = isTrial ? 'Continuar no Business' : 'Manter plano ativo'
+  const planName = formatPlanName(plan)
 
   return (
     <div className='flex justify-center items-center py-3 px-5 gap-3 bg-branding-950'>
       <Muted className='text-primary text-xs font-medium'>
-        {promotionDescription}
+        Restam {dayLabel} do seu teste do plano {planName}. Depois de{' '}
+        {dateFormatter.format(end)}, você volta ao plano Free.
       </Muted>
       <div className='flex items-center gap-2'>
-        <Button size='xs'>{promotionCTA}</Button>
+        <Button
+          size='xs'
+          nativeButton={false}
+          render={
+            <Link href={`/upgrade?plan=${plan}&billing=yearly`}>
+              Assinar {planName}
+            </Link>
+          }
+        />
         <Button
           variant='ghost'
           size='xs'
           className='underline hover:bg-transparent!'
-        >
-          Ver planos
-        </Button>
+          nativeButton={false}
+          render={<Link href={`/${slug}/settings/billing`}>Ver planos</Link>}
+        />
       </div>
     </div>
   )
