@@ -7,7 +7,6 @@ import {
   DashboardSquareAddIcon,
   Download01Icon,
   PackageIcon,
-  PanelLeftIcon,
   Shapes01Icon,
   SparklesIcon,
   Upload01Icon,
@@ -21,8 +20,6 @@ import {
   NavGroup,
   NavItem,
 } from '@/app/_components/navigation/sidebar-context'
-import { NexoIcon } from '@/components/icon/icon'
-import { Button } from '@/components/ui/button'
 
 export default async function SettingsLayout({
   children,
@@ -37,14 +34,7 @@ export default async function SettingsLayout({
   return (
     <>
       <ContextSidebar>
-        <ContextHeader
-          title='Ajustes do Workspace'
-          actions={
-            <Button variant='ghost' size='icon-sm'>
-              <NexoIcon icon={PanelLeftIcon} strokeWidth={2} />
-            </Button>
-          }
-        />
+        <ContextHeader title='Ajustes do Workspace' />
         <NavGroup>
           <NavItem href={base} icon={Building02Icon}>
             Geral
