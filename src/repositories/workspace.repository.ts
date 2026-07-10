@@ -83,6 +83,22 @@ export const WorkspaceRepository = {
     }
   },
 
+  async revertExpiredTrials(now: Date = new Date()): Promise<Result<number>> {
+    try {
+      const { count } = await prisma.workspace.updateMany({
+        where: {
+          trialEndsAt: { lt: now },
+          activePlan: { not: 'FREE' },
+          subscriptions: { none: { status: 'PAID' } },
+        },
+        data: { activePlan: 'FREE' },
+      })
+      return ok(count)
+    } catch {
+      return err(databaseError('Failed to revert expired trials'))
+    }
+  },
+
   async delete(id: string): Promise<Result<void>> {
     try {
       await prisma.workspace.delete({ where: { id } })

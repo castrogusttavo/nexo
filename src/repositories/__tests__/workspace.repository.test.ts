@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest'
+import { seedSubscription } from '@/src/__tests__/factories/subscription.factory'
 import { seedUser } from '@/src/__tests__/factories/user.factory'
 import { seedWorkspace } from '@/src/__tests__/factories/workspace.factory'
 import { expectErr, expectOk } from '@/src/__tests__/helpers/result.helpers'
@@ -154,6 +155,56 @@ describe('WorkspaceRepository', () => {
       })
 
       expectErr(result, 'CONFLICT')
+    })
+  })
+
+  describe('revertExpiredTrials()', () => {
+    it('reverts expired trials, sparing future trials and paid workspaces', async () => {
+      const past = new Date(Date.now() - 1000)
+      const future = new Date(Date.now() + 86_400_000)
+
+      const expired = await seedWorkspace({
+        slug: 'exp-t',
+        activePlan: 'BUSINESS',
+        trialEndsAt: past,
+      })
+      const active = await seedWorkspace({
+        slug: 'act-t',
+        activePlan: 'BUSINESS',
+        trialEndsAt: future,
+      })
+      const paid = await seedWorkspace({
+        slug: 'paid-t',
+        activePlan: 'BUSINESS',
+        trialEndsAt: past,
+      })
+
+      await seedSubscription({
+        workspaceId: paid.id,
+        billId: 'bill_paid_t',
+        status: 'PAID',
+      })
+
+      expect(expectOk(await WorkspaceRepository.revertExpiredTrials())).toBe(1)
+
+      const [e, a, p] = await Promise.all([
+        prisma.workspace.findUnique({ where: { id: expired.id } }),
+        prisma.workspace.findUnique({ where: { id: active.id } }),
+        prisma.workspace.findUnique({ where: { id: paid.id } }),
+      ])
+      expect(e?.activePlan).toBe('FREE')
+      expect(a?.activePlan).toBe('BUSINESS')
+      expect(p?.activePlan).toBe('BUSINESS')
+    })
+
+    it('is idempotent - a reverted workspace is not counted again', async () => {
+      await seedWorkspace({
+        slug: 'exp-t',
+        activePlan: 'BUSINESS',
+        trialEndsAt: new Date(Date.now() - 1000),
+      })
+      await WorkspaceRepository.revertExpiredTrials()
+      expect(expectOk(await WorkspaceRepository.revertExpiredTrials())).toBe(0)
     })
   })
 

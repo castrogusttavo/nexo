@@ -8,6 +8,8 @@ import {
   type DataRetentionJob,
   type DataRetentionJobPayload,
   QueueName,
+  type TrialLifecycleJob,
+  type TrialLifecycleJobPayload,
 } from './jobs'
 
 const defaultJobOptions = {
@@ -20,6 +22,7 @@ const defaultJobOptions = {
 let dataRetentionQueue: Queue | null = null
 let accountLifecycleQueue: Queue | null = null
 let dataExportQueue: Queue | null = null
+let trialLifecycleQueue: Queue | null = null
 
 export function getDataRetentionQueue(): Queue<
   DataRetentionJobPayload[DataRetentionJob],
@@ -75,13 +78,33 @@ export function getDataExportQueue(): Queue<
   >
 }
 
+export function getTrialLifecycleQueue(): Queue<
+  TrialLifecycleJobPayload[TrialLifecycleJob],
+  unknown,
+  TrialLifecycleJob
+> {
+  if (!trialLifecycleQueue) {
+    trialLifecycleQueue = new Queue(QueueName.TrialLifecycle, {
+      connection: getQueueConnection(),
+      defaultJobOptions,
+    })
+  }
+  return trialLifecycleQueue as Queue<
+    TrialLifecycleJobPayload[TrialLifecycleJob],
+    unknown,
+    TrialLifecycleJob
+  >
+}
+
 export async function closeQueues(): Promise<void> {
   await Promise.all([
     dataRetentionQueue?.close(),
     accountLifecycleQueue?.close(),
     dataExportQueue?.close(),
+    trialLifecycleQueue?.close(),
   ])
   dataRetentionQueue = null
   accountLifecycleQueue = null
   dataExportQueue = null
+  trialLifecycleQueue = null
 }

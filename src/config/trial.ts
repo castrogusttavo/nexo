@@ -7,3 +7,5 @@ export const TRIAL_DAYS = 14
 export function trialEndsAtFrom(now: Date = new Date()): Date {
   return new Date(now.getTime() + TRIAL_DAYS * 24 * 60 * 60 * 1000)
 }
+
+export const TRIAL_EXPIRY_CRON = '0 * * * *'

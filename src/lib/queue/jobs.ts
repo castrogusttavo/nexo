@@ -2,6 +2,7 @@ export const QueueName = {
   DataRetention: 'data-retention',
   AccountLifecycle: 'account-lifecycle',
   DataExport: 'data-export',
+  TrialLifecycle: 'trial-lifecycle',
 } as const
 
 export type QueueName = (typeof QueueName)[keyof typeof QueueName]
@@ -38,4 +39,15 @@ export type DataExportJob = (typeof DataExportJob)[keyof typeof DataExportJob]
 
 export type DataExportJobPayload = {
   [DataExportJob.ExportUserData]: { userId: string }
+}
+
+export const TrialLifecycleJob = {
+  RevertExpiredTrials: 'revert-expired-trials',
+} as const
+
+export type TrialLifecycleJob =
+  (typeof TrialLifecycleJob)[keyof typeof TrialLifecycleJob]
+
+export type TrialLifecycleJobPayload = {
+  [TrialLifecycleJob.RevertExpiredTrials]: Record<string, never>
 }

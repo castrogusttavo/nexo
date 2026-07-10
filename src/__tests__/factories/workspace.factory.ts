@@ -34,7 +34,9 @@ export function createFakeWorkspaceDTO(
 }
 
 export async function seedWorkspace(
-  overrides?: Partial<Pick<Workspace, 'name' | 'slug' | 'activePlan'>>,
+  overrides?: Partial<
+    Pick<Workspace, 'name' | 'slug' | 'activePlan' | 'trialEndsAt'>
+  >,
 ) {
   return prisma.workspace.create({
     data: {

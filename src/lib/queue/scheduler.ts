@@ -1,6 +1,7 @@
 import { logger } from '@/lib/axiom/logger'
-import { DataRetentionJob } from './jobs'
-import { getDataRetentionQueue } from './queues'
+import { TRIAL_EXPIRY_CRON } from '@/src/config/trial'
+import { DataRetentionJob, TrialLifecycleJob } from './jobs'
+import { getDataRetentionQueue, getTrialLifecycleQueue } from './queues'
 import { RetentionCron, RetentionTimezone } from './retention'
 
 export async function scheduleDataRetentionJobs(): Promise<void> {
@@ -30,5 +31,20 @@ export async function scheduleDataRetentionJobs(): Promise<void> {
       DataRetentionJob.CleanupExpiredSessions,
       DataRetentionJob.CleanupExpiredVerificationTokens,
     ],
+  })
+}
+
+export async function scheduleTrialLifecycleJobs(): Promise<void> {
+  const queue = getTrialLifecycleQueue()
+  await queue.upsertJobScheduler(
+    TrialLifecycleJob.RevertExpiredTrials,
+    { pattern: TRIAL_EXPIRY_CRON, tz: RetentionTimezone },
+    { name: TrialLifecycleJob.RevertExpiredTrials, data: {} },
+  )
+
+  logger.info('queue.scheduler.trial_lifecycle_registered', {
+    component: 'Worker',
+    pattern: TRIAL_EXPIRY_CRON,
+    timezone: RetentionTimezone,
   })
 }

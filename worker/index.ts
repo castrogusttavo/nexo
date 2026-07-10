@@ -1,4 +1,5 @@
 import { type Job, Worker } from 'bullmq'
+import { processTrialLifecycle } from '@/src/lib/queue/processors/trial-lifecycle'
 import { logger } from '../lib/axiom/logger'
 import {
   closeQueueConnection,
@@ -9,7 +10,10 @@ import { processAccountLifecycle } from '../src/lib/queue/processors/account-lif
 import { processDataExport } from '../src/lib/queue/processors/data-export'
 import { processDataRetention } from '../src/lib/queue/processors/data-retention'
 import { closeQueues } from '../src/lib/queue/queues'
-import { scheduleDataRetentionJobs } from '../src/lib/queue/scheduler'
+import {
+  scheduleDataRetentionJobs,
+  scheduleTrialLifecycleJobs,
+} from '../src/lib/queue/scheduler'
 
 const workers: Worker[] = []
 
@@ -88,8 +92,10 @@ async function main(): Promise<void> {
     registerWorker(QueueName.AccountLifecycle, processAccountLifecycle),
   )
   workers.push(registerWorker(QueueName.DataExport, processDataExport))
+  workers.push(registerWorker(QueueName.TrialLifecycle, processTrialLifecycle))
 
   await scheduleDataRetentionJobs()
+  await scheduleTrialLifecycleJobs()
 
   logger.info('queue.worker.started', {
     component: 'Worker',
