@@ -1,8 +1,9 @@
 import type { NotificationSetting } from '@prisma/client'
-import { databaseError, notFound } from '../errors'
+import { notFound } from '../errors'
 import { prisma } from '../lib/prisma'
 import { err, ok, type Result } from '../lib/result'
 import type { UpdateNotificationSettingDTO } from '../schemas/notification-settings.schema'
+import { dbError } from './db-error'
 
 export const NotificationSettingRepository = {
   async findByUserId(userId: string): Promise<Result<NotificationSetting>> {
@@ -16,8 +17,8 @@ export const NotificationSettingRepository = {
       }
 
       return ok(setting)
-    } catch {
-      return err(databaseError('Failed to find notification setting'))
+    } catch (error) {
+      return err(dbError('Failed to find notification setting', error))
     }
   },
 
@@ -33,8 +34,8 @@ export const NotificationSettingRepository = {
       })
 
       return ok(setting)
-    } catch {
-      return err(databaseError('Failed to upsert notification setting'))
+    } catch (error) {
+      return err(dbError('Failed to upsert notification setting', error))
     }
   },
 }

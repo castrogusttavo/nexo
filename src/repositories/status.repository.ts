@@ -4,11 +4,11 @@ import type {
   HealthCheck,
 } from '@prisma/client'
 import { Prisma } from '@prisma/client'
-import { databaseError } from '@/src/errors'
 import { prisma } from '@/src/lib/prisma'
 import { err, ok, type Result } from '@/src/lib/result'
 import type { ComponentKey } from '@/src/services/status/components'
 import type { DailyAggregate } from '@/types/status'
+import { dbError } from './db-error'
 
 interface InsertCheck {
   componentKey: ComponentKey
@@ -30,8 +30,8 @@ export const StatusRepository = {
         })),
       })
       return ok(undefined)
-    } catch {
-      return err(databaseError('Failed to record health checks'))
+    } catch (error) {
+      return err(dbError('Failed to record health checks', error))
     }
   },
 
@@ -41,8 +41,8 @@ export const StatusRepository = {
         where: { checkedAt: { lt: beforeDate } },
       })
       return ok(result.count)
-    } catch {
-      return err(databaseError('Failed to prune old health checks'))
+    } catch (error) {
+      return err(dbError('Failed to prune old health checks', error))
     }
   },
 
@@ -87,8 +87,8 @@ export const StatusRepository = {
         uptimePct: Number(((upChecks / total) * 100).toFixed(3)),
         avgLatencyMs: Math.round(latencySum / total),
       })
-    } catch {
-      return err(databaseError('Failed to aggregate daily checks'))
+    } catch (error) {
+      return err(dbError('Failed to aggregate daily checks', error))
     }
   },
 
@@ -119,8 +119,8 @@ export const StatusRepository = {
         },
       })
       return ok(undefined)
-    } catch {
-      return err(databaseError('Failed to upsert component daily'))
+    } catch (error) {
+      return err(dbError('Failed to upsert component daily', error))
     }
   },
 
@@ -135,8 +135,8 @@ export const StatusRepository = {
         orderBy: { day: 'asc' },
       })
       return ok(rows)
-    } catch {
-      return err(databaseError('Failed to find daily aggregates'))
+    } catch (error) {
+      return err(dbError('Failed to find daily aggregates', error))
     }
   },
 
@@ -155,8 +155,8 @@ export const StatusRepository = {
         orderBy: [{ componentKey: 'asc' }, { day: 'asc' }],
       })
       return ok(rows)
-    } catch {
-      return err(databaseError('Failed to find daily aggregates'))
+    } catch (error) {
+      return err(dbError('Failed to find daily aggregates', error))
     }
   },
 
@@ -171,8 +171,8 @@ export const StatusRepository = {
         ORDER BY component_key, checked_at DESC
       `
       return ok(rows)
-    } catch {
-      return err(databaseError('Failed to find latest health checks'))
+    } catch (error) {
+      return err(dbError('Failed to find latest health checks', error))
     }
   },
 }

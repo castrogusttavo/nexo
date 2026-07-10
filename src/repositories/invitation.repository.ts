@@ -5,9 +5,9 @@ import type {
   Workspace,
   WorkspaceInvitation,
 } from '@prisma/client'
-import { databaseError } from '../errors'
 import { prisma } from '../lib/prisma'
 import { err, ok, type Result } from '../lib/result'
+import { dbError } from './db-error'
 
 export type InvitationWithWorkspace = WorkspaceInvitation & {
   workspace: Workspace
@@ -25,8 +25,8 @@ export const InvitationRepository = {
     try {
       const invitation = await prisma.workspaceInvitation.create({ data })
       return ok(invitation)
-    } catch {
-      return err(databaseError('Failed to create invitation'))
+    } catch (error) {
+      return err(dbError('Failed to create invitation', error))
     }
   },
 
@@ -39,8 +39,8 @@ export const InvitationRepository = {
         include: { workspace: true },
       })
       return ok(invitation)
-    } catch {
-      return err(databaseError('Failed to find invitation by token'))
+    } catch (error) {
+      return err(dbError('Failed to find invitation by token', error))
     }
   },
 
@@ -50,8 +50,8 @@ export const InvitationRepository = {
         where: { id },
       })
       return ok(invitation)
-    } catch {
-      return err(databaseError('Failed to find invitation'))
+    } catch (error) {
+      return err(dbError('Failed to find invitation', error))
     }
   },
 
@@ -64,8 +64,8 @@ export const InvitationRepository = {
         where: { workspaceId, email, status: 'PENDING' },
       })
       return ok(invitation)
-    } catch {
-      return err(databaseError('Failed to find pending invitation'))
+    } catch (error) {
+      return err(dbError('Failed to find pending invitation', error))
     }
   },
 
@@ -78,8 +78,8 @@ export const InvitationRepository = {
         orderBy: { createdAt: 'desc' },
       })
       return ok(invitations)
-    } catch {
-      return err(databaseError('Failed to list invitations'))
+    } catch (error) {
+      return err(dbError('Failed to list invitations', error))
     }
   },
 
@@ -89,8 +89,8 @@ export const InvitationRepository = {
         where: { workspaceId, status: 'PENDING' },
       })
       return ok(count)
-    } catch {
-      return err(databaseError('Failed to count pending invitations'))
+    } catch (error) {
+      return err(dbError('Failed to count pending invitations', error))
     }
   },
 
@@ -103,8 +103,8 @@ export const InvitationRepository = {
         orderBy: { createdAt: 'desc' },
       })
       return ok(invitations)
-    } catch {
-      return err(databaseError('Failed to list project invitations'))
+    } catch (error) {
+      return err(dbError('Failed to list project invitations', error))
     }
   },
 
@@ -118,8 +118,8 @@ export const InvitationRepository = {
         data: { status },
       })
       return ok(invitation)
-    } catch {
-      return err(databaseError('Failed to update invitation status'))
+    } catch (error) {
+      return err(dbError('Failed to update invitation status', error))
     }
   },
 
@@ -134,8 +134,8 @@ export const InvitationRepository = {
         data: { token, status: 'PENDING', expiresAt },
       })
       return ok(invitation)
-    } catch {
-      return err(databaseError('Failed to refresh invitation'))
+    } catch (error) {
+      return err(dbError('Failed to refresh invitation', error))
     }
   },
 
@@ -188,8 +188,8 @@ export const InvitationRepository = {
       })
 
       return ok(membership)
-    } catch {
-      return err(databaseError('Failed to accept invitation'))
+    } catch (error) {
+      return err(dbError('Failed to accept invitation', error))
     }
   },
 }

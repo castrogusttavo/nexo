@@ -1,7 +1,7 @@
 import type { Membership, Role, Workspace } from '@prisma/client'
-import { databaseError } from '@/src/errors'
 import { prisma } from '@/src/lib/prisma'
 import { err, ok, type Result } from '@/src/lib/result'
+import { dbError } from './db-error'
 
 export type MembershipWithWorkspace = Membership & { workspace: Workspace }
 
@@ -15,8 +15,8 @@ export const MembershipRepository = {
         where: { userId_workspaceId: { userId, workspaceId } },
       })
       return ok(membership)
-    } catch {
-      return err(databaseError('Failed to find membership'))
+    } catch (error) {
+      return err(dbError('Failed to find membership', error))
     }
   },
 
@@ -30,8 +30,8 @@ export const MembershipRepository = {
         include: { workspace: true },
       })
       return ok(membership)
-    } catch {
-      return err(databaseError('Failed to find membership by slug'))
+    } catch (error) {
+      return err(dbError('Failed to find membership by slug', error))
     }
   },
 
@@ -43,8 +43,8 @@ export const MembershipRepository = {
         orderBy: { createdAt: 'asc' },
       })
       return ok(memberships)
-    } catch {
-      return err(databaseError('Failed to list memberships'))
+    } catch (error) {
+      return err(dbError('Failed to list memberships', error))
     }
   },
 
@@ -56,8 +56,8 @@ export const MembershipRepository = {
     try {
       const membership = await prisma.membership.create({ data })
       return ok(membership)
-    } catch {
-      return err(databaseError('Failed to create membership'))
+    } catch (error) {
+      return err(dbError('Failed to create membership', error))
     }
   },
 
@@ -67,8 +67,8 @@ export const MembershipRepository = {
         where: { workspaceId },
       })
       return ok(count)
-    } catch {
-      return err(databaseError('Faield to count memberships'))
+    } catch (error) {
+      return err(dbError('Faield to count memberships', error))
     }
   },
 }

@@ -1,7 +1,8 @@
 import type { ShortLink } from '@prisma/client'
 import { prisma } from '@/src/lib/prisma'
 import { err, ok, type Result } from '@/src/lib/result'
-import { databaseError, notFound } from '../errors/app-error'
+import { notFound } from '../errors/app-error'
+import { dbError } from './db-error'
 
 export const ShortLinkRepository = {
   async findById(id: string): Promise<Result<ShortLink>> {
@@ -13,8 +14,8 @@ export const ShortLinkRepository = {
       }
 
       return ok(shortLink)
-    } catch {
-      return err(databaseError('Failed to find short link by id'))
+    } catch (error) {
+      return err(dbError('Failed to find short link by id', error))
     }
   },
 
@@ -26,8 +27,8 @@ export const ShortLinkRepository = {
       })
 
       return ok(shortLinks)
-    } catch {
-      return err(databaseError('Failed to list short links'))
+    } catch (error) {
+      return err(dbError('Failed to list short links', error))
     }
   },
 
@@ -40,8 +41,8 @@ export const ShortLinkRepository = {
       const shortLink = await prisma.shortLink.create({ data })
 
       return ok(shortLink)
-    } catch {
-      return err(databaseError('Failed to create short link'))
+    } catch (error) {
+      return err(dbError('Failed to create short link', error))
     }
   },
 
@@ -53,8 +54,8 @@ export const ShortLinkRepository = {
       const shortLink = await prisma.shortLink.update({ where: { id }, data })
 
       return ok(shortLink)
-    } catch {
-      return err(databaseError('Failed to update short link'))
+    } catch (error) {
+      return err(dbError('Failed to update short link', error))
     }
   },
 
@@ -63,8 +64,8 @@ export const ShortLinkRepository = {
       await prisma.shortLink.delete({ where: { id } })
 
       return ok(undefined)
-    } catch {
-      return err(databaseError('Failed to delete short link'))
+    } catch (error) {
+      return err(dbError('Failed to delete short link', error))
     }
   },
 }

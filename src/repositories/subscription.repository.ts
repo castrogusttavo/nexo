@@ -4,9 +4,10 @@ import type {
   Subscription,
   SubscriptionStatus,
 } from '@prisma/client'
-import { databaseError, notFound } from '@/src/errors'
+import { notFound } from '@/src/errors'
 import { prisma } from '@/src/lib/prisma'
 import { err, ok, type Result } from '@/src/lib/result'
+import { dbError } from './db-error'
 
 export const SubscriptionRepository = {
   async create(data: {
@@ -23,8 +24,8 @@ export const SubscriptionRepository = {
     try {
       const subscription = await prisma.subscription.create({ data })
       return ok(subscription)
-    } catch {
-      return err(databaseError('Failed to create subscription'))
+    } catch (error) {
+      return err(dbError('Failed to create subscription', error))
     }
   },
 
@@ -39,8 +40,8 @@ export const SubscriptionRepository = {
       }
 
       return ok(subscription)
-    } catch {
-      return err(databaseError('Failed to find subscription'))
+    } catch (error) {
+      return err(dbError('Failed to find subscription', error))
     }
   },
 
@@ -53,8 +54,8 @@ export const SubscriptionRepository = {
         orderBy: { createdAt: 'desc' },
       })
       return ok(subscription)
-    } catch {
-      return err(databaseError('Failed to find active subscription'))
+    } catch (error) {
+      return err(dbError('Failed to find active subscription', error))
     }
   },
 
@@ -68,8 +69,8 @@ export const SubscriptionRepository = {
         data: { status },
       })
       return ok(subscription)
-    } catch {
-      return err(databaseError('Failed to update subscription status'))
+    } catch (error) {
+      return err(dbError('Failed to update subscription status', error))
     }
   },
 
@@ -92,8 +93,8 @@ export const SubscriptionRepository = {
         return sub
       })
       return ok(subscription)
-    } catch {
-      return err(databaseError('Failed to activate subscription'))
+    } catch (error) {
+      return err(dbError('Failed to activate subscription', error))
     }
   },
 
@@ -116,8 +117,8 @@ export const SubscriptionRepository = {
         return sub
       })
       return ok(subscription)
-    } catch {
-      return err(databaseError('Failed to deactivate subscription'))
+    } catch (error) {
+      return err(dbError('Failed to deactivate subscription', error))
     }
   },
 }

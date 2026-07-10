@@ -1,8 +1,9 @@
 import type { UserPreference } from '@prisma/client'
-import { databaseError, notFound } from '../errors'
+import { notFound } from '../errors'
 import { prisma } from '../lib/prisma'
 import { err, ok, type Result } from '../lib/result'
 import type { UpdateUserPreferenceDTO } from '../schemas/user-preference.schema'
+import { dbError } from './db-error'
 
 export const UserPreferenceRepository = {
   async findByUserId(userId: string): Promise<Result<UserPreference>> {
@@ -16,8 +17,8 @@ export const UserPreferenceRepository = {
       }
 
       return ok(preference)
-    } catch {
-      return err(databaseError('Failed to find user preference'))
+    } catch (error) {
+      return err(dbError('Failed to find user preference', error))
     }
   },
 
@@ -33,8 +34,8 @@ export const UserPreferenceRepository = {
       })
 
       return ok(preference)
-    } catch {
-      return err(databaseError('Failed to upsert user preference'))
+    } catch (error) {
+      return err(dbError('Failed to upsert user preference', error))
     }
   },
 }

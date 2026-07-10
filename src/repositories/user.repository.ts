@@ -6,9 +6,10 @@ import type {
   UserRole,
   Workspace,
 } from '@prisma/client'
-import { conflict, databaseError, notFound } from '@/src/errors'
+import { conflict, notFound } from '@/src/errors'
 import { prisma } from '@/src/lib/prisma'
 import { err, ok, type Result } from '@/src/lib/result'
+import { dbError } from './db-error'
 
 export type UserWithMemberships = User & {
   memberships: (Membership & { workspace: Workspace })[]
@@ -24,8 +25,8 @@ export const UserRepository = {
       }
 
       return ok(user)
-    } catch {
-      return err(databaseError('Failed to find user by id'))
+    } catch (error) {
+      return err(dbError('Failed to find user by id', error))
     }
   },
 
@@ -48,8 +49,8 @@ export const UserRepository = {
       }
 
       return ok(user)
-    } catch {
-      return err(databaseError('Failed to find user by id'))
+    } catch (error) {
+      return err(dbError('Failed to find user by id', error))
     }
   },
 
@@ -57,8 +58,8 @@ export const UserRepository = {
     try {
       const user = await prisma.user.findUnique({ where: { email } })
       return ok(user)
-    } catch {
-      return err(databaseError('Failed to find user by email'))
+    } catch (error) {
+      return err(dbError('Failed to find user by email', error))
     }
   },
 
@@ -66,8 +67,8 @@ export const UserRepository = {
     try {
       const user = await prisma.user.findUnique({ where: { username } })
       return ok(user)
-    } catch {
-      return err(databaseError('Failed to find user by username'))
+    } catch (error) {
+      return err(dbError('Failed to find user by username', error))
     }
   },
 
@@ -83,7 +84,7 @@ export const UserRepository = {
       if (error instanceof Error && 'code' in error && error.code === 'P2002') {
         return err(conflict('E-mail já está em uso'))
       }
-      return err(databaseError('Failed to create user'))
+      return err(dbError('Failed to create user', error))
     }
   },
 
@@ -104,7 +105,7 @@ export const UserRepository = {
       if (error instanceof Error && 'code' in error && error.code === 'P2002') {
         return err(conflict('Username ou e-mail já está em uso'))
       }
-      return err(databaseError('Failed to update user'))
+      return err(dbError('Failed to update user', error))
     }
   },
 
@@ -122,7 +123,7 @@ export const UserRepository = {
       if (error instanceof Error && 'code' in error && error.code === 'P2025') {
         return err(notFound('User'))
       }
-      return err(databaseError('Failed to update onboarding step'))
+      return err(dbError('Failed to update onboarding step', error))
     }
   },
 
@@ -141,7 +142,7 @@ export const UserRepository = {
       if (error instanceof Error && 'code' in error && error.code === 'P2025') {
         return err(notFound('User'))
       }
-      return err(databaseError('Failed to save user role'))
+      return err(dbError('Failed to save user role', error))
     }
   },
 
@@ -160,7 +161,7 @@ export const UserRepository = {
       if (error instanceof Error && 'code' in error && error.code === 'P2025') {
         return err(notFound('User'))
       }
-      return err(databaseError('Failed to save user goals'))
+      return err(dbError('Failed to save user goals', error))
     }
   },
 
@@ -175,7 +176,7 @@ export const UserRepository = {
       if (error instanceof Error && 'code' in error && error.code === 'P2025') {
         return err(notFound('User'))
       }
-      return err(databaseError('Failed to schedule user deletion'))
+      return err(dbError('Failed to schedule user deletion', error))
     }
   },
 
@@ -190,7 +191,7 @@ export const UserRepository = {
       if (error instanceof Error && 'code' in error && error.code === 'P2025') {
         return err(notFound('User'))
       }
-      return err(databaseError('Failed to clear deletion schedule'))
+      return err(dbError('Failed to clear deletion schedule', error))
     }
   },
 
@@ -202,7 +203,7 @@ export const UserRepository = {
       if (error instanceof Error && 'code' in error && error.code === 'P2025') {
         return err(notFound('User'))
       }
-      return err(databaseError('Failed to delete user'))
+      return err(dbError('Failed to delete user', error))
     }
   },
 
@@ -224,8 +225,8 @@ export const UserRepository = {
         },
       })
       return ok(count)
-    } catch {
-      return err(databaseError('Failed to count blocking workspaces'))
+    } catch (error) {
+      return err(dbError('Failed to count blocking workspaces', error))
     }
   },
 }

@@ -5,7 +5,6 @@ import type {
   User,
 } from '@prisma/client'
 import {
-  databaseError,
   projectMemberAlreadyExists,
   projectMemberNotFound,
   projectNotFound,
@@ -13,6 +12,7 @@ import {
 } from '../errors'
 import { prisma } from '../lib/prisma'
 import { err, ok, type Result } from '../lib/result'
+import { dbError } from './db-error'
 
 export type ProjectWithDetails = Project & {
   members: Pick<ProjectMember, 'userId'>[]
@@ -33,8 +33,8 @@ export const ProjectRepository = {
       const project = await prisma.project.findUnique({ where: { id } })
       if (!project) return err(projectNotFound())
       return ok(project)
-    } catch {
-      return err(databaseError('Failed to find project by id'))
+    } catch (error) {
+      return err(dbError('Failed to find project by id', error))
     }
   },
 
@@ -53,8 +53,8 @@ export const ProjectRepository = {
       })
       if (!project) return err(projectNotFound())
       return ok(project)
-    } catch {
-      return err(databaseError('Failed to find project by slug'))
+    } catch (error) {
+      return err(dbError('Failed to find project by slug', error))
     }
   },
 
@@ -86,8 +86,8 @@ export const ProjectRepository = {
         orderBy: { updatedAt: 'desc' },
       })
       return ok(projects)
-    } catch {
-      return err(databaseError('Failed to list projects'))
+    } catch (error) {
+      return err(dbError('Failed to list projects', error))
     }
   },
 
@@ -101,8 +101,8 @@ export const ProjectRepository = {
         orderBy: { createdAt: 'asc' },
       })
       return ok(members)
-    } catch {
-      return err(databaseError('Failed to list project members'))
+    } catch (error) {
+      return err(dbError('Failed to list project members', error))
     }
   },
 
@@ -120,7 +120,7 @@ export const ProjectRepository = {
       if (error instanceof Error && 'code' in error && error.code === 'P2002') {
         return err(projectMemberAlreadyExists())
       }
-      return err(databaseError('Failed to add project member'))
+      return err(dbError('Failed to add project member', error))
     }
   },
 
@@ -131,8 +131,8 @@ export const ProjectRepository = {
       })
       if (res.count === 0) return err(projectMemberNotFound())
       return ok(undefined)
-    } catch {
-      return err(databaseError('Failed to remove project member'))
+    } catch (error) {
+      return err(dbError('Failed to remove project member', error))
     }
   },
 
@@ -160,7 +160,7 @@ export const ProjectRepository = {
         return err(projectSlugConflict())
       }
 
-      return err(databaseError('Failed to create project'))
+      return err(dbError('Failed to create project', error))
     }
   },
 
@@ -184,7 +184,7 @@ export const ProjectRepository = {
         return err(projectSlugConflict())
       }
 
-      return err(databaseError('Failed to update project'))
+      return err(dbError('Failed to update project', error))
     }
   },
 
@@ -195,8 +195,8 @@ export const ProjectRepository = {
         data: { archivedAt: new Date() },
       })
       return ok(project)
-    } catch {
-      return err(databaseError('Failed to archive project'))
+    } catch (error) {
+      return err(dbError('Failed to archive project', error))
     }
   },
 
@@ -207,8 +207,8 @@ export const ProjectRepository = {
         data: { archivedAt: null },
       })
       return ok(project)
-    } catch {
-      return err(databaseError('Failed to archive project'))
+    } catch (error) {
+      return err(dbError('Failed to archive project', error))
     }
   },
 
@@ -216,8 +216,8 @@ export const ProjectRepository = {
     try {
       await prisma.project.delete({ where: { id } })
       return ok(undefined)
-    } catch {
-      return err(databaseError('Failed to delete project'))
+    } catch (error) {
+      return err(dbError('Failed to delete project', error))
     }
   },
 
@@ -229,8 +229,8 @@ export const ProjectRepository = {
         update: {},
       })
       return ok(undefined)
-    } catch {
-      return err(databaseError('Failed to add favorite'))
+    } catch (error) {
+      return err(dbError('Failed to add favorite', error))
     }
   },
 
@@ -241,8 +241,8 @@ export const ProjectRepository = {
     try {
       await prisma.projectFavorite.deleteMany({ where: { userId, projectId } })
       return ok(undefined)
-    } catch {
-      return err(databaseError('Failed to remove favorite'))
+    } catch (error) {
+      return err(dbError('Failed to remove favorite', error))
     }
   },
 }

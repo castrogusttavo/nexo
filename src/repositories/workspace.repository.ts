@@ -1,7 +1,8 @@
 import type { Plan, Workspace } from '@prisma/client'
-import { conflict, databaseError, notFound } from '@/src/errors'
+import { conflict, notFound } from '@/src/errors'
 import { prisma } from '@/src/lib/prisma'
 import { err, ok, type Result } from '@/src/lib/result'
+import { dbError } from './db-error'
 
 export const WorkspaceRepository = {
   async findById(id: string): Promise<Result<Workspace>> {
@@ -13,8 +14,8 @@ export const WorkspaceRepository = {
       }
 
       return ok(workspace)
-    } catch {
-      return err(databaseError('Failed to find workspace by id'))
+    } catch (error) {
+      return err(dbError('Failed to find workspace by id', error))
     }
   },
 
@@ -22,8 +23,8 @@ export const WorkspaceRepository = {
     try {
       const workspace = await prisma.workspace.findUnique({ where: { slug } })
       return ok(workspace)
-    } catch {
-      return err(databaseError('Failed to find workspace by slug'))
+    } catch (error) {
+      return err(dbError('Failed to find workspace by slug', error))
     }
   },
 
@@ -38,7 +39,7 @@ export const WorkspaceRepository = {
       if (error instanceof Error && 'code' in error && error.code === 'P2002') {
         return err(conflict('Slug já está em uso'))
       }
-      return err(databaseError('Failed to create workspace'))
+      return err(dbError('Failed to create workspace', error))
     }
   },
 
@@ -64,7 +65,7 @@ export const WorkspaceRepository = {
       if (error instanceof Error && 'code' in error && error.code === 'P2002') {
         return err(conflict('Slug já está em uso'))
       }
-      return err(databaseError('Failed to create workspace'))
+      return err(dbError('Failed to create workspace', error))
     }
   },
 
@@ -79,7 +80,7 @@ export const WorkspaceRepository = {
       if (error instanceof Error && 'code' in error && error.code === 'P2002') {
         return err(conflict('Slug já está em uso'))
       }
-      return err(databaseError('Failed to update workspace'))
+      return err(dbError('Failed to update workspace', error))
     }
   },
 
@@ -94,8 +95,8 @@ export const WorkspaceRepository = {
         data: { activePlan: 'FREE' },
       })
       return ok(count)
-    } catch {
-      return err(databaseError('Failed to revert expired trials'))
+    } catch (error) {
+      return err(dbError('Failed to revert expired trials', error))
     }
   },
 
@@ -103,8 +104,8 @@ export const WorkspaceRepository = {
     try {
       await prisma.workspace.delete({ where: { id } })
       return ok(undefined)
-    } catch {
-      return err(databaseError('Failed to delete workspace'))
+    } catch (error) {
+      return err(dbError('Failed to delete workspace', error))
     }
   },
 }

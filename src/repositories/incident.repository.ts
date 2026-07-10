@@ -1,8 +1,8 @@
 import type { ComponentStatus, IncidentEvent, Prisma } from '@prisma/client'
-import { databaseError } from '@/src/errors'
 import { prisma } from '@/src/lib/prisma'
 import { err, ok, type Result } from '@/src/lib/result'
 import type { ComponentKey } from '@/src/services/status/components'
+import { dbError } from './db-error'
 
 export type IncidentWithUpdates = Prisma.IncidentGetPayload<{
   include: { updates: { orderBy: { postedAt: 'desc' } } }
@@ -37,8 +37,8 @@ export const IncidentRepository = {
         orderBy: { startedAt: 'desc' },
       })
       return ok(incident)
-    } catch {
-      return err(databaseError('Failed to find open incident'))
+    } catch (error) {
+      return err(dbError('Failed to find open incident', error))
     }
   },
 
@@ -74,8 +74,8 @@ export const IncidentRepository = {
         },
       })
       return ok(incident)
-    } catch {
-      return err(databaseError('Failed to create incident'))
+    } catch (error) {
+      return err(dbError('Failed to create incident', error))
     }
   },
 
@@ -89,8 +89,8 @@ export const IncidentRepository = {
         data: { severity },
       })
       return ok(undefined)
-    } catch {
-      return err(databaseError('Failed to bump incident severity'))
+    } catch (error) {
+      return err(dbError('Failed to bump incident severity', error))
     }
   },
 
@@ -104,8 +104,8 @@ export const IncidentRepository = {
         data: { incidentId, event, message },
       })
       return ok(undefined)
-    } catch {
-      return err(databaseError('Failed to add incident update'))
+    } catch (error) {
+      return err(dbError('Failed to add incident update', error))
     }
   },
 
@@ -129,8 +129,8 @@ export const IncidentRepository = {
         },
       })
       return ok(undefined)
-    } catch {
-      return err(databaseError('Failed to close incident'))
+    } catch (error) {
+      return err(dbError('Failed to close incident', error))
     }
   },
 
@@ -151,8 +151,8 @@ export const IncidentRepository = {
         orderBy: { startedAt: 'desc' },
       })
       return ok(incidents)
-    } catch {
-      return err(databaseError('Failed to list incidents'))
+    } catch (error) {
+      return err(dbError('Failed to list incidents', error))
     }
   },
 
@@ -163,8 +163,8 @@ export const IncidentRepository = {
         include: { updates: { orderBy: { postedAt: 'desc' } } },
       })
       return ok(incident)
-    } catch {
-      return err(databaseError('Failed to find incident'))
+    } catch (error) {
+      return err(dbError('Failed to find incident', error))
     }
   },
 }

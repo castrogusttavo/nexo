@@ -1,7 +1,8 @@
 import type { Prisma, StickyColor, StickyNote } from '@prisma/client'
-import { databaseError, notFound } from '@/src/errors'
+import { notFound } from '@/src/errors'
 import { prisma } from '@/src/lib/prisma'
 import { err, ok, type Result } from '@/src/lib/result'
+import { dbError } from './db-error'
 
 const DEFAULT_CONTENT: Prisma.InputJsonValue = { type: 'doc', content: [] }
 
@@ -13,8 +14,8 @@ export const StickyNoteRepository = {
       if (!stickyNote) return err(notFound('StickyNote'))
 
       return ok(stickyNote)
-    } catch {
-      return err(databaseError('Failed to find sticky note by id'))
+    } catch (error) {
+      return err(dbError('Failed to find sticky note by id', error))
     }
   },
 
@@ -26,8 +27,8 @@ export const StickyNoteRepository = {
       })
 
       return ok(stickyNotes)
-    } catch {
-      return err(databaseError('Failed to list sticky notes'))
+    } catch (error) {
+      return err(dbError('Failed to list sticky notes', error))
     }
   },
 
@@ -46,8 +47,8 @@ export const StickyNoteRepository = {
       })
 
       return ok(stickyNote)
-    } catch {
-      return err(databaseError('Failed to create sticky note'))
+    } catch (error) {
+      return err(dbError('Failed to create sticky note', error))
     }
   },
 
@@ -65,8 +66,8 @@ export const StickyNoteRepository = {
       })
 
       return ok(stickyNote)
-    } catch {
-      return err(databaseError('Failed to update sticky note'))
+    } catch (error) {
+      return err(dbError('Failed to update sticky note', error))
     }
   },
 
@@ -75,8 +76,8 @@ export const StickyNoteRepository = {
       await prisma.stickyNote.delete({ where: { id } })
 
       return ok(undefined)
-    } catch {
-      return err(databaseError('Failed to delete sticky note'))
+    } catch (error) {
+      return err(dbError('Failed to delete sticky note', error))
     }
   },
 }
