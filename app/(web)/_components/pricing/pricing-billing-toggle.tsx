@@ -3,7 +3,7 @@
 import { useQueryState } from 'nuqs'
 import { Field, FieldLabel } from '@/components/ui/field'
 import { Switch } from '@/components/ui/switch'
-import { billingParser } from './plans'
+import { billingParser } from './plans-params'
 
 export function BillingToggle() {
   const [billing, setBilling] = useQueryState('billing', billingParser)

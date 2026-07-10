@@ -17,7 +17,6 @@ import {
 } from '@/components/ui/tooltip'
 import { cn } from '@/lib/utils'
 import {
-  billingParser,
   formatCurrency,
   formatPlanName,
   getPrice,
@@ -28,6 +27,7 @@ import {
   upgradeUrl,
   yearlyDiscount,
 } from './plans'
+import { billingParser } from './plans-params'
 
 interface PricingCardPlanProps {
   plan: PlanGrid

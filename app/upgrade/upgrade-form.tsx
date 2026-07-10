@@ -31,14 +31,16 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { useLogger } from '@/lib/axiom/client'
 import {
   type Billing,
-  billingParser,
   formatCurrency,
   formatPlanName,
   PAID_PLAN_PRICES,
-  planParser,
   priceForBilling,
   yearlyDiscount,
 } from '../(web)/_components/pricing/plans'
+import {
+  billingParser,
+  planParser,
+} from '../(web)/_components/pricing/plans-params'
 
 interface UpgradeWorkspace {
   id: string

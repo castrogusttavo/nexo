@@ -6,7 +6,6 @@ import { Muted } from '@/components/typography/text/muted'
 import { Button } from '@/components/ui/button'
 import {
   type Billing,
-  billingParser,
   formatCurrency,
   formatPlanName,
   getPrice,
@@ -15,6 +14,7 @@ import {
   priceForBilling,
   upgradeUrl,
 } from '../plans'
+import { billingParser } from '../plans-params'
 
 export function PricingTableHeader() {
   const [billing] = useQueryState('billing', billingParser)

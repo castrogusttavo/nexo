@@ -1,4 +1,3 @@
-import { parseAsStringLiteral } from 'nuqs'
 import {
   BILLING_INTERVALS,
   type BillingInterval,
@@ -17,9 +16,6 @@ export { PAID_PLAN_PRICES } from '@/src/config/plan-prices'
 /** Cadência de cobrança — `monthly`/`yearly` (padrão do backend), via url-state `?billing=`. */
 export type Billing = BillingInterval
 export const BILLINGS = BILLING_INTERVALS
-export const billingParser =
-  parseAsStringLiteral(BILLING_INTERVALS).withDefault('yearly')
-export const planParser = parseAsStringLiteral(['PRO', 'BUSINESS'] as const)
 
 export interface PlanFeature {
   title: string
