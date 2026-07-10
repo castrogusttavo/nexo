@@ -3,6 +3,7 @@ export interface WorkspaceDTO {
   name: string
   slug: string
   activePlan: string
+  trialEndsAt: string | null
   createdAt: string
   updatedAt: string
 }

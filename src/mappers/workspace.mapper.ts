@@ -7,6 +7,7 @@ export function toWorkspaceDTO(workspace: Workspace): WorkspaceDTO {
     name: workspace.name,
     slug: workspace.slug,
     activePlan: workspace.activePlan,
+    trialEndsAt: workspace.trialEndsAt?.toISOString() ?? null,
     createdAt: workspace.createdAt.toISOString(),
     updatedAt: workspace.updatedAt.toISOString(),
   }

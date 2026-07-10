@@ -18,6 +18,7 @@ describe('toWorkspaceDTO()', () => {
       name: 'Acme',
       slug: 'acme',
       activePlan: 'PRO',
+      trialEndsAt: null,
       createdAt: ws.createdAt.toISOString(),
       updatedAt: ws.updatedAt.toISOString(),
     })

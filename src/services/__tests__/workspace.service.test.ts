@@ -36,6 +36,7 @@ describe('WorkspaceService', () => {
       )
       mockedWorkspaceCache.get.mockResolvedValue({
         ...workspace,
+        trialEndsAt: workspace?.trialEndsAt?.toISOString() ?? null,
         createdAt: workspace.createdAt.toISOString(),
         updatedAt: workspace.updatedAt.toISOString(),
       })
