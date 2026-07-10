@@ -5,6 +5,7 @@ minimumReleaseAge: 10080
 trustPolicy: no-downgrade
 trustPolicyExclude:
   - 'semver@6.3.1'
+  # esbuild 0.28.0 kept only for the react-email preview (see overrides below).
   - 'esbuild@0.28.0'
 blockExoticSubdeps: true
 
@@ -18,6 +19,10 @@ overrides:
   fast-uri: '>=4.0.1'
   'brace-expansion@1': '2.1.1'
   'brace-expansion@5': '>=5.0.7'
+  # Deliberate: esbuild 0.28.1+ breaks the react-email dev preview, so pin the
+  # preview to 0.28.0. The advisory (GHSA-g7r4-m6w7-qqqr) affects only esbuild's
+  # local dev server, never production, and Snyk is non-blocking in CI. Snyk
+  # alert #131 is accepted for this reason.
   'react-email>esbuild': '0.28.0'
 
 onlyBuiltDependencies:
