@@ -12,6 +12,7 @@ interface CreateSubscriptionRequest {
   items: SubscriptionItem[]
   methods?: string[]
   customerId?: string
+  coupons?: string[]
   returnUrl?: string
   completionUrl?: string
   metadata?: Record<string, unknown>

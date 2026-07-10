@@ -24,6 +24,7 @@ describe('toSubscriptionDTO()', () => {
       amount: 4990,
       seats: 1,
       interval: 'monthly',
+      coupon: null,
       paymentUrl: 'https://pay/c/1',
       workspaceId: 'ws-1',
       createdAt: sub.createdAt.toISOString(),

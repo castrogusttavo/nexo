@@ -9,6 +9,7 @@ export interface SubscriptionDTO {
   amount: number
   seats: number
   interval: BillingInterval
+  coupon: string | null
   paymentUrl: string
   workspaceId: string
   createdAt: string

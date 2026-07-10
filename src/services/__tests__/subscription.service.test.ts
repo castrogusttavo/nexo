@@ -6,7 +6,7 @@ import {
   createFakeAbacateSubscription,
   fakeAbacateResponse,
 } from '@/src/__tests__/mocks/abacatepay.mock'
-import { databaseError, notFound } from '@/src/errors'
+import { couponInvalid, databaseError, notFound } from '@/src/errors'
 import { err, ok } from '@/src/lib/result'
 import { SubscriptionService } from '@/src/services/subscription.service'
 
@@ -16,21 +16,25 @@ vi.mock('@/lib/abacatepay', () => ({
 vi.mock('@/src/repositories/subscription.repository')
 vi.mock('@/src/repositories/membership.repository')
 vi.mock('@/src/cache/workspace.cache')
+vi.mock('@/src/services/coupon.service')
 
 import { AbacatePayClient } from '@/lib/abacatepay'
 import { WorkspaceCache } from '@/src/cache/workspace.cache'
 import { MembershipRepository } from '@/src/repositories/membership.repository'
 import { SubscriptionRepository } from '@/src/repositories/subscription.repository'
+import { CouponService } from '@/src/services/coupon.service'
 
 const mockedAbacate = vi.mocked(AbacatePayClient)
 const mockedSubRepo = vi.mocked(SubscriptionRepository)
 const mockedMembershipRepo = vi.mocked(MembershipRepository)
 const mockedWorkspaceCache = vi.mocked(WorkspaceCache)
+const mockedCoupon = vi.mocked(CouponService)
 
 describe('SubscriptionService', () => {
   describe('create()', () => {
     beforeEach(() => {
       mockedAbacate.createSubscription.mockReset()
+      mockedCoupon.validate.mockReset()
     })
 
     it('should create subscription when OWNER selects PRO plan', async () => {
@@ -265,6 +269,110 @@ describe('SubscriptionService', () => {
 
       expectErr(result, 'PAYMENT_ERROR')
       expect(mockedSubRepo.create).not.toHaveBeenCalled()
+    })
+
+    it('should forward a valid coupon and persist it', async () => {
+      const membership = createFakeMembership({
+        userId: 'owner',
+        workspaceId: 'ws1',
+        role: 'OWNER',
+      })
+      // PRO monthly list = 4302; discounted bill below list
+      const bill = createFakeAbacateSubscription({ id: 'bill_c', amount: 3441 })
+      const persisted = createFakeSubscription({
+        billId: 'bill_c',
+        plan: 'PRO',
+        amount: 3441,
+        workspaceId: 'ws1',
+        coupon: 'BLACKFRIDAY',
+      })
+
+      mockedMembershipRepo.findByUserAndWorkspace.mockResolvedValue(
+        ok(membership),
+      )
+      mockedCoupon.validate.mockResolvedValue(
+        ok({ code: 'BLACKFRIDAY', discount: 20, discountKind: 'PERCENTAGE' }),
+      )
+      mockedAbacate.createSubscription.mockResolvedValue(
+        fakeAbacateResponse(bill),
+      )
+      mockedSubRepo.create.mockResolvedValue(ok(persisted))
+
+      const result = await SubscriptionService.create('owner', {
+        plan: 'PRO',
+        workspaceId: 'ws1',
+        seats: 1,
+        interval: 'monthly',
+        coupon: 'BLACKFRIDAY',
+      })
+
+      expectOk(result)
+      expect(mockedCoupon.validate).toHaveBeenCalledWith({
+        code: 'BLACKFRIDAY',
+      })
+      expect(mockedAbacate.createSubscription).toHaveBeenCalledWith(
+        expect.objectContaining({ coupons: ['BLACKFRIDAY'] }),
+      )
+      expect(mockedSubRepo.create).toHaveBeenCalledWith(
+        expect.objectContaining({ coupon: 'BLACKFRIDAY' }),
+      )
+    })
+
+    it('should reject an invalid coupon before calling the gateway', async () => {
+      const membership = createFakeMembership({
+        userId: 'owner',
+        workspaceId: 'ws1',
+        role: 'OWNER',
+      })
+      mockedMembershipRepo.findByUserAndWorkspace.mockResolvedValue(
+        ok(membership),
+      )
+      mockedCoupon.validate.mockResolvedValue(err(couponInvalid()))
+
+      const result = await SubscriptionService.create('owner', {
+        plan: 'PRO',
+        workspaceId: 'ws1',
+        seats: 1,
+        interval: 'monthly',
+        coupon: 'NOPE',
+      })
+
+      expectErr(result, 'COUPON_INVALID')
+      expect(mockedAbacate.createSubscription).not.toHaveBeenCalledWith()
+    })
+
+    it('should reject whena a coupon bill exceeds the list price', async () => {
+      const membership = createFakeMembership({
+        userId: 'owner',
+        workspaceId: 'ws1',
+        role: 'OWNER',
+      })
+      // PRO monthly list = 4302; charged above -> fraud.
+      const bill = createFakeAbacateSubscription({
+        id: 'bill_over',
+        amount: 5000,
+      })
+
+      mockedMembershipRepo.findByUserAndWorkspace.mockResolvedValue(
+        ok(membership),
+      )
+      mockedCoupon.validate.mockResolvedValue(
+        ok({ code: 'X', discount: 10, discountKind: 'PERCENTAGE' }),
+      )
+      mockedAbacate.createSubscription.mockResolvedValue(
+        fakeAbacateResponse(bill),
+      )
+
+      const result = await SubscriptionService.create('owner', {
+        plan: 'PRO',
+        workspaceId: 'ws1',
+        seats: 1,
+        interval: 'monthly',
+        coupon: 'X',
+      })
+
+      expectErr(result, 'PAYMENT_ERROR')
+      expect(mockedSubRepo.create).not.toHaveBeenCalledWith()
     })
   })
 

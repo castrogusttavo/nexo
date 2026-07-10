@@ -16,6 +16,7 @@ export const SubscriptionRepository = {
     amount: number
     seats: number
     interval: BillingInterval
+    coupon?: string | null
     paymentUrl: string
     workspaceId: string
   }): Promise<Result<Subscription>> {

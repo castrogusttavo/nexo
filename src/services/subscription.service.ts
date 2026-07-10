@@ -12,6 +12,7 @@ import { SubscriptionRepository } from '@/src/repositories/subscription.reposito
 import type { CreateSubscriptionDTO } from '@/src/schemas/subscription.schema'
 import type { SubscriptionDTO } from '@/types/subscription'
 import { PAID_PLAN_PRICES } from '../config/plan-prices'
+import { CouponService } from './coupon.service'
 
 const PLAN_PRODUCTS: Record<
   CreateSubscriptionDTO['plan'],
@@ -49,6 +50,11 @@ export const SubscriptionService = {
       return err(forbidden('Apenas OWNER ou ADMIN podem alterar o plano'))
     }
 
+    if (dto.coupon) {
+      const coupon = await CouponService.validate({ code: dto.coupon })
+      if (!coupon.ok) return coupon
+    }
+
     const productId = PLAN_PRODUCTS[dto.plan][dto.interval]
     const appUrl = BETTER_AUTH_URL
 
@@ -61,11 +67,13 @@ export const SubscriptionService = {
         methods: ['CARD'],
         returnUrl: appUrl,
         completionUrl: appUrl,
+        ...(dto.coupon ? { coupons: [dto.coupon] } : {}),
         metadata: {
           workspaceId: dto.workspaceId,
           plan: dto.plan,
           seats: dto.seats,
           interval: dto.interval,
+          ...(dto.coupon ? { coupons: dto.coupon } : {}),
         },
       })
       bill = response.data
@@ -88,14 +96,19 @@ export const SubscriptionService = {
       return err(paymentError())
     }
 
-    const expectedAmount = PAID_PLAN_PRICES[dto.plan][dto.interval] * dto.seats
-    if (bill.amount !== expectedAmount) {
+    const listAmount = PAID_PLAN_PRICES[dto.plan][dto.interval] * dto.seats
+    const amountValid = dto.coupon
+      ? bill.amount >= 0 && bill.amount <= listAmount
+      : bill.amount === listAmount
+
+    if (!amountValid) {
       logger.error('subscription.amount_mismatch', {
         workspaceId: dto.workspaceId,
         plan: dto.plan,
         interval: dto.interval,
         seats: dto.seats,
-        expected: expectedAmount,
+        coupon: dto.coupon ?? null,
+        expected: listAmount,
         charged: bill.amount,
         billId: bill.id,
       })
@@ -108,7 +121,7 @@ export const SubscriptionService = {
         meta: {
           workspaceId: dto.workspaceId,
           plan: dto.plan,
-          expected: expectedAmount,
+          expected: listAmount,
           charged: bill.amount,
         },
       })
@@ -124,6 +137,7 @@ export const SubscriptionService = {
       workspaceId: dto.workspaceId,
       seats: dto.seats,
       interval: intervalToPrisma(dto.interval),
+      coupon: dto.coupon ?? null,
     })
 
     if (!result.ok) {
@@ -154,6 +168,7 @@ export const SubscriptionService = {
         billId: bill.id,
         seats: dto.seats,
         interval: dto.interval,
+        coupon: dto.coupon ?? null,
       },
     })
 

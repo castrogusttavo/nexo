@@ -41,6 +41,7 @@ export function createFakeSubscriptionDTO(
     amount: 4990,
     seats: 1,
     interval: 'monthly',
+    coupon: null,
     paymentUrl: 'https://pay.example.com/checkout',
     workspaceId: createId(),
     createdAt: now,
