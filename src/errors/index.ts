@@ -1,6 +1,7 @@
 export {
   badRequest,
   conflict,
+  couponInvalid,
   databaseError,
   featureNotInPlan,
   forbidden,

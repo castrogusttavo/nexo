@@ -113,3 +113,7 @@ export const paymentError = (
 export const mailError = (
   message = 'Não foi possível enviar sua mensagem',
 ): AppError => appError('MAIL_ERROR', message)
+
+export const couponInvalid = (
+  message = 'Cupom inválido ou expirado',
+): AppError => appError('COUPON_INVALID', message)

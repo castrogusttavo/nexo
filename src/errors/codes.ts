@@ -34,6 +34,7 @@ export const ERROR_CODES = {
     code: 'PROJECT_MEMBER_NOT_IN_WORKSPACE',
     status: 409,
   },
+  COUPON_INVALID: { code: 'COUPON_INVALID', status: 422 },
 
   // Server Errors (500)
   INTERNAL_SERVER_ERROR: { code: 'INTERNAL_SERVER_ERROR', status: 500 },
