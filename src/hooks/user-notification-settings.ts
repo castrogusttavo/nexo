@@ -1,5 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
-import type { NotificationSettingDTO } from '@/types/notification-setting.factory'
+import type { NotificationSettingDTO } from '@/types/notification-setting'
 import { authClient } from '../lib/auth-client'
 import type { UpdateNotificationSettingDTO } from '../schemas/notification-settings.schema'
 import { apiFetch } from './_fetch'

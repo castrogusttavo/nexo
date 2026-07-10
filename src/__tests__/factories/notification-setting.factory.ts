@@ -1,5 +1,5 @@
 import type { NotificationSetting, Prisma } from '@prisma/client'
-import type { NotificationSettingDTO } from '@/types/notification-setting.factory'
+import type { NotificationSettingDTO } from '@/types/notification-setting'
 
 export function createFakeNotificationSetting(
   overrides: Partial<NotificationSetting> = {},

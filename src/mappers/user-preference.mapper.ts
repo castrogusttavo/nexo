@@ -1,5 +1,5 @@
 import type { UserPreference } from '@prisma/client'
-import type { UserPreferenceDTO } from '@/types/user-preference.factory'
+import type { UserPreferenceDTO } from '@/types/user-preference'
 
 export function toUserPreferenceDTO(p: UserPreference): UserPreferenceDTO {
   return {

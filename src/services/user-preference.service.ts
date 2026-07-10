@@ -1,6 +1,6 @@
 import { auditMutation } from '@/lib/axiom/audit'
 import { logger } from '@/lib/axiom/logger'
-import type { UserPreferenceDTO } from '@/types/user-preference.factory'
+import type { UserPreferenceDTO } from '@/types/user-preference'
 import { UserPreferenceCache } from '../cache/user-preference.cache'
 import { ok, type Result } from '../lib/result'
 import { toUserPreferenceDTO } from '../mappers/user-preference.mapper'

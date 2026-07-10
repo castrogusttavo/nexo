@@ -1,6 +1,6 @@
 import { auditMutation } from '@/lib/axiom/audit'
 import { logger } from '@/lib/axiom/logger'
-import type { NotificationSettingDTO } from '@/types/notification-setting.factory'
+import type { NotificationSettingDTO } from '@/types/notification-setting'
 import { NotificationSettingCache } from '../cache/notification-setting.cache'
 import { ok, type Result } from '../lib/result'
 import { toNotificationSettingDTO } from '../mappers/notification-setting.mapper'

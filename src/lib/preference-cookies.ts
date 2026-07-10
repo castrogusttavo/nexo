@@ -1,6 +1,6 @@
 import type { NextResponse } from 'next/server'
 import { NODE_ENV } from '@/lib/env/env'
-import type { UserPreferenceDTO } from '@/types/user-preference.factory'
+import type { UserPreferenceDTO } from '@/types/user-preference'
 
 export const PREFERENCE_COOKIES = {
   theme: 'nexo.theme',

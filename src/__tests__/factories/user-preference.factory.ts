@@ -1,5 +1,5 @@
 import type { Prisma, UserPreference } from '@prisma/client'
-import type { UserPreferenceDTO } from '@/types/user-preference.factory'
+import type { UserPreferenceDTO } from '@/types/user-preference'
 
 export function createFakeUserPreference(
   overrides: Partial<UserPreference> = {},

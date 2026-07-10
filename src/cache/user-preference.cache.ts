@@ -1,4 +1,4 @@
-import type { UserPreferenceDTO } from '@/types/user-preference.factory'
+import type { UserPreferenceDTO } from '@/types/user-preference'
 import { createKeyedCache } from './_cache'
 
 export const UserPreferenceCache = createKeyedCache<UserPreferenceDTO>({

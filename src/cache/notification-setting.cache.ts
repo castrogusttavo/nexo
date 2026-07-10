@@ -1,4 +1,4 @@
-import type { NotificationSettingDTO } from '@/types/notification-setting.factory'
+import type { NotificationSettingDTO } from '@/types/notification-setting'
 import { createKeyedCache } from './_cache'
 
 export const NotificationSettingCache =
