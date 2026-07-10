@@ -43,7 +43,7 @@
     "@axiomhq/nextjs": "^0.2.2",
     "@axiomhq/react": "^0.2.2",
     "@base-ui/react": "^1.6.0",
-    "@better-auth/infra": "^0.2.14",
+    "@better-auth/infra": "^0.3.4",
     "@getworkbench/next": "^0.7.0",
     "@hugeicons-pro/core-bulk-rounded": "^4.2.2",
     "@hugeicons-pro/core-solid-rounded": "^4.2.2",
