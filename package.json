@@ -10,6 +10,7 @@
     "start": "next start -H 0.0.0.0 -p 3000",
     "check": "biome check --fix",
     "check:ci": "biome check",
+    "check:staged": "biome check --fix --staged --no-errors-on-unmatched",
     "lint": "biome lint --write",
     "format": "biome format --write",
     "format:check": "biome format",

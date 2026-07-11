@@ -1,2 +1,7 @@
-pnpm check
+# Corrige apenas os arquivos staged e os re-adiciona ao index. Rodar o --fix
+# sem re-stagear deixava o commit com a versão não formatada, quebrando o
+# `check:ci` (que não escreve) no CI.
+pnpm check:staged
+git update-index --again
+
 pnpm tsc --noEmit
