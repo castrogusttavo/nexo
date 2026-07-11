@@ -1,7 +1,6 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import { toast } from 'sonner'
 import { H4 } from '@/components/typography/heading/h4'
 import { Muted } from '@/components/typography/text/muted'
 import { Button } from '@/components/ui/button'
@@ -15,6 +14,7 @@ import {
 import { Input } from '@/components/ui/input'
 import { Switch } from '@/components/ui/switch'
 import { TabsContent } from '@/components/ui/tabs'
+import { notify } from '@/lib/notify'
 import { authClient } from '@/src/lib/auth-client'
 import { useCookieConsent } from '../../cookie-consent/provider'
 
@@ -57,10 +57,10 @@ export function UserModalSecurityTab({ tab }: { tab: string }) {
     })
     setPwBusy(false)
     if (error) {
-      toast.error(error.message ?? 'Não foi possível enviar o e-mail')
+      notify.error(error.message ?? 'Não foi possível enviar o e-mail')
       return
     }
-    toast.success(
+    notify.success(
       hasPassword === false
         ? 'Enviamos um e-mail para você definir sua senha'
         : 'Enviamos um e-mail para você redefinir sua senha',
@@ -141,7 +141,7 @@ export function UserModalSecurityTab({ tab }: { tab: string }) {
     if (!backupCodes) return
     try {
       await navigator.clipboard.writeText(backupCodes.join('\n'))
-      toast.success('Códigos de backup copiados')
+      notify.success('Códigos de backup copiados')
     } catch {
       // ignore
     }

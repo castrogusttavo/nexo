@@ -2,7 +2,6 @@
 
 import { useRouter } from 'next/navigation'
 import { useRef, useState } from 'react'
-import { toast } from 'sonner'
 import { H4 } from '@/components/typography/heading/h4'
 import { Muted } from '@/components/typography/text/muted'
 import {
@@ -26,6 +25,7 @@ import {
 } from '@/components/ui/field'
 import { Input } from '@/components/ui/input'
 import { TabsContent } from '@/components/ui/tabs'
+import { notify } from '@/lib/notify'
 import { getInitials } from '@/lib/user-name-initials'
 import { useCacheUser } from '@/src/hooks/cache/use-user'
 import {
@@ -64,9 +64,9 @@ export function UserModalProfileTab({ tab }: { tab: string }) {
         ...(username !== user?.username ? { username } : {}),
       })
       await refetchSession?.()
-      toast.success('Perfil atualizado')
+      notify.success('Perfil atualizado')
     } catch (error) {
-      toast.error(error instanceof Error ? error.message : 'Erro ao salvar')
+      notify.error(error instanceof Error ? error.message : 'Erro ao salvar')
     }
   }
 
@@ -77,9 +77,9 @@ export function UserModalProfileTab({ tab }: { tab: string }) {
     try {
       await uploadAvatar.mutateAsync(file)
       await refetchSession?.()
-      toast.success('Avatar autalizado')
+      notify.success('Avatar autalizado')
     } catch (error) {
-      toast.error(
+      notify.error(
         error instanceof Error ? error.message : 'Erro ao enviar avatar',
       )
     }
@@ -89,10 +89,10 @@ export function UserModalProfileTab({ tab }: { tab: string }) {
     try {
       await deleteAccount.mutateAsync()
       await authClient.signOut()
-      toast.success('Conta desativada. Você será desconectado.')
+      notify.success('Conta desativada. Você será desconectado.')
       router.push('/sign-in')
     } catch (error) {
-      toast.error(
+      notify.error(
         error instanceof Error ? error.message : 'Erro ao desativar conta',
       )
     }

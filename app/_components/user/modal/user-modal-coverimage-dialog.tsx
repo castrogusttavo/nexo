@@ -2,7 +2,6 @@
 
 import { Upload01Icon } from '@hugeicons-pro/core-stroke-rounded'
 import { useRef, useState } from 'react'
-import { toast } from 'sonner'
 import { NexoIcon } from '@/components/icon/icon'
 import { Button } from '@/components/ui/button'
 import {
@@ -11,6 +10,7 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
+import { notify } from '@/lib/notify'
 import { useUpdateUser, useUploadCover } from '@/src/hooks/use-user'
 
 export const COVER_IMAGES = [
@@ -55,9 +55,9 @@ function ImagesTab({ current }: { current?: string | null }) {
   async function handleSelect(src: string) {
     try {
       await updateUser.mutateAsync({ coverImage: src })
-      toast.success('Capa atualizada')
+      notify.success('Capa atualizada')
     } catch (error) {
-      toast.error(
+      notify.error(
         error instanceof Error ? error.message : 'Erro ao atualizar capa',
       )
     }
@@ -95,9 +95,10 @@ function UploadTab() {
     setPreview(URL.createObjectURL(file))
     try {
       await upload.mutateAsync(file)
-      toast.success('Capa atualizada')
-    } catch {
+      notify.success('Capa atualizada')
+    } catch (err) {
       setPreview(null)
+      notify.error(err, 'Não foi possível enviar a capa')
     }
   }
 

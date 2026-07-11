@@ -1,6 +1,5 @@
 'use client'
 
-import { toast } from 'sonner'
 import { H4 } from '@/components/typography/heading/h4'
 import { Muted } from '@/components/typography/text/muted'
 import {
@@ -11,6 +10,7 @@ import {
 } from '@/components/ui/field'
 import { Switch } from '@/components/ui/switch'
 import { TabsContent } from '@/components/ui/tabs'
+import { notify } from '@/lib/notify'
 import {
   useNotificationSettings,
   useUpdateNotificationSettings,
@@ -54,9 +54,10 @@ export function UserModalNotificationsTab({ tab }: { tab: string }) {
 
   function save(patch: UpdateNotificationSettingDTO) {
     update.mutate(patch, {
-      onSuccess: () => toast.success('Preferências de notificação atualizadas'),
+      onSuccess: () =>
+        notify.success('Preferências de notificação atualizadas'),
       onError: (error) =>
-        toast.error(error instanceof Error ? error.message : 'Erro ao salvar'),
+        notify.error(error instanceof Error ? error.message : 'Erro ao salvar'),
     })
   }
 

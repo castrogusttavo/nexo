@@ -5,7 +5,6 @@ import {
   Moon01Icon,
   Sun03Icon,
 } from '@hugeicons-pro/core-stroke-rounded'
-import { toast } from 'sonner'
 import { NexoIcon } from '@/components/icon/icon'
 import { H4 } from '@/components/typography/heading/h4'
 import { Muted } from '@/components/typography/text/muted'
@@ -34,6 +33,7 @@ import {
 } from '@/components/ui/select'
 import { Switch } from '@/components/ui/switch'
 import { TabsContent } from '@/components/ui/tabs'
+import { notify } from '@/lib/notify'
 import {
   useUpdateUserPreferences,
   useUserPreferences,
@@ -73,7 +73,7 @@ export function UserModalPreferencesTab({ tab }: { tab: string }) {
   function save(patch: UpdateUserPreferenceDTO) {
     update.mutate(patch, {
       onError: (error) =>
-        toast.error(error instanceof Error ? error.message : 'Erro ao salvar'),
+        notify.error(error instanceof Error ? error.message : 'Erro ao salvar'),
     })
   }
 

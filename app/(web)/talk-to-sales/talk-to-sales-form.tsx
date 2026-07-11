@@ -1,7 +1,6 @@
 'use client'
 
 import { useState } from 'react'
-import { toast } from 'sonner'
 import { Button } from '@/components/ui/button'
 import { Field, FieldError, FieldLabel } from '@/components/ui/field'
 import { Input } from '@/components/ui/input'
@@ -15,6 +14,7 @@ import {
 } from '@/components/ui/select'
 import { Textarea } from '@/components/ui/textarea'
 import { useLogger } from '@/lib/axiom/client'
+import { notify } from '@/lib/notify'
 import { TEAM_SIZES } from '@/src/schemas/talk-to-sales.schema'
 
 const EMPTY = { name: '', email: '', message: '' }
@@ -63,14 +63,14 @@ export function TalkToSalesForm() {
         setStatus('sent')
         return
       }
-      toast.error('Verifique os campos e tente novamente')
+      notify.error('Verifique os campos e tente novamente')
       setStatus('error')
     } catch (err) {
       log.error('tal_to_sales.submit_failed', {
         component: 'TalkToSalesForm',
         message: err instanceof Error ? err.message : String(err),
       })
-      toast.error('Não foi possível enviar. Tente novamente.')
+      notify.error('Não foi possível enviar. Tente novamente.')
       setStatus('error')
     }
   }
