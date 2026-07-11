@@ -35,6 +35,7 @@ type AuditAction =
   | 'onboarding_role_saved'
   | 'onboarding_goals_saved'
   | 'onboarding_profile_saved'
+  | 'onboarding_step_reverted'
   | 'accept'
 
 type AuditOutcome = 'success' | 'failure'

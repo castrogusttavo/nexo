@@ -649,4 +649,47 @@ describe('UserService', () => {
       expect(mockedUserCache.invalidate).not.toHaveBeenCalled()
     })
   })
+
+  describe('goBackOnboardingStep()', () => {
+    it('should move the step back and invalidate the cache', async () => {
+      mockedUser.findById.mockResolvedValue(
+        ok(createFakeUser({ onboardingStep: 'BRINGS' })),
+      )
+      mockedUser.updateOnboardingStep.mockResolvedValue(ok(createFakeUser()))
+
+      const result = await UserService.goBackOnboardingStep('user1')
+
+      expectOk(result)
+      expect(mockedUser.updateOnboardingStep).toHaveBeenCalledWith(
+        'user1',
+        'ROLE',
+      )
+    })
+
+    it('should be a no-op the first step', async () => {
+      mockedUser.findById.mockResolvedValue(
+        ok(createFakeUser({ onboardingStep: 'PROFILE' })),
+      )
+
+      const result = await UserService.goBackOnboardingStep('user1')
+
+      expectOk(result)
+      expect(mockedUser.updateOnboardingStep).not.toHaveBeenCalled()
+    })
+  })
+
+  describe('getOnboardingProfile()', () => {
+    it('should report hasPassword from the credential account', async () => {
+      mockedUser.findById.mockResolvedValue(
+        ok(createFakeUser({ name: 'Gusttavo', onboardingStep: 'PROFILE' })),
+      )
+      mockedUser.hasCredentialAccount.mockResolvedValue(ok(true))
+
+      const result = await UserService.getOnboardingProfile('user1')
+
+      const profile = expectOk(result)
+      expect(profile.name).toBe('Gusttavo')
+      expect(profile.hasPassword).toBe(true)
+    })
+  })
 })

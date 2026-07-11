@@ -248,4 +248,16 @@ export const UserRepository = {
       return err(dbError('Failed to count blocking workspaces', error))
     }
   },
+
+  async hasCredentialAccount(userId: string): Promise<Result<boolean>> {
+    try {
+      const account = await prisma.account.findFirst({
+        where: { userId, providerId: 'credential' },
+        select: { password: true },
+      })
+      return ok(!!account?.password)
+    } catch (error) {
+      return err(dbError('Failed to check credential account, error', error))
+    }
+  },
 }

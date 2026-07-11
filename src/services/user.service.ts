@@ -31,6 +31,14 @@ export interface DataExportRequested {
   requestedAt: string
 }
 
+export interface OnboardingProfile {
+  name: string
+  image: string | null
+  twoFactorEnabled: boolean
+  hasPassword: boolean
+  onboardingStep: OnboardingStep | null
+}
+
 const DELETION_DATE_FORMATTER = new Intl.DateTimeFormat('pt-BR', {
   day: '2-digit',
   month: 'long',
@@ -46,6 +54,12 @@ const NEXT_STEP: Record<OnboardingStep, OnboardingStep | null> = {
   ROLE: 'BRINGS',
   BRINGS: 'WORKSPACE',
   WORKSPACE: null,
+}
+
+const PREV_STEP: Partial<Record<OnboardingStep, OnboardingStep>> = {
+  ROLE: 'PROFILE',
+  BRINGS: 'ROLE',
+  WORKSPACE: 'BRINGS',
 }
 
 export const UserService = {
@@ -410,5 +424,50 @@ export const UserService = {
     })
 
     return ok(undefined)
+  },
+
+  async goBackOnboardingStep(actorId: string): Promise<Result<void>> {
+    const userResult = await UserRepository.findById(actorId)
+    if (!userResult.ok) return userResult
+
+    const current = userResult.value.onboardingStep
+    const prev = current ? PREV_STEP[current] : undefined
+    if (!prev) return ok(undefined)
+
+    const result = await UserRepository.updateOnboardingStep(actorId, prev)
+    if (!result.ok) return result
+
+    await UserCache.invalidate(actorId)
+
+    auditMutation({
+      entity: 'user',
+      action: 'onboarding_step_reverted',
+      actorId,
+      targetId: actorId,
+      meta: { from: current, to: prev },
+    })
+
+    return ok(undefined)
+  },
+
+  async getOnboardingProfile(
+    actorId: string,
+  ): Promise<Result<OnboardingProfile>> {
+    const [userResult, hasPassword] = await Promise.all([
+      UserRepository.findById(actorId),
+      UserRepository.hasCredentialAccount(actorId),
+    ])
+    if (!userResult.ok) return userResult
+    if (!hasPassword.ok) return hasPassword
+
+    const user = userResult.value
+
+    return ok({
+      name: user.name,
+      image: user.image,
+      twoFactorEnabled: user.twoFactorEnabled,
+      hasPassword: hasPassword.value,
+      onboardingStep: user.onboardingStep,
+    })
   },
 }
