@@ -122,6 +122,32 @@ describe('InvitationRepository', () => {
       })
       expect(count).toBe(1)
     })
+
+    it('hould clear the invitee onboarding step on accept', async () => {
+      const { inviter, ws } = await seedInviterAndWorkspace()
+      const invitee = await seedUser({
+        email: `invitee-${Date.now()}@example.com`,
+      })
+      await prisma.user.update({
+        where: { id: invitee.id },
+        data: { onboardingStep: 'ROLE' },
+      })
+      const invite = await seedInvitation({
+        invitedById: inviter.id,
+        workspaceId: ws.id,
+        email: invitee.email,
+        status: 'PENDING',
+      })
+
+      expectOk(
+        await InvitationRepository.accept({
+          invitationId: invite.id,
+          userId: invitee.id,
+          workspaceId: ws.id,
+          role: 'MEMBER',
+        }),
+      )
+    })
   })
 
   describe('countPendingByWorkspace()', () => {

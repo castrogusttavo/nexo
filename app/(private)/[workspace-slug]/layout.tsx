@@ -38,15 +38,16 @@ export default async function WorkspaceLayout({
 
   if (!session.ok) redirect('/sign-in')
 
-  const userResult = await UserRepository.findById(session.value.user.id)
-  if (userResult.ok && userResult.value.onboardingStep !== null) {
+  const [userResult, membership] = await Promise.all([
+    UserRepository.findById(session.value.user.id),
+    MembershipRepository.findByUserAndSlug(session.value.user.id, slug),
+  ])
+
+  const isMember = membership.ok && membership.value !== null
+
+  if (!isMember && userResult.ok && userResult.value.onboardingStep !== null) {
     redirect('/onboarding')
   }
-
-  const membership = await MembershipRepository.findByUserAndSlug(
-    session.value.user.id,
-    slug,
-  )
 
   if (!membership.ok || !membership.value) {
     const memberships = await MembershipRepository.listByUser(

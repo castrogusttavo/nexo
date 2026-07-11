@@ -188,6 +188,11 @@ export const InvitationRepository = {
           data: { status: 'ACCEPTED' },
         })
 
+        await tx.user.update({
+          where: { id: params.userId },
+          data: { onboardingStep: null },
+        })
+
         return m
       })
 

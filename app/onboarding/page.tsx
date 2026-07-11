@@ -1,7 +1,6 @@
 import type { OnboardingStep } from '@prisma/client'
 import { redirect } from 'next/navigation'
 import { getAuthSession } from '@/src/lib/auth-session'
-import { prisma } from '@/src/lib/prisma'
 import { MembershipRepository } from '@/src/repositories/membership.repository'
 import { UserRepository } from '@/src/repositories/user.repository'
 
@@ -33,13 +32,7 @@ export default async function OnboardingPage() {
     user.onboardingStep === 'BRINGS'
   ) {
     const memberships = await MembershipRepository.listByUser(user.id)
-    if (memberships.ok && memberships.value.length > 0) {
-      await prisma.user.update({
-        where: { id: user.id },
-        data: { onboardingStep: null },
-      })
-      redirect('/')
-    }
+    if (memberships.ok && memberships.value.length > 0) redirect('/')
   }
 
   redirect(STEP_ROUTES[user.onboardingStep])

@@ -3,6 +3,7 @@ import { auditMutation } from '@/lib/axiom/audit'
 import { logger } from '@/lib/axiom/logger'
 import { NEXT_PUBLIC_URL } from '@/lib/env/env'
 import type { InvitationDTO, InviteToProjectResult } from '@/types/invitation'
+import { UserCache } from '../cache/user.cache'
 import {
   forbidden,
   invitationAlreadyMember,
@@ -329,6 +330,8 @@ export const InvitationService = {
       projectId: invite.projectId,
     })
     if (!accepted.ok) return accepted
+
+    await UserCache.invalidate(actorId)
 
     auditMutation({
       entity: 'invitation',
