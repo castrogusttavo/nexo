@@ -1,4 +1,4 @@
-import type { BillingInterval, Plan } from '@prisma/client'
+import type { BillingInterval, Plan, Subscription } from '@prisma/client'
 import { AbacatePayClient } from '@/lib/abacatepay'
 import { auditMutation } from '@/lib/axiom/audit'
 import { logger } from '@/lib/axiom/logger'
@@ -258,5 +258,11 @@ export const SubscriptionService = {
       default:
         return ok(undefined)
     }
+  },
+
+  async getActiveByWorkspace(
+    workspaceId: string,
+  ): Promise<Result<Subscription | null>> {
+    return SubscriptionRepository.findActiveByWorkspaceId(workspaceId)
   },
 }

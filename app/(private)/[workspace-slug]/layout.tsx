@@ -6,9 +6,9 @@ import { HeaderPromotionBanner } from '@/app/_components/header/header-promotion
 import { GlobalSidebarNavigation } from '@/app/_components/navigation/sidebar-global'
 import { TRIAL_BANNER_DAYS } from '@/src/config/trial'
 import { getAuthSession } from '@/src/lib/auth-session'
-import { MembershipRepository } from '@/src/repositories/membership.repository'
-import { SubscriptionRepository } from '@/src/repositories/subscription.repository'
-import { UserRepository } from '@/src/repositories/user.repository'
+import { MembershipService } from '@/src/services/membership.service'
+import { SubscriptionService } from '@/src/services/subscription.service'
+import { UserService } from '@/src/services/user.service'
 
 type WorkspaceLayoutProps = {
   children: ReactNode
@@ -39,8 +39,8 @@ export default async function WorkspaceLayout({
   if (!session.ok) redirect('/sign-in')
 
   const [userResult, membership] = await Promise.all([
-    UserRepository.findById(session.value.user.id),
-    MembershipRepository.findByUserAndSlug(session.value.user.id, slug),
+    UserService.getProfile(session.value.user.id),
+    MembershipService.getByUserAndSlug(session.value.user.id, slug),
   ])
 
   const isMember = membership.ok && membership.value !== null
@@ -50,7 +50,7 @@ export default async function WorkspaceLayout({
   }
 
   if (!membership.ok || !membership.value) {
-    const memberships = await MembershipRepository.listByUser(
+    const memberships = await MembershipService.listByUser(
       session.value.user.id,
     )
     if (memberships.ok && memberships.value.length === 0) {
@@ -69,7 +69,7 @@ export default async function WorkspaceLayout({
     workspace.trialEndsAt.getTime() <= now + TRIAL_BANNER_DAYS * 86_400_000
   let showTrialBanner = false
   if (trialEndingSoon) {
-    const activeSub = await SubscriptionRepository.findActiveByWorkspaceId(
+    const activeSub = await SubscriptionService.getActiveByWorkspace(
       workspace.id,
     )
     showTrialBanner = !(activeSub.ok && activeSub.value !== null)
