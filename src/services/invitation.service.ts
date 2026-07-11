@@ -197,6 +197,53 @@ export const InvitationService = {
     return ok(toInvitationDTO(updated.value))
   },
 
+  async resendForProject(
+    actorId: string,
+    workspaceId: string,
+    slug: string,
+    invitationId: string,
+  ): Promise<Result<InvitationDTO>> {
+    const gate = await this.assertProjectManager(actorId, workspaceId, slug)
+    if (!gate.ok) return gate
+
+    const invitation = await InvitationRepository.findById(invitationId)
+    if (!invitation.ok) return invitation
+    if (!invitation.value || invitation.value.projectId !== gate.value.id) {
+      return err(invitationNotFound())
+    }
+    if (
+      invitation.value.status === 'ACCEPTED' ||
+      invitation.value.status === 'REVOKED'
+    ) {
+      return err(invitationNotPending())
+    }
+
+    const refreshed = await InvitationRepository.refreshToken(
+      invitationId,
+      createId(),
+      expiresAt(),
+    )
+    if (!refreshed.ok) return refreshed
+
+    await this.dispatchEmail(
+      actorId,
+      workspaceId,
+      refreshed.value.token,
+      refreshed.value.email,
+    )
+
+    auditMutation({
+      entity: 'invitation',
+      action: 'update',
+      actorId,
+      targetId: invitationId,
+      reason: 'resend',
+      meta: { workspaceId, projectId: gate.value.id },
+    })
+
+    return ok(toInvitationDTO(refreshed.value))
+  },
+
   async resend(
     actorId: string,
     workspaceId: string,

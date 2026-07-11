@@ -264,3 +264,107 @@ describe('InvitationService.revokeForProject()', () => {
     expect(mockedInvite.updateStatus).toHaveBeenCalledWith('inv1', 'REVOKED')
   })
 })
+
+describe('InvitationService.resendForProject()', () => {
+  it('should return PROJECT_FORBIDDEN for a plain member who is not the lead', async () => {
+    mockedMembership.findByUserAndWorkspace.mockResolvedValue(
+      ok(plainMembership),
+    )
+    mockedProject.findByWorkspaceAndSlug.mockResolvedValue(
+      ok(projectWithDetails('someone-else')),
+    )
+
+    const result = await InvitationService.resendForProject(
+      'actor',
+      'ws1',
+      'proj',
+      'inv1',
+    )
+
+    expectErr(result, 'PROJECT_FORBIDDEN')
+    expect(mockedInvite.refreshToken).not.toHaveBeenCalled()
+  })
+
+  it('should return INVITATION_NOT_FOUND when the invite is from another project', async () => {
+    mockedMembership.findByUserAndWorkspace.mockResolvedValue(
+      ok(ownerMembership),
+    )
+    mockedProject.findByWorkspaceAndSlug.mockResolvedValue(
+      ok(projectWithDetails()),
+    )
+    mockedInvite.findById.mockResolvedValue(
+      ok(createFakeInvitation({ projectId: 'another-project' })),
+    )
+
+    const result = await InvitationService.resendForProject(
+      'actor',
+      'ws1',
+      'proj',
+      'inv1',
+    )
+
+    expectErr(result, 'INVITATION_NOT_FOUND')
+  })
+
+  it('should return INVITATION_NOT_PENDING when the invite was already accepted', async () => {
+    mockedMembership.findByUserAndWorkspace.mockResolvedValue(
+      ok(ownerMembership),
+    )
+    mockedProject.findByWorkspaceAndSlug.mockResolvedValue(
+      ok(projectWithDetails()),
+    )
+    mockedInvite.findById.mockResolvedValue(
+      ok(
+        createFakeInvitation({
+          id: 'inv1',
+          projectId: 'another-project',
+          status: 'ACCEPTED',
+        }),
+      ),
+    )
+
+    const result = await InvitationService.resendForProject(
+      'actor',
+      'ws1',
+      'proj',
+      'inv1',
+    )
+
+    expectErr(result, 'INVITATION_NOT_FOUND')
+    expect(mockedInvite.refreshToken).not.toHaveBeenCalled()
+  })
+
+  it('should let the project rotate the token and dispatch a new email', async () => {
+    mockedMembership.findByUserAndWorkspace.mockResolvedValue(
+      ok(plainMembership),
+    )
+    mockedProject.findByWorkspaceAndSlug.mockResolvedValue(
+      ok(projectWithDetails('actor')),
+    )
+    const invite = createFakeInvitation({
+      id: 'inv1',
+      projectId: 'proj-id',
+      status: 'PENDING',
+      token: 'old-token',
+    })
+    mockedInvite.findById.mockResolvedValue(ok(invite))
+    mockedInvite.refreshToken.mockResolvedValue(
+      ok({ ...invite, token: 'new-token' }),
+    )
+
+    const result = await InvitationService.resendForProject(
+      'actor',
+      'ws1',
+      'proj',
+      'inv1',
+    )
+
+    expectOk(result)
+    expect(mockedInvite.refreshToken).toHaveBeenCalledWith(
+      'inv1',
+      expect.any(String),
+      expect.any(Date),
+    )
+    expect(mockedEmail).toHaveBeenCalledTimes(1)
+  })
+})

@@ -346,3 +346,21 @@ export function useRevokeProjectInvitation(workspaceId: string, slug: string) {
     },
   })
 }
+
+export function useResendProjectInvitation(workspaceId: string, slug: string) {
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationFn: (invitationId: string) =>
+      apiSend(
+        `/api/workspaces/${workspaceId}/projects/${slug}/members/invite/${invitationId}/resend`,
+        { method: 'POST' },
+        'Erro ao reenviar convite',
+      ),
+    onSuccess: () => {
+      queryClient.invalidateQueries({
+        queryKey: projectInvitationsKey(workspaceId, slug),
+      })
+    },
+  })
+}
