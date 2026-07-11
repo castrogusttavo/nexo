@@ -86,7 +86,11 @@ export const InvitationRepository = {
   async countPendingByWorkspace(workspaceId: string): Promise<Result<number>> {
     try {
       const count = await prisma.workspaceInvitation.count({
-        where: { workspaceId, status: 'PENDING' },
+        where: {
+          workspaceId,
+          status: 'PENDING',
+          expiresAt: { gt: new Date() },
+        },
       })
       return ok(count)
     } catch (error) {

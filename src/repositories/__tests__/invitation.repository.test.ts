@@ -151,6 +151,28 @@ describe('InvitationRepository', () => {
       ).toBe(2)
     })
 
+    it('should not count expired pending invitations toward the seat cap', async () => {
+      const { inviter, ws } = await seedInviterAndWorkspace()
+      await seedInvitation({
+        invitedById: inviter.id,
+        workspaceId: ws.id,
+        email: 'live@example.com',
+        status: 'PENDING',
+        expiresAt: new Date(Date.now() + 60_000),
+      })
+      await seedInvitation({
+        invitedById: inviter.id,
+        workspaceId: ws.id,
+        email: 'stale@example.com',
+        status: 'PENDING',
+        expiresAt: new Date(Date.now() - 60_000),
+      })
+
+      expect(
+        expectOk(await InvitationRepository.countPendingByWorkspace(ws.id)),
+      ).toBe(1)
+    })
+
     it('should not count invitations from toher workspaces', async () => {
       const { inviter, ws } = await seedInviterAndWorkspace()
       const other = await seedWorkspace()
@@ -164,6 +186,28 @@ describe('InvitationRepository', () => {
       expect(
         expectOk(await InvitationRepository.countPendingByWorkspace(other.id)),
       ).toBe(0)
+    })
+
+    it('should not count expired PENDING invites toward the seat cap', async () => {
+      const { inviter, ws } = await seedInviterAndWorkspace()
+      await seedInvitation({
+        invitedById: inviter.id,
+        workspaceId: ws.id,
+        email: 'iso@example.com',
+        status: 'PENDING',
+        expiresAt: new Date(Date.now() + 60_000),
+      })
+      await seedInvitation({
+        invitedById: inviter.id,
+        workspaceId: ws.id,
+        email: 'stale@example.com',
+        status: 'PENDING',
+        expiresAt: new Date(Date.now() - 60_000),
+      })
+
+      expect(
+        expectOk(await InvitationRepository.countPendingByWorkspace(ws.id)),
+      ).toBe(1)
     })
   })
 })
