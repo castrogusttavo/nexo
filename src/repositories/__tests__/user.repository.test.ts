@@ -405,11 +405,11 @@ describe('UserRepository', () => {
     })
   })
 
-  describe('saveGaols()', () => {
+  describe('saveGoals()', () => {
     it('should persist the goals and next step', async () => {
       const seeded = await seedUser()
 
-      const result = await UserRepository.saveGaols(
+      const result = await UserRepository.saveGoals(
         seeded.id,
         ['ROADMAP', 'SPRINTS'],
         'WORKSPACE',
@@ -421,7 +421,7 @@ describe('UserRepository', () => {
     })
 
     it('should return RESOURCE_NOT_FOUND for unknown user', async () => {
-      const result = await UserRepository.saveGaols(
+      const result = await UserRepository.saveGoals(
         'nope',
         ['ROADMAP'],
         'WORKSPACE',
@@ -432,7 +432,7 @@ describe('UserRepository', () => {
     it('should return DATABASE_ERROR on non-P2025 failures', async () => {
       vi.spyOn(prisma.user, 'update').mockRejectedValueOnce(new Error('boom'))
 
-      const result = await UserRepository.saveGaols(
+      const result = await UserRepository.saveGoals(
         'u',
         ['ROADMAP'],
         'WORKSPACE',

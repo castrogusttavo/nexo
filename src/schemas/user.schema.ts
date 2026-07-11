@@ -55,6 +55,14 @@ export const SaveGoalsSchema = z.object({
     .min(1, 'Selecione ao menos um objetivo'),
 })
 
+export const SaveProfileSchema = z.object({
+  name: z
+    .string()
+    .min(2, 'Nome deve ter ao menos 2 caracteres')
+    .max(50, 'Nome deve ter no máximo 50 caracteres'),
+})
+
 export type UpdateUserDTO = z.infer<typeof UpdateUserSchema>
 export type SaveRoleDTO = z.infer<typeof SaveRoleSchema>
 export type SaveGoalsDTO = z.infer<typeof SaveGoalsSchema>
+export type SaveProfileDTO = z.infer<typeof SaveProfileSchema>

@@ -45,8 +45,8 @@ import { enqueueUserExport } from '@/src/lib/queue/data-export'
 import { consume } from '@/src/lib/rate-limit'
 import { UserRepository } from '@/src/repositories/user.repository'
 
-const mockedRepo = vi.mocked(UserRepository)
-const mockedCache = vi.mocked(UserCache)
+const mockedUser = vi.mocked(UserRepository)
+const mockedUserCache = vi.mocked(UserCache)
 const mockedScheduleDeletion = vi.mocked(scheduleAccountDeletion)
 const mockedCancelDeletion = vi.mocked(cancelAccountDeletion)
 const mockedSendEmail = vi.mocked(sendDeleteAccountEmail)
@@ -64,35 +64,35 @@ describe('UserService', () => {
   describe('getProfile()', () => {
     it('should return cached user when cache hit', async () => {
       const cachedDTO = createFakeUserDTO({ id: 'user-1' })
-      mockedCache.get.mockResolvedValue(cachedDTO)
+      mockedUserCache.get.mockResolvedValue(cachedDTO)
 
       const result = await UserService.getProfile('user-1')
 
       const value = expectOk(result)
       expect(value).toEqual(cachedDTO)
-      expect(mockedRepo.findByIdWithMemberships).not.toHaveBeenCalled()
+      expect(mockedUser.findByIdWithMemberships).not.toHaveBeenCalled()
     })
 
     it('should fetch from repository and populate cache on cache miss', async () => {
       const user = withMemberships(createFakeUser({ id: 'user-1' }))
-      mockedCache.get.mockResolvedValue(null)
-      mockedRepo.findByIdWithMemberships.mockResolvedValue(ok(user))
-      mockedCache.set.mockResolvedValue(undefined)
+      mockedUserCache.get.mockResolvedValue(null)
+      mockedUser.findByIdWithMemberships.mockResolvedValue(ok(user))
+      mockedUserCache.set.mockResolvedValue(undefined)
 
       const result = await UserService.getProfile('user-1')
 
       const value = expectOk(result)
       expect(value.id).toBe('user-1')
-      expect(mockedRepo.findByIdWithMemberships).toHaveBeenCalledWith('user-1')
-      expect(mockedCache.set).toHaveBeenCalledWith(
+      expect(mockedUser.findByIdWithMemberships).toHaveBeenCalledWith('user-1')
+      expect(mockedUserCache.set).toHaveBeenCalledWith(
         'user-1',
         expect.objectContaining({ id: 'user-1' }),
       )
     })
 
     it('should propagate repository error', async () => {
-      mockedCache.get.mockResolvedValue(null)
-      mockedRepo.findByIdWithMemberships.mockResolvedValue(
+      mockedUserCache.get.mockResolvedValue(null)
+      mockedUser.findByIdWithMemberships.mockResolvedValue(
         err(notFound('User')),
       )
 
@@ -106,12 +106,12 @@ describe('UserService', () => {
   describe('updateProfile()', () => {
     it('should update name successfully and refresh cache', async () => {
       const updatedUser = createFakeUser({ id: 'user-1', name: 'New Name' })
-      mockedRepo.update.mockResolvedValue(ok(updatedUser))
-      mockedRepo.findByIdWithMemberships.mockResolvedValue(
+      mockedUser.update.mockResolvedValue(ok(updatedUser))
+      mockedUser.findByIdWithMemberships.mockResolvedValue(
         ok(withMemberships(updatedUser)),
       )
-      mockedCache.invalidate.mockResolvedValue(undefined)
-      mockedCache.set.mockResolvedValue(undefined)
+      mockedUserCache.invalidate.mockResolvedValue(undefined)
+      mockedUserCache.set.mockResolvedValue(undefined)
 
       const result = await UserService.updateProfile('user-1', {
         name: 'New Name',
@@ -119,11 +119,11 @@ describe('UserService', () => {
 
       const value = expectOk(result)
       expect(value.name).toBe('New Name')
-      expect(mockedRepo.update).toHaveBeenCalledWith('user-1', {
+      expect(mockedUser.update).toHaveBeenCalledWith('user-1', {
         name: 'New Name',
       })
-      expect(mockedCache.invalidate).toHaveBeenCalledWith('user-1')
-      expect(mockedCache.set).toHaveBeenCalledWith(
+      expect(mockedUserCache.invalidate).toHaveBeenCalledWith('user-1')
+      expect(mockedUserCache.set).toHaveBeenCalledWith(
         'user-1',
         expect.objectContaining({ id: 'user-1', name: 'New Name' }),
       )
@@ -134,14 +134,14 @@ describe('UserService', () => {
         id: 'other-user',
         email: 'taken@example.com',
       })
-      mockedRepo.findByEmail.mockResolvedValue(ok(existingUser))
+      mockedUser.findByEmail.mockResolvedValue(ok(existingUser))
 
       const result = await UserService.updateProfile('user-1', {
         email: 'taken@example.com',
       })
 
       expectErr(result, 'CONFLICT')
-      expect(mockedRepo.update).not.toHaveBeenCalled()
+      expect(mockedUser.update).not.toHaveBeenCalled()
     })
 
     it('should allow updating to own current email', async () => {
@@ -149,20 +149,20 @@ describe('UserService', () => {
         id: 'user-1',
         email: 'my@example.com',
       })
-      mockedRepo.findByEmail.mockResolvedValue(ok(currentUser))
-      mockedRepo.update.mockResolvedValue(ok(currentUser))
-      mockedRepo.findByIdWithMemberships.mockResolvedValue(
+      mockedUser.findByEmail.mockResolvedValue(ok(currentUser))
+      mockedUser.update.mockResolvedValue(ok(currentUser))
+      mockedUser.findByIdWithMemberships.mockResolvedValue(
         ok(withMemberships(currentUser)),
       )
-      mockedCache.invalidate.mockResolvedValue(undefined)
-      mockedCache.set.mockResolvedValue(undefined)
+      mockedUserCache.invalidate.mockResolvedValue(undefined)
+      mockedUserCache.set.mockResolvedValue(undefined)
 
       const result = await UserService.updateProfile('user-1', {
         email: 'my@example.com',
       })
 
       expectOk(result)
-      expect(mockedRepo.update).toHaveBeenCalled()
+      expect(mockedUser.update).toHaveBeenCalled()
     })
 
     it('should allow email update when email is not taken', async () => {
@@ -170,13 +170,13 @@ describe('UserService', () => {
         id: 'user-1',
         email: 'new@example.com',
       })
-      mockedRepo.findByEmail.mockResolvedValue(ok(null))
-      mockedRepo.update.mockResolvedValue(ok(updatedUser))
-      mockedRepo.findByIdWithMemberships.mockResolvedValue(
+      mockedUser.findByEmail.mockResolvedValue(ok(null))
+      mockedUser.update.mockResolvedValue(ok(updatedUser))
+      mockedUser.findByIdWithMemberships.mockResolvedValue(
         ok(withMemberships(updatedUser)),
       )
-      mockedCache.invalidate.mockResolvedValue(undefined)
-      mockedCache.set.mockResolvedValue(undefined)
+      mockedUserCache.invalidate.mockResolvedValue(undefined)
+      mockedUserCache.set.mockResolvedValue(undefined)
 
       const result = await UserService.updateProfile('user-1', {
         email: 'new@example.com',
@@ -187,14 +187,14 @@ describe('UserService', () => {
     })
 
     it('should propagate findByEmail repository error', async () => {
-      mockedRepo.findByEmail.mockResolvedValue(err(databaseError()))
+      mockedUser.findByEmail.mockResolvedValue(err(databaseError()))
 
       const result = await UserService.updateProfile('user-1', {
         email: 'any@example.com',
       })
 
       expectErr(result, 'DATABASE_ERROR')
-      expect(mockedRepo.update).not.toHaveBeenCalled()
+      expect(mockedUser.update).not.toHaveBeenCalled()
     })
 
     it('should return USERNAME_CONFLICT when username belongs to another user', async () => {
@@ -202,43 +202,43 @@ describe('UserService', () => {
         id: 'other-user',
         username: 'taken',
       })
-      mockedRepo.findByUsername.mockResolvedValue(ok(existingUser))
+      mockedUser.findByUsername.mockResolvedValue(ok(existingUser))
 
       const result = await UserService.updateProfile('user-1', {
         username: 'taken',
       })
 
       expectErr(result, 'USERNAME_CONFLICT')
-      expect(mockedRepo.update).not.toHaveBeenCalled()
+      expect(mockedUser.update).not.toHaveBeenCalled()
     })
 
     it('should allow keeping own current username', async () => {
       const currentUser = createFakeUser({ id: 'user-1', username: 'mine' })
-      mockedRepo.findByUsername.mockResolvedValue(ok(currentUser))
-      mockedRepo.update.mockResolvedValue(ok(currentUser))
-      mockedRepo.findByIdWithMemberships.mockResolvedValue(
+      mockedUser.findByUsername.mockResolvedValue(ok(currentUser))
+      mockedUser.update.mockResolvedValue(ok(currentUser))
+      mockedUser.findByIdWithMemberships.mockResolvedValue(
         ok(withMemberships(currentUser)),
       )
-      mockedCache.invalidate.mockResolvedValue(undefined)
-      mockedCache.set.mockResolvedValue(undefined)
+      mockedUserCache.invalidate.mockResolvedValue(undefined)
+      mockedUserCache.set.mockResolvedValue(undefined)
 
       const result = await UserService.updateProfile('user-1', {
         username: 'mine',
       })
 
       expectOk(result)
-      expect(mockedRepo.update).toHaveBeenCalled()
+      expect(mockedUser.update).toHaveBeenCalled()
     })
 
     it('should allow username update when it is not taken', async () => {
       const updatedUser = createFakeUser({ id: 'user-1', username: 'fresh' })
-      mockedRepo.findByUsername.mockResolvedValue(ok(null))
-      mockedRepo.update.mockResolvedValue(ok(updatedUser))
-      mockedRepo.findByIdWithMemberships.mockResolvedValue(
+      mockedUser.findByUsername.mockResolvedValue(ok(null))
+      mockedUser.update.mockResolvedValue(ok(updatedUser))
+      mockedUser.findByIdWithMemberships.mockResolvedValue(
         ok(withMemberships(updatedUser)),
       )
-      mockedCache.invalidate.mockResolvedValue(undefined)
-      mockedCache.set.mockResolvedValue(undefined)
+      mockedUserCache.invalidate.mockResolvedValue(undefined)
+      mockedUserCache.set.mockResolvedValue(undefined)
 
       const result = await UserService.updateProfile('user-1', {
         username: 'fresh',
@@ -249,19 +249,19 @@ describe('UserService', () => {
     })
 
     it('should propagate findByUsername repository error', async () => {
-      mockedRepo.findByUsername.mockResolvedValue(err(databaseError()))
+      mockedUser.findByUsername.mockResolvedValue(err(databaseError()))
 
       const result = await UserService.updateProfile('user-1', {
         username: 'whatever',
       })
 
       expectErr(result, 'DATABASE_ERROR')
-      expect(mockedRepo.update).not.toHaveBeenCalled()
+      expect(mockedUser.update).not.toHaveBeenCalled()
     })
 
     it('should propagate update repository error', async () => {
-      mockedRepo.update.mockResolvedValue(err(databaseError()))
-      mockedCache.invalidate.mockResolvedValue(undefined)
+      mockedUser.update.mockResolvedValue(err(databaseError()))
+      mockedUserCache.invalidate.mockResolvedValue(undefined)
 
       const result = await UserService.updateProfile('user-1', {
         name: 'New Name',
@@ -272,9 +272,9 @@ describe('UserService', () => {
 
     it('should propagate post-update findByIdWithMemberships error', async () => {
       const updatedUser = createFakeUser({ id: 'user-1' })
-      mockedRepo.update.mockResolvedValue(ok(updatedUser))
-      mockedCache.invalidate.mockResolvedValue(undefined)
-      mockedRepo.findByIdWithMemberships.mockResolvedValue(
+      mockedUser.update.mockResolvedValue(ok(updatedUser))
+      mockedUserCache.invalidate.mockResolvedValue(undefined)
+      mockedUser.findByIdWithMemberships.mockResolvedValue(
         err(databaseError('post-update read failed')),
       )
 
@@ -283,8 +283,8 @@ describe('UserService', () => {
       })
 
       expectErr(result, 'DATABASE_ERROR')
-      expect(mockedCache.invalidate).toHaveBeenCalledWith('user-1')
-      expect(mockedCache.set).not.toHaveBeenCalled()
+      expect(mockedUserCache.invalidate).toHaveBeenCalledWith('user-1')
+      expect(mockedUserCache.set).not.toHaveBeenCalled()
     })
   })
 
@@ -293,14 +293,14 @@ describe('UserService', () => {
       mockedScheduleDeletion.mockResolvedValue(undefined)
       mockedSendEmail.mockResolvedValue({ id: 'email-id' })
       mockedSessionDelete.mockResolvedValue({ count: 0 })
-      mockedCache.invalidate.mockResolvedValue(undefined)
+      mockedUserCache.invalidate.mockResolvedValue(undefined)
     })
 
     it('schedules deletion, revokes sessions, invalidates cache, sends email', async () => {
       const user = createFakeUser({ id: 'user-1', email: 'me@example.com' })
-      mockedRepo.findById.mockResolvedValue(ok(user))
-      mockedRepo.countBlockingSoleOwnerWorkspaces.mockResolvedValue(ok(0))
-      mockedRepo.scheduleDeletion.mockImplementation(async (_id, at) =>
+      mockedUser.findById.mockResolvedValue(ok(user))
+      mockedUser.countBlockingSoleOwnerWorkspaces.mockResolvedValue(ok(0))
+      mockedUser.scheduleDeletion.mockImplementation(async (_id, at) =>
         ok({ ...user, deletionScheduledAt: at }),
       )
 
@@ -308,7 +308,7 @@ describe('UserService', () => {
 
       const value = expectOk(result)
       expect(typeof value.scheduledAt).toBe('string')
-      expect(mockedRepo.scheduleDeletion).toHaveBeenCalledWith(
+      expect(mockedUser.scheduleDeletion).toHaveBeenCalledWith(
         'user-1',
         expect.any(Date),
       )
@@ -319,7 +319,7 @@ describe('UserService', () => {
       expect(mockedSessionDelete).toHaveBeenCalledWith({
         where: { userId: 'user-1' },
       })
-      expect(mockedCache.invalidate).toHaveBeenCalledWith('user-1')
+      expect(mockedUserCache.invalidate).toHaveBeenCalledWith('user-1')
       expect(mockedSendEmail).toHaveBeenCalledWith(
         expect.objectContaining({ email: 'me@example.com' }),
       )
@@ -331,31 +331,31 @@ describe('UserService', () => {
         id: 'user-1',
         deletionScheduledAt: existingDate,
       })
-      mockedRepo.findById.mockResolvedValue(ok(user))
+      mockedUser.findById.mockResolvedValue(ok(user))
 
       const result = await UserService.deleteAccount('user-1')
 
       const value = expectOk(result)
       expect(value.scheduledAt).toBe(existingDate.toISOString())
-      expect(mockedRepo.scheduleDeletion).not.toHaveBeenCalled()
+      expect(mockedUser.scheduleDeletion).not.toHaveBeenCalled()
       expect(mockedScheduleDeletion).not.toHaveBeenCalled()
       expect(mockedSendEmail).not.toHaveBeenCalled()
     })
 
     it('returns CONFLICT when user is sole OWNER of a workspace with members', async () => {
       const user = createFakeUser({ id: 'user-1' })
-      mockedRepo.findById.mockResolvedValue(ok(user))
-      mockedRepo.countBlockingSoleOwnerWorkspaces.mockResolvedValue(ok(2))
+      mockedUser.findById.mockResolvedValue(ok(user))
+      mockedUser.countBlockingSoleOwnerWorkspaces.mockResolvedValue(ok(2))
 
       const result = await UserService.deleteAccount('user-1')
 
       expectErr(result, 'CONFLICT')
-      expect(mockedRepo.scheduleDeletion).not.toHaveBeenCalled()
+      expect(mockedUser.scheduleDeletion).not.toHaveBeenCalled()
       expect(mockedScheduleDeletion).not.toHaveBeenCalled()
     })
 
     it('propagates not found from initial lookup', async () => {
-      mockedRepo.findById.mockResolvedValue(err(notFound('User')))
+      mockedUser.findById.mockResolvedValue(err(notFound('User')))
 
       const result = await UserService.deleteAccount('user-1')
 
@@ -364,12 +364,12 @@ describe('UserService', () => {
 
     it('reverts the DB schedule when queue enqueue fails', async () => {
       const user = createFakeUser({ id: 'user-1' })
-      mockedRepo.findById.mockResolvedValue(ok(user))
-      mockedRepo.countBlockingSoleOwnerWorkspaces.mockResolvedValue(ok(0))
-      mockedRepo.scheduleDeletion.mockImplementation(async (_id, at) =>
+      mockedUser.findById.mockResolvedValue(ok(user))
+      mockedUser.countBlockingSoleOwnerWorkspaces.mockResolvedValue(ok(0))
+      mockedUser.scheduleDeletion.mockImplementation(async (_id, at) =>
         ok({ ...user, deletionScheduledAt: at }),
       )
-      mockedRepo.clearDeletionSchedule.mockResolvedValue(
+      mockedUser.clearDeletionSchedule.mockResolvedValue(
         ok({ ...user, deletionScheduledAt: null }),
       )
       mockedScheduleDeletion.mockRejectedValueOnce(new Error('queue boom'))
@@ -377,16 +377,16 @@ describe('UserService', () => {
       const result = await UserService.deleteAccount('user-1')
 
       expectErr(result, 'DATABASE_ERROR')
-      expect(mockedRepo.clearDeletionSchedule).toHaveBeenCalledWith('user-1')
+      expect(mockedUser.clearDeletionSchedule).toHaveBeenCalledWith('user-1')
       expect(mockedSessionDelete).not.toHaveBeenCalled()
       expect(mockedSendEmail).not.toHaveBeenCalled()
     })
 
     it('does not fail the request when email send throws', async () => {
       const user = createFakeUser({ id: 'user-1' })
-      mockedRepo.findById.mockResolvedValue(ok(user))
-      mockedRepo.countBlockingSoleOwnerWorkspaces.mockResolvedValue(ok(0))
-      mockedRepo.scheduleDeletion.mockImplementation(async (_id, at) =>
+      mockedUser.findById.mockResolvedValue(ok(user))
+      mockedUser.countBlockingSoleOwnerWorkspaces.mockResolvedValue(ok(0))
+      mockedUser.scheduleDeletion.mockImplementation(async (_id, at) =>
         ok({ ...user, deletionScheduledAt: at }),
       )
       mockedSendEmail.mockRejectedValue(new Error('resend boom'))
@@ -399,22 +399,22 @@ describe('UserService', () => {
 
     it('propagates error when counting blocking workspaces fails', async () => {
       const user = createFakeUser({ id: 'user-1' })
-      mockedRepo.findById.mockResolvedValue(ok(user))
-      mockedRepo.countBlockingSoleOwnerWorkspaces.mockResolvedValue(
+      mockedUser.findById.mockResolvedValue(ok(user))
+      mockedUser.countBlockingSoleOwnerWorkspaces.mockResolvedValue(
         err(databaseError()),
       )
 
       const result = await UserService.deleteAccount('user-1')
 
       expectErr(result, 'DATABASE_ERROR')
-      expect(mockedRepo.scheduleDeletion).not.toHaveBeenCalled()
+      expect(mockedUser.scheduleDeletion).not.toHaveBeenCalled()
     })
 
     it('propagates error when scheduling deletion in the DB fails', async () => {
       const user = createFakeUser({ id: 'user-1' })
-      mockedRepo.findById.mockResolvedValue(ok(user))
-      mockedRepo.countBlockingSoleOwnerWorkspaces.mockResolvedValue(ok(0))
-      mockedRepo.scheduleDeletion.mockResolvedValue(err(databaseError()))
+      mockedUser.findById.mockResolvedValue(ok(user))
+      mockedUser.countBlockingSoleOwnerWorkspaces.mockResolvedValue(ok(0))
+      mockedUser.scheduleDeletion.mockResolvedValue(err(databaseError()))
 
       const result = await UserService.deleteAccount('user-1')
 
@@ -431,7 +431,7 @@ describe('UserService', () => {
 
     it('enqueues a data-export job and returns requestedAt', async () => {
       const user = createFakeUser({ id: 'user-1' })
-      mockedRepo.findById.mockResolvedValue(ok(user))
+      mockedUser.findById.mockResolvedValue(ok(user))
 
       const result = await UserService.requestExport('user-1')
 
@@ -446,7 +446,7 @@ describe('UserService', () => {
         id: 'user-1',
         deletionScheduledAt: new Date('2026-06-01T00:00:00Z'),
       })
-      mockedRepo.findById.mockResolvedValue(ok(user))
+      mockedUser.findById.mockResolvedValue(ok(user))
 
       const result = await UserService.requestExport('user-1')
 
@@ -456,7 +456,7 @@ describe('UserService', () => {
 
     it('returns RATE_LIMITED without enqueuing when limiter denies', async () => {
       const user = createFakeUser({ id: 'user-1' })
-      mockedRepo.findById.mockResolvedValue(ok(user))
+      mockedUser.findById.mockResolvedValue(ok(user))
       mockedConsume.mockResolvedValue(err(rateLimited(3600)))
 
       const result = await UserService.requestExport('user-1')
@@ -467,7 +467,7 @@ describe('UserService', () => {
 
     it('returns DATABASE_ERROR when enqueue throws', async () => {
       const user = createFakeUser({ id: 'user-1' })
-      mockedRepo.findById.mockResolvedValue(ok(user))
+      mockedUser.findById.mockResolvedValue(ok(user))
       mockedEnqueueExport.mockRejectedValueOnce(new Error('redis down'))
 
       const result = await UserService.requestExport('user-1')
@@ -476,7 +476,7 @@ describe('UserService', () => {
     })
 
     it('propagates RESOURCE_NOT_FOUND from initial lookup', async () => {
-      mockedRepo.findById.mockResolvedValue(err(notFound('User')))
+      mockedUser.findById.mockResolvedValue(err(notFound('User')))
 
       const result = await UserService.requestExport('user-1')
 
@@ -489,13 +489,13 @@ describe('UserService', () => {
   describe('cancelDeletion()', () => {
     it('returns canceled:false when no deletion was scheduled', async () => {
       const user = createFakeUser({ id: 'user-1' })
-      mockedRepo.findById.mockResolvedValue(ok(user))
+      mockedUser.findById.mockResolvedValue(ok(user))
 
       const result = await UserService.cancelDeletion('user-1')
 
       expect(expectOk(result)).toEqual({ canceled: false })
       expect(mockedCancelDeletion).not.toHaveBeenCalled()
-      expect(mockedRepo.clearDeletionSchedule).not.toHaveBeenCalled()
+      expect(mockedUser.clearDeletionSchedule).not.toHaveBeenCalled()
     })
 
     it('cancels the job, clears the flag and invalidates cache when pending', async () => {
@@ -503,23 +503,23 @@ describe('UserService', () => {
         id: 'user-1',
         deletionScheduledAt: new Date('2026-06-01T00:00:00Z'),
       })
-      mockedRepo.findById.mockResolvedValue(ok(user))
-      mockedRepo.clearDeletionSchedule.mockResolvedValue(
+      mockedUser.findById.mockResolvedValue(ok(user))
+      mockedUser.clearDeletionSchedule.mockResolvedValue(
         ok({ ...user, deletionScheduledAt: null }),
       )
       mockedCancelDeletion.mockResolvedValue(true)
-      mockedCache.invalidate.mockResolvedValue(undefined)
+      mockedUserCache.invalidate.mockResolvedValue(undefined)
 
       const result = await UserService.cancelDeletion('user-1')
 
       expect(expectOk(result)).toEqual({ canceled: true })
       expect(mockedCancelDeletion).toHaveBeenCalledWith('user-1')
-      expect(mockedRepo.clearDeletionSchedule).toHaveBeenCalledWith('user-1')
-      expect(mockedCache.invalidate).toHaveBeenCalledWith('user-1')
+      expect(mockedUser.clearDeletionSchedule).toHaveBeenCalledWith('user-1')
+      expect(mockedUserCache.invalidate).toHaveBeenCalledWith('user-1')
     })
 
     it('propagates RESOURCE_NOT_FOUND from initial lookup', async () => {
-      mockedRepo.findById.mockResolvedValue(err(notFound('User')))
+      mockedUser.findById.mockResolvedValue(err(notFound('User')))
 
       const result = await UserService.cancelDeletion('user-1')
 
@@ -531,105 +531,122 @@ describe('UserService', () => {
         id: 'user-1',
         deletionScheduledAt: new Date('2026-06-01T00:00:00Z'),
       })
-      mockedRepo.findById.mockResolvedValue(ok(user))
+      mockedUser.findById.mockResolvedValue(ok(user))
       mockedCancelDeletion.mockResolvedValue(true)
-      mockedRepo.clearDeletionSchedule.mockResolvedValue(err(databaseError()))
+      mockedUser.clearDeletionSchedule.mockResolvedValue(err(databaseError()))
 
       const result = await UserService.cancelDeletion('user-1')
 
       expectErr(result, 'DATABASE_ERROR')
-      expect(mockedCache.invalidate).not.toHaveBeenCalled()
+      expect(mockedUserCache.invalidate).not.toHaveBeenCalled()
     })
   })
 
   describe('saveOnboardingRole()', () => {
     it('saves the role, invalidates cache and returns ok', async () => {
-      mockedRepo.saveRole.mockResolvedValue(
+      mockedUser.saveRole.mockResolvedValue(
         ok(createFakeUser({ id: 'user-1' })),
       )
-      mockedCache.invalidate.mockResolvedValue(undefined)
+      mockedUserCache.invalidate.mockResolvedValue(undefined)
 
       const result = await UserService.saveOnboardingRole('user-1', {
         role: 'DEVELOPER',
       })
 
       expectOk(result)
-      expect(mockedRepo.saveRole).toHaveBeenCalledWith(
+      expect(mockedUser.saveRole).toHaveBeenCalledWith(
         'user-1',
         'DEVELOPER',
         'BRINGS',
       )
-      expect(mockedCache.invalidate).toHaveBeenCalledWith('user-1')
+      expect(mockedUserCache.invalidate).toHaveBeenCalledWith('user-1')
     })
 
     it('propagates repository error and skips cache invalidation', async () => {
-      mockedRepo.saveRole.mockResolvedValue(err(databaseError()))
+      mockedUser.saveRole.mockResolvedValue(err(databaseError()))
 
       const result = await UserService.saveOnboardingRole('user-1', {
         role: 'DEVELOPER',
       })
 
       expectErr(result, 'DATABASE_ERROR')
-      expect(mockedCache.invalidate).not.toHaveBeenCalled()
+      expect(mockedUserCache.invalidate).not.toHaveBeenCalled()
+    })
+  })
+
+  describe('saveOnboardingProfile()', () => {
+    it('should save the name and advance the step to ROLE', async () => {
+      mockedUser.saveProfile.mockResolvedValue(ok(createFakeUser()))
+
+      const result = await UserService.saveOnboardingProfile('user1', {
+        name: 'Gusttavo',
+      })
+
+      expectOk(result)
+      expect(mockedUser.saveProfile).toHaveBeenCalledWith(
+        'user1',
+        'Gusttavo',
+        'ROLE',
+      )
     })
   })
 
   describe('saveOnboardingGoals()', () => {
     it('saves the goals, invalidates cache and returns ok', async () => {
-      mockedRepo.saveGaols.mockResolvedValue(
+      mockedUser.saveGoals.mockResolvedValue(
         ok(createFakeUser({ id: 'user-1' })),
       )
-      mockedCache.invalidate.mockResolvedValue(undefined)
+      mockedUserCache.invalidate.mockResolvedValue(undefined)
 
       const result = await UserService.saveOnboardingGoals('user-1', {
         goals: ['ROADMAP', 'SPRINTS'],
       })
 
       expectOk(result)
-      expect(mockedRepo.saveGaols).toHaveBeenCalledWith(
+      expect(mockedUser.saveGoals).toHaveBeenCalledWith(
         'user-1',
         ['ROADMAP', 'SPRINTS'],
         'WORKSPACE',
       )
-      expect(mockedCache.invalidate).toHaveBeenCalledWith('user-1')
+      expect(mockedUserCache.invalidate).toHaveBeenCalledWith('user-1')
     })
 
     it('propagates repository error and skips cache invalidation', async () => {
-      mockedRepo.saveGaols.mockResolvedValue(err(databaseError()))
+      mockedUser.saveGoals.mockResolvedValue(err(databaseError()))
 
       const result = await UserService.saveOnboardingGoals('user-1', {
         goals: ['ROADMAP'],
       })
 
       expectErr(result, 'DATABASE_ERROR')
-      expect(mockedCache.invalidate).not.toHaveBeenCalled()
+      expect(mockedUserCache.invalidate).not.toHaveBeenCalled()
     })
   })
 
   describe('completeOnboardingStep()', () => {
     it('advances to the next step, invalidates cache and returns ok', async () => {
-      mockedRepo.updateOnboardingStep.mockResolvedValue(
+      mockedUser.updateOnboardingStep.mockResolvedValue(
         ok(createFakeUser({ id: 'user-1' })),
       )
-      mockedCache.invalidate.mockResolvedValue(undefined)
+      mockedUserCache.invalidate.mockResolvedValue(undefined)
 
       const result = await UserService.completeOnboardingStep('user-1', 'ROLE')
 
       expectOk(result)
-      expect(mockedRepo.updateOnboardingStep).toHaveBeenCalledWith(
+      expect(mockedUser.updateOnboardingStep).toHaveBeenCalledWith(
         'user-1',
         'BRINGS',
       )
-      expect(mockedCache.invalidate).toHaveBeenCalledWith('user-1')
+      expect(mockedUserCache.invalidate).toHaveBeenCalledWith('user-1')
     })
 
     it('propagates repository error and skips cache invalidation', async () => {
-      mockedRepo.updateOnboardingStep.mockResolvedValue(err(databaseError()))
+      mockedUser.updateOnboardingStep.mockResolvedValue(err(databaseError()))
 
       const result = await UserService.completeOnboardingStep('user-1', 'ROLE')
 
       expectErr(result, 'DATABASE_ERROR')
-      expect(mockedCache.invalidate).not.toHaveBeenCalled()
+      expect(mockedUserCache.invalidate).not.toHaveBeenCalled()
     })
   })
 })

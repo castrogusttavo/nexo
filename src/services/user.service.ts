@@ -17,6 +17,7 @@ import { toUserDTO } from '@/src/mappers/user.mapper'
 import { UserRepository } from '@/src/repositories/user.repository'
 import type {
   SaveGoalsDTO,
+  SaveProfileDTO,
   SaveRoleDTO,
   UpdateUserDTO,
 } from '@/src/schemas/user.schema'
@@ -164,11 +165,40 @@ export const UserService = {
     return ok(undefined)
   },
 
+  async saveOnboardingProfile(
+    actorId: string,
+    dto: SaveProfileDTO,
+  ): Promise<Result<void>> {
+    const result = await UserRepository.saveProfile(actorId, dto.name, 'ROLE')
+    if (!result.ok) {
+      auditMutation({
+        entity: 'user',
+        action: 'onboarding_profile_saved',
+        actorId,
+        targetId: actorId,
+        outcome: 'failure',
+        reason: result.error.code,
+      })
+      return result
+    }
+
+    await UserCache.invalidate(actorId)
+
+    auditMutation({
+      entity: 'user',
+      action: 'onboarding_profile_saved',
+      actorId,
+      targetId: actorId,
+    })
+
+    return ok(undefined)
+  },
+
   async saveOnboardingGoals(
     actorId: string,
     dto: SaveGoalsDTO,
   ): Promise<Result<void>> {
-    const result = await UserRepository.saveGaols(
+    const result = await UserRepository.saveGoals(
       actorId,
       dto.goals as UserGoal[],
       'WORKSPACE',

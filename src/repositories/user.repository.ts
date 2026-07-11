@@ -146,7 +146,7 @@ export const UserRepository = {
     }
   },
 
-  async saveGaols(
+  async saveGoals(
     id: string,
     goals: UserGoal[],
     nextStep: OnboardingStep,
@@ -162,6 +162,25 @@ export const UserRepository = {
         return err(notFound('User'))
       }
       return err(dbError('Failed to save user goals', error))
+    }
+  },
+
+  async saveProfile(
+    id: string,
+    name: string,
+    nextStep: OnboardingStep,
+  ): Promise<Result<User>> {
+    try {
+      const user = await prisma.user.update({
+        where: { id },
+        data: { name, onboardingStep: nextStep },
+      })
+      return ok(user)
+    } catch (error) {
+      if (error instanceof Error && 'code' in error && error.code === 'P2025') {
+        return err(notFound('User'))
+      }
+      return err(dbError('Failed to save user profile', error))
     }
   },
 

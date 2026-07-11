@@ -1,9 +1,7 @@
 'use server'
 
 import { redirect } from 'next/navigation'
-import { UserCache } from '@/src/cache/user.cache'
 import { getAuthSession } from '@/src/lib/auth-session'
-import { prisma } from '@/src/lib/prisma'
 import { SaveRoleSchema } from '@/src/schemas/user.schema'
 import { UserService } from '@/src/services/user.service'
 
@@ -20,11 +18,17 @@ export async function saveRoleSetup(
   const intent = formData.get('intent')
 
   if (intent === 'skip') {
-    await prisma.user.update({
-      where: { id: auth.value.user.id },
-      data: { onboardingStep: 'BRINGS' },
-    })
-    await UserCache.invalidate(auth.value.user.id)
+    const skipped = await UserService.completeOnboardingStep(
+      auth.value.user.id,
+      'ROLE',
+    )
+    if (!skipped.ok) {
+      return {
+        ok: false,
+        error: 'Não foi possível continuar. Tente novamente.',
+      }
+    }
+
     redirect('/onboarding')
   }
 
