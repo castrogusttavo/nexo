@@ -58,6 +58,11 @@ export const WorkspaceRepository = {
         await tx.membership.create({
           data: { userId, workspaceId: ws.id, role: 'OWNER' },
         })
+
+        await tx.user.update({
+          where: { id: userId },
+          data: { onboardingStep: null },
+        })
         return ws
       })
       return ok(workspace)

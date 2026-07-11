@@ -132,6 +132,28 @@ describe('WorkspaceRepository', () => {
       expect(ws.activePlan).toBe('BUSINESS')
       expect(ws.trialEndsAt?.toISOString()).toBe('2026-08-01T00:00:00.000Z')
     })
+
+    it('should clear the owner onboarding step (has membership => onboarding done', async () => {
+      const owner = await seedUser({
+        email: `owner-${Date.now()}@example.com`,
+      })
+      await prisma.user.update({
+        where: { id: owner.id },
+        data: { onboardingStep: 'WORKSPACE' },
+      })
+
+      expectOk(
+        await WorkspaceRepository.createWithOwner(
+          { name: 'Acme', slug: `acme-${Date.now()}` },
+          owner.id,
+        ),
+      )
+
+      const after = await prisma.user.findUniqueOrThrow({
+        where: { id: owner.id },
+      })
+      expect(after.onboardingStep).toBeNull()
+    })
   })
 
   describe('update()', () => {

@@ -3,7 +3,6 @@
 import { redirect } from 'next/navigation'
 import { getAuthSession } from '@/src/lib/auth-session'
 import { CreateWorkspaceSchema } from '@/src/schemas/workspace.schema'
-import { UserService } from '@/src/services/user.service'
 import { WorkspaceService } from '@/src/services/workspace.service'
 
 export type WorkspaceSetupState = { ok: boolean; error?: string }
@@ -33,16 +32,9 @@ export async function createOnboardingWorkspace(
     const msg =
       result.error.code === 'CONFLICT'
         ? 'Esta URL já está em uso. Escolha outra.'
-        : 'Não foi possível criar o workspace. Tente novamente'
+        : 'Não foi possível criar o workspace. Tente novamente.'
     return { ok: false, error: msg }
   }
-
-  const finished = await UserService.completeOnboardingStep(userId, 'WORKSPACE')
-  if (!finished.ok)
-    return {
-      ok: false,
-      error: 'Não foi possível concluir o onboarding. Tente novamente.',
-    }
 
   redirect(`/${result.value.slug}`)
 }
