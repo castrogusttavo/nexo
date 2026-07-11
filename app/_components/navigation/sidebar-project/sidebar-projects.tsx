@@ -28,6 +28,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
+import { notify } from '@/lib/notify'
 import {
   useArchiveProject,
   useFavoriteProject,
@@ -62,9 +63,9 @@ function ProjectAccordion({
 
   function toggleFavorite() {
     if (project.isFavorited) {
-      unfavorite.mutate(project.slug)
+      unfavorite.mutate(project.slug, { onError: notify.error })
     } else {
-      favorite.mutate(project.slug)
+      favorite.mutate(project.slug, { onError: notify.error })
     }
   }
 
@@ -127,7 +128,10 @@ function ProjectAccordion({
                   <DropdownMenuItem
                     onClick={(e) => {
                       e.stopPropagation()
-                      archive.mutate()
+                      archive.mutate(undefined, {
+                        onSuccess: () => notify.success('Projeto arquivado'),
+                        onError: notify.error,
+                      })
                     }}
                   >
                     <NexoIcon icon={Archive01Icon} strokeWidth={2} />

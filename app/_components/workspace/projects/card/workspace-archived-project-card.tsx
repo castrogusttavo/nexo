@@ -19,6 +19,7 @@ import {
   TooltipContent,
   TooltipTrigger,
 } from '@/components/ui/tooltip'
+import { notify } from '@/lib/notify'
 import { useDeleteProject, useRestoreProject } from '@/src/hooks/use-project'
 import type { ProjectDTO } from '@/types/project'
 import { ProjectEmoji } from '../workspace-project-emoji'
@@ -38,12 +39,18 @@ export function ArchivedProjectCard({
 
   function handleRestore(e: React.MouseEvent) {
     e.stopPropagation()
-    restore.mutate()
+    restore.mutate(undefined, {
+      onSuccess: () => notify.success('Projeto restaurado'),
+      onError: notify.error,
+    })
   }
 
   function handleDelete(e: React.MouseEvent) {
     e.stopPropagation()
-    remove.mutate()
+    remove.mutate(undefined, {
+      onSuccess: () => notify.success('Projeto excluído'),
+      onError: notify.error,
+    })
   }
 
   return (

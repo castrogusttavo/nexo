@@ -24,6 +24,7 @@ import {
   TooltipContent,
   TooltipTrigger,
 } from '@/components/ui/tooltip'
+import { notify } from '@/lib/notify'
 import {
   useFavoriteProject,
   useUnfavoriteProject,
@@ -71,6 +72,7 @@ export function ProjectCard({
     favoriting.current = true
     const mutation = project.isFavorited ? unfavorite : favorite
     mutation.mutate(project.slug, {
+      onError: notify.error,
       onSettled: () => {
         favoriting.current = false
       },

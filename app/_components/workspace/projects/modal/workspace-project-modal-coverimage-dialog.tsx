@@ -10,6 +10,7 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
+import { notify } from '@/lib/notify'
 import { useUploadProjectCover } from '@/src/hooks/use-project'
 
 export const COVER_IMAGES = [
@@ -127,8 +128,9 @@ function UploadTab({
     try {
       const url = await upload.mutateAsync(file)
       onSelect?.(url)
-    } catch {
+    } catch (err) {
       setPreview(null)
+      notify.error(err, 'Não foi possível enviar a imagem')
     }
   }
 

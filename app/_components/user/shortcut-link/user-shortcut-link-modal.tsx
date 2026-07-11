@@ -20,6 +20,7 @@ import {
   FieldLabel,
 } from '@/components/ui/field'
 import { Input } from '@/components/ui/input'
+import { notify } from '@/lib/notify'
 import { useCreateShortLink } from '@/src/hooks/use-short-link'
 
 function isValidUrl(value: string) {
@@ -76,6 +77,7 @@ export function UserShortcutLinkModal() {
 
     try {
       await createShortLink.mutateAsync({ title: trimmedTitle, url })
+      notify.success('Link rápido criado')
       handleOpenChange(false)
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Erro ao criar link rápido')

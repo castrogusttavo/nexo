@@ -25,6 +25,7 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from '@/components/ui/popover'
+import { notify } from '@/lib/notify'
 import { cn } from '@/lib/utils'
 import { useUpdateStickyNote } from '@/src/hooks/use-sticky-note'
 import type { StickyColorDTO, StickyNoteDTO } from '@/types/sticky-note'
@@ -63,7 +64,7 @@ export function UserStick({ sticky }: UserStickyProps) {
     if (pendingContentRef.current) {
       const content = pendingContentRef.current
       pendingContentRef.current = null
-      update.mutate({ content })
+      update.mutate({ content }, { onError: notify.error })
     }
   }
 
@@ -100,13 +101,16 @@ export function UserStick({ sticky }: UserStickyProps) {
 
   const handleColorChange = (next: StickyColorDTO) => {
     setColor(next)
-    update.mutate({ color: next })
+    update.mutate({ color: next }, { onError: notify.error })
   }
 
   const handleClear = () => {
     editor?.commands.clearContent()
     flushContent()
-    update.mutate({ content: { type: 'doc', content: [] } })
+    update.mutate(
+      { content: { type: 'doc', content: [] } },
+      { onError: notify.error },
+    )
   }
 
   return (

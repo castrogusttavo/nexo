@@ -36,6 +36,7 @@ import {
   PopoverTrigger,
 } from '@/components/ui/popover'
 import { Textarea } from '@/components/ui/textarea'
+import { notify } from '@/lib/notify'
 import { useCreateProject } from '@/src/hooks/use-project'
 import { ProjectCreateButton } from '../workspace-project-create-button'
 import {
@@ -98,17 +99,20 @@ export function WorkspaceProjectModal({
 
   async function handleSubmit(e: React.SubmitEvent<HTMLFormElement>) {
     e.preventDefault()
-    await createProject.mutateAsync(
-      {
+    try {
+      await createProject.mutateAsync({
         name,
         slug,
         description: description || undefined,
         emoji,
         coverImage: coverImage ?? undefined,
         isPublic,
-      },
-      { onSuccess: handleClose },
-    )
+      })
+      notify.success('Projeto criado')
+      handleClose()
+    } catch (err) {
+      notify.error(err)
+    }
   }
 
   return (
