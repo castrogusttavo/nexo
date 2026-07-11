@@ -9,7 +9,7 @@ import { processDataRetention } from '../data-retention'
 
 function expireJob(): Job {
   return {
-    name: DataRetentionJob.ExpiresStaleInvitations,
+    name: DataRetentionJob.ExpireStaleInvitations,
     id: 'test-expire',
   } as unknown as Job
 }

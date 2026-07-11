@@ -10,7 +10,7 @@ export type QueueName = (typeof QueueName)[keyof typeof QueueName]
 export const DataRetentionJob = {
   CleanupExpiredSessions: 'cleanup-expired-sessions',
   CleanupExpiredVerificationTokens: 'cleanup-expired-verification-tokens',
-  ExpiresStaleInvitations: 'expire-stale-invitations',
+  ExpireStaleInvitations: 'expire-stale-invitations',
 } as const
 
 export type DataRetentionJob =
@@ -19,7 +19,7 @@ export type DataRetentionJob =
 export type DataRetentionJobPayload = {
   [DataRetentionJob.CleanupExpiredSessions]: Record<string, never>
   [DataRetentionJob.CleanupExpiredVerificationTokens]: Record<string, never>
-  [DataRetentionJob.ExpiresStaleInvitations]: Record<string, never>
+  [DataRetentionJob.ExpireStaleInvitations]: Record<string, never>
 }
 
 export const AccountLifecycleJob = {

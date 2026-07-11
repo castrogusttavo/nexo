@@ -58,7 +58,7 @@ export async function processDataRetention(job: Job): Promise<CleanupResult> {
       })
       return result
     }
-    case DataRetentionJob.ExpiresStaleInvitations: {
+    case DataRetentionJob.ExpireStaleInvitations: {
       const result = await expireStaleInvitations()
       logger.info('queue.data_retention.invitations_expired', {
         component: 'Worker',
