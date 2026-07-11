@@ -1,10 +1,9 @@
 'use server'
 
 import { redirect } from 'next/navigation'
-import { UserCache } from '@/src/cache/user.cache'
 import { getAuthSession } from '@/src/lib/auth-session'
-import { prisma } from '@/src/lib/prisma'
 import { CreateWorkspaceSchema } from '@/src/schemas/workspace.schema'
+import { UserService } from '@/src/services/user.service'
 import { WorkspaceService } from '@/src/services/workspace.service'
 
 export type WorkspaceSetupState = { ok: boolean; error?: string }
@@ -38,11 +37,12 @@ export async function createOnboardingWorkspace(
     return { ok: false, error: msg }
   }
 
-  await prisma.user.update({
-    where: { id: userId },
-    data: { onboardingStep: null },
-  })
-  await UserCache.invalidate(userId)
+  const finished = await UserService.completeOnboardingStep(userId, 'WORKSPACE')
+  if (!finished.ok)
+    return {
+      ok: false,
+      error: 'Não foi possível concluir o onboarding. Tente novamente.',
+    }
 
   redirect(`/${result.value.slug}`)
 }

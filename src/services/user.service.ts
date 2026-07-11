@@ -1,6 +1,7 @@
 import type { OnboardingStep, UserGoal } from '@prisma/client'
 import { auditMutation } from '@/lib/axiom/audit'
 import { logger } from '@/lib/axiom/logger'
+import { PRIVACY_VERSION, TERMS_VERSION } from '@/lib/legal/versions'
 import { UserCache } from '@/src/cache/user.cache'
 import { conflict, databaseError, usernameConflict } from '@/src/errors'
 import { sendDeleteAccountEmail } from '@/src/lib/mail/user/send-delete-account'
@@ -469,5 +470,51 @@ export const UserService = {
       hasPassword: hasPassword.value,
       onboardingStep: user.onboardingStep,
     })
+  },
+
+  async acceptConsents(
+    actorId: string,
+    context: { ipAddress: string | null; userAgent: string | null },
+  ): Promise<Result<void>> {
+    const result = await UserRepository.acceptConsents(actorId, {
+      termsVersion: TERMS_VERSION,
+      privacyVersion: PRIVACY_VERSION,
+      ipAddress: context.ipAddress,
+      userAgent: context.userAgent,
+      at: new Date(),
+    })
+
+    if (!result.ok) {
+      logger.error('consent.persist_failed', {
+        actorId,
+        reason: result.error.code,
+      })
+      auditMutation({
+        entity: 'consent',
+        action: 'grant',
+        actorId,
+        targetId: actorId,
+        outcome: 'failure',
+        reason: result.error.code,
+      })
+      return result
+    }
+
+    await UserCache.invalidate(actorId)
+
+    auditMutation({
+      entity: 'consent',
+      action: 'grant',
+      actorId,
+      targetId: actorId,
+      meta: {
+        documents: ['TERMS', 'PRIVACY'],
+        termsVersion: TERMS_VERSION,
+        privacyVersion: PRIVACY_VERSION,
+        source: 'onboarding',
+      },
+    })
+
+    return ok(undefined)
   },
 }

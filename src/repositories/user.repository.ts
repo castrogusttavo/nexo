@@ -260,4 +260,50 @@ export const UserRepository = {
       return err(dbError('Failed to check credential account, error', error))
     }
   },
+
+  async acceptConsents(
+    id: string,
+    consent: {
+      termsVersion: string
+      privacyVersion: string
+      ipAddress: string | null
+      userAgent: string | null
+      at: Date
+    },
+  ): Promise<Result<void>> {
+    try {
+      await prisma.$transaction([
+        prisma.user.update({
+          where: { id },
+          data: {
+            acceptedTermsAt: consent.at,
+            acceptedPrivacyAt: consent.at,
+          },
+        }),
+        prisma.consentEvent.createMany({
+          data: [
+            {
+              userId: id,
+              document: 'TERMS',
+              version: consent.termsVersion,
+              action: 'GRANTED',
+              ipAddress: consent.ipAddress,
+              userAgent: consent.userAgent,
+            },
+            {
+              userId: id,
+              document: 'PRIVACY',
+              version: consent.privacyVersion,
+              action: 'GRANTED',
+              ipAddress: consent.ipAddress,
+              userAgent: consent.userAgent,
+            },
+          ],
+        }),
+      ])
+      return ok(undefined)
+    } catch (error) {
+      return err(dbError('Failed to persist consent', error))
+    }
+  },
 }

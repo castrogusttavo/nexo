@@ -33,6 +33,7 @@ vi.mock('@/src/lib/prisma', () => ({
   },
 }))
 
+import { PRIVACY_VERSION, TERMS_VERSION } from '@/lib/legal/versions'
 import { UserCache } from '@/src/cache/user.cache'
 import { rateLimited } from '@/src/errors/app-error'
 import { sendDeleteAccountEmail } from '@/src/lib/mail/user/send-delete-account'
@@ -690,6 +691,39 @@ describe('UserService', () => {
       const profile = expectOk(result)
       expect(profile.name).toBe('Gusttavo')
       expect(profile.hasPassword).toBe(true)
+    })
+  })
+
+  describe('acceptConsents()', () => {
+    it('should persist both consents with the current document versions', async () => {
+      mockedUser.acceptConsents.mockResolvedValue(ok(undefined))
+
+      const result = await UserService.acceptConsents('user1', {
+        ipAddress: '1.2.3.4',
+        userAgent: 'vitest',
+      })
+
+      expectOk(result)
+      expect(mockedUser.acceptConsents).toHaveBeenCalledWith(
+        'user1',
+        expect.objectContaining({
+          termsVersion: TERMS_VERSION,
+          privacyVersion: PRIVACY_VERSION,
+          ipAddress: '1.2.3.4',
+          userAgent: 'vitest',
+        }),
+      )
+    })
+
+    it('should propagate a persistence failure', async () => {
+      mockedUser.acceptConsents.mockResolvedValue(err(databaseError('boom')))
+
+      const result = await UserService.acceptConsents('user1', {
+        ipAddress: null,
+        userAgent: null,
+      })
+
+      expectErr(result, 'DATABASE_ERROR')
     })
   })
 })
