@@ -12,7 +12,7 @@ import { ProjectList } from '@/app/_components/workspace/projects/workspace-proj
 import { ProjectorderButton } from '@/app/_components/workspace/projects/workspace-project-order-button'
 import { NexoIcon } from '@/components/icon/icon'
 import { getAuthSession } from '@/src/lib/auth-session'
-import { MembershipRepository } from '@/src/repositories/membership.repository'
+import { MembershipService } from '@/src/services/membership.service'
 
 export const metadata: Metadata = {
   title: 'Projetos | Nexo',
@@ -26,7 +26,7 @@ export default async function ProjectsPage({ params }: Props) {
   const session = await getAuthSession()
   if (!session.ok) notFound()
 
-  const membership = await MembershipRepository.findByUserAndSlug(
+  const membership = await MembershipService.getByUserAndSlug(
     session.value.user.id,
     slug,
   )

@@ -15,8 +15,8 @@ import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { getAuthSession } from '@/src/lib/auth-session'
 import { limitOf } from '@/src/lib/plans'
-import { MembershipRepository } from '@/src/repositories/membership.repository'
-import { SubscriptionRepository } from '@/src/repositories/subscription.repository'
+import { MembershipService } from '@/src/services/membership.service'
+import { SubscriptionService } from '@/src/services/subscription.service'
 import { BillingUpgrade } from './billing-upgrade'
 
 export const metadata: Metadata = {
@@ -47,7 +47,7 @@ export default async function SettingsBillingPage({
   const session = await getAuthSession()
   if (!session.ok) redirect('/sign-in')
 
-  const membership = await MembershipRepository.findByUserAndSlug(
+  const membership = await MembershipService.getByUserAndSlug(
     session.value.user.id,
     slug,
   )
@@ -55,8 +55,8 @@ export default async function SettingsBillingPage({
   const workspace = membership.value.workspace
 
   const [subResult, membersResult] = await Promise.all([
-    SubscriptionRepository.findActiveByWorkspaceId(workspace.id),
-    MembershipRepository.countByWorkspace(workspace.id),
+    SubscriptionService.getActiveByWorkspace(workspace.id),
+    MembershipService.countByWorkspace(workspace.id),
   ])
   const subscription = subResult.ok ? subResult.value : null
   const usedSeats = membersResult.ok ? membersResult.value : 0

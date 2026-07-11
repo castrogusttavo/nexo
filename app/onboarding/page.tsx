@@ -1,8 +1,7 @@
 import type { OnboardingStep } from '@prisma/client'
 import { redirect } from 'next/navigation'
 import { getAuthSession } from '@/src/lib/auth-session'
-import { MembershipRepository } from '@/src/repositories/membership.repository'
-import { UserRepository } from '@/src/repositories/user.repository'
+import { UserService } from '@/src/services/user.service'
 
 const STEP_ROUTES: Record<OnboardingStep, string> = {
   PROFILE: '/onboarding/profile-setup', // era: profile-setup
@@ -15,7 +14,7 @@ export default async function OnboardingPage() {
   const auth = await getAuthSession()
   if (!auth.ok) redirect('/sign-in')
 
-  const userResult = await UserRepository.findById(auth.value.user.id)
+  const userResult = await UserService.getProfile(auth.value.user.id)
   if (!userResult.ok) redirect('/sign-in')
 
   const user = userResult.value
@@ -31,8 +30,7 @@ export default async function OnboardingPage() {
     user.onboardingStep === 'ROLE' ||
     user.onboardingStep === 'BRINGS'
   ) {
-    const memberships = await MembershipRepository.listByUser(user.id)
-    if (memberships.ok && memberships.value.length > 0) redirect('/')
+    if (user.memberships.length > 0) redirect('/')
   }
 
   redirect(STEP_ROUTES[user.onboardingStep])

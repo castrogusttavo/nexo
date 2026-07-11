@@ -12,7 +12,7 @@ import { ProjectorderButton } from '@/app/_components/workspace/projects/workspa
 import { NexoIcon } from '@/components/icon/icon'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { getAuthSession } from '@/src/lib/auth-session'
-import { MembershipRepository } from '@/src/repositories/membership.repository'
+import { MembershipService } from '@/src/services/membership.service'
 
 export const metadata: Metadata = {
   title: 'Arquivos | Nexo',
@@ -26,7 +26,7 @@ export default async function ArchivesPage({ params }: Props) {
   const session = await getAuthSession()
   if (!session.ok) notFound()
 
-  const membership = await MembershipRepository.findByUserAndSlug(
+  const membership = await MembershipService.getByUserAndSlug(
     session.value.user.id,
     slug,
   )
