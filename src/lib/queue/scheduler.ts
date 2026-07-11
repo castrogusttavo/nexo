@@ -23,6 +23,12 @@ export async function scheduleDataRetentionJobs(): Promise<void> {
     { name: DataRetentionJob.CleanupExpiredVerificationTokens, data: {} },
   )
 
+  await queue.upsertJobScheduler(
+    DataRetentionJob.ExpiresStaleInvitations,
+    repeat,
+    { name: DataRetentionJob.ExpiresStaleInvitations, data: {} },
+  )
+
   logger.info('queue.scheduler.data_retention_registered', {
     component: 'Worker',
     pattern: RetentionCron.dataRetention,
@@ -30,6 +36,7 @@ export async function scheduleDataRetentionJobs(): Promise<void> {
     jobs: [
       DataRetentionJob.CleanupExpiredSessions,
       DataRetentionJob.CleanupExpiredVerificationTokens,
+      DataRetentionJob.ExpiresStaleInvitations,
     ],
   })
 }

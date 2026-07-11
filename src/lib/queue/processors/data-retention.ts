@@ -27,6 +27,15 @@ async function cleanupExpiredVerifications(): Promise<CleanupResult> {
   return { deleted: count, cutoff: cutoff.toISOString() }
 }
 
+async function expireStaleInvitations(): Promise<CleanupResult> {
+  const cutoff = new Date()
+  const { count } = await prisma.workspaceInvitation.updateMany({
+    where: { status: 'PENDING', expiresAt: { lt: cutoff } },
+    data: { status: 'EXPIRED' },
+  })
+  return { deleted: count, cutoff: cutoff.toISOString() }
+}
+
 export async function processDataRetention(job: Job): Promise<CleanupResult> {
   switch (job.name) {
     case DataRetentionJob.CleanupExpiredSessions: {
@@ -45,6 +54,16 @@ export async function processDataRetention(job: Job): Promise<CleanupResult> {
         component: 'Worker',
         jobId: job.id,
         deleted: result.deleted,
+        cutoff: result.cutoff,
+      })
+      return result
+    }
+    case DataRetentionJob.ExpiresStaleInvitations: {
+      const result = await expireStaleInvitations()
+      logger.info('queue.data_retention.invitations_expired', {
+        component: 'Worker',
+        jobId: job.id,
+        expired: result.deleted,
         cutoff: result.cutoff,
       })
       return result
