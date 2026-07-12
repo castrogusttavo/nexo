@@ -16,7 +16,7 @@ import { authClient } from '@/src/lib/auth-client'
 
 type Step = 'form' | 'otp'
 
-export function SignUpForm() {
+export function SignUpForm({ redirectTo = '/' }: { redirectTo?: string }) {
   const { push } = useRouter()
   const [step, setStep] = useState<Step>('form')
   const [email, setEmail] = useState('')
@@ -32,6 +32,11 @@ export function SignUpForm() {
   const [acceptedPrivacy, setAcceptedPrivacy] = useState(false)
   const [isPending, setIsPending] = useState(false)
   const [isVerifying, setIsVerifying] = useState(false)
+
+  const signInHref =
+    redirectTo === '/'
+      ? '/sign-in'
+      : `/sign-in?redirect=${encodeURIComponent(redirectTo)}`
 
   async function handleSubmit(e: React.SyntheticEvent<HTMLFormElement>) {
     e.preventDefault()
@@ -102,7 +107,7 @@ export function SignUpForm() {
       return
     }
 
-    push('/')
+    push(redirectTo)
   }
 
   async function handleResend() {
@@ -134,8 +139,16 @@ export function SignUpForm() {
             </div>
 
             <div className='flex flex-col gap-3'>
-              <SocialLoginButtonProps provider='google' isPending={isPending} />
-              <SocialLoginButtonProps provider='github' isPending={isPending} />
+              <SocialLoginButtonProps
+                provider='google'
+                isPending={isPending}
+                callbackURL={redirectTo}
+              />
+              <SocialLoginButtonProps
+                provider='github'
+                isPending={isPending}
+                callbackURL={redirectTo}
+              />
             </div>
 
             <div className='relative'>
@@ -272,7 +285,7 @@ export function SignUpForm() {
                 <Muted>
                   Já tem conta?{' '}
                   <Link
-                    href='/sign-in'
+                    href={signInHref}
                     className='text-primary hover:underline'
                   >
                     Entre

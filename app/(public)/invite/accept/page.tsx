@@ -11,7 +11,7 @@ export default async function InviteAcceptPage({ searchParams }: Props) {
   const auth = await getAuthSession()
   if (!auth.ok) {
     const callback = encodeURIComponent(`/invite/accept?token=${token}`)
-    redirect(`/sign-up?callbackURL=${callback}`)
+    redirect(`/sign-up?redirect=${callback}`)
   }
 
   return <AcceptInvitation token={token} />
