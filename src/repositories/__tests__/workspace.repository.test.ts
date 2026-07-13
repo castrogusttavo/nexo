@@ -207,7 +207,9 @@ describe('WorkspaceRepository', () => {
         status: 'PAID',
       })
 
-      expect(expectOk(await WorkspaceRepository.revertExpiredTrials())).toBe(1)
+      expect(
+        expectOk(await WorkspaceRepository.revertExpiredTrials()),
+      ).toHaveLength(1)
 
       const [e, a, p] = await Promise.all([
         prisma.workspace.findUnique({ where: { id: expired.id } }),
@@ -226,7 +228,9 @@ describe('WorkspaceRepository', () => {
         trialEndsAt: new Date(Date.now() - 1000),
       })
       await WorkspaceRepository.revertExpiredTrials()
-      expect(expectOk(await WorkspaceRepository.revertExpiredTrials())).toBe(0)
+      expect(
+        expectOk(await WorkspaceRepository.revertExpiredTrials()),
+      ).toHaveLength(0)
     })
   })
 
