@@ -5,7 +5,6 @@ import { NEXT_PUBLIC_URL } from '@/lib/env/env'
 import type { InvitationDTO, InviteToProjectResult } from '@/types/invitation'
 import { UserCache } from '../cache/user.cache'
 import {
-  forbidden,
   invitationAlreadyMember,
   invitationDuplicate,
   invitationEmailMismatch,
@@ -29,8 +28,8 @@ import type {
   CreateInvitationDTO,
   InviteToProjectDTO,
 } from '../schemas/invitation.schema'
+import { assertMember, assertPrivileged } from './_authz'
 
-const PRIVILEGED_ROLES = ['OWNER', 'ADMIN'] as const
 const INVITATION_TTL_MS = 7 * 24 * 60 * 60 * 1000
 
 function expiresAt(): Date {
@@ -39,22 +38,6 @@ function expiresAt(): Date {
 
 function isExpired(date: Date): boolean {
   return date.getTime() < Date.now()
-}
-
-async function assertPrivileged(
-  actorId: string,
-  workspaceId: string,
-): Promise<Result<true>> {
-  const membership = await MembershipRepository.findByUserAndWorkspace(
-    actorId,
-    workspaceId,
-  )
-  if (!membership.ok) return membership
-  if (!membership.value) return err(forbidden())
-  if (!PRIVILEGED_ROLES.includes(membership.value.role as never)) {
-    return err(forbidden())
-  }
-  return ok(true)
 }
 
 async function assertSeatAvailable(
@@ -516,12 +499,8 @@ export const InvitationService = {
     workspaceId: string,
     slug: string,
   ): Promise<Result<{ id: string; leadId: string }>> {
-    const membership = await MembershipRepository.findByUserAndWorkspace(
-      actorId,
-      workspaceId,
-    )
+    const membership = await assertMember(actorId, workspaceId)
     if (!membership.ok) return membership
-    if (!membership.value) return err(forbidden())
 
     const projectResult = await ProjectRepository.findByWorkspaceAndSlug(
       workspaceId,
@@ -531,10 +510,7 @@ export const InvitationService = {
     if (!projectResult.ok) return projectResult
     const project = projectResult.value
 
-    const isPrivileged = PRIVILEGED_ROLES.includes(
-      membership.value.role as never,
-    )
-    if (!isPrivileged && project.leadId !== actorId) {
+    if (!membership.value.isPrivileged && project.leadId !== actorId) {
       return err(projectForbidden('sem permissão para gerenciar membros'))
     }
 

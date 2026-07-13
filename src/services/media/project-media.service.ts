@@ -1,7 +1,6 @@
 import { auditMutation } from '@/lib/axiom/audit'
-import { forbidden } from '@/src/errors'
-import { err, ok, type Result } from '@/src/lib/result'
-import { MembershipRepository } from '@/src/repositories/membership.repository'
+import { ok, type Result } from '@/src/lib/result'
+import { assertMember } from '../_authz'
 import { persistObject, validateImage } from './_media'
 
 const BUCKET = 'projects-covers'
@@ -19,12 +18,8 @@ export const ProjectMediaService = {
   async uploadCover(
     input: ProjectCoverUploadInput,
   ): Promise<Result<{ url: string }>> {
-    const membership = await MembershipRepository.findByUserAndWorkspace(
-      input.actorId,
-      input.workspaceId,
-    )
+    const membership = await assertMember(input.actorId, input.workspaceId)
     if (!membership.ok) return membership
-    if (!membership.value) return err(forbidden())
 
     const validation = validateImage(input.contentType, input.byteSize)
     if (!validation.ok) return validation

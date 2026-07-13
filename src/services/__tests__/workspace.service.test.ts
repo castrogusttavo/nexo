@@ -182,6 +182,9 @@ describe('WorkspaceService', () => {
       mockedMembershipRepo.findByUserAndWorkspace.mockResolvedValue(
         ok(membership),
       )
+      mockedMembershipRepo.listUserIdsByWorkspace.mockResolvedValue(
+        ok(['owner']),
+      )
       mockedWorkspaceRepo.update.mockResolvedValue(ok(updated))
       mockedWorkspaceCache.invalidate.mockResolvedValue(undefined)
       mockedUserCache.invalidate.mockResolvedValue(undefined)
@@ -206,6 +209,9 @@ describe('WorkspaceService', () => {
 
       mockedMembershipRepo.findByUserAndWorkspace.mockResolvedValue(
         ok(membership),
+      )
+      mockedMembershipRepo.listUserIdsByWorkspace.mockResolvedValue(
+        ok(['admin']),
       )
       mockedWorkspaceRepo.update.mockResolvedValue(ok(updated))
       mockedWorkspaceCache.invalidate.mockResolvedValue(undefined)
@@ -305,6 +311,9 @@ describe('WorkspaceService', () => {
 
       mockedMembershipRepo.findByUserAndWorkspace.mockResolvedValue(
         ok(membership),
+      )
+      mockedMembershipRepo.listUserIdsByWorkspace.mockResolvedValue(
+        ok(['owner']),
       )
       mockedWorkspaceRepo.delete.mockResolvedValue(ok(undefined))
       mockedWorkspaceCache.invalidate.mockResolvedValue(undefined)

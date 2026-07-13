@@ -1,21 +1,15 @@
 import { auditMutation } from '@/lib/axiom/audit'
 import type { ProjectDTO, ProjectMemberDTO } from '@/types/project'
-import {
-  forbidden,
-  projectForbidden,
-  projectMemberNotInWorkspace,
-} from '../errors'
+import { projectForbidden, projectMemberNotInWorkspace } from '../errors'
 import { err, ok, type Result } from '../lib/result'
 import { toProjectDTO, toProjectMemberDTO } from '../mappers/project.mapper'
-import { MembershipRepository } from '../repositories/membership.repository'
 import { ProjectRepository } from '../repositories/project.repository'
 import type {
   CreateProjectDTO,
   ListProjectsDTO,
   UpdateProjectDTO,
 } from '../schemas/project.schema'
-
-const PRIVILEGED_ROLES = ['OWNER', 'ADMIN'] as const
+import { assertMember } from './_authz'
 
 export const ProjectService = {
   async list(
@@ -23,21 +17,13 @@ export const ProjectService = {
     workspaceId: string,
     options: ListProjectsDTO,
   ): Promise<Result<ProjectDTO[]>> {
-    const membership = await MembershipRepository.findByUserAndWorkspace(
-      actorId,
-      workspaceId,
-    )
+    const membership = await assertMember(actorId, workspaceId)
     if (!membership.ok) return membership
-    if (!membership.value) return err(forbidden())
-
-    const isPrivileged = PRIVILEGED_ROLES.includes(
-      membership.value.role as never,
-    )
 
     const result = await ProjectRepository.listByWorkspace(
       workspaceId,
       actorId,
-      isPrivileged,
+      membership.value.isPrivileged,
       options,
     )
     if (!result.ok) return result
@@ -50,12 +36,8 @@ export const ProjectService = {
     workspaceId: string,
     slug: string,
   ): Promise<Result<ProjectDTO>> {
-    const membership = await MembershipRepository.findByUserAndWorkspace(
-      actorId,
-      workspaceId,
-    )
+    const membership = await assertMember(actorId, workspaceId)
     if (!membership.ok) return membership
-    if (!membership.value) return err(forbidden())
 
     const result = await ProjectRepository.findByWorkspaceAndSlug(
       workspaceId,
@@ -65,13 +47,15 @@ export const ProjectService = {
     if (!result.ok) return result
 
     const project = result.value
-    const isPrivileged = PRIVILEGED_ROLES.includes(
-      membership.value.role as never,
-    )
     const isLead = project.leadId === actorId
     const isMember = project.members.some((m) => m.userId === actorId)
 
-    if (!project.isPublic && !isPrivileged && !isLead && !isMember) {
+    if (
+      !project.isPublic &&
+      !membership.value.isPrivileged &&
+      !isLead &&
+      !isMember
+    ) {
       return err(projectForbidden())
     }
 
@@ -83,12 +67,8 @@ export const ProjectService = {
     workspaceId: string,
     slug: string,
   ): Promise<Result<ProjectMemberDTO[]>> {
-    const membership = await MembershipRepository.findByUserAndWorkspace(
-      actorId,
-      workspaceId,
-    )
+    const membership = await assertMember(actorId, workspaceId)
     if (!membership.ok) return membership
-    if (!membership.value) return err(forbidden())
 
     const projectResult = await ProjectRepository.findByWorkspaceAndSlug(
       workspaceId,
@@ -98,12 +78,14 @@ export const ProjectService = {
     if (!projectResult.ok) return projectResult
     const project = projectResult.value
 
-    const isPrivileged = PRIVILEGED_ROLES.includes(
-      membership.value.role as never,
-    )
     const isLead = project.leadId === actorId
     const isMember = project.members.some((m) => m.userId === actorId)
-    if (!project.isPublic && !isPrivileged && !isLead && !isMember) {
+    if (
+      !project.isPublic &&
+      !membership.value.isPrivileged &&
+      !isLead &&
+      !isMember
+    ) {
       return err(projectForbidden())
     }
 
@@ -119,12 +101,8 @@ export const ProjectService = {
     slug: string,
     targetUserId: string,
   ): Promise<Result<ProjectMemberDTO>> {
-    const membership = await MembershipRepository.findByUserAndWorkspace(
-      actorId,
-      workspaceId,
-    )
+    const membership = await assertMember(actorId, workspaceId)
     if (!membership.ok) return membership
-    if (!membership.value) return err(forbidden())
 
     const projectResult = await ProjectRepository.findByWorkspaceAndSlug(
       workspaceId,
@@ -134,20 +112,13 @@ export const ProjectService = {
     if (!projectResult.ok) return projectResult
     const project = projectResult.value
 
-    const isPrivileged = PRIVILEGED_ROLES.includes(
-      membership.value.role as never,
-    )
     const isLead = project.leadId === actorId
-    if (!isPrivileged && !isLead) {
-      return err(projectForbidden('Sem permissão para gerenciar membero'))
+    if (!membership.value.isPrivileged && !isLead) {
+      return err(projectForbidden('Sem permissão para gerenciar membros'))
     }
 
-    const targetMembership = await MembershipRepository.findByUserAndWorkspace(
-      targetUserId,
-      workspaceId,
-    )
-    if (!targetMembership.ok) return targetMembership
-    if (!targetMembership.value) return err(projectMemberNotInWorkspace())
+    const targetMembership = await assertMember(targetUserId, workspaceId)
+    if (!targetMembership.ok) return err(projectMemberNotInWorkspace())
 
     const result = await ProjectRepository.addMember(targetUserId, project.id)
     if (!result.ok) return result
@@ -170,12 +141,8 @@ export const ProjectService = {
     slug: string,
     targetUserId: string,
   ): Promise<Result<void>> {
-    const membership = await MembershipRepository.findByUserAndWorkspace(
-      actorId,
-      workspaceId,
-    )
+    const membership = await assertMember(actorId, workspaceId)
     if (!membership.ok) return membership
-    if (!membership.value) return err(forbidden())
 
     const projectResult = await ProjectRepository.findByWorkspaceAndSlug(
       workspaceId,
@@ -185,11 +152,8 @@ export const ProjectService = {
     if (!projectResult.ok) return projectResult
     const project = projectResult.value
 
-    const isPrivileged = PRIVILEGED_ROLES.includes(
-      membership.value.role as never,
-    )
     const isLead = project.leadId === actorId
-    if (!isPrivileged && !isLead) {
+    if (!membership.value.isPrivileged && !isLead) {
       return err(projectForbidden('Sem permissão para gerenciar membro'))
     }
 
@@ -220,12 +184,8 @@ export const ProjectService = {
     workspaceId: string,
     dto: CreateProjectDTO,
   ): Promise<Result<ProjectDTO>> {
-    const membership = await MembershipRepository.findByUserAndWorkspace(
-      actorId,
-      workspaceId,
-    )
+    const membership = await assertMember(actorId, workspaceId)
     if (!membership.ok) return membership
-    if (!membership.value) return err(forbidden())
 
     const result = await ProjectRepository.create({
       ...dto,
@@ -261,21 +221,17 @@ export const ProjectService = {
     dto: UpdateProjectDTO,
   ): Promise<Result<ProjectDTO>> {
     const [membership, projectResult] = await Promise.all([
-      MembershipRepository.findByUserAndWorkspace(actorId, workspaceId),
+      assertMember(actorId, workspaceId),
       ProjectRepository.findByWorkspaceAndSlug(workspaceId, slug, actorId),
     ])
 
     if (!membership.ok) return membership
-    if (!membership.value) return err(forbidden())
     if (!projectResult.ok) return projectResult
 
     const project = projectResult.value
-    const isPrivileged = PRIVILEGED_ROLES.includes(
-      membership.value.role as never,
-    )
     const isLead = project.leadId === actorId
 
-    if (!isPrivileged && !isLead) {
+    if (!membership.value.isPrivileged && !isLead) {
       auditMutation({
         entity: 'project',
         action: 'update',
@@ -319,20 +275,16 @@ export const ProjectService = {
     slug: string,
   ): Promise<Result<ProjectDTO>> {
     const [membership, projectResult] = await Promise.all([
-      MembershipRepository.findByUserAndWorkspace(actorId, workspaceId),
+      assertMember(actorId, workspaceId),
       ProjectRepository.findByWorkspaceAndSlug(workspaceId, slug, actorId),
     ])
 
     if (!membership.ok) return membership
-    if (!membership.value) return err(forbidden())
     if (!projectResult.ok) return projectResult
 
     const project = projectResult.value
-    const isPrivileged = PRIVILEGED_ROLES.includes(
-      membership.value.role as never,
-    )
 
-    if (!isPrivileged && project.leadId !== actorId) {
+    if (!membership.value.isPrivileged && project.leadId !== actorId) {
       return err(
         projectForbidden(
           'Apenas o lead ou ADMIN/OWNER podem arquivar o projeto',
@@ -359,20 +311,16 @@ export const ProjectService = {
     slug: string,
   ): Promise<Result<ProjectDTO>> {
     const [membership, projectResult] = await Promise.all([
-      MembershipRepository.findByUserAndWorkspace(actorId, workspaceId),
+      assertMember(actorId, workspaceId),
       ProjectRepository.findByWorkspaceAndSlug(workspaceId, slug, actorId),
     ])
 
     if (!membership.ok) return membership
-    if (!membership.value) return err(forbidden())
     if (!projectResult.ok) return projectResult
 
     const project = projectResult.value
-    const isPrivileged = PRIVILEGED_ROLES.includes(
-      membership.value.role as never,
-    )
 
-    if (!isPrivileged && project.leadId !== actorId) {
+    if (!membership.value.isPrivileged && project.leadId !== actorId) {
       return err(
         projectForbidden(
           'Apenas o lead ou ADMIN/OWNER podem restaurar o projeto',
@@ -399,12 +347,11 @@ export const ProjectService = {
     slug: string,
   ): Promise<Result<void>> {
     const [membership, projectResult] = await Promise.all([
-      MembershipRepository.findByUserAndWorkspace(actorId, workspaceId),
+      assertMember(actorId, workspaceId),
       ProjectRepository.findByWorkspaceAndSlug(workspaceId, slug, actorId),
     ])
 
     if (!membership.ok) return membership
-    if (!membership.value) return err(forbidden())
     if (!projectResult.ok) return projectResult
 
     if (membership.value.role !== 'OWNER') {
@@ -443,12 +390,8 @@ export const ProjectService = {
     workspaceId: string,
     slug: string,
   ): Promise<Result<{ favorited: boolean }>> {
-    const membership = await MembershipRepository.findByUserAndWorkspace(
-      actorId,
-      workspaceId,
-    )
+    const membership = await assertMember(actorId, workspaceId)
     if (!membership.ok) return membership
-    if (!membership.value) return err(forbidden())
 
     const projectResult = await ProjectRepository.findByWorkspaceAndSlug(
       workspaceId,
@@ -458,13 +401,15 @@ export const ProjectService = {
     if (!projectResult.ok) return projectResult
 
     const project = projectResult.value
-    const isPrivileged = PRIVILEGED_ROLES.includes(
-      membership.value.role as never,
-    )
     const isLead = project.leadId === actorId
     const isMember = project.members.some((m) => m.userId === actorId)
 
-    if (!project.isPublic && !isPrivileged && !isLead && !isMember) {
+    if (
+      !project.isPublic &&
+      !membership.value.isPrivileged &&
+      !isLead &&
+      !isMember
+    ) {
       return err(projectForbidden())
     }
 
@@ -479,12 +424,8 @@ export const ProjectService = {
     workspaceId: string,
     slug: string,
   ): Promise<Result<{ favorited: boolean }>> {
-    const membership = await MembershipRepository.findByUserAndWorkspace(
-      actorId,
-      workspaceId,
-    )
+    const membership = await assertMember(actorId, workspaceId)
     if (!membership.ok) return membership
-    if (!membership.value) return err(forbidden())
 
     const projectResult = await ProjectRepository.findByWorkspaceAndSlug(
       workspaceId,
@@ -493,10 +434,20 @@ export const ProjectService = {
     )
     if (!projectResult.ok) return projectResult
 
-    const result = await ProjectRepository.removeFavorite(
-      actorId,
-      projectResult.value.id,
-    )
+    const project = projectResult.value
+    const isLead = project.leadId === actorId
+    const isMember = project.members.some((m) => m.userId === actorId)
+
+    if (
+      !project.isPublic &&
+      !membership.value.isPrivileged &&
+      !isLead &&
+      !isMember
+    ) {
+      return err(projectForbidden())
+    }
+
+    const result = await ProjectRepository.removeFavorite(actorId, project.id)
     if (!result.ok) return result
 
     return ok({ favorited: false })

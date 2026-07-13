@@ -71,4 +71,16 @@ export const MembershipRepository = {
       return err(dbError('Faield to count memberships', error))
     }
   },
+
+  async listUserIdsByWorkspace(workspaceId: string): Promise<Result<string[]>> {
+    try {
+      const memberships = await prisma.membership.findMany({
+        where: { workspaceId },
+        select: { userId: true },
+      })
+      return ok(memberships.map((m) => m.userId))
+    } catch (error) {
+      return err(dbError('Failed to list membership user ids', error))
+    }
+  },
 }

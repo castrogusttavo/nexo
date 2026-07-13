@@ -13,18 +13,15 @@ import type {
 } from '@/src/schemas/workspace.schema'
 import type { WorkspaceDTO } from '@/types/workspace'
 import { TRIAL_PLAN, trialEndsAtFrom } from '../config/trial'
+import { assertMember } from './_authz'
 
 export const WorkspaceService = {
   async getById(
     actorId: string,
     workspaceId: string,
   ): Promise<Result<WorkspaceDTO>> {
-    const membership = await MembershipRepository.findByUserAndWorkspace(
-      actorId,
-      workspaceId,
-    )
+    const membership = await assertMember(actorId, workspaceId)
     if (!membership.ok) return membership
-    if (!membership.value) return err(forbidden())
 
     const cached = await WorkspaceCache.get(workspaceId)
     if (cached) return ok(cached)
@@ -79,24 +76,10 @@ export const WorkspaceService = {
     workspaceId: string,
     dto: UpdateWorkspaceDTO,
   ): Promise<Result<WorkspaceDTO>> {
-    const membership = await MembershipRepository.findByUserAndWorkspace(
-      actorId,
-      workspaceId,
-    )
+    const membership = await assertMember(actorId, workspaceId)
     if (!membership.ok) return membership
-    if (!membership.value) {
-      auditMutation({
-        entity: 'workspace',
-        action: 'update',
-        actorId,
-        targetId: workspaceId,
-        outcome: 'failure',
-        reason: 'not_a_member',
-      })
-      return err(forbidden())
-    }
 
-    if (!['OWNER', 'ADMIN'].includes(membership.value.role)) {
+    if (!membership.value.isPrivileged) {
       auditMutation({
         entity: 'workspace',
         action: 'update',
@@ -124,7 +107,14 @@ export const WorkspaceService = {
 
     const workspaceDTO = toWorkspaceDTO(result.value)
     await WorkspaceCache.invalidate(workspaceId)
-    await UserCache.invalidate(actorId)
+
+    const memberIds =
+      await MembershipRepository.listUserIdsByWorkspace(workspaceId)
+    await Promise.all(
+      (memberIds.ok ? memberIds.value : [actorId]).map((id) =>
+        UserCache.invalidate(id),
+      ),
+    )
 
     auditMutation({
       entity: 'workspace',
@@ -138,22 +128,8 @@ export const WorkspaceService = {
   },
 
   async delete(actorId: string, workspaceId: string): Promise<Result<void>> {
-    const membership = await MembershipRepository.findByUserAndWorkspace(
-      actorId,
-      workspaceId,
-    )
+    const membership = await assertMember(actorId, workspaceId)
     if (!membership.ok) return membership
-    if (!membership.value) {
-      auditMutation({
-        entity: 'workspace',
-        action: 'delete',
-        actorId,
-        targetId: workspaceId,
-        outcome: 'failure',
-        reason: 'not_a_member',
-      })
-      return err(forbidden())
-    }
 
     if (membership.value.role !== 'OWNER') {
       auditMutation({
@@ -167,6 +143,11 @@ export const WorkspaceService = {
       })
       return err(forbidden('Apenas o OWNER pode deletar o workspace'))
     }
+
+    // Precisa ser lido antes do delete: memberships são removidas em cascata
+    // junto com o workspace.
+    const memberIds =
+      await MembershipRepository.listUserIdsByWorkspace(workspaceId)
 
     const result = await WorkspaceRepository.delete(workspaceId)
     if (!result.ok) {
@@ -182,7 +163,11 @@ export const WorkspaceService = {
     }
 
     await WorkspaceCache.invalidate(workspaceId)
-    await UserCache.invalidate(actorId)
+    await Promise.all(
+      (memberIds.ok ? memberIds.value : [actorId]).map((id) =>
+        UserCache.invalidate(id),
+      ),
+    )
 
     auditMutation({
       entity: 'workspace',

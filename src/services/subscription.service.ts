@@ -7,11 +7,11 @@ import { WorkspaceCache } from '@/src/cache/workspace.cache'
 import { forbidden, paymentError } from '@/src/errors'
 import { err, ok, type Result } from '@/src/lib/result'
 import { toSubscriptionDTO } from '@/src/mappers/subscription.mapper'
-import { MembershipRepository } from '@/src/repositories/membership.repository'
 import { SubscriptionRepository } from '@/src/repositories/subscription.repository'
 import type { CreateSubscriptionDTO } from '@/src/schemas/subscription.schema'
 import type { SubscriptionDTO } from '@/types/subscription'
 import { PAID_PLAN_PRICES } from '../config/plan-prices'
+import { assertMember } from './_authz'
 import { CouponService } from './coupon.service'
 
 const PLAN_PRODUCTS: Record<
@@ -39,14 +39,10 @@ export const SubscriptionService = {
     actorId: string,
     dto: CreateSubscriptionDTO,
   ): Promise<Result<SubscriptionDTO>> {
-    const membership = await MembershipRepository.findByUserAndWorkspace(
-      actorId,
-      dto.workspaceId,
-    )
+    const membership = await assertMember(actorId, dto.workspaceId)
     if (!membership.ok) return membership
-    if (!membership.value) return err(forbidden())
 
-    if (!['OWNER', 'ADMIN'].includes(membership.value.role)) {
+    if (!membership.value.isPrivileged) {
       return err(forbidden('Apenas OWNER ou ADMIN podem alterar o plano'))
     }
 
