@@ -1,5 +1,6 @@
 import type { Subscription } from '@prisma/client'
 import type { SubscriptionDTO } from '@/types/subscription'
+import { withTimestamps } from './_shared'
 
 export function toSubscriptionDTO(subscription: Subscription): SubscriptionDTO {
   return {
@@ -13,7 +14,6 @@ export function toSubscriptionDTO(subscription: Subscription): SubscriptionDTO {
     coupon: subscription.coupon,
     paymentUrl: subscription.paymentUrl,
     workspaceId: subscription.workspaceId,
-    createdAt: subscription.createdAt.toISOString(),
-    updatedAt: subscription.updatedAt.toISOString(),
+    ...withTimestamps(subscription),
   }
 }

@@ -1,6 +1,7 @@
 import type { Project } from '@prisma/client'
 import type { ProjectDTO, ProjectMemberDTO } from '@/types/project'
 import type { ProjectMemberWithUser } from '../repositories/project.repository'
+import { withTimestamps } from './_shared'
 
 export function toProjectDTO(
   project: Project,
@@ -18,8 +19,7 @@ export function toProjectDTO(
     leadId: project.leadId,
     workspaceId: project.workspaceId,
     archivedAt: project.archivedAt?.toISOString() ?? null,
-    createdAt: project.createdAt?.toISOString(),
-    updatedAt: project.updatedAt?.toISOString(),
+    ...withTimestamps(project),
   }
 }
 

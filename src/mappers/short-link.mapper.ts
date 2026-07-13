@@ -1,5 +1,6 @@
 import type { ShortLink } from '@prisma/client'
 import type { ShortLinkDTO } from '@/types/short-link'
+import { withTimestamps } from './_shared'
 
 export function toShortLinkDTO(shortLink: ShortLink): ShortLinkDTO {
   return {
@@ -7,7 +8,6 @@ export function toShortLinkDTO(shortLink: ShortLink): ShortLinkDTO {
     title: shortLink.title,
     url: shortLink.url,
     userId: shortLink.userId,
-    createdAt: shortLink.createdAt.toISOString(),
-    updatedAt: shortLink.updatedAt.toISOString(),
+    ...withTimestamps(shortLink),
   }
 }

@@ -1,5 +1,6 @@
 import type { WorkspaceInvitation } from '@prisma/client'
 import type { InvitationDTO } from '@/types/invitation'
+import { withTimestamps } from './_shared'
 
 export function toInvitationDTO(
   invitation: WorkspaceInvitation,
@@ -13,7 +14,6 @@ export function toInvitationDTO(
     workspaceId: invitation.workspaceId,
     projectId: invitation.projectId,
     invitedById: invitation.invitedById,
-    createdAt: invitation.createdAt.toISOString(),
-    updatedAt: invitation.updatedAt.toISOString(),
+    ...withTimestamps(invitation),
   }
 }

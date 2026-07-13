@@ -1,5 +1,6 @@
 import type { Workspace } from '@prisma/client'
 import type { WorkspaceDTO } from '@/types/workspace'
+import { withTimestamps } from './_shared'
 
 export function toWorkspaceDTO(workspace: Workspace): WorkspaceDTO {
   return {
@@ -8,7 +9,6 @@ export function toWorkspaceDTO(workspace: Workspace): WorkspaceDTO {
     slug: workspace.slug,
     activePlan: workspace.activePlan,
     trialEndsAt: workspace.trialEndsAt?.toISOString() ?? null,
-    createdAt: workspace.createdAt.toISOString(),
-    updatedAt: workspace.updatedAt.toISOString(),
+    ...withTimestamps(workspace),
   }
 }

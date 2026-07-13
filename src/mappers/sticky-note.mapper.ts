@@ -1,6 +1,7 @@
 import type { StickyNote } from '@prisma/client'
 import type { JSONContent } from '@tiptap/react'
 import type { StickyNoteDTO } from '@/types/sticky-note'
+import { withTimestamps } from './_shared'
 
 export function toStickyNoteDTO(stickyNote: StickyNote): StickyNoteDTO {
   return {
@@ -11,7 +12,6 @@ export function toStickyNoteDTO(stickyNote: StickyNote): StickyNoteDTO {
     },
     color: stickyNote.color,
     userId: stickyNote.userId,
-    createdAt: stickyNote.createdAt.toISOString(),
-    updatedAt: stickyNote.updatedAt.toISOString(),
+    ...withTimestamps(stickyNote),
   }
 }
