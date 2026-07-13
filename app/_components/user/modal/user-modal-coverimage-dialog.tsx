@@ -12,38 +12,7 @@ import {
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { notify } from '@/lib/notify'
 import { useUpdateUser, useUploadCover } from '@/src/hooks/use-user'
-
-export const COVER_IMAGES = [
-  '/coverImages/image_1.jpg',
-  '/coverImages/image_2.jpg',
-  '/coverImages/image_3.jpg',
-  '/coverImages/image_4.jpg',
-  '/coverImages/image_5.jpg',
-  '/coverImages/image_6.jpg',
-  '/coverImages/image_7.jpg',
-  '/coverImages/image_8.jpg',
-  '/coverImages/image_9.jpg',
-  '/coverImages/image_10.jpg',
-  '/coverImages/image_11.jpg',
-  '/coverImages/image_12.jpg',
-  '/coverImages/image_13.jpg',
-  '/coverImages/image_14.jpg',
-  '/coverImages/image_15.jpg',
-  '/coverImages/image_16.jpg',
-  '/coverImages/image_17.jpg',
-  '/coverImages/image_18.jpg',
-  '/coverImages/image_19.jpg',
-  '/coverImages/image_20.jpg',
-  '/coverImages/image_21.jpg',
-  '/coverImages/image_22.jpg',
-  '/coverImages/image_23.jpg',
-  '/coverImages/image_24.jpg',
-  '/coverImages/image_25.jpg',
-  '/coverImages/image_26.jpg',
-  '/coverImages/image_27.jpg',
-  '/coverImages/image_28.jpg',
-  '/coverImages/image_29.jpg',
-]
+import { COVER_IMAGES } from '../../media/cover-images'
 
 interface UserCoverImagePickerProps {
   currentImage?: string | null

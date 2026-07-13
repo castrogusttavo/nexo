@@ -6,6 +6,7 @@ import {
   SquareLock02Icon,
 } from '@hugeicons-pro/core-stroke-rounded'
 import { useState } from 'react'
+import { COVER_IMAGES } from '@/app/_components/media/cover-images'
 import { NexoIcon } from '@/components/icon/icon'
 import { Button } from '@/components/ui/button'
 import {
@@ -39,10 +40,7 @@ import { Textarea } from '@/components/ui/textarea'
 import { notify } from '@/lib/notify'
 import { useCreateProject } from '@/src/hooks/use-project'
 import { ProjectCreateButton } from '../workspace-project-create-button'
-import {
-  COVER_IMAGES,
-  CoverImagePicker,
-} from './workspace-project-modal-coverimage-dialog'
+import { CoverImagePicker } from './workspace-project-modal-coverimage-dialog'
 import { EmojiIconPicker } from './workspace-project-modal-emoji-icon-dialog'
 
 function randomCoverImage() {
