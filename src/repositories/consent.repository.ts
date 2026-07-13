@@ -4,6 +4,21 @@ import { err, ok, type Result } from '@/src/lib/result'
 import { dbError } from './db-error'
 
 export const ConsentRepository = {
+  async findLatestCookieConsentAction(
+    userId: string,
+  ): Promise<Result<ConsentAction | null>> {
+    try {
+      const latest = await prisma.consentEvent.findFirst({
+        where: { userId, document: 'COOKIES' },
+        orderBy: { createdAt: 'desc' },
+        select: { action: true },
+      })
+      return ok(latest?.action ?? null)
+    } catch (error) {
+      return err(dbError('Failed to find latest cookie consent', error))
+    }
+  },
+
   async recordCookieConsent(data: {
     userId: string
     version: string

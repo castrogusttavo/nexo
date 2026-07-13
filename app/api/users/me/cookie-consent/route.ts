@@ -2,6 +2,7 @@ import type { NextRequest } from 'next/server'
 import { z } from 'zod'
 import { withAxiom } from '@/lib/axiom/server'
 import { getAuthSession } from '@/src/lib/auth-session'
+import { apiLimiter, consume } from '@/src/lib/rate-limit'
 import { ConsentService } from '@/src/services/consent.service'
 import {
   handleError,
@@ -14,6 +15,9 @@ const BodySchema = z.object({ accepted: z.boolean() })
 export const POST = withAxiom(async (request: NextRequest) => {
   const auth = await getAuthSession()
   if (!auth.ok) return handleError(auth.error)
+
+  const limit = await consume(apiLimiter, `user:${auth.value.user.id}`)
+  if (!limit.ok) return handleError(limit.error)
 
   const body = await request.json().catch(() => null)
   const parsed = BodySchema.safeParse(body)

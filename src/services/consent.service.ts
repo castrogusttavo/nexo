@@ -16,6 +16,12 @@ export const ConsentService = {
   ): Promise<Result<{ accepted: boolean }>> {
     const action = accepted ? 'GRANTED' : 'REVOKED'
 
+    const latest =
+      await ConsentRepository.findLatestCookieConsentAction(actorId)
+    if (latest.ok && latest.value === action) {
+      return ok({ accepted })
+    }
+
     const result = await ConsentRepository.recordCookieConsent({
       userId: actorId,
       version: COOKIES_VERSION,
