@@ -154,7 +154,7 @@ export const ProjectService = {
 
     const isLead = project.leadId === actorId
     if (!membership.value.isPrivileged && !isLead) {
-      return err(projectForbidden('Sem permissão para gerenciar membro'))
+      return err(projectForbidden('Sem permissão para gerenciar membros'))
     }
 
     if (targetUserId === project.leadId) {
