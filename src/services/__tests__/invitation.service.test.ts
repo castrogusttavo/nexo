@@ -126,6 +126,7 @@ describe('InvitationService', () => {
           workspaceId: 'ws1',
           projectId: null,
         }),
+        expect.anything(),
       )
       expect(mockedEmail).toHaveBeenCalledTimes(1)
     })
@@ -364,7 +365,7 @@ describe('InvitationService', () => {
       })
 
       expectOk(result)
-      expect(mockedInvite.create).toHaveBeenCalled()
+      expect(mockedInvite.create).toHaveBeenCalledWith(expect.anything(), null)
     })
   })
 })

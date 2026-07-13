@@ -1,4 +1,5 @@
 import { createId } from '@paralleldrive/cuid2'
+import type { WorkspaceInvitation } from '@prisma/client'
 import { auditMutation } from '@/lib/axiom/audit'
 import { logger } from '@/lib/axiom/logger'
 import { NEXT_PUBLIC_URL } from '@/lib/env/env'
@@ -43,12 +44,12 @@ function isExpired(date: Date): boolean {
 async function assertSeatAvailable(
   workspaceId: string,
   options: { includePending: boolean },
-): Promise<Result<true>> {
+): Promise<Result<number | null>> {
   const workspace = await WorkspaceRepository.findById(workspaceId)
   if (!workspace.ok) return workspace
 
   const seats = limitOf(workspace.value.activePlan, 'seats')
-  if (seats === null) return ok(true) // unlimited plan
+  if (seats === null) return ok(null) // unlimited plan
 
   const members = await MembershipRepository.countByWorkspace(workspaceId)
   if (!members.ok) return members
@@ -71,7 +72,208 @@ async function assertSeatAvailable(
     return err(seatLimitReached())
   }
 
-  return ok(true)
+  return ok(seats)
+}
+
+async function dispatchEmail(
+  actorId: string,
+  workspaceId: string,
+  token: string,
+  email: string,
+): Promise<void> {
+  try {
+    const [inviter, workspace] = await Promise.all([
+      UserRepository.findById(actorId),
+      WorkspaceRepository.findById(workspaceId),
+    ])
+    if (!inviter.ok || !workspace.ok) return
+
+    await sendInviteUserToWorkspaceEmail({
+      email,
+      redirectUrl: `${NEXT_PUBLIC_URL}/invite/accept?token=${token}`,
+      inviterName: inviter.value.name,
+      inviterEmail: inviter.value.email,
+      inviterImage: inviter.value.image ?? undefined,
+      workspaceName: workspace.value.name,
+    })
+  } catch (error) {
+    logger.warn('invitation.email_failed', {
+      workspaceId,
+      error: error instanceof Error ? error.message : 'unknown',
+    })
+  }
+}
+
+async function assertProjectManager(
+  actorId: string,
+  workspaceId: string,
+  slug: string,
+): Promise<Result<{ id: string; leadId: string }>> {
+  const membership = await assertMember(actorId, workspaceId)
+  if (!membership.ok) return membership
+
+  const projectResult = await ProjectRepository.findByWorkspaceAndSlug(
+    workspaceId,
+    slug,
+    actorId,
+  )
+  if (!projectResult.ok) return projectResult
+  const project = projectResult.value
+
+  if (!membership.value.isPrivileged && project.leadId !== actorId) {
+    return err(projectForbidden('sem permissão para gerenciar membros'))
+  }
+
+  return ok({ id: project.id, leadId: project.leadId })
+}
+
+// Shared invitation lifecycle — everything past "who's allowed to invite
+// and into what scope" is identical for workspace and project invites:
+// dedupe against a pending invite, re-check the seat cap, persist, email,
+// audit. The two scopes only differ in the gate they pass through before
+// reaching this and the projectId they invite into.
+async function createPendingInvitation(params: {
+  actorId: string
+  workspaceId: string
+  email: string
+  role: CreateInvitationDTO['role']
+  projectId: string | null
+}): Promise<Result<WorkspaceInvitation>> {
+  const pending = await InvitationRepository.findPendingByWorkspaceAndEmail(
+    params.workspaceId,
+    params.email,
+  )
+  if (!pending.ok) return pending
+  if (pending.value) {
+    if (isExpired(pending.value.expiresAt)) {
+      await InvitationRepository.updateStatus(pending.value.id, 'EXPIRED')
+    } else {
+      return err(invitationDuplicate())
+    }
+  }
+
+  const seat = await assertSeatAvailable(params.workspaceId, {
+    includePending: true,
+  })
+  if (!seat.ok) return seat
+
+  const created = await InvitationRepository.create(
+    {
+      email: params.email,
+      role: params.role,
+      expiresAt: expiresAt(),
+      invitedById: params.actorId,
+      workspaceId: params.workspaceId,
+      projectId: params.projectId,
+    },
+    seat.value,
+  )
+  if (!created.ok) return created
+
+  await dispatchEmail(
+    params.actorId,
+    params.workspaceId,
+    created.value.token,
+    params.email,
+  )
+
+  auditMutation({
+    entity: 'invitation',
+    action: 'create',
+    actorId: params.actorId,
+    targetId: created.value.id,
+    meta: {
+      workspaceId: params.workspaceId,
+      email: params.email,
+      role: params.role,
+      ...(params.projectId ? { projectId: params.projectId } : {}),
+    },
+  })
+
+  return created
+}
+
+async function revokeInvitationInScope(params: {
+  actorId: string
+  invitationId: string
+  belongsToScope: (invitation: {
+    workspaceId: string
+    projectId: string | null
+  }) => boolean
+  auditMeta: Record<string, unknown>
+}): Promise<Result<InvitationDTO>> {
+  const invitation = await InvitationRepository.findById(params.invitationId)
+  if (!invitation.ok) return invitation
+  if (!invitation.value || !params.belongsToScope(invitation.value)) {
+    return err(invitationNotFound())
+  }
+  if (invitation.value.status !== 'PENDING') {
+    return err(invitationNotPending())
+  }
+
+  const updated = await InvitationRepository.updateStatus(
+    params.invitationId,
+    'REVOKED',
+  )
+  if (!updated.ok) return updated
+
+  auditMutation({
+    entity: 'invitation',
+    action: 'revoke',
+    actorId: params.actorId,
+    targetId: params.invitationId,
+    meta: params.auditMeta,
+  })
+
+  return ok(toInvitationDTO(updated.value))
+}
+
+async function resendInvitationInScope(params: {
+  actorId: string
+  workspaceId: string
+  invitationId: string
+  belongsToScope: (invitation: {
+    workspaceId: string
+    projectId: string | null
+  }) => boolean
+  auditMeta: Record<string, unknown>
+}): Promise<Result<InvitationDTO>> {
+  const invitation = await InvitationRepository.findById(params.invitationId)
+  if (!invitation.ok) return invitation
+  if (!invitation.value || !params.belongsToScope(invitation.value)) {
+    return err(invitationNotFound())
+  }
+  if (
+    invitation.value.status === 'ACCEPTED' ||
+    invitation.value.status === 'REVOKED'
+  ) {
+    return err(invitationNotPending())
+  }
+
+  const refreshed = await InvitationRepository.refreshToken(
+    params.invitationId,
+    createId(),
+    expiresAt(),
+  )
+  if (!refreshed.ok) return refreshed
+
+  await dispatchEmail(
+    params.actorId,
+    params.workspaceId,
+    refreshed.value.token,
+    refreshed.value.email,
+  )
+
+  auditMutation({
+    entity: 'invitation',
+    action: 'update',
+    actorId: params.actorId,
+    targetId: params.invitationId,
+    reason: 'resend',
+    meta: params.auditMeta,
+  })
+
+  return ok(toInvitationDTO(refreshed.value))
 }
 
 export const InvitationService = {
@@ -96,43 +298,14 @@ export const InvitationService = {
       if (membership.value) return err(invitationAlreadyMember())
     }
 
-    const pending = await InvitationRepository.findPendingByWorkspaceAndEmail(
+    const created = await createPendingInvitation({
+      actorId,
       workspaceId,
-      email,
-    )
-    if (!pending.ok) return pending
-    if (pending.value) {
-      if (isExpired(pending.value.expiresAt)) {
-        await InvitationRepository.updateStatus(pending.value.id, 'EXPIRED')
-      } else {
-        return err(invitationDuplicate())
-      }
-    }
-
-    const seat = await assertSeatAvailable(workspaceId, {
-      includePending: true,
-    })
-    if (!seat.ok) return seat
-
-    const created = await InvitationRepository.create({
       email,
       role: dto.role,
-      expiresAt: expiresAt(),
-      invitedById: actorId,
-      workspaceId,
       projectId: dto.projectId ?? null,
     })
     if (!created.ok) return created
-
-    await this.dispatchEmail(actorId, workspaceId, created.value.token, email)
-
-    auditMutation({
-      entity: 'invitation',
-      action: 'create',
-      actorId,
-      targetId: created.value.id,
-      meta: { workspaceId, email, role: dto.role },
-    })
 
     return ok(toInvitationDTO(created.value))
   },
@@ -155,77 +328,12 @@ export const InvitationService = {
     const privileged = await assertPrivileged(actorId, workspaceId)
     if (!privileged.ok) return privileged
 
-    const invitation = await InvitationRepository.findById(invitationId)
-    if (!invitation.ok) return invitation
-    if (!invitation.value || invitation.value.workspaceId !== workspaceId) {
-      return err(invitationNotFound())
-    }
-    if (invitation.value.status !== 'PENDING') {
-      return err(invitationNotPending())
-    }
-
-    const updated = await InvitationRepository.updateStatus(
+    return revokeInvitationInScope({
+      actorId,
       invitationId,
-      'REVOKED',
-    )
-    if (!updated.ok) return updated
-
-    auditMutation({
-      entity: 'invitation',
-      action: 'revoke',
-      actorId,
-      targetId: invitationId,
-      meta: { workspaceId },
+      belongsToScope: (invitation) => invitation.workspaceId === workspaceId,
+      auditMeta: { workspaceId },
     })
-
-    return ok(toInvitationDTO(updated.value))
-  },
-
-  async resendForProject(
-    actorId: string,
-    workspaceId: string,
-    slug: string,
-    invitationId: string,
-  ): Promise<Result<InvitationDTO>> {
-    const gate = await this.assertProjectManager(actorId, workspaceId, slug)
-    if (!gate.ok) return gate
-
-    const invitation = await InvitationRepository.findById(invitationId)
-    if (!invitation.ok) return invitation
-    if (!invitation.value || invitation.value.projectId !== gate.value.id) {
-      return err(invitationNotFound())
-    }
-    if (
-      invitation.value.status === 'ACCEPTED' ||
-      invitation.value.status === 'REVOKED'
-    ) {
-      return err(invitationNotPending())
-    }
-
-    const refreshed = await InvitationRepository.refreshToken(
-      invitationId,
-      createId(),
-      expiresAt(),
-    )
-    if (!refreshed.ok) return refreshed
-
-    await this.dispatchEmail(
-      actorId,
-      workspaceId,
-      refreshed.value.token,
-      refreshed.value.email,
-    )
-
-    auditMutation({
-      entity: 'invitation',
-      action: 'update',
-      actorId,
-      targetId: invitationId,
-      reason: 'resend',
-      meta: { workspaceId, projectId: gate.value.id },
-    })
-
-    return ok(toInvitationDTO(refreshed.value))
   },
 
   async resend(
@@ -236,42 +344,31 @@ export const InvitationService = {
     const privileged = await assertPrivileged(actorId, workspaceId)
     if (!privileged.ok) return privileged
 
-    const invitation = await InvitationRepository.findById(invitationId)
-    if (!invitation.ok) return invitation
-    if (!invitation.value || invitation.value.workspaceId !== workspaceId) {
-      return err(invitationNotFound())
-    }
-    if (
-      invitation.value.status === 'ACCEPTED' ||
-      invitation.value.status === 'REVOKED'
-    ) {
-      return err(invitationNotPending())
-    }
-
-    const refreshed = await InvitationRepository.refreshToken(
-      invitationId,
-      createId(),
-      expiresAt(),
-    )
-    if (!refreshed.ok) return refreshed
-
-    await this.dispatchEmail(
+    return resendInvitationInScope({
       actorId,
       workspaceId,
-      refreshed.value.token,
-      refreshed.value.email,
-    )
-
-    auditMutation({
-      entity: 'invitation',
-      action: 'update',
-      actorId,
-      targetId: invitationId,
-      reason: 'resend',
-      meta: { workspaceId },
+      invitationId,
+      belongsToScope: (invitation) => invitation.workspaceId === workspaceId,
+      auditMeta: { workspaceId },
     })
+  },
 
-    return ok(toInvitationDTO(refreshed.value))
+  async resendForProject(
+    actorId: string,
+    workspaceId: string,
+    slug: string,
+    invitationId: string,
+  ): Promise<Result<InvitationDTO>> {
+    const gate = await assertProjectManager(actorId, workspaceId, slug)
+    if (!gate.ok) return gate
+
+    return resendInvitationInScope({
+      actorId,
+      workspaceId,
+      invitationId,
+      belongsToScope: (invitation) => invitation.projectId === gate.value.id,
+      auditMeta: { workspaceId, projectId: gate.value.id },
+    })
   },
 
   async accept(
@@ -311,6 +408,7 @@ export const InvitationService = {
       workspaceId: invite.workspaceId,
       role: invite.role,
       projectId: invite.projectId,
+      seatLimit: seat.value,
     })
     if (!accepted.ok) return accepted
 
@@ -330,42 +428,13 @@ export const InvitationService = {
     })
   },
 
-  async dispatchEmail(
-    actorId: string,
-    workspaceId: string,
-    token: string,
-    email: string,
-  ): Promise<void> {
-    try {
-      const [inviter, workspace] = await Promise.all([
-        UserRepository.findById(actorId),
-        WorkspaceRepository.findById(workspaceId),
-      ])
-      if (!inviter.ok || !workspace.ok) return
-
-      await sendInviteUserToWorkspaceEmail({
-        email,
-        redirectUrl: `${NEXT_PUBLIC_URL}/invite/accept?token=${token}`,
-        inviterName: inviter.value.name,
-        inviterEmail: inviter.value.email,
-        inviterImage: inviter.value.image ?? undefined,
-        workspaceName: workspace.value.name,
-      })
-    } catch (error) {
-      logger.warn('invitation.email_failed', {
-        workspaceId,
-        error: error instanceof Error ? error.message : 'unknown',
-      })
-    }
-  },
-
   async createForProject(
     actorId: string,
     workspaceId: string,
     slug: string,
     dto: InviteToProjectDTO,
   ): Promise<Result<InviteToProjectResult>> {
-    const gate = await this.assertProjectManager(actorId, workspaceId, slug)
+    const gate = await assertProjectManager(actorId, workspaceId, slug)
     if (!gate.ok) return gate
     const project = gate.value
 
@@ -404,43 +473,14 @@ export const InvitationService = {
       }
     }
 
-    const pending = await InvitationRepository.findPendingByWorkspaceAndEmail(
+    const created = await createPendingInvitation({
+      actorId,
       workspaceId,
-      email,
-    )
-    if (!pending.ok) return pending
-    if (pending.value) {
-      if (isExpired(pending.value.expiresAt)) {
-        await InvitationRepository.updateStatus(pending.value.id, 'EXPIRED')
-      } else {
-        return err(invitationDuplicate())
-      }
-    }
-
-    const seat = await assertSeatAvailable(workspaceId, {
-      includePending: true,
-    })
-    if (!seat.ok) return seat
-
-    const created = await InvitationRepository.create({
       email,
       role: dto.role,
-      expiresAt: expiresAt(),
-      invitedById: actorId,
-      workspaceId,
       projectId: project.id,
     })
     if (!created.ok) return created
-
-    await this.dispatchEmail(actorId, workspaceId, created.value.token, email)
-
-    auditMutation({
-      entity: 'invitation',
-      action: 'create',
-      actorId,
-      targetId: created.value.id,
-      meta: { workspaceId, projectId: project.id, email, role: dto.role },
-    })
 
     return ok({ kind: 'invited', invitation: toInvitationDTO(created.value) })
   },
@@ -450,7 +490,7 @@ export const InvitationService = {
     workspaceId: string,
     slug: string,
   ): Promise<Result<InvitationDTO[]>> {
-    const gate = await this.assertProjectManager(actorId, workspaceId, slug)
+    const gate = await assertProjectManager(actorId, workspaceId, slug)
     if (!gate.ok) return gate
 
     const result = await InvitationRepository.listByProject(gate.value.id)
@@ -465,55 +505,14 @@ export const InvitationService = {
     slug: string,
     invitationId: string,
   ): Promise<Result<InvitationDTO>> {
-    const gate = await this.assertProjectManager(actorId, workspaceId, slug)
+    const gate = await assertProjectManager(actorId, workspaceId, slug)
     if (!gate.ok) return gate
 
-    const invitation = await InvitationRepository.findById(invitationId)
-    if (!invitation.ok) return invitation
-    if (!invitation.value || invitation.value.projectId !== gate.value.id) {
-      return err(invitationNotFound())
-    }
-    if (invitation.value.status !== 'PENDING') {
-      return err(invitationNotPending())
-    }
-
-    const updated = await InvitationRepository.updateStatus(
+    return revokeInvitationInScope({
+      actorId,
       invitationId,
-      'REVOKED',
-    )
-    if (!updated.ok) return updated
-
-    auditMutation({
-      entity: 'invitation',
-      action: 'revoke',
-      actorId,
-      targetId: invitationId,
-      meta: { workspaceId, projectId: gate.value.id },
+      belongsToScope: (invitation) => invitation.projectId === gate.value.id,
+      auditMeta: { workspaceId, projectId: gate.value.id },
     })
-
-    return ok(toInvitationDTO(updated.value))
-  },
-
-  async assertProjectManager(
-    actorId: string,
-    workspaceId: string,
-    slug: string,
-  ): Promise<Result<{ id: string; leadId: string }>> {
-    const membership = await assertMember(actorId, workspaceId)
-    if (!membership.ok) return membership
-
-    const projectResult = await ProjectRepository.findByWorkspaceAndSlug(
-      workspaceId,
-      slug,
-      actorId,
-    )
-    if (!projectResult.ok) return projectResult
-    const project = projectResult.value
-
-    if (!membership.value.isPrivileged && project.leadId !== actorId) {
-      return err(projectForbidden('sem permissão para gerenciar membros'))
-    }
-
-    return ok({ id: project.id, leadId: project.leadId })
   },
 }

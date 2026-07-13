@@ -1,8 +1,9 @@
 import { afterEach, describe, expect, it, vi } from 'vitest'
 import { seedInvitation } from '@/src/__tests__/factories/invitation.factory'
+import { seedMembership } from '@/src/__tests__/factories/membership.factory'
 import { seedUser } from '@/src/__tests__/factories/user.factory'
 import { seedWorkspace } from '@/src/__tests__/factories/workspace.factory'
-import { expectOk } from '@/src/__tests__/helpers/result.helpers'
+import { expectErr, expectOk } from '@/src/__tests__/helpers/result.helpers'
 import { prisma } from '@/src/lib/prisma'
 import { InvitationRepository } from '../invitation.repository'
 
@@ -234,6 +235,95 @@ describe('InvitationRepository', () => {
       expect(
         expectOk(await InvitationRepository.countPendingByWorkspace(ws.id)),
       ).toBe(1)
+    })
+  })
+
+  describe('seat limit enforcement', () => {
+    it('create() should reject when members+pending already reached the cap', async () => {
+      const { inviter, ws } = await seedInviterAndWorkspace()
+      const member = await seedUser({
+        email: `member-${Date.now()}@example.com`,
+      })
+      await seedMembership({ userId: member.id, workspaceId: ws.id })
+
+      const result = await InvitationRepository.create(
+        {
+          email: 'overflow@example.com',
+          role: 'MEMBER',
+          expiresAt: new Date(Date.now() + 60_000),
+          invitedById: inviter.id,
+          workspaceId: ws.id,
+        },
+        1, // cap already met by `member`
+      )
+
+      expectErr(result, 'SEAT_LIMIT_REACHED')
+    })
+
+    it('create() should succeed when under the cap', async () => {
+      const { inviter, ws } = await seedInviterAndWorkspace()
+
+      const result = await InvitationRepository.create(
+        {
+          email: 'fits@example.com',
+          role: 'MEMBER',
+          expiresAt: new Date(Date.now() + 60_000),
+          invitedById: inviter.id,
+          workspaceId: ws.id,
+        },
+        5,
+      )
+
+      expectOk(result)
+    })
+
+    it('accept() should reject a brand-new membership when the cap is already met', async () => {
+      const { inviter, ws } = await seedInviterAndWorkspace()
+      const existingMember = await seedUser({
+        email: `existing-${Date.now()}@example.com`,
+      })
+      await seedMembership({ userId: existingMember.id, workspaceId: ws.id })
+      const invitee = await seedUser({
+        email: `invitee-${Date.now()}@example.com`,
+      })
+      const invite = await seedInvitation({
+        invitedById: inviter.id,
+        workspaceId: ws.id,
+        email: invitee.email,
+      })
+
+      const result = await InvitationRepository.accept({
+        invitationId: invite.id,
+        userId: invitee.id,
+        workspaceId: ws.id,
+        role: 'MEMBER',
+        seatLimit: 1,
+      })
+
+      expectErr(result, 'SEAT_LIMIT_REACHED')
+    })
+
+    it('accept() should allow an already-member to accept a second invite even at the cap', async () => {
+      const { inviter, ws } = await seedInviterAndWorkspace()
+      const existingMember = await seedUser({
+        email: `already-${Date.now()}@example.com`,
+      })
+      await seedMembership({ userId: existingMember.id, workspaceId: ws.id })
+      const invite = await seedInvitation({
+        invitedById: inviter.id,
+        workspaceId: ws.id,
+        email: existingMember.email,
+      })
+
+      const result = await InvitationRepository.accept({
+        invitationId: invite.id,
+        userId: existingMember.id,
+        workspaceId: ws.id,
+        role: 'MEMBER',
+        seatLimit: 1,
+      })
+
+      expectOk(result)
     })
   })
 })

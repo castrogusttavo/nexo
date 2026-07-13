@@ -164,6 +164,7 @@ describe('InvitationService.createForProject()', () => {
         email: 'ext@example.com',
         projectId: 'proj-id',
       }),
+      expect.anything(),
     )
     expect(mockedEmail).toHaveBeenCalledTimes(1)
   })

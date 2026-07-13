@@ -5,6 +5,7 @@ import type {
   Workspace,
   WorkspaceInvitation,
 } from '@prisma/client'
+import { seatLimitReached } from '../errors'
 import { prisma } from '../lib/prisma'
 import { err, ok, type Result } from '../lib/result'
 import { dbError } from './db-error'
@@ -13,19 +14,52 @@ export type InvitationWithWorkspace = WorkspaceInvitation & {
   workspace: Workspace
 }
 
+class SeatLimitExceededError extends Error {}
+
 export const InvitationRepository = {
-  async create(data: {
-    email: string
-    role: Role
-    expiresAt: Date
-    invitedById: string
-    workspaceId: string
-    projectId?: string | null
-  }): Promise<Result<WorkspaceInvitation>> {
+  async create(
+    data: {
+      email: string
+      role: Role
+      expiresAt: Date
+      invitedById: string
+      workspaceId: string
+      projectId?: string | null
+    },
+    // Optional authoritative re-check, run inside the same transaction as
+    // the insert (behind an advisory lock scoped to the workspace) so two
+    // concurrent invites can't both slip past the app-level seat count.
+    // Omit (or pass null for unlimited plans) to skip the check.
+    seatLimit?: number | null,
+  ): Promise<Result<WorkspaceInvitation>> {
     try {
-      const invitation = await prisma.workspaceInvitation.create({ data })
+      const invitation = await prisma.$transaction(async (tx) => {
+        if (seatLimit != null) {
+          await tx.$executeRaw`SELECT pg_advisory_xact_lock(hashtext(${data.workspaceId}))`
+
+          const [members, pending] = await Promise.all([
+            tx.membership.count({ where: { workspaceId: data.workspaceId } }),
+            tx.workspaceInvitation.count({
+              where: {
+                workspaceId: data.workspaceId,
+                status: 'PENDING',
+                expiresAt: { gt: new Date() },
+              },
+            }),
+          ])
+          if (members + pending >= seatLimit) {
+            throw new SeatLimitExceededError()
+          }
+        }
+
+        return tx.workspaceInvitation.create({ data })
+      })
+
       return ok(invitation)
     } catch (error) {
+      if (error instanceof SeatLimitExceededError) {
+        return err(seatLimitReached())
+      }
       return err(dbError('Failed to create invitation', error))
     }
   },
@@ -149,23 +183,45 @@ export const InvitationRepository = {
     workspaceId: string
     role: Role
     projectId?: string | null
+    // Same re-check as create() — only enforced when this call would
+    // actually create a brand-new membership (an existing member accepting
+    // a second invite doesn't consume another seat).
+    seatLimit?: number | null
   }): Promise<Result<Membership>> {
     try {
       const membership = await prisma.$transaction(async (tx) => {
-        const m = await tx.membership.upsert({
+        const existing = await tx.membership.findUnique({
           where: {
             userId_workspaceId: {
               userId: params.userId,
               workspaceId: params.workspaceId,
             },
           },
-          update: {},
-          create: {
-            userId: params.userId,
-            workspaceId: params.workspaceId,
-            role: params.role,
-          },
         })
+
+        let m: Membership
+        if (existing) {
+          m = existing
+        } else {
+          if (params.seatLimit != null) {
+            await tx.$executeRaw`SELECT pg_advisory_xact_lock(hashtext(${params.workspaceId}))`
+
+            const members = await tx.membership.count({
+              where: { workspaceId: params.workspaceId },
+            })
+            if (members >= params.seatLimit) {
+              throw new SeatLimitExceededError()
+            }
+          }
+
+          m = await tx.membership.create({
+            data: {
+              userId: params.userId,
+              workspaceId: params.workspaceId,
+              role: params.role,
+            },
+          })
+        }
 
         if (params.projectId) {
           await tx.projectMember.upsert({
@@ -198,6 +254,9 @@ export const InvitationRepository = {
 
       return ok(membership)
     } catch (error) {
+      if (error instanceof SeatLimitExceededError) {
+        return err(seatLimitReached())
+      }
       return err(dbError('Failed to accept invitation', error))
     }
   },
