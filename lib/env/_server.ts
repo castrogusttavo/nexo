@@ -26,6 +26,8 @@ const serverEnv = {
   STATUS_COLLECTOR_SECRET: process.env.STATUS_COLLECTOR_SECRET,
   ACCOUNT_DELETION_GRACE_OVERRIDE_MS:
     process.env.ACCOUNT_DELETION_GRACE_OVERRIDE_MS,
+  WORKBENCH_USER: process.env.WORKBENCH_USER,
+  WORKBENCH_PASS: process.env.WORKBENCH_PASS,
 }
 
 const serverEnvSchema = z.object({
@@ -72,6 +74,8 @@ const serverEnvSchema = z.object({
     .refine((v) => v === undefined || (Number.isFinite(v) && v >= 0), {
       message: 'ACCOUNT_DELETION_GRACE_OVERRIDE_MS must be a non-negative number',
     }),
+  WORKBENCH_USER: z.string().min(3).max(63),
+  WORKBENCH_PASS: z.string().min(8).max(128),
 })
 
 const validatedServerEnv =
@@ -104,4 +108,6 @@ export const {
   ABACATE_PAY_WEBHOOK_SECRET,
   STATUS_COLLECTOR_SECRET,
   ACCOUNT_DELETION_GRACE_OVERRIDE_MS,
+  WORKBENCH_USER,
+  WORKBENCH_PASS,
 } = validatedServerEnv
