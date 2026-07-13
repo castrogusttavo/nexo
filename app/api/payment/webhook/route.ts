@@ -3,11 +3,6 @@ import { z } from 'zod'
 import { withAxiom } from '@/lib/axiom/server'
 import { ABACATE_PAY_WEBHOOK_SECRET } from '@/lib/env/server'
 import { SubscriptionService } from '@/src/services/subscription.service'
-import {
-  handleError,
-  standardError,
-  successResponse,
-} from '@/utils/http-response'
 
 function constantTimeEqual(a: string, b: string): boolean {
   if (a.length !== b.length) return false
@@ -18,13 +13,13 @@ function constantTimeEqual(a: string, b: string): boolean {
   return diff === 0
 }
 
+// Only the fields the handler actually reads are required — AbacatePay's
+// real payload carries more (id, apiVersion, data.status), but validating
+// fields we don't consume just makes this brittle against upstream additions.
 const WebhookPayloadSchema = z.object({
-  id: z.string(),
   event: z.string(),
-  apiVersion: z.number(),
   data: z.object({
     id: z.string(),
-    status: z.string(),
   }),
 })
 
@@ -32,23 +27,26 @@ export const POST = withAxiom(async (request: NextRequest) => {
   const secret = request.headers.get('x-webhook-secret')
 
   if (!secret || !constantTimeEqual(secret, ABACATE_PAY_WEBHOOK_SECRET)) {
-    return standardError('UNAUTHORIZED', 'Invalid webhook secret')
+    return Response.json({ error: 'Unauthorized' }, { status: 401 })
   }
 
   const body = await request.json().catch(() => null)
   const parsed = WebhookPayloadSchema.safeParse(body)
   if (!parsed.success) {
-    return standardError(
-      'VALIDATION_ERROR',
-      'Payload inválido',
-      parsed.error.issues,
-    )
+    return Response.json({ error: 'Invalid payload' }, { status: 400 })
   }
 
   const { event, data } = parsed.data
 
   const result = await SubscriptionService.handleWebhookEvent(event, data.id)
-  if (!result.ok) return handleError(result.error)
 
-  return successResponse({ received: true })
+  if (!result.ok) {
+    // Flat 500 (not the app's usual per-code status mapping) is
+    // deliberate here: AbacatePay retries on 5xx, so a transient lookup
+    // failure (e.g. webhook arriving before our own write lands) gets
+    // retried instead of treated as a permanent 4xx rejection.
+    return Response.json({ error: result.error.message }, { status: 500 })
+  }
+
+  return Response.json({ received: true }, { status: 200 })
 })
