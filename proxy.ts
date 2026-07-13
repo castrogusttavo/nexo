@@ -15,6 +15,13 @@ const PUBLIC_ROUTES = [
   '/marketplace', '/invite', '/api/talk-to-sales'
 ]
 
+// style-src keeps 'unsafe-inline' as a deliberate trade-off, not an
+// oversight: our UI primitives (Radix/Base UI popovers, tooltips, dropdowns)
+// position themselves via inline style="" attributes, and CSP has no
+// nonce/hash mechanism for the style attribute (only for <style>
+// elements/blocks). Dropping unsafe-inline here would break floating-UI
+// positioning app-wide. Re-evaluate if/when the UI kit moves off inline
+// transforms.
 function buildCspHeader(nonce: string): string {
   return `
     default-src 'self';
