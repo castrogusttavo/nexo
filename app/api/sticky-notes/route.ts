@@ -1,52 +1,13 @@
-import type { NextRequest } from 'next/server'
-import { withAxiom } from '@/lib/axiom/server'
-import { getAuthSession } from '@/src/lib/auth-session'
-import { requireConsent } from '@/src/lib/consent'
-import { apiLimiter, consume } from '@/src/lib/rate-limit'
 import { CreateStickyNoteSchema } from '@/src/schemas/sticky-note.schema'
 import { StickyNoteService } from '@/src/services/sticky-note.service'
-import {
-  handleError,
-  standardError,
-  successResponse,
-} from '@/utils/http-response'
+import { withAuthenticatedRoute, withValidatedBody } from '@/utils/api-handler'
 
-export const GET = withAxiom(async (_request: NextRequest) => {
-  const auth = await getAuthSession()
-  if (!auth.ok) return handleError(auth.error)
+export const GET = withAuthenticatedRoute(({ userId }) =>
+  StickyNoteService.list(userId),
+)
 
-  const limit = await consume(apiLimiter, `user:${auth.value.user.id}`)
-  if (!limit.ok) return handleError(limit.error)
-
-  const result = await StickyNoteService.list(auth.value.user.id)
-  if (!result.ok) return handleError(result.error)
-
-  return successResponse(result.value)
-})
-
-export const POST = withAxiom(async (request: NextRequest) => {
-  const auth = await getAuthSession()
-  if (!auth.ok) return handleError(auth.error)
-
-  const limit = await consume(apiLimiter, `user:${auth.value.user.id}`)
-  if (!limit.ok) return handleError(limit.error)
-
-  const consent = await requireConsent(auth.value.user.id, 'page:(private)')
-  if (!consent.ok) return handleError(consent.error)
-
-  const body = await request.json().catch(() => ({}))
-  const parsed = CreateStickyNoteSchema.safeParse(body)
-
-  if (!parsed.success) {
-    return standardError(
-      'VALIDATION_ERROR',
-      'Dados inválidos',
-      parsed.error.issues,
-    )
-  }
-
-  const result = await StickyNoteService.create(auth.value.user.id, parsed.data)
-  if (!result.ok) return handleError(result.error)
-
-  return successResponse(result.value, 201)
-})
+export const POST = withValidatedBody(
+  CreateStickyNoteSchema,
+  ({ userId, data }) => StickyNoteService.create(userId, data),
+  { successStatus: 201, consentResource: 'page:(private)' },
+)
