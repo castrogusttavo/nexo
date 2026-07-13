@@ -1,7 +1,9 @@
 import type { NextRequest } from 'next/server'
 import { withAxiom } from '@/lib/axiom/server'
 import { getAuthSession } from '@/src/lib/auth-session'
+import { apiLimiter, consume } from '@/src/lib/rate-limit'
 import { UpdateUserSchema } from '@/src/schemas/user.schema'
+import { AccountLifecycleService } from '@/src/services/account-lifecycle.service'
 import { UserService } from '@/src/services/user.service'
 import {
   handleError,
@@ -23,6 +25,9 @@ export const GET = withAxiom(async () => {
 export const PATCH = withAxiom(async (request: NextRequest) => {
   const auth = await getAuthSession()
   if (!auth.ok) return handleError(auth.error)
+
+  const limit = await consume(apiLimiter, `user:${auth.value.user.id}`)
+  if (!limit.ok) return handleError(limit.error)
 
   const body = await request.json()
   const parsed = UpdateUserSchema.safeParse(body)
@@ -49,7 +54,10 @@ export const DELETE = withAxiom(async () => {
   const auth = await getAuthSession()
   if (!auth.ok) return handleError(auth.error)
 
-  const result = await UserService.deleteAccount(auth.value.user.id)
+  const limit = await consume(apiLimiter, `user:${auth.value.user.id}`)
+  if (!limit.ok) return handleError(limit.error)
+
+  const result = await AccountLifecycleService.deleteAccount(auth.value.user.id)
 
   if (!result.ok) return handleError(result.error)
 
