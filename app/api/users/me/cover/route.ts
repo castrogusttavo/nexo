@@ -16,7 +16,7 @@ export const POST = withAxiom(async (request: NextRequest) => {
   const file = await readUploadFile(request, 'cover')
   if (!file.ok) return handleError(file.error)
 
-  const result = await UserMediaService.uploadAvatar({
+  const result = await UserMediaService.uploadCover({
     userId: auth.value.user.id,
     contentType: file.value.type,
     byteSize: file.value.size,
