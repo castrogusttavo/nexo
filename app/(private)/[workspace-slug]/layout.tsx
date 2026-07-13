@@ -60,13 +60,16 @@ export default async function WorkspaceLayout({
   }
 
   const workspace = membership.value.workspace
+  const trialEndsAt = workspace.trialEndsAt
+    ? new Date(workspace.trialEndsAt)
+    : null
 
   // Banner só nos últimos TRIAL_BANNER_DAYS dias do trial.
   const now = Date.now()
   const trialEndingSoon =
-    workspace.trialEndsAt !== null &&
-    workspace.trialEndsAt.getTime() > now &&
-    workspace.trialEndsAt.getTime() <= now + TRIAL_BANNER_DAYS * 86_400_000
+    trialEndsAt !== null &&
+    trialEndsAt.getTime() > now &&
+    trialEndsAt.getTime() <= now + TRIAL_BANNER_DAYS * 86_400_000
   let showTrialBanner = false
   if (trialEndingSoon) {
     const activeSub = await SubscriptionService.getActiveByWorkspace(
@@ -79,7 +82,7 @@ export default async function WorkspaceLayout({
     <div className='flex flex-col h-screen overflow-hidden gap-y-0.5'>
       {showTrialBanner && workspace.trialEndsAt && (
         <HeaderPromotionBanner
-          endDate={workspace.trialEndsAt.toISOString()}
+          endDate={workspace.trialEndsAt}
           plan={workspace.activePlan}
           slug={slug}
         />

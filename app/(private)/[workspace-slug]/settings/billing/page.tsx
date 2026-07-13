@@ -53,6 +53,9 @@ export default async function SettingsBillingPage({
   )
   if (!membership.ok || !membership.value) notFound()
   const workspace = membership.value.workspace
+  const trialEndsAt = workspace.trialEndsAt
+    ? new Date(workspace.trialEndsAt)
+    : null
 
   const [subResult, membersResult] = await Promise.all([
     SubscriptionService.getActiveByWorkspace(workspace.id),
@@ -63,14 +66,9 @@ export default async function SettingsBillingPage({
 
   const now = Date.now()
   const isTrialing =
-    !subscription &&
-    workspace.trialEndsAt != null &&
-    workspace.trialEndsAt.getTime() > now
-  const trialDaysLeft = workspace.trialEndsAt
-    ? Math.max(
-        0,
-        Math.ceil((workspace.trialEndsAt.getTime() - now) / 86_400_000),
-      )
+    !subscription && trialEndsAt != null && trialEndsAt.getTime() > now
+  const trialDaysLeft = trialEndsAt
+    ? Math.max(0, Math.ceil((trialEndsAt.getTime() - now) / 86_400_000))
     : 0
 
   // Assentos: pago = comprados; trial/plano = cap do catálogo (null = ilimitado)
@@ -84,8 +82,8 @@ export default async function SettingsBillingPage({
     : formatPlanName(workspace.activePlan)
 
   const periodLabel = isTrialing
-    ? workspace.trialEndsAt
-      ? `Termina em ${dateFmt.format(workspace.trialEndsAt)}`
+    ? trialEndsAt
+      ? `Termina em ${dateFmt.format(trialEndsAt)}`
       : '—'
     : subscription
       ? `${dateFmt.format(subscription.createdAt)} — ${dateFmt.format(
