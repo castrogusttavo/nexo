@@ -1,4 +1,5 @@
 import { z } from 'zod'
+import { EmailSchema } from './_shared'
 
 export const USER_EXPORT_SCHEMA_VERSION = '1' as const
 
@@ -7,7 +8,7 @@ const IsoDate = z.iso.datetime({ offset: true })
 export const ExportProfileSchema = z.object({
   id: z.string(),
   name: z.string(),
-  email: z.email(),
+  email: EmailSchema,
   emailVerified: z.boolean(),
   image: z.string().nullable(),
   twoFactorEnabled: z.boolean(),

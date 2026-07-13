@@ -1,4 +1,5 @@
 import { z } from 'zod'
+import { EmailSchema } from './_shared'
 
 export const UserRoleValues = [
   'PRODUCT_MANAGER',
@@ -26,7 +27,7 @@ export const UpdateUserSchema = z.object({
     .min(2, 'Nome deve ter ao menos 2 caracteres')
     .max(100)
     .optional(),
-  email: z.email('E-mail inválido').optional(),
+  email: EmailSchema.optional(),
   username: z
     .string()
     .min(3, 'Username deve ter ao menos 3 caracteres')

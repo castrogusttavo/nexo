@@ -1,4 +1,5 @@
 import z from 'zod'
+import { EmailSchema } from './_shared'
 
 export const TEAM_SIZES = [
   '1-10',
@@ -14,7 +15,7 @@ export const TalkToSalesSchema = z.object({
     .trim()
     .min(2, 'Informe seu nome')
     .max(120, 'Nome muito longo'),
-  email: z.email('E-mail inválido').max(254, 'E-mail muito longo'),
+  email: EmailSchema.max(254, 'E-mail muito longo'),
   teamSize: z.enum(TEAM_SIZES),
   message: z
     .string()

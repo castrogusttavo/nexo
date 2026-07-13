@@ -1,9 +1,10 @@
 import z from 'zod'
+import { EmailSchema } from './_shared'
 
 export const InvitableRoleValues = ['ADMIN', 'MEMBER', 'VIEWER'] as const
 
 export const CreateInvitationSchema = z.object({
-  email: z.email('E-mail inválido'),
+  email: EmailSchema,
   role: z.enum(InvitableRoleValues).default('MEMBER'),
   projectId: z.cuid2('ID de projeto inválido').optional(),
 })
@@ -13,7 +14,7 @@ export const AcceptInvitationSchema = z.object({
 })
 
 export const InviteToProjectSchema = z.object({
-  email: z.email('E-mail inválido'),
+  email: EmailSchema,
   role: z.enum(InvitableRoleValues).default('MEMBER'),
 })
 

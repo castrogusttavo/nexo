@@ -23,9 +23,6 @@ export const CreateStickyNoteSchema = z.object({
 
 export type CreateStickyNoteDTO = z.infer<typeof CreateStickyNoteSchema>
 
-export const UpdateStickyNoteSchema = z.object({
-  content: TipTapContentSchema.optional(),
-  color: StickyColorSchema.optional(),
-})
+export const UpdateStickyNoteSchema = CreateStickyNoteSchema.partial()
 
 export type UpdateStickyNoteDTO = z.infer<typeof UpdateStickyNoteSchema>
