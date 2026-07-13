@@ -3,7 +3,7 @@
 import { redirect } from 'next/navigation'
 import { getAuthSession } from '@/src/lib/auth-session'
 import { SaveGoalsSchema } from '@/src/schemas/user.schema'
-import { UserService } from '@/src/services/user.service'
+import { OnboardingService } from '@/src/services/onboarding.service'
 
 export type GoalsSetupState = { ok: boolean; error?: string }
 
@@ -18,7 +18,7 @@ export async function saveGoalsSetup(
   const intent = formData.get('intent')
 
   if (intent === 'skip') {
-    const skipped = await UserService.completeOnboardingStep(
+    const skipped = await OnboardingService.completeOnboardingStep(
       auth.value.user.id,
       'BRINGS',
     )
@@ -40,7 +40,7 @@ export async function saveGoalsSetup(
       error: parsed.error.issues[0]?.message ?? 'Selecione ao menos uma opção',
     }
 
-  const result = await UserService.saveOnboardingGoals(
+  const result = await OnboardingService.saveOnboardingGoals(
     auth.value.user.id,
     parsed.data,
   )

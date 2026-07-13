@@ -3,7 +3,7 @@ import { redirect } from 'next/navigation'
 import { H1 } from '@/components/typography/heading/h1'
 import { Muted } from '@/components/typography/text/muted'
 import { getAuthSession } from '@/src/lib/auth-session'
-import { UserService } from '@/src/services/user.service'
+import { OnboardingService } from '@/src/services/onboarding.service'
 import { ProfileForm } from './profile-form'
 
 export const metadata: Metadata = {
@@ -14,7 +14,7 @@ export default async function ProfileSetupPage() {
   const auth = await getAuthSession()
   if (!auth.ok) redirect('/sign-in')
 
-  const profileResult = await UserService.getOnboardingProfile(
+  const profileResult = await OnboardingService.getOnboardingProfile(
     auth.value.user.id,
   )
   if (!profileResult.ok) redirect('/sign-in')

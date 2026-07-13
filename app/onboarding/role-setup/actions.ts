@@ -3,7 +3,7 @@
 import { redirect } from 'next/navigation'
 import { getAuthSession } from '@/src/lib/auth-session'
 import { SaveRoleSchema } from '@/src/schemas/user.schema'
-import { UserService } from '@/src/services/user.service'
+import { OnboardingService } from '@/src/services/onboarding.service'
 
 export type RoleSetupState = { ok: boolean; error?: string }
 
@@ -18,7 +18,7 @@ export async function saveRoleSetup(
   const intent = formData.get('intent')
 
   if (intent === 'skip') {
-    const skipped = await UserService.completeOnboardingStep(
+    const skipped = await OnboardingService.completeOnboardingStep(
       auth.value.user.id,
       'ROLE',
     )
@@ -39,7 +39,7 @@ export async function saveRoleSetup(
       error: parsed.error.issues[0]?.message ?? 'Selecione uma opção',
     }
 
-  const result = await UserService.saveOnboardingRole(
+  const result = await OnboardingService.saveOnboardingRole(
     auth.value.user.id,
     parsed.data,
   )

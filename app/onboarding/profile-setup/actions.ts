@@ -3,7 +3,7 @@
 import { redirect } from 'next/navigation'
 import { getAuthSession } from '@/src/lib/auth-session'
 import { SaveProfileSchema } from '@/src/schemas/user.schema'
-import { UserService } from '@/src/services/user.service'
+import { OnboardingService } from '@/src/services/onboarding.service'
 
 export type ProfileSetupState = { ok: boolean; error?: string }
 
@@ -21,7 +21,7 @@ export async function saveProfileSetup(
       error: parsed.error.issues[0]?.message ?? 'Nome inválido',
     }
 
-  const result = await UserService.saveOnboardingProfile(
+  const result = await OnboardingService.saveOnboardingProfile(
     auth.value.user.id,
     parsed.data,
   )
