@@ -18,7 +18,7 @@ import { sendResetPasswordEmail } from '@/src/lib/mail/user/send-reset-password'
 import { sendVerify2faAccessOtp } from '@/src/lib/mail/user/send-verify-2fa-access-otp'
 import { sendVerifyEmailWithOtp } from '@/src/lib/mail/user/send-verify-email-with-otp'
 import { sendWelcomeEmail } from '@/src/lib/mail/user/send-welcome'
-import { UserService } from '@/src/services/user.service'
+import { AccountLifecycleService } from '@/src/services/account-lifecycle.service'
 import { prisma } from './prisma'
 import { generateUniqueUsername } from './username'
 
@@ -248,6 +248,21 @@ export const auth = betterAuth({
           }
         },
       },
+      update: {
+        after: async (user) => {
+          // twoFactorEnabled only flows through this hook when the
+          // twoFactor plugin toggles it (profile updates go through
+          // UserService/UserRepository directly, bypassing better-auth).
+          if (typeof user.twoFactorEnabled !== 'boolean') return
+
+          auditAuth({
+            event: user.twoFactorEnabled
+              ? 'auth.2fa_enabled'
+              : 'auth.2fa_disabled',
+            userId: user.id,
+          })
+        },
+      },
     },
     session: {
       create: {
@@ -264,7 +279,9 @@ export const auth = betterAuth({
           // it means manual end-to-end tests of the deletion flow must
           // NOT relog before the worker fires, or the schedule is wiped.
           try {
-            const result = await UserService.cancelDeletion(session.userId)
+            const result = await AccountLifecycleService.cancelDeletion(
+              session.userId,
+            )
             if (result.ok && result.value.canceled) {
               auditAuth({
                 event: 'user.deletion_canceled_on_login',
