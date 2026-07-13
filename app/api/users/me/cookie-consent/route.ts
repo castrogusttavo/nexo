@@ -1,10 +1,8 @@
 import type { NextRequest } from 'next/server'
 import { z } from 'zod'
-import { auditMutation } from '@/lib/axiom/audit'
 import { withAxiom } from '@/lib/axiom/server'
-import { COOKIES_VERSION } from '@/lib/legal/versions'
 import { getAuthSession } from '@/src/lib/auth-session'
-import { prisma } from '@/src/lib/prisma'
+import { ConsentService } from '@/src/services/consent.service'
 import {
   handleError,
   standardError,
@@ -27,33 +25,18 @@ export const POST = withAxiom(async (request: NextRequest) => {
     )
   }
 
-  const userId = auth.value.user.id
-  const action = parsed.data.accepted ? 'GRANTED' : 'REVOKED'
-
   const ipAddress =
     request.headers.get('x-forwarded-for')?.split(',')[0]?.trim() ||
     request.headers.get('x-real-ip') ||
     null
   const userAgent = request.headers.get('user-agent') ?? null
 
-  await prisma.consentEvent.create({
-    data: {
-      userId,
-      document: 'COOKIES',
-      version: COOKIES_VERSION,
-      action,
-      ipAddress,
-      userAgent,
-    },
-  })
+  const result = await ConsentService.recordCookieConsent(
+    auth.value.user.id,
+    parsed.data.accepted,
+    { ipAddress, userAgent },
+  )
+  if (!result.ok) return handleError(result.error)
 
-  auditMutation({
-    entity: 'consent',
-    action: parsed.data.accepted ? 'grant' : 'revoke',
-    actorId: userId,
-    targetId: userId,
-    meta: { document: 'COOKIES', version: COOKIES_VERSION, source: 'banner' },
-  })
-
-  return successResponse({ accepted: parsed.data.accepted })
+  return successResponse(result.value)
 })
