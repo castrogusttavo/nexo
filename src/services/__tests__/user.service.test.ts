@@ -27,17 +27,11 @@ vi.mock('@/src/lib/rate-limit', () => ({
 vi.mock('@/src/lib/mail/user/send-delete-account', () => ({
   sendDeleteAccountEmail: vi.fn(),
 }))
-vi.mock('@/src/lib/prisma', () => ({
-  prisma: {
-    session: { deleteMany: vi.fn().mockResolvedValue({ count: 0 }) },
-  },
-}))
 
 import { PRIVACY_VERSION, TERMS_VERSION } from '@/lib/legal/versions'
 import { UserCache } from '@/src/cache/user.cache'
 import { rateLimited } from '@/src/errors/app-error'
 import { sendDeleteAccountEmail } from '@/src/lib/mail/user/send-delete-account'
-import { prisma } from '@/src/lib/prisma'
 import {
   cancelAccountDeletion,
   scheduleAccountDeletion,
@@ -51,7 +45,6 @@ const mockedUserCache = vi.mocked(UserCache)
 const mockedScheduleDeletion = vi.mocked(scheduleAccountDeletion)
 const mockedCancelDeletion = vi.mocked(cancelAccountDeletion)
 const mockedSendEmail = vi.mocked(sendDeleteAccountEmail)
-const mockedSessionDelete = vi.mocked(prisma.session.deleteMany)
 const mockedEnqueueExport = vi.mocked(enqueueUserExport)
 const mockedConsume = vi.mocked(consume)
 
@@ -293,7 +286,7 @@ describe('UserService', () => {
     beforeEach(() => {
       mockedScheduleDeletion.mockResolvedValue(undefined)
       mockedSendEmail.mockResolvedValue({ id: 'email-id' })
-      mockedSessionDelete.mockResolvedValue({ count: 0 })
+      mockedUser.deleteAllSessions.mockResolvedValue(ok(undefined))
       mockedUserCache.invalidate.mockResolvedValue(undefined)
     })
 
@@ -317,9 +310,7 @@ describe('UserService', () => {
         'user-1',
         expect.any(Date),
       )
-      expect(mockedSessionDelete).toHaveBeenCalledWith({
-        where: { userId: 'user-1' },
-      })
+      expect(mockedUser.deleteAllSessions).toHaveBeenCalledWith('user-1')
       expect(mockedUserCache.invalidate).toHaveBeenCalledWith('user-1')
       expect(mockedSendEmail).toHaveBeenCalledWith(
         expect.objectContaining({ email: 'me@example.com' }),
@@ -379,7 +370,7 @@ describe('UserService', () => {
 
       expectErr(result, 'DATABASE_ERROR')
       expect(mockedUser.clearDeletionSchedule).toHaveBeenCalledWith('user-1')
-      expect(mockedSessionDelete).not.toHaveBeenCalled()
+      expect(mockedUser.deleteAllSessions).not.toHaveBeenCalled()
       expect(mockedSendEmail).not.toHaveBeenCalled()
     })
 

@@ -214,6 +214,15 @@ export const UserRepository = {
     }
   },
 
+  async deleteAllSessions(userId: string): Promise<Result<void>> {
+    try {
+      await prisma.session.deleteMany({ where: { userId } })
+      return ok(undefined)
+    } catch (error) {
+      return err(dbError('Failed to delete user sessions', error))
+    }
+  },
+
   async deleteHard(id: string): Promise<Result<true>> {
     try {
       await prisma.user.delete({ where: { id } })

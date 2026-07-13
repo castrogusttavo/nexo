@@ -5,7 +5,6 @@ import { PRIVACY_VERSION, TERMS_VERSION } from '@/lib/legal/versions'
 import { UserCache } from '@/src/cache/user.cache'
 import { conflict, databaseError, usernameConflict } from '@/src/errors'
 import { sendDeleteAccountEmail } from '@/src/lib/mail/user/send-delete-account'
-import { prisma } from '@/src/lib/prisma'
 import {
   cancelAccountDeletion,
   getAccountDeletionGraceMs,
@@ -299,7 +298,14 @@ export const UserService = {
       return err(databaseError('Failed to enqueue account deletion'))
     }
 
-    await prisma.session.deleteMany({ where: { userId: actorId } })
+    const sessionsResult = await UserRepository.deleteAllSessions(actorId)
+    if (!sessionsResult.ok) {
+      logger.warn('user.delete_account.sessions_cleanup_failed', {
+        component: 'UserService',
+        userId: actorId,
+        reason: sessionsResult.error.code,
+      })
+    }
 
     await UserCache.invalidate(actorId)
 
