@@ -1,6 +1,7 @@
 import type { Job } from 'bullmq'
 import { logger } from '@/lib/axiom/logger'
-import { prisma } from '@/src/lib/prisma'
+import { UserCache } from '@/src/cache/user.cache'
+import { UserRepository } from '@/src/repositories/user.repository'
 import { AccountLifecycleJob, type AccountLifecycleJobPayload } from '../jobs'
 
 type DeleteAccountOutcome =
@@ -12,22 +13,21 @@ async function processDeleteAccount(
 ): Promise<DeleteAccountOutcome> {
   const { userId } = job.data
 
-  const user = await prisma.user.findUnique({
-    where: { id: userId },
-    select: { id: true, deletionScheduledAt: true },
-  })
-
-  if (!user) {
-    logger.info('queue.account_lifecycle.delete_skipped', {
-      component: 'AccountLifecycle',
-      jobId: job.id,
-      userId,
-      reason: 'user_not_found',
-    })
-    return { status: 'skipped', userId, reason: 'user_not_found' }
+  const userResult = await UserRepository.findById(userId)
+  if (!userResult.ok) {
+    if (userResult.error.code === 'RESOURCE_NOT_FOUND') {
+      logger.info('queue.account_lifecycle.delete_skipped', {
+        component: 'AccountLifecycle',
+        jobId: job.id,
+        userId,
+        reason: 'user_not_found',
+      })
+      return { status: 'skipped', userId, reason: 'user_not_found' }
+    }
+    throw new Error(`findById failed: ${userResult.error.code}`)
   }
 
-  const scheduledAt = user.deletionScheduledAt
+  const scheduledAt = userResult.value.deletionScheduledAt
   if (!scheduledAt) {
     logger.info('queue.account_lifecycle.delete_skipped', {
       component: 'AccountLifecycle',
@@ -38,7 +38,12 @@ async function processDeleteAccount(
     return { status: 'skipped', userId, reason: 'deletion_canceled' }
   }
 
-  await prisma.user.delete({ where: { id: userId } })
+  const deleteResult = await UserRepository.deleteHard(userId)
+  if (!deleteResult.ok) {
+    throw new Error(`deleteHard failed: ${deleteResult.error.code}`)
+  }
+
+  await UserCache.invalidate(userId)
 
   logger.info('queue.account_lifecycle.account_deleted', {
     component: 'AccountLifecycle',
