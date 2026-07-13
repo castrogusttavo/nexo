@@ -1,7 +1,7 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import type { UserDTO } from '@/types/user'
 import { authClient } from '../lib/auth-client'
-import { apiFetch } from './_fetch'
+import { apiFetch, apiFetchJson } from './_fetch'
 
 const USER_KEY = ['user'] as const
 const BASE_API_ROUTE = '/api/users/me'
@@ -27,13 +27,10 @@ export function useUpdateUser() {
       username?: string
       coverImage?: string
     }) =>
-      apiFetch<UserDTO>(
+      apiFetchJson<UserDTO>(
         BASE_API_ROUTE,
-        {
-          method: 'PATCH',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(data),
-        },
+        'PATCH',
+        data,
         'Erro ao atualizar perfil',
       ),
     onSuccess: () => {

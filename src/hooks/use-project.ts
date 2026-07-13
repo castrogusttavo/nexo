@@ -1,7 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
-import type { InvitationDTO, InviteToProjectResult } from '@/types/invitation'
-import type { ProjectDTO, ProjectMemberDTO } from '@/types/project'
-import { apiFetch, apiSend } from './_fetch'
+import type { ProjectDTO } from '@/types/project'
+import { apiFetch, apiFetchJson } from './_fetch'
 
 const PROJECTS_KEY = ['projects']
 
@@ -11,14 +10,6 @@ function projectsKey(workspaceId: string) {
 
 function projectKey(workspaceId: string, slug: string) {
   return [PROJECTS_KEY, workspaceId, slug] as const
-}
-
-function membersKey(workspaceId: string, slug: string) {
-  return [...projectKey(workspaceId, slug), 'members'] as const
-}
-
-function projectInvitationsKey(workspaceId: string, slug: string) {
-  return [...projectKey(workspaceId, slug), 'invitations'] as const
 }
 
 export function useUploadProjectCover(workspaceId: string) {
@@ -50,25 +41,11 @@ export function useProjects(workspaceId: string, archived = false) {
   })
 }
 
-export function useProject(workspaceId: string, slug: string) {
-  return useQuery({
-    queryKey: projectKey(workspaceId, slug),
-    queryFn: () =>
-      apiFetch<ProjectDTO>(
-        `/api/workspaces/${workspaceId}/projects/${slug}`,
-        undefined,
-        'Erro ao buscar projeto',
-      ),
-    enabled: !!workspaceId && !!slug,
-    staleTime: 2 * 60 * 1000,
-  })
-}
-
 export function useCreateProject(workspaceId: string) {
   const queryClient = useQueryClient()
 
   return useMutation({
-    mutationFn: async (data: {
+    mutationFn: (data: {
       name: string
       slug: string
       description?: string
@@ -76,51 +53,14 @@ export function useCreateProject(workspaceId: string) {
       coverImage?: string
       isPublic?: boolean
     }) =>
-      apiFetch<ProjectDTO>(
+      apiFetchJson<ProjectDTO>(
         `/api/workspaces/${workspaceId}/projects`,
-        {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(data),
-        },
+        'POST',
+        data,
         'Erro ao criar projeto',
       ),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: projectsKey(workspaceId) })
-    },
-  })
-}
-
-export function useUpdateProject(workspaceId: string, slug: string) {
-  const queryClient = useQueryClient()
-
-  return useMutation({
-    mutationFn: async (data: {
-      name?: string
-      slug?: string
-      description?: string | null
-      emoji?: string | null
-      coverImage?: string | null
-      isPublic?: boolean
-      leadId?: string
-    }) =>
-      apiFetch<ProjectDTO>(
-        `/api/workspaces/${workspaceId}/projects/${slug}`,
-        {
-          method: 'PATCH',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(data),
-        },
-        'Erro ao atualizar projeto',
-      ),
-    onSuccess: (updated) => {
-      queryClient.invalidateQueries({ queryKey: projectsKey(workspaceId) })
-      queryClient.invalidateQueries({ queryKey: projectKey(workspaceId, slug) })
-      if (updated.slug !== slug) {
-        queryClient.invalidateQueries({
-          queryKey: projectKey(workspaceId, updated.slug),
-        })
-      }
     },
   })
 }
@@ -240,127 +180,6 @@ export function useUnfavoriteProject(workspaceId: string) {
     onSettled: (_data, _err, slug) => {
       queryClient.invalidateQueries({ queryKey: projectsKey(workspaceId) })
       queryClient.invalidateQueries({ queryKey: projectKey(workspaceId, slug) })
-    },
-  })
-}
-
-export function useProjectMembers(workspaceId: string, slug: string) {
-  return useQuery({
-    queryKey: membersKey(workspaceId, slug),
-    queryFn: () =>
-      apiFetch<ProjectMemberDTO[]>(
-        `/api/workspaces/${workspaceId}/projects/${slug}/members`,
-        undefined,
-        'Erro ao buscar usuários',
-      ),
-    enabled: !!workspaceId && !!slug,
-  })
-}
-
-export function useAddProjectMember(workspaceId: string, slug: string) {
-  const queryClient = useQueryClient()
-
-  return useMutation({
-    mutationFn: (userId: string) =>
-      apiFetch<ProjectMemberDTO>(
-        `/api/workspaces/${workspaceId}/projects/${slug}/members`,
-        {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ userId }),
-        },
-        'Erro ao adicionar membro',
-      ),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: membersKey(workspaceId, slug) })
-    },
-  })
-}
-
-export function useRemoveProjectMember(workspaceId: string, slug: string) {
-  const queryClient = useQueryClient()
-
-  return useMutation({
-    mutationFn: (userId: string) =>
-      apiSend(
-        `/api/workspaces/${workspaceId}/projects/${slug}/members/${userId}`,
-        { method: 'DELETE' },
-        'Erro ao remover membro',
-      ),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: membersKey(workspaceId, slug) })
-    },
-  })
-}
-
-export function useProjectInvitations(workspaceId: string, slug: string) {
-  return useQuery({
-    queryKey: projectInvitationsKey(workspaceId, slug),
-    queryFn: () =>
-      apiFetch<InvitationDTO[]>(
-        `/api/workspaces/${workspaceId}/projects/${slug}/members/invite`,
-        undefined,
-        'Erro ao buscar convites do projeto',
-      ),
-    enabled: !!workspaceId && !!slug,
-  })
-}
-
-export function useInviteToProject(workspaceId: string, slug: string) {
-  const queryClient = useQueryClient()
-
-  return useMutation({
-    mutationFn: (data: { email: string; role?: string }) =>
-      apiFetch<InviteToProjectResult>(
-        `/api/workspaces/${workspaceId}/projects/${slug}/members/invite`,
-        {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(data),
-        },
-        'Erro ao convidar para o projeto',
-      ),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: membersKey(workspaceId, slug) })
-      queryClient.invalidateQueries({
-        queryKey: projectInvitationsKey(workspaceId, slug),
-      })
-    },
-  })
-}
-
-export function useRevokeProjectInvitation(workspaceId: string, slug: string) {
-  const queryClient = useQueryClient()
-
-  return useMutation({
-    mutationFn: (invitationId: string) =>
-      apiSend(
-        `/api/workspaces/${workspaceId}/projects/${slug}/members/invite/${invitationId}`,
-        { method: 'DELETE' },
-        'Erro ao revogar convite',
-      ),
-    onSuccess: () => {
-      queryClient.invalidateQueries({
-        queryKey: projectInvitationsKey(workspaceId, slug),
-      })
-    },
-  })
-}
-
-export function useResendProjectInvitation(workspaceId: string, slug: string) {
-  const queryClient = useQueryClient()
-
-  return useMutation({
-    mutationFn: (invitationId: string) =>
-      apiSend(
-        `/api/workspaces/${workspaceId}/projects/${slug}/members/invite/${invitationId}/resend`,
-        { method: 'POST' },
-        'Erro ao reenviar convite',
-      ),
-    onSuccess: () => {
-      queryClient.invalidateQueries({
-        queryKey: projectInvitationsKey(workspaceId, slug),
-      })
     },
   })
 }

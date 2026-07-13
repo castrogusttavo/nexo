@@ -1,6 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import type { InvitationDTO } from '@/types/invitation'
-import { apiFetch, apiSend } from './_fetch'
+import { apiFetch, apiFetchJson, apiSend } from './_fetch'
 
 const INVITATION_KEY = ['invitations'] as const
 
@@ -22,13 +22,10 @@ export function useCreateInvitation(workspaceId: string) {
 
   return useMutation({
     mutationFn: (data: { email: string; role: string }) =>
-      apiFetch<InvitationDTO>(
+      apiFetchJson<InvitationDTO>(
         `/api/workspaces/${workspaceId}/invitations`,
-        {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(data),
-        },
+        'POST',
+        data,
         'Erro ao enviar convite',
       ),
     onSuccess: () => {
@@ -72,13 +69,10 @@ export function useResendInvitation(workspaceId: string) {
 export function useAcceptInvitation() {
   return useMutation({
     mutationFn: (token: string) =>
-      apiFetch<{ workspaceId: string; slug: string }>(
+      apiFetchJson<{ workspaceId: string; slug: string }>(
         '/api/invitations/accept',
-        {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ token }),
-        },
+        'POST',
+        { token },
         'Erro ao reenviar convite',
       ),
   })

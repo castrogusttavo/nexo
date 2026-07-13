@@ -2,7 +2,7 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import type { NotificationSettingDTO } from '@/types/notification-setting'
 import { authClient } from '../lib/auth-client'
 import type { UpdateNotificationSettingDTO } from '../schemas/notification-settings.schema'
-import { apiFetch } from './_fetch'
+import { apiFetch, apiFetchJson } from './_fetch'
 
 const NOTIFICATION_KEY = ['notification-settings']
 const BASE_API_ROUTE = '/api/users/me/notifications'
@@ -28,13 +28,10 @@ export function useUpdateNotificationSettings() {
 
   return useMutation({
     mutationFn: (data: UpdateNotificationSettingDTO) =>
-      apiFetch<NotificationSettingDTO>(
+      apiFetchJson<NotificationSettingDTO>(
         BASE_API_ROUTE,
-        {
-          method: 'PATCH',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(data),
-        },
+        'PATCH',
+        data,
         'Erro ao salvar notificações',
       ),
     // Optimistic

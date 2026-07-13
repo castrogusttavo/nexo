@@ -26,3 +26,22 @@ export async function apiSend(
   const res = await fetch(input, init)
   if (!res.ok) await throwApiError(res, fallbackError)
 }
+
+// Like `apiFetch`, but for the common POST/PATCH-with-JSON-body case —
+// collapses the repeated Content-Type + JSON.stringify boilerplate.
+export async function apiFetchJson<T>(
+  input: RequestInfo | URL,
+  method: string,
+  body?: unknown,
+  fallbackError = 'Algo deu errado',
+): Promise<T> {
+  return apiFetch<T>(
+    input,
+    {
+      method,
+      headers: { 'Content-Type': 'application/json' },
+      body: body !== undefined ? JSON.stringify(body) : undefined,
+    },
+    fallbackError,
+  )
+}

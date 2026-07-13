@@ -3,7 +3,7 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import type { UserPreferenceDTO } from '@/types/user-preference'
 import { authClient } from '../lib/auth-client'
 import type { UpdateUserPreferenceDTO } from '../schemas/user-preference.schema'
-import { apiFetch } from './_fetch'
+import { apiFetch, apiFetchJson } from './_fetch'
 
 const PREFERENCE_KEY = ['user-preferences']
 const BASE_API_ROUTE = '/api/users/me/preferences'
@@ -29,13 +29,10 @@ export function useUpdateUserPreferences() {
 
   return useMutation({
     mutationFn: (data: UpdateUserPreferenceDTO) =>
-      apiFetch<UserPreferenceDTO>(
+      apiFetchJson<UserPreferenceDTO>(
         BASE_API_ROUTE,
-        {
-          method: 'PATCH',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(data),
-        },
+        'PATCH',
+        data,
         'Erro ao salvar preferências',
       ),
     // Optimistic
