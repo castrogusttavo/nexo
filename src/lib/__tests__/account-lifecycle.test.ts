@@ -8,9 +8,6 @@ const { addMock, removeMock } = vi.hoisted(() => ({
 vi.mock('@/src/lib/queue/queues', () => ({
   getAccountLifecycleQueue: () => ({ add: addMock, remove: removeMock }),
 }))
-vi.mock('@/lib/axiom/logger', () => ({
-  logger: { info: vi.fn(), warn: vi.fn() },
-}))
 
 import {
   ACCOUNT_DELETION_GRACE_DAYS,

@@ -8,9 +8,6 @@ import { NotificationSettingService } from '../notification-setting.service'
 vi.mock('@/src/repositories/notification-setting.repository')
 vi.mock('@/src/cache/notification-setting.cache')
 vi.mock('@/lib/axiom/audit', () => ({ auditMutation: vi.fn() }))
-vi.mock('@/lib/axiom/logger', () => ({
-  logger: { info: vi.fn(), warn: vi.fn(), error: vi.fn() },
-}))
 
 import { NotificationSettingCache } from '@/src/cache/notification-setting.cache'
 import { NotificationSettingRepository } from '@/src/repositories/notification-setting.repository'

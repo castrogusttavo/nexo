@@ -8,9 +8,6 @@ import { UserPreferenceService } from '../user-preference.service'
 vi.mock('@/src/repositories/user-preference.repository')
 vi.mock('@/src/cache/user-preference.cache')
 vi.mock('@/lib/axiom/audit', () => ({ auditMutation: vi.fn() }))
-vi.mock('@/lib/axiom/logger', () => ({
-  logger: { info: vi.fn(), warn: vi.fn(), error: vi.fn() },
-}))
 
 import { UserPreferenceCache } from '@/src/cache/user-preference.cache'
 import { UserPreferenceRepository } from '@/src/repositories/user-preference.repository'

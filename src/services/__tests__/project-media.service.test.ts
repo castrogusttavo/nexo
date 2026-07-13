@@ -6,9 +6,6 @@ import { err, ok } from '@/src/lib/result'
 vi.mock('@/src/repositories/membership.repository')
 vi.mock('@/src/lib/storage/s3')
 vi.mock('@/lib/axiom/audit', () => ({ auditMutation: vi.fn() }))
-vi.mock('@/lib/axiom/logger', () => ({
-  logger: { info: vi.fn(), warn: vi.fn(), error: vi.fn() },
-}))
 
 import { auditMutation } from '@/lib/axiom/audit'
 import { ensurePublicBucket, putObject } from '@/src/lib/storage/s3'

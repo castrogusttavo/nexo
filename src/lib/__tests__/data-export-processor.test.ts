@@ -39,9 +39,6 @@ vi.mock('@/lib/axiom/axiom', () => ({
 vi.mock('@/lib/axiom/audit', () => ({
   auditMutation: auditMutationMock,
 }))
-vi.mock('@/lib/axiom/logger', () => ({
-  logger: { info: vi.fn(), warn: vi.fn(), error: vi.fn() },
-}))
 vi.mock('@/lib/env/env', () => ({
   NEXT_PUBLIC_AXIOM_DATASET: 'nexo-app-test',
 }))
