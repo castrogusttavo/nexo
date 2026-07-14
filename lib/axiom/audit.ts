@@ -15,6 +15,8 @@ type AuditEntity =
   | 'user_preference'
   | 'notification_setting'
   | 'invitation'
+  | 'career_job'
+  | 'career_application'
 
 type AuditAction =
   | 'create'

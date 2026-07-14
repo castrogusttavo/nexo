@@ -117,3 +117,18 @@ export const mailError = (
 export const couponInvalid = (
   message = 'Cupom inválido ou expirado',
 ): AppError => appError('COUPON_INVALID', message)
+
+export const careerJobNotFound = (): AppError =>
+  appError('CAREER_JOB_NOT_FOUND', 'Vaga não encontrada')
+
+export const careerJobClosed = (
+  message = 'Esta vaga não está mais recebendo candidaturas',
+): AppError => appError('CAREER_JOB_CLOSED', message)
+
+export const careerJobForbidden = (
+  message = 'Sem permissão para gerenciar vagas',
+): AppError => appError('CAREER_JOB_FORBIDDEN', message)
+
+export const careerJobSlugTaken = (
+  message = 'Já existe uma vaga com este slug',
+): AppError => appError('CAREER_JOB_SLUG_TAKEN', message)
