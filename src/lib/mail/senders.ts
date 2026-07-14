@@ -25,6 +25,8 @@ export const mailAddresses = {
   billing: `financeiro@${mailDomain}`,
   /** Vulnerability disclosure (also listed in security.txt). */
   security: `seguranca@${mailDomain}`,
+  /** Job applications inbox (careers page, job boards). */
+  careers: `vagas@${mailDomain}`,
   /** LGPD data-subject requests (privacy policy contact). */
   privacy: `privacidade@${mailDomain}`,
   /** Status page incident/maintenance notifications (send-only). */

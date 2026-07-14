@@ -64,3 +64,13 @@ export interface TalkToSalesEmailProps {
   teamSize: string
   message: string
 }
+
+export interface CareerApplicationEmailProps {
+  jobTitle: string
+  name: string
+  email: string
+  phone?: string | null
+  portfolioUrl?: string | null
+  message?: string | null
+  resumeUrl: string
+}
