@@ -1,6 +1,7 @@
 import type { Job } from 'bullmq'
 import { logger } from '@/lib/axiom/logger'
 import { prisma } from '@/src/lib/prisma'
+import { deleteObject } from '@/src/lib/storage/s3'
 import { DataRetentionJob } from '../jobs'
 import { RetentionWindowMs } from '../retention'
 
@@ -36,6 +37,36 @@ async function expireStaleInvitations(): Promise<CleanupResult> {
   return { deleted: count, cutoff: cutoff.toISOString() }
 }
 
+async function purgeExpiredCareerApplications(): Promise<CleanupResult> {
+  const cutoff = new Date(
+    Date.now() - RetentionWindowMs.careerApplicationAfterSubmission,
+  )
+  const expired = await prisma.careerApplication.findMany({
+    where: { createdAt: { lt: cutoff } },
+    select: { id: true, resumeBucket: true, resumeKey: true },
+  })
+
+  await Promise.all(
+    expired.map((app) =>
+      deleteObject({ bucket: app.resumeBucket, key: app.resumeKey }).catch(
+        (error) => {
+          logger.error('queue.data_retention.resume_delete_failed', {
+            component: 'Worker',
+            applicationId: app.id,
+            message: error instanceof Error ? error.message : String(error),
+          })
+        },
+      ),
+    ),
+  )
+
+  const { count } = await prisma.careerApplication.deleteMany({
+    where: { id: { in: expired.map((app) => app.id) } },
+  })
+
+  return { deleted: count, cutoff: cutoff.toISOString() }
+}
+
 export async function processDataRetention(job: Job): Promise<CleanupResult> {
   switch (job.name) {
     case DataRetentionJob.CleanupExpiredSessions: {
@@ -61,6 +92,16 @@ export async function processDataRetention(job: Job): Promise<CleanupResult> {
     case DataRetentionJob.ExpireStaleInvitations: {
       const result = await expireStaleInvitations()
       logger.info('queue.data_retention.invitations_expired', {
+        component: 'Worker',
+        jobId: job.id,
+        expired: result.deleted,
+        cutoff: result.cutoff,
+      })
+      return result
+    }
+    case DataRetentionJob.PurgeExpiredCareerApplications: {
+      const result = await purgeExpiredCareerApplications()
+      logger.info('queue.data_retention.career_applications_purged', {
         component: 'Worker',
         jobId: job.id,
         expired: result.deleted,

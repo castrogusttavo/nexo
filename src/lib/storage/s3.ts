@@ -1,5 +1,6 @@
 import {
   CreateBucketCommand,
+  DeleteObjectCommand,
   GetObjectCommand,
   HeadBucketCommand,
   PutBucketPolicyCommand,
@@ -93,5 +94,15 @@ export async function getPresignedDownloadUrl(
     s3,
     new GetObjectCommand({ Bucket: input.bucket, Key: input.key }),
     { expiresIn: input.expiresInSeconds },
+  )
+}
+
+export async function deleteObject(input: {
+  bucket: string
+  key: string
+}): Promise<void> {
+  const s3 = getS3Client()
+  await s3.send(
+    new DeleteObjectCommand({ Bucket: input.bucket, Key: input.key }),
   )
 }

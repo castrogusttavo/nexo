@@ -11,6 +11,7 @@ export const DataRetentionJob = {
   CleanupExpiredSessions: 'cleanup-expired-sessions',
   CleanupExpiredVerificationTokens: 'cleanup-expired-verification-tokens',
   ExpireStaleInvitations: 'expire-stale-invitations',
+  PurgeExpiredCareerApplications: 'purge-expired-career-applications',
 } as const
 
 export type DataRetentionJob =
@@ -20,6 +21,7 @@ export type DataRetentionJobPayload = {
   [DataRetentionJob.CleanupExpiredSessions]: Record<string, never>
   [DataRetentionJob.CleanupExpiredVerificationTokens]: Record<string, never>
   [DataRetentionJob.ExpireStaleInvitations]: Record<string, never>
+  [DataRetentionJob.PurgeExpiredCareerApplications]: Record<string, never>
 }
 
 export const AccountLifecycleJob = {
