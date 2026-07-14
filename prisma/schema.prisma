@@ -464,3 +464,55 @@ model ProjectFavorite {
   @@index([projectId])
   @@map("project_favorites")
 }
+
+model CareerJob {
+  id         String          @id @default(cuid())
+  slug       String          @unique
+  title      String
+  department String?
+  summary    String
+  content    Json            @map("content")
+  status     CareerJobStatus @default(DRAFT) @map("status")
+  createdAt  DateTime        @default(now()) @map("created_at")
+  updatedAt  DateTime        @updatedAt @map("updated_at")
+
+  applications CareerApplication[]
+
+  @@map("career_jobs")
+}
+
+model CareerApplication {
+  id             String                  @id @default(cuid())
+  jobId          String                  @map("job_id")
+  name           String
+  email          String
+  phone          String?
+  portfolioUrl   String?                 @map("portfolio_url")
+  message        String?
+  resumeBucket   String                  @map("resume_bucket")
+  resumeKey      String                  @map("resume_key")
+  resumeFileName String                  @map("resume_file_name")
+  consentAt      DateTime                @map("consent_at")
+  ipAddress      String                  @map("ip_address")
+  status         CareerApplicationStatus @default(RECEIVED) @map("status")
+  createdAt      DateTime                @default(now()) @map("created_at")
+
+  job CareerJob @relation(fields: [jobId], references: [id], onDelete: Cascade)
+
+  @@index([jobId])
+  @@index([createdAt])
+  @@map("career_applications")
+}
+
+enum CareerJobStatus {
+  DRAFT
+  OPEN
+  CLOSED
+}
+
+enum CareerApplicationStatus {
+  RECEIVED
+  REVIEWING
+  REJECTED
+  HIRED
+}
