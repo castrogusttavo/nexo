@@ -7,7 +7,7 @@ afterEach(async () => {
       sessions, accounts, verifications,
       subscriptions, memberships, workspaces, users,
       incident_updates, incidents,
-      health_checks, component_dailies
+      health_checks, component_dailies, career_jobs
     CASCADE
   `)
 })
