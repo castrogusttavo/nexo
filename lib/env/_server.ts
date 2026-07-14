@@ -28,6 +28,7 @@ const serverEnv = {
     process.env.ACCOUNT_DELETION_GRACE_OVERRIDE_MS,
   WORKBENCH_USER: process.env.WORKBENCH_USER,
   WORKBENCH_PASS: process.env.WORKBENCH_PASS,
+  PLATFORM_ADMIN_EMAILS: process.env.PLATFORM_ADMIN_EMAILS
 }
 
 const serverEnvSchema = z.object({
@@ -76,6 +77,7 @@ const serverEnvSchema = z.object({
     }),
   WORKBENCH_USER: z.string().min(3).max(63),
   WORKBENCH_PASS: z.string().min(8).max(128),
+  PLATFORM_ADMIN_EMAILS: z.string().min(3).transform((v) => v.split(',').map((email) => email.trim().toLocaleLowerCase()))
 })
 
 const validatedServerEnv =
@@ -110,4 +112,5 @@ export const {
   ACCOUNT_DELETION_GRACE_OVERRIDE_MS,
   WORKBENCH_USER,
   WORKBENCH_PASS,
+  PLATFORM_ADMIN_EMAILS
 } = validatedServerEnv
