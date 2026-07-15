@@ -49,6 +49,6 @@ export async function persistResume({
       key,
       message,
     })
-    return err(storageError('Falha o armazenar o currículo'))
+    return err(storageError('Falha ao armazenar o currículo'))
   }
 }

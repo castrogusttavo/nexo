@@ -31,7 +31,7 @@ export const CareerJobRepository = {
     try {
       const jobs = await prisma.careerJob.findMany({
         where: { status: { in: ['OPEN', 'CLOSED'] } },
-        orderBy: { createdAt: 'asc' },
+        orderBy: { createdAt: 'desc' },
       })
       const sorted = [...jobs].sort(
         (a, b) => PUBLIC_STATUS_ORDER[a.status] - PUBLIC_STATUS_ORDER[b.status],
@@ -67,7 +67,7 @@ export const CareerJobRepository = {
       if (error instanceof Error && 'code' in error && error.code === 'P2002') {
         return err(careerJobSlugTaken())
       }
-      return err(dbError('Failed to create career job0', error))
+      return err(dbError('Failed to create career job', error))
     }
   },
 
@@ -88,7 +88,7 @@ export const CareerJobRepository = {
       if (error instanceof Error && 'code' in error && error.code === 'P2002') {
         return err(careerJobSlugTaken())
       }
-      return err(dbError('Failed to update career job0', error))
+      return err(dbError('Failed to update career job', error))
     }
   },
 
