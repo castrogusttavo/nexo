@@ -95,6 +95,7 @@ export function WorkspaceForm() {
                   }}
                   placeholder='Digite ou cole um URL'
                   disabled={isPending}
+                  className='text-foreground'
                 />
               </InputGroupAddon>
             </InputGroup>

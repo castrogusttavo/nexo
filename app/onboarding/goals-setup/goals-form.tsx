@@ -3,7 +3,7 @@
 import { useActionState, useState } from 'react'
 import { Button } from '@/components/ui/button'
 import { Checkbox } from '@/components/ui/checkbox'
-import { Field, FieldGroup, FieldLabel } from '@/components/ui/field'
+import { FieldGroup } from '@/components/ui/field'
 import { cn } from '@/lib/utils'
 import { type GoalsSetupState, saveGoalsSetup } from './actions'
 
@@ -11,7 +11,7 @@ const BRINGS = [
   { value: 'ROADMAP', label: 'Planejar e acompanhar roadmaps de produto' },
   { value: 'SPRINTS', label: 'Gerenciar sprints de engenharia' },
   { value: 'CROSS_FUNCTIONAL', label: 'Coordenar projetos entre times' },
-  { value: 'REPLACE_TOOL', label: 'Substituir nossa ferramentas atual' },
+  { value: 'REPLACE_TOOL', label: 'Substituir nossa ferramenta atual' },
   { value: 'EXPLORING', label: 'Só estou explorando' },
 ]
 
@@ -30,17 +30,17 @@ export function GoalsForm() {
 
   return (
     <form action={formAction} className='flex flex-col gap-4'>
-      <p className='text-sm text-mutedtext-muted-foreground'>
+      <p className='text-sm text-muted-foreground'>
         Selecione uma ou várias opções
       </p>
 
       <FieldGroup className='gap-3'>
         {BRINGS.map((item) => (
-          <Field
+          <label
             key={item.value}
-            orientation='horizontal'
+            htmlFor={`goal-${item.value}`}
             className={cn(
-              'justify-between rounded-lg border-2 px-3 py-2 text-sm font-medium transition-colors cursor-pointer',
+              'flex flex-row items-center gap-3 rounded-lg border-2 px-3 py-2 text-sm font-medium transition-colors cursor-pointer',
               'border-border hover:border-muted-foreground/50',
               'has-[data-checked]:border-primary has-[data-checked]:bg-primary/5 has-[data-checked]:text-primary',
             )}
@@ -52,8 +52,8 @@ export function GoalsForm() {
               disabled={isPending}
               onCheckedChange={(checked) => handleChange(checked === true)}
             />
-            <FieldLabel>{item.label}</FieldLabel>
-          </Field>
+            <span>{item.label}</span>
+          </label>
         ))}
       </FieldGroup>
 

@@ -86,7 +86,7 @@ export function ProfileForm({
     }
   }
 
-  function handle2FAToogle(next: boolean) {
+  function handle2FAToggle(next: boolean) {
     setTwoFAError(null)
     setBackupCodes([])
     setTwoFAPass('')
@@ -229,7 +229,7 @@ export function ProfileForm({
               <Switch
                 checked={is2FAEnabled}
                 disabled={!hasPassword || twoFABusy || twoFAMode !== 'idle'}
-                onCheckedChange={handle2FAToogle}
+                onCheckedChange={handle2FAToggle}
               />
             </div>
 
@@ -303,7 +303,7 @@ export function ProfileForm({
         {isPending ? 'Salvando...' : 'Continuar'}
       </Button>
 
-      <Field orientation='horizontal'>
+      <Field orientation='horizontal' className='w-fit mx-auto'>
         <Checkbox
           id='marketing'
           name='marketingConsent'
@@ -312,7 +312,7 @@ export function ProfileForm({
         />
         <FieldLabel
           htmlFor='marketing'
-          className='text-xs text-muted-foreground text-center'
+          className='text-xs text-muted-foreground'
         >
           Quero receber comunicações de marketing do Nexo
         </FieldLabel>
