@@ -32,6 +32,12 @@ ARG NEXT_PUBLIC_AXIOM_DATASET
 ENV NEXT_PUBLIC_AXIOM_DATASET=$NEXT_PUBLIC_AXIOM_DATASET
 
 ENV DATABASE_URL="postgresql://dummy:dummy@localhost:5432/dummy"
+# `next build` imports every route module to collect its metadata, which
+# evaluates app/jobs/[[...workbench]]/route.ts's top-level `workbench({...})`
+# call — it throws immediately without a redis config (real or not), since
+# this build stage has no Redis to connect to. A syntactically valid but
+# unreachable URL is enough; nothing actually connects until runtime.
+ENV REDIS_URL="redis://localhost:6379"
 ENV SKIP_ENV_VALIDATION="true"
 
 RUN corepack enable pnpm && \
