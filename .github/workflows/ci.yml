@@ -183,6 +183,9 @@ jobs:
       # its own auth rate limiting; disable only better-auth's here.
       DISABLE_AUTH_RATE_LIMIT: 'true'
       MAIL_DRY_RUN: 'true'
+      MINIO_ENDPOINT: http://localhost:9000
+      MINIO_USER: ci-minio-user
+      MINIO_PASSWORD: ci-minio-password
     steps:
       - name: Checkout repository
         uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
@@ -209,6 +212,31 @@ jobs:
 
       - name: Push database schema
         run: pnpm prisma db push
+
+      # services: can't pass a custom command to the minio/minio image
+      # (it needs `server /data` or it exits immediately), so it's started
+      # the same way as the redis-tls-smoke job's Redis container: a plain
+      # docker run + a wait loop, instead of the declarative `services:` block.
+      - name: Start MinIO
+        run: |
+          docker run -d --name minio \
+            -p 9000:9000 \
+            -e MINIO_ROOT_USER=ci-minio-user \
+            -e MINIO_ROOT_PASSWORD=ci-minio-password \
+            minio/minio:RELEASE.2025-02-28T09-55-16Z server /data
+
+      - name: Wait for MinIO to be ready
+        run: |
+          for i in $(seq 1 30); do
+            if curl -s http://localhost:9000/minio/health/live > /dev/null 2>&1; then
+              echo "MinIO is ready"
+              exit 0
+            fi
+            echo "Waiting for MinIO... ($i/30)"
+            sleep 2
+          done
+          echo "MinIO failed to start"
+          exit 1
 
       - name: Build application
         run: pnpm build
@@ -360,9 +388,19 @@ jobs:
       - name: Build application
         run: pnpm build
 
+  # TEMPORARY (2026-07-15): `pnpm audit` hits the npm registry's legacy audit
+  # endpoints, which npm retired today (410 Gone) in favor of a bulk-advisory
+  # endpoint pnpm doesn't speak yet on a stable release (only on the 11.0.0
+  # RC, which pnpm's own supply-chain trust check currently refuses to
+  # install here as a downgrade — see pnpm/pnpm#10202 for the same class of
+  # false positive). continue-on-error + out of the gate's needs, same
+  # pattern as the snyk job below, so this outage doesn't block deploys.
+  # Revert both once pnpm ships a stable release that supports the new
+  # endpoint, restoring this as a required, blocking check.
   audit:
     name: Dependency Audit
     runs-on: ubuntu-latest
+    continue-on-error: true
     steps:
       - name: Checkout repository
         uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
@@ -555,7 +593,6 @@ jobs:
       - e2e-tests
       - coverage-tests
       - build
-      - audit
       - semgrep
       - gitleaks
       - redis-tls-smoke
