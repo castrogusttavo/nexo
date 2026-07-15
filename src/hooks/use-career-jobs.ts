@@ -27,19 +27,6 @@ export function useCareerJobs() {
   })
 }
 
-export function useCareerJob(id: string) {
-  return useQuery({
-    queryKey: careerJobKey(id),
-    queryFn: () =>
-      apiFetch<CareerJobDTO>(
-        `${BASE_API_ROUTE}/${id}`,
-        undefined,
-        'Erro ao buscar vaga',
-      ),
-    enabled: !!id,
-  })
-}
-
 export function useCreateCareerJob() {
   const queryClient = useQueryClient()
 
