@@ -393,14 +393,15 @@ jobs:
   # endpoint pnpm doesn't speak yet on a stable release (only on the 11.0.0
   # RC, which pnpm's own supply-chain trust check currently refuses to
   # install here as a downgrade — see pnpm/pnpm#10202 for the same class of
-  # false positive). continue-on-error + out of the gate's needs, same
-  # pattern as the snyk job below, so this outage doesn't block deploys.
-  # Revert both once pnpm ships a stable release that supports the new
-  # endpoint, restoring this as a required, blocking check.
+  # false positive). continue-on-error on the step (not the job — that would
+  # still leave the job itself reporting failure) + out of the gate's needs,
+  # same pattern as the snyk job below, so this outage doesn't block deploys
+  # or show up as a failing check. Revert both once pnpm ships a stable
+  # release that supports the new endpoint, restoring this as a required,
+  # blocking check.
   audit:
     name: Dependency Audit
     runs-on: ubuntu-latest
-    continue-on-error: true
     steps:
       - name: Checkout repository
         uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
@@ -424,6 +425,7 @@ jobs:
 
       - name: Run pnpm audit
         run: pnpm audit --audit-level=critical
+        continue-on-error: true
 
   # Monitoring only: uploads SARIF to the Security tab but is intentionally kept
   # out of the gate's needs (and continue-on-error), so a flaky snyk@master run
