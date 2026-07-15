@@ -15,13 +15,14 @@ import {
 } from 'react-email'
 import { baseEmailUrl } from '@/lib/base-email-url'
 import { InviteUserToWorkspaceProps } from '@/types/mail'
+import { EmailAvatar } from '../_components/email-avatar'
 import { EmailFooter } from '../_components/email-footer'
 
 export const InviteUserToWorkspace = ({
-  inviterEmail,
-  inviterName,
-  redirectUrl,
-  workspaceName,
+  inviterEmail = 'ana@empresa.com',
+  inviterName = 'Ana Silva',
+  redirectUrl = 'https://nexo.coodee.dev/invite/token',
+  workspaceName = 'Acme',
   inviterImage,
   workspaceImage,
 }: InviteUserToWorkspaceProps) => (
@@ -53,37 +54,28 @@ export const InviteUserToWorkspace = ({
           <Section className='my-8'>
             <Row>
               <Column align='right'>
-                <Img
-                  className='rounded-full'
-                  width={64}
-                  height={64}
-                  src={
-                    inviterImage ||
-                    `${baseEmailUrl}/static/base-inviter-image.png`
-                  }
-                  alt={inviterName}
-                />
+                <EmailAvatar src={inviterImage} name={inviterName} />
               </Column>
               <Column align='center'>
-                <Img
-                  className='rounded-full invert'
-                  width={24}
-                  height={24}
-                  src={`${baseEmailUrl}/static/arrow-invitation.png`}
-                  alt='Arrow indicating invitation'
-                />
+                {/* biome-ignore lint/a11y/noSvgWithoutTitle: purely decorative */}
+                <svg
+                  width='24'
+                  height='24'
+                  viewBox='0 0 24 24'
+                  fill='none'
+                  xmlns='http://www.w3.org/2000/svg'
+                >
+                  <path
+                    d='M5 12h14M13 6l6 6-6 6'
+                    stroke='#94a3b8'
+                    strokeWidth='2'
+                    strokeLinecap='round'
+                    strokeLinejoin='round'
+                  />
+                </svg>
               </Column>
               <Column align='left'>
-                <Img
-                  className='rounded-full'
-                  width={64}
-                  height={64}
-                  src={
-                    workspaceImage ||
-                    `${baseEmailUrl}/static/base-workspace-image.png`
-                  }
-                  alt={workspaceName}
-                />
+                <EmailAvatar src={workspaceImage} name={workspaceName} />
               </Column>
             </Row>
           </Section>
