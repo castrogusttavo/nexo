@@ -1,6 +1,7 @@
 import { afterEach, describe, expect, it, vi } from 'vitest'
 import { seedInvitation } from '@/src/__tests__/factories/invitation.factory'
 import { seedMembership } from '@/src/__tests__/factories/membership.factory'
+import { seedProject } from '@/src/__tests__/factories/project.factory'
 import { seedUser } from '@/src/__tests__/factories/user.factory'
 import { seedWorkspace } from '@/src/__tests__/factories/workspace.factory'
 import { expectErr, expectOk } from '@/src/__tests__/helpers/result.helpers'
@@ -148,6 +149,36 @@ describe('InvitationRepository', () => {
           role: 'MEMBER',
         }),
       )
+    })
+
+    it('should also add the invitee as a project member when projectId is set', async () => {
+      const { inviter, ws } = await seedInviterAndWorkspace()
+      const project = await seedProject(ws.id, inviter.id)
+      const invitee = await seedUser({
+        email: `proj-invitee-${Date.now()}@example.com`,
+      })
+      const invite = await seedInvitation({
+        invitedById: inviter.id,
+        workspaceId: ws.id,
+        projectId: project.id,
+        email: invitee.email,
+      })
+
+      const result = await InvitationRepository.accept({
+        invitationId: invite.id,
+        userId: invitee.id,
+        workspaceId: ws.id,
+        role: 'MEMBER',
+        projectId: project.id,
+      })
+
+      expectOk(result)
+      const member = await prisma.projectMember.findUnique({
+        where: {
+          userId_projectId: { userId: invitee.id, projectId: project.id },
+        },
+      })
+      expect(member).not.toBeNull()
     })
   })
 
@@ -324,6 +355,219 @@ describe('InvitationRepository', () => {
       })
 
       expectOk(result)
+    })
+  })
+
+  describe('findById()', () => {
+    it('should return the invitation when it exists', async () => {
+      const { inviter, ws } = await seedInviterAndWorkspace()
+      const invite = await seedInvitation({
+        invitedById: inviter.id,
+        workspaceId: ws.id,
+      })
+
+      const result = await InvitationRepository.findById(invite.id)
+
+      expect(expectOk(result)?.id).toBe(invite.id)
+    })
+
+    it('should return null when the invitation does not exist', async () => {
+      const result = await InvitationRepository.findById('nonexistent')
+
+      expect(expectOk(result)).toBeNull()
+    })
+
+    it('should return DATABASE_ERROR when the query throws', async () => {
+      vi.spyOn(prisma.workspaceInvitation, 'findUnique').mockRejectedValueOnce(
+        new Error('boom'),
+      )
+
+      const result = await InvitationRepository.findById('x')
+
+      expectErr(result, 'DATABASE_ERROR')
+    })
+  })
+
+  describe('listByWorkspace()', () => {
+    it('should list invitations of the workspace ordered by createdAt desc', async () => {
+      const { inviter, ws } = await seedInviterAndWorkspace()
+      const older = await seedInvitation({
+        invitedById: inviter.id,
+        workspaceId: ws.id,
+        email: 'older@example.com',
+      })
+      await new Promise((r) => setTimeout(r, 5))
+      const newer = await seedInvitation({
+        invitedById: inviter.id,
+        workspaceId: ws.id,
+        email: 'newer@example.com',
+      })
+
+      const result = await InvitationRepository.listByWorkspace(ws.id)
+
+      const list = expectOk(result)
+      expect(list.map((i) => i.id)).toEqual([newer.id, older.id])
+    })
+
+    it('should return DATABASE_ERROR when the query throws', async () => {
+      vi.spyOn(prisma.workspaceInvitation, 'findMany').mockRejectedValueOnce(
+        new Error('boom'),
+      )
+
+      const result = await InvitationRepository.listByWorkspace('ws')
+
+      expectErr(result, 'DATABASE_ERROR')
+    })
+  })
+
+  describe('updateStatus()', () => {
+    it('should update the invitation status', async () => {
+      const { inviter, ws } = await seedInviterAndWorkspace()
+      const invite = await seedInvitation({
+        invitedById: inviter.id,
+        workspaceId: ws.id,
+        status: 'PENDING',
+      })
+
+      const result = await InvitationRepository.updateStatus(
+        invite.id,
+        'REVOKED',
+      )
+
+      expect(expectOk(result).status).toBe('REVOKED')
+    })
+
+    it('should return DATABASE_ERROR when the update throws', async () => {
+      vi.spyOn(prisma.workspaceInvitation, 'update').mockRejectedValueOnce(
+        new Error('boom'),
+      )
+
+      const result = await InvitationRepository.updateStatus('x', 'REVOKED')
+
+      expectErr(result, 'DATABASE_ERROR')
+    })
+  })
+
+  describe('listByProject()', () => {
+    it('should list only PENDING invitations of the project', async () => {
+      const { inviter, ws } = await seedInviterAndWorkspace()
+      const project = await seedProject(ws.id, inviter.id)
+      const pending = await seedInvitation({
+        invitedById: inviter.id,
+        workspaceId: ws.id,
+        projectId: project.id,
+        email: 'pending@example.com',
+        status: 'PENDING',
+      })
+      await seedInvitation({
+        invitedById: inviter.id,
+        workspaceId: ws.id,
+        projectId: project.id,
+        email: 'revoked@example.com',
+        status: 'REVOKED',
+      })
+
+      const result = await InvitationRepository.listByProject(project.id)
+
+      const list = expectOk(result)
+      expect(list.map((i) => i.id)).toEqual([pending.id])
+    })
+
+    it('should return DATABASE_ERROR when the query throws', async () => {
+      vi.spyOn(prisma.workspaceInvitation, 'findMany').mockRejectedValueOnce(
+        new Error('boom'),
+      )
+
+      const result = await InvitationRepository.listByProject('project-1')
+
+      expectErr(result, 'DATABASE_ERROR')
+    })
+  })
+
+  describe('query failures', () => {
+    it('create() returns DATABASE_ERROR on a non-seat-limit failure', async () => {
+      const { inviter, ws } = await seedInviterAndWorkspace()
+      // create() runs the insert through prisma.$transaction's `tx` client,
+      // a separate instance from `prisma` itself — spying on
+      // `prisma.workspaceInvitation.create` never intercepts it.
+      vi.spyOn(prisma, '$transaction').mockRejectedValueOnce(new Error('boom'))
+
+      const result = await InvitationRepository.create({
+        email: 'x@example.com',
+        role: 'MEMBER',
+        expiresAt: new Date(Date.now() + 60_000),
+        invitedById: inviter.id,
+        workspaceId: ws.id,
+      })
+
+      expectErr(result, 'DATABASE_ERROR')
+    })
+
+    it('findByToken() returns DATABASE_ERROR when the query throws', async () => {
+      vi.spyOn(prisma.workspaceInvitation, 'findUnique').mockRejectedValueOnce(
+        new Error('boom'),
+      )
+
+      const result = await InvitationRepository.findByToken('x')
+
+      expectErr(result, 'DATABASE_ERROR')
+    })
+
+    it('findPendingByWorkspaceAndEmail() returns DATABASE_ERROR when the query throws', async () => {
+      vi.spyOn(prisma.workspaceInvitation, 'findFirst').mockRejectedValueOnce(
+        new Error('boom'),
+      )
+
+      const result = await InvitationRepository.findPendingByWorkspaceAndEmail(
+        'ws',
+        'x@example.com',
+      )
+
+      expectErr(result, 'DATABASE_ERROR')
+    })
+
+    it('countPendingByWorkspace() returns DATABASE_ERROR when the query throws', async () => {
+      vi.spyOn(prisma.workspaceInvitation, 'count').mockRejectedValueOnce(
+        new Error('boom'),
+      )
+
+      const result = await InvitationRepository.countPendingByWorkspace('ws')
+
+      expectErr(result, 'DATABASE_ERROR')
+    })
+
+    it('refreshToken() returns DATABASE_ERROR when the update throws', async () => {
+      vi.spyOn(prisma.workspaceInvitation, 'update').mockRejectedValueOnce(
+        new Error('boom'),
+      )
+
+      const result = await InvitationRepository.refreshToken(
+        'x',
+        'new-token',
+        new Date(),
+      )
+
+      expectErr(result, 'DATABASE_ERROR')
+    })
+
+    it('accept() returns DATABASE_ERROR on a non-seat-limit failure', async () => {
+      const { inviter, ws } = await seedInviterAndWorkspace()
+      const invitee = await seedUser({ email: `err-${Date.now()}@example.com` })
+      const invite = await seedInvitation({
+        invitedById: inviter.id,
+        workspaceId: ws.id,
+        email: invitee.email,
+      })
+      vi.spyOn(prisma, '$transaction').mockRejectedValueOnce(new Error('boom'))
+
+      const result = await InvitationRepository.accept({
+        invitationId: invite.id,
+        userId: invitee.id,
+        workspaceId: ws.id,
+        role: 'MEMBER',
+      })
+
+      expectErr(result, 'DATABASE_ERROR')
     })
   })
 })
