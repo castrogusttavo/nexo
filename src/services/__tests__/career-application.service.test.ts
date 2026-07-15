@@ -126,6 +126,23 @@ describe('CareerApplicationService', () => {
       expect(mockedAppRepo.create).not.toHaveBeenCalled()
     })
 
+    it('should propagate a repository error when creating the application', async () => {
+      const job = createFakeCareerJob({ id: 'job-1', status: 'OPEN' })
+      mockedJobRepo.findBySlug.mockResolvedValue(ok(job))
+      mockedValidateResume.mockReturnValue(ok(undefined))
+      mockedPersistResume.mockResolvedValue(ok(undefined))
+      mockedAppRepo.create.mockResolvedValue(err(databaseError()))
+
+      const result = await CareerApplicationService.submit(dto, {
+        slug: 'my-job',
+        ipAddress: '127.0.0.1',
+        resumeFile,
+      })
+
+      expectErr(result, 'DATABASE_ERROR')
+      expect(mockedSendEmail).not.toHaveBeenCalled()
+    })
+
     it('should still succeed if the notification email fails to send', async () => {
       const job = createFakeCareerJob({ id: 'job-1', status: 'OPEN' })
       mockedJobRepo.findBySlug.mockResolvedValue(ok(job))

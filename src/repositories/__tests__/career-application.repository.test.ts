@@ -1,8 +1,13 @@
-import { describe, expect, it } from 'vitest'
+import { afterEach, describe, expect, it, vi } from 'vitest'
 import { seedCareerApplication } from '@/src/__tests__/factories/career-application.factory'
 import { seedCareerJob } from '@/src/__tests__/factories/career-job.factory'
-import { expectOk } from '@/src/__tests__/helpers/result.helpers'
+import { expectErr, expectOk } from '@/src/__tests__/helpers/result.helpers'
+import { prisma } from '@/src/lib/prisma'
 import { CareerApplicationRepository } from '../career-application.repository'
+
+afterEach(() => {
+  vi.restoreAllMocks()
+})
 
 describe('CareerApplicationRepository', () => {
   describe('create()', () => {
@@ -52,6 +57,40 @@ describe('CareerApplicationRepository', () => {
       const list = expectOk(result)
       expect(list).toHaveLength(1)
       expect(list[0].name).toBe('A')
+    })
+  })
+
+  describe('query failures', () => {
+    it('create() returns DATABASE_ERROR when the query throws', async () => {
+      vi.spyOn(prisma.careerApplication, 'create').mockRejectedValueOnce(
+        new Error('boom'),
+      )
+
+      const result = await CareerApplicationRepository.create({
+        jobId: 'job-1',
+        name: 'Ana',
+        email: 'ana@example.com',
+        phone: null,
+        portfolioUrl: null,
+        message: null,
+        resumeBucket: 'career-applications',
+        resumeKey: 'key.pdf',
+        resumeFileName: 'curriculo.pdf',
+        consentAt: new Date(),
+        ipAddress: '127.0.0.1',
+      })
+
+      expectErr(result, 'DATABASE_ERROR')
+    })
+
+    it('listByJob() returns DATABASE_ERROR when the query throws', async () => {
+      vi.spyOn(prisma.careerApplication, 'findMany').mockRejectedValueOnce(
+        new Error('boom'),
+      )
+
+      const result = await CareerApplicationRepository.listByJob('job-1')
+
+      expectErr(result, 'DATABASE_ERROR')
     })
   })
 })

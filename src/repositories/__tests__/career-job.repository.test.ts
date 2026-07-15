@@ -1,6 +1,7 @@
-import { describe, expect, it } from 'vitest'
+import { afterEach, describe, expect, it, vi } from 'vitest'
 import { seedCareerJob } from '@/src/__tests__/factories/career-job.factory'
 import { expectErr, expectOk } from '@/src/__tests__/helpers/result.helpers'
+import { prisma } from '@/src/lib/prisma'
 import { CareerJobRepository } from '../career-job.repository'
 
 const content = {
@@ -9,6 +10,10 @@ const content = {
   requirements: ['Saber coisas'],
   stack: ['TypeScript'],
 }
+
+afterEach(() => {
+  vi.restoreAllMocks()
+})
 
 describe('CareerJobRepository', () => {
   describe('findById()', () => {
@@ -135,6 +140,83 @@ describe('CareerJobRepository', () => {
 
       const job = expectOk(result)
       expect(job.status).toBe('OPEN')
+    })
+  })
+
+  describe('query failures', () => {
+    it('findById() returns DATABASE_ERROR when the query throws', async () => {
+      vi.spyOn(prisma.careerJob, 'findUnique').mockRejectedValueOnce(
+        new Error('boom'),
+      )
+
+      const result = await CareerJobRepository.findById('x')
+
+      expectErr(result, 'DATABASE_ERROR')
+    })
+
+    it('findBySlug() returns DATABASE_ERROR when the query throws', async () => {
+      vi.spyOn(prisma.careerJob, 'findUnique').mockRejectedValueOnce(
+        new Error('boom'),
+      )
+
+      const result = await CareerJobRepository.findBySlug('x')
+
+      expectErr(result, 'DATABASE_ERROR')
+    })
+
+    it('listPublic() returns DATABASE_ERROR when the query throws', async () => {
+      vi.spyOn(prisma.careerJob, 'findMany').mockRejectedValueOnce(
+        new Error('boom'),
+      )
+
+      const result = await CareerJobRepository.listPublic()
+
+      expectErr(result, 'DATABASE_ERROR')
+    })
+
+    it('listAll() returns DATABASE_ERROR when the query throws', async () => {
+      vi.spyOn(prisma.careerJob, 'findMany').mockRejectedValueOnce(
+        new Error('boom'),
+      )
+
+      const result = await CareerJobRepository.listAll()
+
+      expectErr(result, 'DATABASE_ERROR')
+    })
+
+    it('create() returns DATABASE_ERROR on non-unique-constraint failures', async () => {
+      vi.spyOn(prisma.careerJob, 'create').mockRejectedValueOnce(
+        new Error('boom'),
+      )
+
+      const result = await CareerJobRepository.create({
+        slug: 'x',
+        title: 'X',
+        summary: 'Resumo',
+        content,
+      })
+
+      expectErr(result, 'DATABASE_ERROR')
+    })
+
+    it('update() returns DATABASE_ERROR on non-unique-constraint failures', async () => {
+      vi.spyOn(prisma.careerJob, 'update').mockRejectedValueOnce(
+        new Error('boom'),
+      )
+
+      const result = await CareerJobRepository.update('x', { title: 'Y' })
+
+      expectErr(result, 'DATABASE_ERROR')
+    })
+
+    it('changeStatus() returns DATABASE_ERROR when the query throws', async () => {
+      vi.spyOn(prisma.careerJob, 'update').mockRejectedValueOnce(
+        new Error('boom'),
+      )
+
+      const result = await CareerJobRepository.changeStatus('x', 'OPEN')
+
+      expectErr(result, 'DATABASE_ERROR')
     })
   })
 })

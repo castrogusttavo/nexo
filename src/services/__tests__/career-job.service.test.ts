@@ -45,6 +45,45 @@ describe('CareerJobService', () => {
     })
   })
 
+  describe('getById()', () => {
+    it('should return the job for a platform admin', async () => {
+      const job = createFakeCareerJob({ id: 'job-1' })
+      mockedRepo.findById.mockResolvedValue(ok(job))
+
+      const result = await CareerJobService.getById(
+        'admin@nexo.coodee.dev',
+        'job-1',
+      )
+
+      const dto = expectOk(result)
+      expect(dto.id).toBe('job-1')
+    })
+
+    it('should return FORBIDDEN for a non-admin email', async () => {
+      const result = await CareerJobService.getById('someone@else.com', 'job-1')
+
+      expectErr(result, 'CAREER_JOB_FORBIDDEN')
+      expect(mockedRepo.findById).not.toHaveBeenCalled()
+    })
+
+    it('should propagate not found from repo', async () => {
+      mockedRepo.findById.mockResolvedValue(
+        err({
+          code: 'CAREER_JOB_NOT_FOUND',
+          message: 'not found',
+          status: 404,
+        }),
+      )
+
+      const result = await CareerJobService.getById(
+        'admin@nexo.coodee.dev',
+        'nope',
+      )
+
+      expectErr(result, 'CAREER_JOB_NOT_FOUND')
+    })
+  })
+
   describe('listPublic()', () => {
     it('should return jobs as DTOs', async () => {
       mockedRepo.listPublic.mockResolvedValue(ok([createFakeCareerJob()]))
@@ -159,6 +198,42 @@ describe('CareerJobService', () => {
       expectErr(result, 'CAREER_JOB_FORBIDDEN')
       expect(mockedRepo.findById).not.toHaveBeenCalled()
     })
+
+    it('should propagate not found when the job does not exist', async () => {
+      mockedRepo.findById.mockResolvedValue(
+        err({
+          code: 'CAREER_JOB_NOT_FOUND',
+          message: 'not found',
+          status: 404,
+        }),
+      )
+
+      const result = await CareerJobService.update(
+        'actor-1',
+        'admin@nexo.coodee.dev',
+        'nope',
+        { title: 'Updated' },
+      )
+
+      expectErr(result, 'CAREER_JOB_NOT_FOUND')
+      expect(mockedRepo.update).not.toHaveBeenCalled()
+    })
+
+    it('should propagate repo error on update failure', async () => {
+      mockedRepo.findById.mockResolvedValue(
+        ok(createFakeCareerJob({ id: 'job-1' })),
+      )
+      mockedRepo.update.mockResolvedValue(err(databaseError()))
+
+      const result = await CareerJobService.update(
+        'actor-1',
+        'admin@nexo.coodee.dev',
+        'job-1',
+        { title: 'Updated' },
+      )
+
+      expectErr(result, 'DATABASE_ERROR')
+    })
   })
 
   describe('changeStatus()', () => {
@@ -189,6 +264,42 @@ describe('CareerJobService', () => {
       )
 
       expectErr(result, 'CAREER_JOB_FORBIDDEN')
+    })
+
+    it('should propagate not found when the job does not exist', async () => {
+      mockedRepo.findById.mockResolvedValue(
+        err({
+          code: 'CAREER_JOB_NOT_FOUND',
+          message: 'not found',
+          status: 404,
+        }),
+      )
+
+      const result = await CareerJobService.changeStatus(
+        'actor-1',
+        'admin@nexo.coodee.dev',
+        'nope',
+        { status: 'OPEN' },
+      )
+
+      expectErr(result, 'CAREER_JOB_NOT_FOUND')
+      expect(mockedRepo.changeStatus).not.toHaveBeenCalled()
+    })
+
+    it('should propagate repo error on status change failure', async () => {
+      mockedRepo.findById.mockResolvedValue(
+        ok(createFakeCareerJob({ id: 'job-1', status: 'DRAFT' })),
+      )
+      mockedRepo.changeStatus.mockResolvedValue(err(databaseError()))
+
+      const result = await CareerJobService.changeStatus(
+        'actor-1',
+        'admin@nexo.coodee.dev',
+        'job-1',
+        { status: 'OPEN' },
+      )
+
+      expectErr(result, 'DATABASE_ERROR')
     })
   })
 })
