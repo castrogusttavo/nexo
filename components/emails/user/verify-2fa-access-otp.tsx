@@ -12,7 +12,6 @@ import {
 } from 'react-email'
 import { baseEmailUrl } from '@/lib/base-email-url'
 import { Verify2faAccessOtpProps } from '@/types/mail'
-import {  } from '@hugeicons/react'
 import { EmailFooter } from '../_components/email-footer'
 
 export const Verify2faAccessOtp = ({

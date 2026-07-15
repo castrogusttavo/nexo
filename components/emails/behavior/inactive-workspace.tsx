@@ -44,7 +44,7 @@ export const InactiveWorkspace = ({
               Não precisa estruturar nada perfeito.
             </Text>
             <Text className='text-[14px] leading-6.5 font-light'>
-              Começe com algo simples:
+              Comece com algo simples:
             </Text>
             <Row>
               <Column>

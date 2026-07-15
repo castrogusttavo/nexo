@@ -69,7 +69,7 @@ export const PostMortem = ({
               Tem dúvidas? Responda este email, nossa equipe lê tudo.
             </Text>
           </Section>
-          <EmailFooter/>
+          <EmailFooter />
         </Container>
       </Body>
     </Tailwind>
