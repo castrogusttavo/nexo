@@ -197,3 +197,16 @@ jobs:
         run: k6 run k6/api-smoke-test.js
         env:
           BASE_URL: https://nexo.coodee.dev
+
+      # Real stress test — ramps to 100 VUs against production, unlike
+      # k6-local's load-test.js which shares its runner's CPU with the app
+      # under test and can't measure real capacity. abortOnFail in the
+      # script itself protects prod if things start degrading; this step
+      # is continue-on-error so finding a real breaking point doesn't mark
+      # the job red — that's the expected outcome of a stress test, not a
+      # CI failure.
+      - name: Run stress test against production
+        continue-on-error: true
+        run: k6 run k6/stress-test.js
+        env:
+          BASE_URL: https://nexo.coodee.dev
