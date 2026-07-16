@@ -17,8 +17,10 @@ export const PATCH = withAxiom(
     const session = await getAuthSession()
     if (!session.ok) return handleError(session.error)
 
-    const { id } = await params
-    const body = await request.json().catch(() => null)
+    const [{ id }, body] = await Promise.all([
+      params,
+      request.json().catch(() => null),
+    ])
     const parsed = ChangeCareerJobStatusSchema.safeParse(body)
     if (!parsed.success) {
       return standardError(

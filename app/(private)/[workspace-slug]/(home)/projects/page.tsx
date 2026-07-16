@@ -22,8 +22,10 @@ export const metadata: Metadata = {
 type Props = { params: Promise<{ 'workspace-slug': string }> }
 
 export default async function ProjectsPage({ params }: Props) {
-  const { 'workspace-slug': slug } = await params
-  const session = await getAuthSession()
+  const [{ 'workspace-slug': slug }, session] = await Promise.all([
+    params,
+    getAuthSession(),
+  ])
   if (!session.ok) notFound()
 
   const membership = await MembershipService.getByUserAndSlug(

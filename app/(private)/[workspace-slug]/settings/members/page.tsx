@@ -25,9 +25,10 @@ export default async function SettingsMembersPage({
 }: {
   params: Promise<{ 'workspace-slug': string }>
 }) {
-  const { 'workspace-slug': slug } = await params
-
-  const session = await getAuthSession()
+  const [{ 'workspace-slug': slug }, session] = await Promise.all([
+    params,
+    getAuthSession(),
+  ])
   if (!session.ok) redirect('/sign-in')
 
   const membership = await MembershipService.getByUserAndSlug(

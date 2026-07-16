@@ -17,8 +17,10 @@ export const POST = withAxiom(
       request: NextRequest,
       { params }: { params: Promise<{ slug: string }> },
     ) => {
-      const { slug } = await params
-      const formData = await request.formData().catch(() => null)
+      const [{ slug }, formData] = await Promise.all([
+        params,
+        request.formData().catch(() => null),
+      ])
       if (!formData) {
         return standardError('VALIDATION_ERROR', 'Dados inválidos')
       }

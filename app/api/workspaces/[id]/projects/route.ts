@@ -49,8 +49,7 @@ export const POST = withAxiom(async (request: NextRequest, ctx: Params) => {
   const limit = await consume(apiLimiter, `user:${auth.value.user.id}`)
   if (!limit.ok) return handleError(limit.error)
 
-  const { id } = await ctx.params
-  const body = await request.json()
+  const [{ id }, body] = await Promise.all([ctx.params, request.json()])
   const parsed = CreateProjectSchema.safeParse(body)
 
   if (!parsed.success) {
