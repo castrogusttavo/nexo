@@ -27,7 +27,10 @@ import {
 } from '@/components/ui/popover'
 import { notify } from '@/lib/notify'
 import { cn } from '@/lib/utils'
-import { useUpdateStickyNote } from '@/src/hooks/use-sticky-note'
+import {
+  useDeleteStickyNote,
+  useUpdateStickyNote,
+} from '@/src/hooks/use-sticky-note'
 import type { StickyColorDTO, StickyNoteDTO } from '@/types/sticky-note'
 
 const STICKY_COLORS: Array<{ value: StickyColorDTO; bg: string }> = [
@@ -52,6 +55,7 @@ interface UserStickyProps {
 export function UserStick({ sticky }: UserStickyProps) {
   const [color, setColor] = useState<StickyColorDTO>(sticky.color)
   const update = useUpdateStickyNote(sticky.id)
+  const remove = useDeleteStickyNote()
 
   const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   const pendingContentRef = useRef<JSONContent | null>(null)
@@ -104,13 +108,8 @@ export function UserStick({ sticky }: UserStickyProps) {
     update.mutate({ color: next }, { onError: notify.error })
   }
 
-  const handleClear = () => {
-    editor?.commands.clearContent()
-    flushContent()
-    update.mutate(
-      { content: { type: 'doc', content: [] } },
-      { onError: notify.error },
-    )
+  const handleDelete = () => {
+    remove.mutate(sticky.id, { onError: notify.error })
   }
 
   return (
@@ -143,7 +142,7 @@ export function UserStick({ sticky }: UserStickyProps) {
             <NexoIcon icon={CheckListIcon} strokeWidth={2} />
           </StickTextPropsButton>
         </div>
-        <StickTextPropsButton onClick={handleClear}>
+        <StickTextPropsButton onClick={handleDelete}>
           <NexoIcon icon={Delete02Icon} strokeWidth={2} />
         </StickTextPropsButton>
       </div>

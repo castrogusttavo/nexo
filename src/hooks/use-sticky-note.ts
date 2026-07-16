@@ -1,7 +1,7 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import type { JSONContent } from '@tiptap/react'
 import type { StickyColorDTO, StickyNoteDTO } from '@/types/sticky-note'
-import { apiFetch, apiFetchJson } from './_fetch'
+import { apiFetch, apiFetchJson, apiSend } from './_fetch'
 
 const STICKY_NOTES_KEY = ['sticky-notes'] as const
 const BASE_API_ROUTE = '/api/sticky-notes'
@@ -57,6 +57,24 @@ export function useUpdateStickyNote(stickyNoteId: string) {
               new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime(),
           )
       })
+    },
+  })
+}
+
+export function useDeleteStickyNote() {
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationFn: (stickyNoteId: string) =>
+      apiSend(
+        `${BASE_API_ROUTE}/${stickyNoteId}`,
+        { method: 'DELETE' },
+        'Erro ao excluir sticky',
+      ),
+    onSuccess: (_data, stickyNoteId) => {
+      queryClient.setQueryData<StickyNoteDTO[]>(STICKY_NOTES_KEY, (old) =>
+        old?.filter((n) => n.id !== stickyNoteId),
+      )
     },
   })
 }
