@@ -37,20 +37,22 @@ export function EmailValidationWithOtp({
   const [otp, setOtp] = useState('')
   const [cooldown, setCooldown] = useState(RESEND_COOLDOWN_SECONDS)
   const [isResending, setIsResending] = useState(false)
+  const [prevError, setPrevError] = useState(error)
   const lastSubmittedRef = useRef<string | null>(null)
+
+  if (error !== prevError) {
+    setPrevError(error)
+    if (error) {
+      setOtp('')
+      lastSubmittedRef.current = null
+    }
+  }
 
   useEffect(() => {
     if (cooldown <= 0) return
     const id = window.setTimeout(() => setCooldown((s) => s - 1), 1000)
     return () => window.clearTimeout(id)
   }, [cooldown])
-
-  useEffect(() => {
-    if (error) {
-      setOtp('')
-      lastSubmittedRef.current = null
-    }
-  }, [error])
 
   function handleOtpChange(value: string) {
     setOtp(value)
