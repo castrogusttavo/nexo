@@ -53,7 +53,7 @@ export function UpgradeWorkspaceSeatsCard({
           <SelectTrigger id='workspace' className='w-full max-w-60 h-9'>
             <SelectValue placeholder='Selecione um workspace' />
           </SelectTrigger>
-          <SelectContent>
+          <SelectContent alignItemWithTrigger={false}>
             <SelectGroup>
               {workspaces.map((ws) => (
                 <SelectItem key={ws.id} value={ws.id}>

@@ -262,7 +262,7 @@ export function CareerJobForm({ mode, jobId, initial }: CareerJobFormProps) {
           <SelectTrigger disabled={saving}>
             <SelectValue />
           </SelectTrigger>
-          <SelectContent>
+          <SelectContent alignItemWithTrigger={false}>
             <SelectGroup>
               {CAREER_LOCATION_TYPES.map((type) => (
                 <SelectItem key={type} value={type}>
@@ -285,7 +285,7 @@ export function CareerJobForm({ mode, jobId, initial }: CareerJobFormProps) {
           <SelectTrigger disabled={saving}>
             <SelectValue />
           </SelectTrigger>
-          <SelectContent>
+          <SelectContent alignItemWithTrigger={false}>
             <SelectGroup>
               {CAREER_EMPLOYMENT_TYPES.map((type) => (
                 <SelectItem key={type} value={type}>

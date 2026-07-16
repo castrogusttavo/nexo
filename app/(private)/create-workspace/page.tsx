@@ -168,7 +168,7 @@ export default function CreateWorkspacePage() {
                 <SelectTrigger disabled={isPending}>
                   <SelectValue placeholder='Selecione um intervalo' />
                 </SelectTrigger>
-                <SelectContent className='w-full'>
+                <SelectContent alignItemWithTrigger={false} className='w-full'>
                   <SelectGroup>
                     <SelectItem value='Apenas eu'>Apenas eu</SelectItem>
                     <SelectItem value='2-10'>2-10</SelectItem>
