@@ -5,7 +5,7 @@ import {
   InformationCircleIcon,
   SquareLock02Icon,
 } from '@hugeicons-pro/core-stroke-rounded'
-import { useState } from 'react'
+import { useReducer, useState } from 'react'
 import { COVER_IMAGES } from '@/app/_components/media/cover-images'
 import { NexoIcon } from '@/components/icon/icon'
 import { Button } from '@/components/ui/button'
@@ -57,6 +57,57 @@ function toSlug(name: string) {
     .slice(0, 50)
 }
 
+interface ProjectDraft {
+  name: string
+  slug: string
+  description: string
+  emoji: string
+  coverImage: string
+  isPublic: boolean
+}
+
+type ProjectDraftAction =
+  | { type: 'nameChanged'; name: string; slug: string }
+  | { type: 'slugChanged'; slug: string }
+  | { type: 'descriptionChanged'; description: string }
+  | { type: 'emojiChanged'; emoji: string }
+  | { type: 'coverImageChanged'; coverImage: string }
+  | { type: 'visibilityChanged'; isPublic: boolean }
+  | { type: 'reset' }
+
+function createInitialDraft(): ProjectDraft {
+  return {
+    name: '',
+    slug: '',
+    description: '',
+    emoji: '😊',
+    coverImage: randomCoverImage(),
+    isPublic: false,
+  }
+}
+
+function projectDraftReducer(
+  state: ProjectDraft,
+  action: ProjectDraftAction,
+): ProjectDraft {
+  switch (action.type) {
+    case 'nameChanged':
+      return { ...state, name: action.name, slug: action.slug }
+    case 'slugChanged':
+      return { ...state, slug: action.slug }
+    case 'descriptionChanged':
+      return { ...state, description: action.description }
+    case 'emojiChanged':
+      return { ...state, emoji: action.emoji }
+    case 'coverImageChanged':
+      return { ...state, coverImage: action.coverImage }
+    case 'visibilityChanged':
+      return { ...state, isPublic: action.isPublic }
+    case 'reset':
+      return createInitialDraft()
+  }
+}
+
 interface WorkspaceProjectModalProps {
   workspaceId: string
   trigger?: React.ReactElement
@@ -69,29 +120,23 @@ export function WorkspaceProjectModal({
   nativeButton = true,
 }: WorkspaceProjectModalProps) {
   const [open, setOpen] = useState(false)
-  const [name, setName] = useState('')
-  const [slug, setSlug] = useState('')
-  const [description, setDescription] = useState('')
-  const [emoji, setEmoji] = useState('😊')
-  const [coverImage, setCoverImage] = useState<string>(() => randomCoverImage())
-  const [isPublic, setIsPublic] = useState(false)
+  const [draft, dispatch] = useReducer(
+    projectDraftReducer,
+    undefined,
+    createInitialDraft,
+  )
+  const { name, slug, description, emoji, coverImage, isPublic } = draft
 
   const createProject = useCreateProject(workspaceId)
 
   function handleNameChange(e: React.ChangeEvent<HTMLInputElement>) {
     const value = e.target.value
-    setName(value)
-    setSlug(toSlug(value))
+    dispatch({ type: 'nameChanged', name: value, slug: toSlug(value) })
   }
 
   function handleClose() {
     setOpen(false)
-    setName('')
-    setSlug('')
-    setDescription('')
-    setEmoji('😊')
-    setCoverImage(randomCoverImage())
-    setIsPublic(false)
+    dispatch({ type: 'reset' })
     createProject.reset()
   }
 
@@ -146,11 +191,18 @@ export function WorkspaceProjectModal({
               <CoverImagePicker
                 workspaceId={workspaceId}
                 currentImage={coverImage ?? undefined}
-                onSelect={setCoverImage}
+                onSelect={(image) =>
+                  dispatch({ type: 'coverImageChanged', coverImage: image })
+                }
               />
             </div>
             <div className='absolute -bottom-5 left-3'>
-              <EmojiIconPicker currentEmoji={emoji} onSelect={setEmoji} />
+              <EmojiIconPicker
+                currentEmoji={emoji}
+                onSelect={(nextEmoji) =>
+                  dispatch({ type: 'emojiChanged', emoji: nextEmoji })
+                }
+              />
             </div>
           </div>
           <div className='px-3 mt-9 space-y-6'>
@@ -199,7 +251,12 @@ export function WorkspaceProjectModal({
                       type='text'
                       placeholder='ID do projeto'
                       value={slug}
-                      onChange={(e) => setSlug(e.target.value)}
+                      onChange={(e) =>
+                        dispatch({
+                          type: 'slugChanged',
+                          slug: e.target.value,
+                        })
+                      }
                       required
                     />
                   </InputGroup>
@@ -211,7 +268,12 @@ export function WorkspaceProjectModal({
                   placeholder='Descrição'
                   rows={4}
                   value={description}
-                  onChange={(e) => setDescription(e.target.value)}
+                  onChange={(e) =>
+                    dispatch({
+                      type: 'descriptionChanged',
+                      description: e.target.value,
+                    })
+                  }
                 />
               </Field>
             </FieldGroup>
@@ -236,7 +298,12 @@ export function WorkspaceProjectModal({
                   <DropdownMenuGroup>
                     <DropdownMenuRadioGroup
                       value={isPublic ? 'public' : 'private'}
-                      onValueChange={(v) => setIsPublic(v === 'public')}
+                      onValueChange={(v) =>
+                        dispatch({
+                          type: 'visibilityChanged',
+                          isPublic: v === 'public',
+                        })
+                      }
                     >
                       <DropdownMenuRadioItem value='private'>
                         <NexoIcon icon={SquareLock02Icon} strokeWidth={2} />
