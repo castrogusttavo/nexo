@@ -95,7 +95,7 @@ export function UserShortcutLinkModal() {
         }
       />
       <DialogContent className='sm:max-w-md'>
-        <form onSubmit={handleSubmit}>
+        <form onSubmit={handleSubmit} className='space-y-4'>
           <DialogHeader>
             <DialogTitle>Adicionar Link rápido</DialogTitle>
           </DialogHeader>

@@ -208,7 +208,7 @@ export function WorkspaceProjectModal({
               />
             </div>
           </div>
-          <div className='px-3 mt-9 space-y-6'>
+          <div className='px-3 mt-9 space-y-6 pb-5'>
             <FieldGroup>
               <div className='grid grid-cols-4 gap-4'>
                 <Field className='col-span-3'>
@@ -337,8 +337,7 @@ export function WorkspaceProjectModal({
               {createProject.error?.message}
             </p>
           )}
-          <div className='w-full border border-border' />
-          <div className='flex justify-end gap-2'>
+          <div className='flex justify-end gap-2 border-t border-border pt-4'>
             <DialogClose
               render={
                 <Button
