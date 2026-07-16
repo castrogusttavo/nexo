@@ -241,3 +241,14 @@
   font-weight: 600;
   background-color: var(--muted);
 }
+
+.blog-content ul,
+.blog-content ol,
+.blog-content ul>li{
+  padding-left: 0 !important;
+  list-style-position: inside;
+}
+
+.blog-content p > img {
+  @apply relative flex items-center justify-center rounded p-6 md:p-8 lg:p-10 bg-muted;
+}

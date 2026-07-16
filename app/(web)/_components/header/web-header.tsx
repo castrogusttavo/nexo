@@ -15,7 +15,7 @@ import { WebHeaderSolutionsMenu } from './web-header-solutions-menu'
 
 export function WebHeader() {
   return (
-    <header className='mx-auto grid w-full grid-cols-[1fr_auto_1fr] items-center px-4 py-3 sm:px-8 xl:max-w-336 xl:px-11 2xl:max-w-384'>
+    <header className='mx-auto grid w-full grid-cols-[1fr_auto_1fr] items-center px-4 py-3 sm:px-8 xl:max-w-336 xl:px-11 2xl:max-w-384 sticky top-0 bg-background'>
       <Link href='/' className='justify-self-start'>
         <Image src='/brand/logo.svg' alt='nexo-logo' width={100} height={45} />
       </Link>
