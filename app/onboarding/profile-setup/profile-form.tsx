@@ -1,7 +1,7 @@
 'use client'
 
 import { Image } from '@hugeicons-pro/core-stroke-rounded'
-import { useActionState, useRef, useState } from 'react'
+import { useActionState, useReducer, useRef, useState } from 'react'
 import { NexoIcon } from '@/components/icon/icon'
 import {
   Accordion,
@@ -23,6 +23,66 @@ type TwoFAMode = 'idle' | 'enabling' | 'disabling'
 
 const INITIAL_STATE: ProfileSetupState = { ok: false }
 
+interface TwoFAState {
+  isEnabled: boolean
+  mode: TwoFAMode
+  password: string
+  error: string | null
+  busy: boolean
+  backupCodes: string[] | null
+}
+
+type TwoFAAction =
+  | { type: 'toggleStart'; mode: TwoFAMode }
+  | { type: 'passwordChanged'; password: string }
+  | { type: 'confirmStart' }
+  | { type: 'validationError'; message: string }
+  | { type: 'enableSuccess'; backupCodes: string[] }
+  | { type: 'disableSuccess' }
+  | { type: 'requestError'; message: string }
+  | { type: 'reset' }
+
+function twoFAReducer(state: TwoFAState, action: TwoFAAction): TwoFAState {
+  switch (action.type) {
+    case 'toggleStart':
+      return {
+        ...state,
+        error: null,
+        backupCodes: [],
+        password: '',
+        mode: action.mode,
+      }
+    case 'passwordChanged':
+      return { ...state, password: action.password }
+    case 'confirmStart':
+      return { ...state, error: null, busy: true }
+    case 'validationError':
+      return { ...state, error: action.message }
+    case 'enableSuccess':
+      return {
+        ...state,
+        isEnabled: true,
+        backupCodes: action.backupCodes,
+        mode: 'idle',
+        password: '',
+        busy: false,
+      }
+    case 'disableSuccess':
+      return {
+        ...state,
+        isEnabled: false,
+        mode: 'idle',
+        password: '',
+        error: null,
+        busy: false,
+      }
+    case 'requestError':
+      return { ...state, error: action.message, busy: false }
+    case 'reset':
+      return { ...state, mode: 'idle', password: '', error: null }
+  }
+}
+
 export function ProfileForm({
   name,
   image,
@@ -40,12 +100,26 @@ export function ProfileForm({
   const [uploadError, setUploadError] = useState<string | null>(null)
   const fileInputRef = useRef<HTMLInputElement>(null)
 
-  const [is2FAEnabled, setIs2FAEnabled] = useState(twoFactorEnabled)
-  const [twoFAMode, setTwoFAMode] = useState<TwoFAMode>('idle')
-  const [twoFAPass, setTwoFAPass] = useState('')
-  const [twoFAError, setTwoFAError] = useState<string | null>(null)
-  const [twoFABusy, setTwoFABusy] = useState(false)
-  const [backupCodes, setBackupCodes] = useState<string[] | null>(null)
+  const [twoFAState, dispatchTwoFA] = useReducer(
+    twoFAReducer,
+    undefined,
+    (): TwoFAState => ({
+      isEnabled: twoFactorEnabled,
+      mode: 'idle',
+      password: '',
+      error: null,
+      busy: false,
+      backupCodes: null,
+    }),
+  )
+  const {
+    isEnabled: is2FAEnabled,
+    mode: twoFAMode,
+    password: twoFAPass,
+    error: twoFAError,
+    busy: twoFABusy,
+    backupCodes,
+  } = twoFAState
 
   const [state, formAction, isPending] = useActionState(
     saveProfileSetup,
@@ -87,52 +161,55 @@ export function ProfileForm({
   }
 
   function handle2FAToggle(next: boolean) {
-    setTwoFAError(null)
-    setBackupCodes([])
-    setTwoFAPass('')
-    setTwoFAMode(next ? 'enabling' : 'disabling')
+    dispatchTwoFA({
+      type: 'toggleStart',
+      mode: next ? 'enabling' : 'disabling',
+    })
   }
 
   function reset2FA() {
-    setTwoFAMode('idle')
-    setTwoFAPass('')
-    setTwoFAError(null)
+    dispatchTwoFA({ type: 'reset' })
   }
 
   async function handle2FAConfirm() {
     if (!twoFAPass) {
-      setTwoFAError('Informe sua senha para continuar')
+      dispatchTwoFA({
+        type: 'validationError',
+        message: 'Informe sua senha para continuar',
+      })
       return
     }
-    setTwoFAError(null)
-    setTwoFABusy(true)
+    dispatchTwoFA({ type: 'confirmStart' })
 
     if (twoFAMode === 'enabling') {
       const { data, error } = await authClient.twoFactor.enable({
         password: twoFAPass,
       })
-      setTwoFABusy(false)
       if (error) {
-        setTwoFAError(error.message ?? 'Não foi possível ativar a 2FA')
+        dispatchTwoFA({
+          type: 'requestError',
+          message: error.message ?? 'Não foi possível ativar a 2FA',
+        })
         return
       }
-      setIs2FAEnabled(true)
-      setBackupCodes(data?.backupCodes ?? [])
-      setTwoFAMode('idle')
-      setTwoFAPass('')
+      dispatchTwoFA({
+        type: 'enableSuccess',
+        backupCodes: data?.backupCodes ?? [],
+      })
       return
     }
 
     const { error } = await authClient.twoFactor.disable({
       password: twoFAPass,
     })
-    setTwoFABusy(false)
     if (error) {
-      setTwoFAError(error.message ?? 'Não foi possível desativar a 2FA')
+      dispatchTwoFA({
+        type: 'requestError',
+        message: error.message ?? 'Não foi possível desativar a 2FA',
+      })
       return
     }
-    setIs2FAEnabled(false)
-    reset2FA()
+    dispatchTwoFA({ type: 'disableSuccess' })
   }
 
   const isValid = nameValue.trim().length >= 2
@@ -244,7 +321,12 @@ export function ProfileForm({
                   <Input
                     type='password'
                     value={twoFAPass}
-                    onChange={(e) => setTwoFAPass(e.target.value)}
+                    onChange={(e) =>
+                      dispatchTwoFA({
+                        type: 'passwordChanged',
+                        password: e.target.value,
+                      })
+                    }
                     placeholder='••••••'
                     disabled={twoFABusy}
                     autoFocus
