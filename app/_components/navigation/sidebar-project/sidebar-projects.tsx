@@ -211,14 +211,16 @@ export function SidebarProjects({
           />
         }
       >
-        {projects.map((p) => (
-          <ProjectAccordion
-            key={p.id}
-            project={p}
-            base={base}
-            workspaceId={workspaceId}
-          />
-        ))}
+        {projects
+          .filter((p) => !p.isFavorited)
+          .map((p) => (
+            <ProjectAccordion
+              key={p.id}
+              project={p}
+              base={base}
+              workspaceId={workspaceId}
+            />
+          ))}
       </NavGroupAccordion>
     </div>
   )

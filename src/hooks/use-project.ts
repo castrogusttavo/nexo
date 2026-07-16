@@ -157,7 +157,7 @@ export function useUnfavoriteProject(workspaceId: string) {
     mutationFn: (slug: string) =>
       apiFetch(
         `/api/workspaces/${workspaceId}/projects/${slug}/favorite`,
-        { method: 'POST' },
+        { method: 'DELETE' },
         'Erro ao desafavoritar projeto',
       ),
     onMutate: async (slug) => {
