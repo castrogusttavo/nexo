@@ -210,16 +210,27 @@ export const PLANS: Record<PlanGrid, PlanCopy> = {
   },
 }
 
+const currencyFormatterWhole = new Intl.NumberFormat('pt-BR', {
+  style: 'currency',
+  currency: 'BRL',
+  minimumFractionDigits: 0,
+  maximumFractionDigits: 2,
+})
+const currencyFormatterFraction = new Intl.NumberFormat('pt-BR', {
+  style: 'currency',
+  currency: 'BRL',
+  minimumFractionDigits: 2,
+  maximumFractionDigits: 2,
+})
+
 /** Formata centavos (BRL) como moeda, escondendo os `,00` quando inteiro. */
 export function formatCurrency(cents: number) {
   const value = cents / 100
+  const formatter = Number.isInteger(value)
+    ? currencyFormatterWhole
+    : currencyFormatterFraction
 
-  return new Intl.NumberFormat('pt-BR', {
-    style: 'currency',
-    currency: 'BRL',
-    minimumFractionDigits: Number.isInteger(value) ? 0 : 2,
-    maximumFractionDigits: 2,
-  }).format(value)
+  return formatter.format(value)
 }
 
 /** `"FREE"` -> `"Free"`. */
