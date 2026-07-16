@@ -1,7 +1,8 @@
 import type { Metadata } from 'next'
-import Link from 'next/link'
-import { Muted } from '@/components/typography/text/muted'
 import { CareerJobService } from '@/src/services/career-job.service'
+import { SubTitle } from '../_components/text/sub-title'
+import { Title } from '../_components/text/title'
+import { CareersList } from './careers-list'
 
 export const metadata: Metadata = {
   title: 'Carreiras | Nexo',
@@ -13,37 +14,15 @@ export default async function CareersPage() {
   const jobs = result.ok ? result.value : []
 
   return (
-    <main className='mx-auto max-w-3xl px-6 py-20'>
-      <h1 className='text-4xl font-medium'>Carreiras</h1>
-      <Muted className='mt-2'>
-        Time pequeno, ownership real. Veja as vagas abertas no Nexo.
-      </Muted>
-
-      <div className='mt-10 flex flex-col gap-4'>
-        {jobs.length === 0 && <Muted>Nenhuma vaga aberta no momento.</Muted>}
-        {jobs.map((job) => (
-          <Link
-            key={job.id}
-            href={`/careers/${job.slug}`}
-            className='rounded-xl border border-border p-6 hover:bg-accent transition-colors'
-          >
-            <div className='flex items-center justify-between'>
-              <h2 className='text-xl font-medium'>{job.title}</h2>
-              {job.status === 'CLOSED' && (
-                <span className='text-xs rounded-full bg-muted px-2 py-1 text-muted-foreground'>
-                  Encerrada
-                </span>
-              )}
-            </div>
-            {job.department && (
-              <Muted className='text-sm'>{job.department}</Muted>
-            )}
-            <p className='mt-2 text-sm text-muted-foreground line-clamp-2'>
-              {job.summary}
-            </p>
-          </Link>
-        ))}
+    <main className='mx-auto w-full flex flex-col items-center px-4 py-3 sm:px-8 xl:max-w-336 xl:px-11 2xl:max-w-384 gap-10'>
+      <div className='mx-auto w-full flex flex-col items-center gap-4 pt-20'>
+        <Title>Vagas abertas</Title>
+        <SubTitle>
+          Time pequeno, ownership real. Veja as vagas abertas no Nexo.
+        </SubTitle>
       </div>
+
+      <CareersList jobs={jobs} />
     </main>
   )
 }
