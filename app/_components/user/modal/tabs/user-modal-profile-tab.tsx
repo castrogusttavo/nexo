@@ -1,5 +1,6 @@
 'use client'
 
+import Image from 'next/image'
 import { useRouter } from 'next/navigation'
 import { useRef, useState } from 'react'
 import { H4 } from '@/components/typography/heading/h4'
@@ -110,10 +111,12 @@ export function UserModalProfileTab({ tab }: { tab: string }) {
         />
         <div className='flex w-full flex-col gap-6'>
           <div className='relative h-44 w-full'>
-            <img
+            <Image
               src={user?.coverImage || '/coverImages/image_1.jpg'}
               alt=''
-              className='object-cover object-center w-full h-full rounded-lg bg-card'
+              fill
+              sizes='(max-width: 768px) 100vw, 640px'
+              className='object-cover object-center rounded-lg bg-card'
             />
             <button
               type='button'

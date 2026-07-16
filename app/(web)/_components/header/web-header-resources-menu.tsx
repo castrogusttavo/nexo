@@ -1,3 +1,4 @@
+import Image from 'next/image'
 import Link from 'next/link'
 import { Muted } from '@/components/typography/text/muted'
 import { Badge } from '@/components/ui/badge'
@@ -71,10 +72,12 @@ export function WebHeaderResourcesMenu() {
               <Link href='#' className='h-full'>
                 <Card className='relative overflow-hidden bg-muted border border-brand-500 h-full'>
                   <div className='pointer-events-none absolute inset-0'>
-                    <img
+                    <Image
                       src='/static/app-mobile.avif'
                       alt='nexo-mobile'
-                      className='h-full w-full object-center object-cover brightness-75'
+                      fill
+                      sizes='(max-width: 768px) 100vw, 33vw'
+                      className='object-center object-cover brightness-75'
                     />
                     <div className='absolute inset-0 bg-linear-to-t from-black to-transparent' />
                   </div>

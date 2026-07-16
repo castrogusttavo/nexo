@@ -5,6 +5,7 @@ import {
   InformationCircleIcon,
   SquareLock02Icon,
 } from '@hugeicons-pro/core-stroke-rounded'
+import Image from 'next/image'
 import { useReducer, useState } from 'react'
 import { COVER_IMAGES } from '@/app/_components/media/cover-images'
 import { NexoIcon } from '@/components/icon/icon'
@@ -181,10 +182,12 @@ export function WorkspaceProjectModal({
       <DialogContent className='p-3 w-full sm:max-w-4xl'>
         <form onSubmit={handleSubmit}>
           <div className='group relative h-44 w-full rounded-lg bg-muted'>
-            <img
-              className='object-cover absolute left-0 top-0 h-full w-full rounded-lg'
+            <Image
+              className='object-cover rounded-lg'
               src={coverImage}
               alt=''
+              fill
+              sizes='(max-width: 768px) 100vw, 768px'
             />
             <DialogClose className='absolute right-2 top-2 p-2' />
             <div className='absolute right-2 bottom-2'>

@@ -1,6 +1,7 @@
 'use client'
 
 import { Logout05Icon } from '@hugeicons-pro/core-stroke-rounded'
+import Image from 'next/image'
 import { useRouter } from 'next/navigation'
 import { useState } from 'react'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
@@ -53,11 +54,12 @@ export function UserDropdownProfile() {
         <DropdownMenuContent className='w-72 p-3 flex flex-col gap-y-3 rounded-md'>
           <DropdownMenuGroup className='rounded-lg relative h-29 w-full'>
             <div className='absolute inset-0 bg-black/25 rounded-lg' />
-            <img
-              sizes='(max-width:100%) 100vw, 33vw'
+            <Image
               src={user?.coverImage || '/coverImages/image_1.jpg'}
-              alt={'background'}
-              className='object-center object-cover h-29 w-full rounded-lg brightness-55'
+              alt='background'
+              fill
+              sizes='288px'
+              className='object-center object-cover rounded-lg brightness-55'
             />
             <div className='flex flex-col gap-y-1 items-center absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2'>
               <Avatar className='rounded-full size-12'>

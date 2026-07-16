@@ -6,6 +6,7 @@ import {
 } from '@hugeicons-pro/core-stroke-rounded'
 import { format } from 'date-fns'
 import { ptBR } from 'date-fns/locale'
+import Image from 'next/image'
 import { NexoIcon } from '@/components/icon/icon'
 import {
   Card,
@@ -57,10 +58,12 @@ export function ArchivedProjectCard({
     <Card className='p-0 gap-0 opacity-80 hover:opacity-100 transition-opacity'>
       <CardHeader className='relative h-30 w-full rounded-t p-0'>
         {project.coverImage ? (
-          <img
-            className='absolute object-cover left-0 top-0 h-full w-full rounded-t'
+          <Image
+            className='object-cover rounded-t'
             src={project.coverImage}
             alt=''
+            fill
+            sizes='(max-width: 768px) 100vw, (max-width: 1024px) 50vw, 33vw'
           />
         ) : (
           <div className='absolute inset-0 rounded-t bg-linear-to-br from-muted/60 to-muted/30' />

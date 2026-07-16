@@ -8,6 +8,7 @@ import {
   SquareLock02Icon,
   StarIcon,
 } from '@hugeicons-pro/core-stroke-rounded'
+import Image from 'next/image'
 import { useRouter } from 'next/navigation'
 import { useRef } from 'react'
 import { NexoIcon } from '@/components/icon/icon'
@@ -84,10 +85,12 @@ export function ProjectCard({
       <Card className='p-0 gap-0 groupq'>
         <CardHeader className='relative h-30 w-full rounded-t p-0'>
           {project.coverImage ? (
-            <img
-              className='absolute object-cover left-0 top-0 h-full w-full rounded-t'
+            <Image
+              className='object-cover rounded-t'
               src={project.coverImage}
               alt=''
+              fill
+              sizes='(max-width: 768px) 100vw, (max-width: 1024px) 50vw, 33vw'
             />
           ) : (
             <div className='absolute inset-0 rounded-t bg-linear-to-br from-primary/30 to-primary/10' />

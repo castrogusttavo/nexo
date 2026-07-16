@@ -1,5 +1,6 @@
 'use client'
 
+import Image from 'next/image'
 import { useState } from 'react'
 import { Muted } from '@/components/typography/text/muted'
 import { Card, CardDescription, CardTitle } from '@/components/ui/card'
@@ -276,9 +277,11 @@ function ToolSelect({
               onChange={() => onValueChange(tool.id)}
               className='sr-only'
             />
-            <img
+            <Image
               src={tool.logo}
               alt={tool.name}
+              width={40}
+              height={40}
               className={cn(
                 'size-10 object-contain',
                 tool.invertOnDark && 'dark:invert',
