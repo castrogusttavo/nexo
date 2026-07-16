@@ -5,12 +5,28 @@ import { useState } from 'react'
 import { Button } from '@/components/ui/button'
 import { Field, FieldLabel } from '@/components/ui/field'
 import { Input } from '@/components/ui/input'
+import {
+  Select,
+  SelectContent,
+  SelectGroup,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select'
 import { Textarea } from '@/components/ui/textarea'
 import { notify } from '@/lib/notify'
 import {
   useCreateCareerJob,
   useUpdateCareerJob,
 } from '@/src/hooks/use-career-jobs'
+import {
+  CAREER_EMPLOYMENT_TYPE_LABELS,
+  CAREER_LOCATION_TYPE_LABELS,
+} from '@/src/lib/career-labels'
+import {
+  CAREER_EMPLOYMENT_TYPES,
+  CAREER_LOCATION_TYPES,
+} from '@/src/schemas/career-job.schema'
 import type { CareerJobDTO } from '@/types/career-job'
 
 // Mirrors the toSlug() helper duplicated in workspace/project forms
@@ -102,6 +118,13 @@ export function CareerJobForm({ mode, jobId, initial }: CareerJobFormProps) {
     initial?.content.niceToHave ?? [],
   )
   const [stack, setStack] = useState<string[]>(initial?.content.stack ?? [])
+  const [location, setLocation] = useState(initial?.location ?? '')
+  const [locationType, setLocationType] = useState(
+    initial?.locationType ?? 'ON_SITE',
+  )
+  const [employmentType, setEmploymentType] = useState(
+    initial?.employmentType ?? 'FULL_TIME',
+  )
 
   const saving = createJob.isPending || updateJob.isPending
 
@@ -125,6 +148,9 @@ export function CareerJobForm({ mode, jobId, initial }: CareerJobFormProps) {
         niceToHave: niceToHave.filter(Boolean),
         stack: stack.filter(Boolean),
       },
+      location: location || undefined,
+      locationType,
+      employmentType,
     }
 
     try {
@@ -193,6 +219,63 @@ export function CareerJobForm({ mode, jobId, initial }: CareerJobFormProps) {
         <p className='text-xs text-muted-foreground text-right'>
           {about.length}/2000
         </p>
+      </Field>
+
+      <Field>
+        <FieldLabel htmlFor='location'>Localização</FieldLabel>
+        <Input
+          id='location'
+          placeholder='São Paulo, SP'
+          value={location}
+          onChange={(e) => setLocation(e.target.value)}
+          disabled={saving}
+        />
+      </Field>
+
+      <Field>
+        <FieldLabel>Tipo de localização</FieldLabel>
+        <Select
+          value={locationType}
+          onValueChange={(value) => {
+            if (value) setLocationType(value)
+          }}
+        >
+          <SelectTrigger disabled={saving}>
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectGroup>
+              {CAREER_LOCATION_TYPES.map((type) => (
+                <SelectItem key={type} value={type}>
+                  {CAREER_LOCATION_TYPE_LABELS[type]}
+                </SelectItem>
+              ))}
+            </SelectGroup>
+          </SelectContent>
+        </Select>
+      </Field>
+
+      <Field>
+        <FieldLabel>Tipo de emprego</FieldLabel>
+        <Select
+          value={employmentType}
+          onValueChange={(value) => {
+            if (value) setEmploymentType(value)
+          }}
+        >
+          <SelectTrigger disabled={saving}>
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectGroup>
+              {CAREER_EMPLOYMENT_TYPES.map((type) => (
+                <SelectItem key={type} value={type}>
+                  {CAREER_EMPLOYMENT_TYPE_LABELS[type]}
+                </SelectItem>
+              ))}
+            </SelectGroup>
+          </SelectContent>
+        </Select>
       </Field>
 
       <BulletListField

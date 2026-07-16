@@ -3,7 +3,12 @@
 import { useState } from 'react'
 import { Button } from '@/components/ui/button'
 import { Checkbox } from '@/components/ui/checkbox'
-import { Field, FieldError, FieldLabel } from '@/components/ui/field'
+import {
+  Field,
+  FieldError,
+  FieldGroup,
+  FieldLabel,
+} from '@/components/ui/field'
 import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
 import { useLogger } from '@/lib/axiom/client'
@@ -19,6 +24,7 @@ export function CareerApplicationForm({ slug }: Props) {
     'idle',
   )
   const [consent, setConsent] = useState(false)
+  const [message, setMessage] = useState('')
 
   const sending = status === 'sending'
 
@@ -65,8 +71,6 @@ export function CareerApplicationForm({ slug }: Props) {
 
   return (
     <form onSubmit={handleSubmit} className='flex flex-col gap-6'>
-      <h2 className='text-2xl font-medium'>Candidate-se</h2>
-
       {/* Honeypot: hidden from real users via off-screen CSS (not
           display:none, which some bots skip when filling forms). */}
       <input
@@ -74,7 +78,7 @@ export function CareerApplicationForm({ slug }: Props) {
         name='honeypot'
         tabIndex={-1}
         autoComplete='off'
-        className='absolute -left-[9999px] h-0 w-0 opacity-0'
+        className='absolute left-[-9999px] h-0 w-0 opacity-0'
         aria-hidden='true'
       />
 
@@ -82,42 +86,40 @@ export function CareerApplicationForm({ slug }: Props) {
         <FieldLabel htmlFor='name'>
           Nome <span className='text-destructive'>*</span>
         </FieldLabel>
-        <Input id='name' name='name' required disabled={sending} />
-      </Field>
-
-      <Field>
-        <FieldLabel htmlFor='email'>
-          E-mail <span className='text-destructive'>*</span>
-        </FieldLabel>
         <Input
-          id='email'
-          name='email'
-          type='email'
+          id='name'
+          name='name'
+          placeholder='Seu nome'
           required
           disabled={sending}
         />
       </Field>
 
-      <Field>
-        <FieldLabel htmlFor='phone'>Telefone</FieldLabel>
-        <Input id='phone' name='phone' disabled={sending} />
-      </Field>
+      <FieldGroup className='grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-4'>
+        <Field>
+          <FieldLabel htmlFor='email'>
+            E-mail <span className='text-destructive'>*</span>
+          </FieldLabel>
+          <Input
+            id='email'
+            name='email'
+            type='email'
+            placeholder='nome@empresa.com'
+            required
+            disabled={sending}
+          />
+        </Field>
 
-      <Field>
-        <FieldLabel htmlFor='portfolioUrl'>Portfólio / LinkedIn</FieldLabel>
-        <Input
-          id='portfolioUrl'
-          name='portfolioUrl'
-          type='url'
-          placeholder='https://...'
-          disabled={sending}
-        />
-      </Field>
-
-      <Field>
-        <FieldLabel htmlFor='message'>Mensagem</FieldLabel>
-        <Textarea id='message' name='message' rows={4} disabled={sending} />
-      </Field>
+        <Field>
+          <FieldLabel htmlFor='phone'>Telefone</FieldLabel>
+          <Input
+            id='phone'
+            name='phone'
+            placeholder='(11) 91234-5678'
+            disabled={sending}
+          />
+        </Field>
+      </FieldGroup>
 
       <Field>
         <FieldLabel htmlFor='resume'>
@@ -133,7 +135,77 @@ export function CareerApplicationForm({ slug }: Props) {
         />
       </Field>
 
-      <Field className='flex-row items-start gap-2'>
+      <FieldGroup className='grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-4'>
+        <Field>
+          <FieldLabel htmlFor='portfolioUrl'>Portfólio / GitHub</FieldLabel>
+          <Input
+            id='portfolioUrl'
+            name='portfolioUrl'
+            type='url'
+            placeholder='https://...'
+            disabled={sending}
+          />
+        </Field>
+
+        <Field>
+          <FieldLabel htmlFor='linkedinUrl'>LinkedIn</FieldLabel>
+          <Input
+            id='linkedinUrl'
+            name='linkedinUrl'
+            type='url'
+            placeholder='https://linkedin.com/in/...'
+            disabled={sending}
+          />
+        </Field>
+      </FieldGroup>
+
+      <FieldGroup className='grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-4'>
+        <Field>
+          <FieldLabel htmlFor='lastJobTitle'>
+            Última experiência (cargo)
+          </FieldLabel>
+          <Input
+            id='lastJobTitle'
+            name='lastJobTitle'
+            placeholder='Ex: Desenvolvedor Frontend Pleno'
+            disabled={sending}
+          />
+        </Field>
+
+        <Field>
+          <FieldLabel htmlFor='experienceYears'>
+            Tempo de experiência (anos)
+          </FieldLabel>
+          <Input
+            id='experienceYears'
+            name='experienceYears'
+            type='number'
+            placeholder='Ex: 3'
+            min={0}
+            max={60}
+            disabled={sending}
+          />
+        </Field>
+      </FieldGroup>
+
+      <Field>
+        <FieldLabel htmlFor='message'>Mensagem</FieldLabel>
+        <Textarea
+          id='message'
+          name='message'
+          rows={4}
+          maxLength={2000}
+          placeholder='Conte um pouco sobre você e por que quer trabalhar com a gente'
+          value={message}
+          onChange={(e) => setMessage(e.target.value)}
+          disabled={sending}
+        />
+        <p className='text-xs text-muted-foreground text-right'>
+          {message.length}/2000
+        </p>
+      </Field>
+
+      <Field orientation='horizontal'>
         <Checkbox
           id='consent'
           checked={consent}
