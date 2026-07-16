@@ -2,7 +2,7 @@
 
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
-import { useState } from 'react'
+import { useReducer, useState } from 'react'
 import { EmailValidationWithOtp } from '@/components/form/email-validation-with-otp'
 import { HeaderLogin } from '@/components/header-login'
 import { SocialLoginButtonProps } from '@/components/social-login-button'
@@ -16,22 +16,81 @@ import { authClient } from '@/src/lib/auth-client'
 
 type Step = 'form' | 'otp'
 
+type FieldErrors = {
+  name?: string
+  email?: string
+  password?: string
+  consent?: string
+}
+
+interface SignUpState {
+  step: Step
+  email: string
+  error: string | null
+  otpError: string | null
+  fieldErrors: FieldErrors
+  isPending: boolean
+  isVerifying: boolean
+}
+
+type SignUpAction =
+  | { type: 'submitStart' }
+  | { type: 'submitValidationError'; errors: FieldErrors }
+  | { type: 'submitError'; message: string }
+  | { type: 'submitSuccess'; email: string }
+  | { type: 'verifyStart' }
+  | { type: 'verifySettled'; error: string | null }
+  | { type: 'resendStart' }
+  | { type: 'resendError'; message: string }
+  | { type: 'back' }
+  | { type: 'consentErrorCleared' }
+
+const initialSignUpState: SignUpState = {
+  step: 'form',
+  email: '',
+  error: null,
+  otpError: null,
+  fieldErrors: {},
+  isPending: false,
+  isVerifying: false,
+}
+
+function signUpReducer(state: SignUpState, action: SignUpAction): SignUpState {
+  switch (action.type) {
+    case 'submitStart':
+      return { ...state, error: null, fieldErrors: {}, isPending: true }
+    case 'submitValidationError':
+      return { ...state, fieldErrors: action.errors, isPending: false }
+    case 'submitError':
+      return { ...state, error: action.message, isPending: false }
+    case 'submitSuccess':
+      return { ...state, email: action.email, step: 'otp', isPending: false }
+    case 'verifyStart':
+      return { ...state, otpError: null, isVerifying: true }
+    case 'verifySettled':
+      return { ...state, otpError: action.error, isVerifying: false }
+    case 'resendStart':
+      return { ...state, otpError: null }
+    case 'resendError':
+      return { ...state, otpError: action.message }
+    case 'back':
+      return { ...state, step: 'form', otpError: null }
+    case 'consentErrorCleared':
+      return {
+        ...state,
+        fieldErrors: { ...state.fieldErrors, consent: undefined },
+      }
+  }
+}
+
 export function SignUpForm({ redirectTo = '/' }: { redirectTo?: string }) {
   const { push } = useRouter()
-  const [step, setStep] = useState<Step>('form')
-  const [email, setEmail] = useState('')
-  const [error, setError] = useState<string | null>(null)
-  const [otpError, setOtpError] = useState<string | null>(null)
-  const [fieldErrors, setFieldErrors] = useState<{
-    name?: string
-    email?: string
-    password?: string
-    consent?: string
-  }>({})
+  const [formState, dispatch] = useReducer(signUpReducer, initialSignUpState)
   const [acceptedTerms, setAcceptedTerms] = useState(false)
   const [acceptedPrivacy, setAcceptedPrivacy] = useState(false)
-  const [isPending, setIsPending] = useState(false)
-  const [isVerifying, setIsVerifying] = useState(false)
+
+  const { step, email, error, otpError, fieldErrors, isPending, isVerifying } =
+    formState
 
   const signInHref =
     redirectTo === '/'
@@ -40,21 +99,14 @@ export function SignUpForm({ redirectTo = '/' }: { redirectTo?: string }) {
 
   async function handleSubmit(e: React.SyntheticEvent<HTMLFormElement>) {
     e.preventDefault()
-    setError(null)
-    setFieldErrors({})
-    setIsPending(true)
+    dispatch({ type: 'submitStart' })
 
     const formData = new FormData(e.currentTarget)
     const name = formData.get('name') as string
     const submittedEmail = formData.get('email') as string
     const password = formData.get('password') as string
 
-    const errors: {
-      name?: string
-      email?: string
-      password?: string
-      consent?: string
-    } = {}
+    const errors: FieldErrors = {}
     if (!name || name.length < 2)
       errors.name = 'Nome deve ter ao menos 2 caracteres'
     if (!submittedEmail) errors.email = 'E-mail é obrigatório'
@@ -65,8 +117,7 @@ export function SignUpForm({ redirectTo = '/' }: { redirectTo?: string }) {
         'Você precisa aceitar os Termos de Serviço e a Política de Privacidade'
 
     if (Object.keys(errors).length > 0) {
-      setFieldErrors(errors)
-      setIsPending(false)
+      dispatch({ type: 'submitValidationError', errors })
       return
     }
 
@@ -83,48 +134,52 @@ export function SignUpForm({ redirectTo = '/' }: { redirectTo?: string }) {
     })
 
     if (signUpError) {
-      setError(signUpError.message ?? 'Erro ao criar conta')
-      setIsPending(false)
+      dispatch({
+        type: 'submitError',
+        message: signUpError.message ?? 'Erro ao criar conta',
+      })
       return
     }
 
-    setEmail(submittedEmail)
-    setStep('otp')
-    setIsPending(false)
+    dispatch({ type: 'submitSuccess', email: submittedEmail })
   }
 
   async function handleVerify(otp: string) {
-    setOtpError(null)
-    setIsVerifying(true)
+    dispatch({ type: 'verifyStart' })
     const { error: verifyError } = await authClient.emailOtp.verifyEmail({
       email,
       otp,
     })
-    setIsVerifying(false)
 
     if (verifyError) {
-      setOtpError(verifyError.message ?? 'Código inválido ou expirado')
+      dispatch({
+        type: 'verifySettled',
+        error: verifyError.message ?? 'Código inválido ou expirado',
+      })
       return
     }
 
+    dispatch({ type: 'verifySettled', error: null })
     push(redirectTo)
   }
 
   async function handleResend() {
-    setOtpError(null)
+    dispatch({ type: 'resendStart' })
     const { error: resendError } =
       await authClient.emailOtp.sendVerificationOtp({
         email,
         type: 'email-verification',
       })
     if (resendError) {
-      setOtpError(resendError.message ?? 'Não foi possível reenviar o código')
+      dispatch({
+        type: 'resendError',
+        message: resendError.message ?? 'Não foi possível reenviar o código',
+      })
     }
   }
 
   function handleBack() {
-    setStep('form')
-    setOtpError(null)
+    dispatch({ type: 'back' })
   }
 
   return (
@@ -210,13 +265,10 @@ export function SignUpForm({ redirectTo = '/' }: { redirectTo?: string }) {
                   <Checkbox
                     id='accept-terms'
                     checked={acceptedTerms}
-                    onCheckedChange={(state) => {
-                      setAcceptedTerms(state === true)
-                      if (state === true && fieldErrors.consent) {
-                        setFieldErrors((prev) => ({
-                          ...prev,
-                          consent: undefined,
-                        }))
+                    onCheckedChange={(checked) => {
+                      setAcceptedTerms(checked === true)
+                      if (checked === true && fieldErrors.consent) {
+                        dispatch({ type: 'consentErrorCleared' })
                       }
                     }}
                     disabled={isPending}
@@ -242,13 +294,10 @@ export function SignUpForm({ redirectTo = '/' }: { redirectTo?: string }) {
                   <Checkbox
                     id='accept-privacy'
                     checked={acceptedPrivacy}
-                    onCheckedChange={(state) => {
-                      setAcceptedPrivacy(state === true)
-                      if (state === true && fieldErrors.consent) {
-                        setFieldErrors((prev) => ({
-                          ...prev,
-                          consent: undefined,
-                        }))
+                    onCheckedChange={(checked) => {
+                      setAcceptedPrivacy(checked === true)
+                      if (checked === true && fieldErrors.consent) {
+                        dispatch({ type: 'consentErrorCleared' })
                       }
                     }}
                     disabled={isPending}
