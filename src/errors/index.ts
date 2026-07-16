@@ -7,7 +7,6 @@ export {
   conflict,
   couponInvalid,
   databaseError,
-  featureNotInPlan,
   forbidden,
   invalidCredentials,
   invitationAlreadyMember,

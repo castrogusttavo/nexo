@@ -1,5 +1,4 @@
 import {
-  BILLING_INTERVALS,
   type BillingInterval,
   PLAN_PRICES,
   type PlanPrice,
@@ -15,7 +14,6 @@ export { PAID_PLAN_PRICES } from '@/src/config/plan-prices'
 
 /** Cadência de cobrança — `monthly`/`yearly` (padrão do backend), via url-state `?billing=`. */
 export type Billing = BillingInterval
-export const BILLINGS = BILLING_INTERVALS
 
 export interface PlanFeature {
   title: string

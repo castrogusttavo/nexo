@@ -102,10 +102,6 @@ export const seatLimitReached = (
   message = 'Limite de assentos do plano atingido',
 ): AppError => appError('SEAT_LIMIT_REACHED', message)
 
-export const featureNotInPlan = (
-  message = 'Recurso não disponível no plano atual',
-): AppError => appError('FEATURE_NOT_IN_PLAN', message)
-
 export const paymentError = (
   message = 'Falha ao processar o pagamento',
 ): AppError => appError('PAYMENT_ERROR', message)

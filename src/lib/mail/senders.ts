@@ -41,6 +41,3 @@ export const mailSenders = {
   billing: sender('financeiro'),
   status: sender('status'),
 } as const
-
-/** Default Reply-To for transactional mail sent from `notifications`. */
-export const defaultReplyTo = mailAddresses.support

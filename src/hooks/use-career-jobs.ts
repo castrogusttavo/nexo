@@ -1,30 +1,17 @@
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
+import { useMutation, useQueryClient } from '@tanstack/react-query'
 import type {
   ChangeCareerJobStatusDTO,
   CreateCareerJobDTO,
   UpdateCareerJobDTO,
 } from '@/src/schemas/career-job.schema'
 import type { CareerJobDTO } from '@/types/career-job'
-import { apiFetch, apiFetchJson } from './_fetch'
+import { apiFetchJson } from './_fetch'
 
 const CAREER_JOBS_KEY = ['admin', 'career-jobs'] as const
 const BASE_API_ROUTE = '/api/admin/careers'
 
 function careerJobKey(id: string) {
   return [...CAREER_JOBS_KEY, id] as const
-}
-
-export function useCareerJobs() {
-  return useQuery({
-    queryKey: CAREER_JOBS_KEY,
-    queryFn: () =>
-      apiFetch<CareerJobDTO[]>(
-        BASE_API_ROUTE,
-        undefined,
-        'Erro ao buscar vagas',
-      ),
-    staleTime: 60 * 1000,
-  })
 }
 
 export function useCreateCareerJob() {
