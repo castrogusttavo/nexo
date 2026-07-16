@@ -55,26 +55,45 @@ function BulletListField({
   onChange,
   disabled,
 }: BulletListFieldProps) {
+  // items is a plain string[] with no natural id, but every mutation here
+  // (add/remove/edit) goes through this component, so ids can be tracked
+  // in lockstep to give React a stable key across add/remove.
+  const [ids, setIds] = useState<string[]>(() =>
+    items.map(() => crypto.randomUUID()),
+  )
+
+  function updateItem(index: number, value: string) {
+    const next = [...items]
+    next[index] = value
+    onChange(next)
+  }
+
+  function removeItem(index: number) {
+    onChange(items.filter((_, i) => i !== index))
+    setIds((prev) => prev.filter((_, i) => i !== index))
+  }
+
+  function addItem() {
+    onChange([...items, ''])
+    setIds((prev) => [...prev, crypto.randomUUID()])
+  }
+
   return (
     <Field>
       <FieldLabel>{label}</FieldLabel>
       <div className='flex flex-col gap-2'>
         {items.map((item, index) => (
-          <div key={index} className='flex gap-2'>
+          <div key={ids[index] ?? index} className='flex gap-2'>
             <Input
               value={item}
               disabled={disabled}
-              onChange={(e) => {
-                const next = [...items]
-                next[index] = e.target.value
-                onChange(next)
-              }}
+              onChange={(e) => updateItem(index, e.target.value)}
             />
             <Button
               type='button'
               variant='outline'
               disabled={disabled}
-              onClick={() => onChange(items.filter((_, i) => i !== index))}
+              onClick={() => removeItem(index)}
             >
               Remover
             </Button>
@@ -84,7 +103,7 @@ function BulletListField({
           type='button'
           variant='outline'
           disabled={disabled}
-          onClick={() => onChange([...items, ''])}
+          onClick={addItem}
         >
           Adicionar item
         </Button>
