@@ -21,6 +21,9 @@ export function createFakeCareerJob(overrides?: Partial<CareerJob>): CareerJob {
     department: null,
     summary: 'Vaga para quem está começando a carreira em frontend',
     content,
+    location: null,
+    locationType: 'ON_SITE',
+    employmentType: 'FULL_TIME',
     status: 'DRAFT',
     createdAt: now,
     updatedAt: now,
@@ -39,6 +42,9 @@ export function createFakeCareerJobDTO(
     department: null,
     summary: 'Vaga para quem está começando a carreira em frontend',
     content: fakeContent,
+    location: null,
+    locationType: 'ON_SITE',
+    employmentType: 'FULL_TIME',
     status: 'DRAFT',
     createdAt: now,
     updatedAt: now,
@@ -48,7 +54,17 @@ export function createFakeCareerJobDTO(
 
 export async function seedCareerJob(
   overrides?: Partial<
-    Pick<CareerJob, 'slug' | 'title' | 'department' | 'summary' | 'status'>
+    Pick<
+      CareerJob,
+      | 'slug'
+      | 'title'
+      | 'department'
+      | 'summary'
+      | 'status'
+      | 'location'
+      | 'locationType'
+      | 'employmentType'
+    >
   > & { content?: Prisma.InputJsonValue },
 ) {
   const { content, ...rest } = overrides ?? {}

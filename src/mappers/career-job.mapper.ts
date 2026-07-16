@@ -11,6 +11,9 @@ export function toCareerJobDTO(job: CareerJob): CareerJobDTO {
     department: job.department ?? null,
     summary: job.summary,
     content: job.content as CareerJobContentDTO,
+    location: job.location ?? null,
+    locationType: job.locationType,
+    employmentType: job.employmentType,
     status: job.status,
     ...withTimestamps(job),
   }

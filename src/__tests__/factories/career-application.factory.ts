@@ -13,7 +13,10 @@ export function createFakeCareerApplication(
     name: 'Ana Silva',
     email: 'ana@example.com',
     phone: null,
+    linkedinUrl: null,
     portfolioUrl: null,
+    lastJobTitle: null,
+    experienceYears: null,
     message: null,
     resumeBucket: 'career-applications',
     resumeKey: `resumes/${createId()}.pdf`,
@@ -36,7 +39,10 @@ export function createFakeCareerApplicationDTO(
     name: 'Ana Silva',
     email: 'ana@example.com',
     phone: null,
+    linkedinUrl: null,
     portfolioUrl: null,
+    lastJobTitle: null,
+    experienceYears: null,
     message: null,
     resumeFileName: 'curriculo.pdf',
     consentAt: now,
@@ -63,6 +69,9 @@ export async function seedCareerApplication(
       | 'consentAt'
       | 'ipAddress'
       | 'status'
+      | 'linkedinUrl'
+      | 'lastJobTitle'
+      | 'experienceYears'
     >
   >,
 ) {

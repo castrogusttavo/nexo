@@ -130,6 +130,8 @@ describe('CareerJobService', () => {
         requirements: ['B'],
         stack: ['C'],
       },
+      locationType: 'ON_SITE' as const,
+      employmentType: 'FULL_TIME' as const,
     }
 
     it('should create a job for a platform admin', async () => {

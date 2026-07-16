@@ -39,7 +39,10 @@ export const POST = withAxiom(
         name: formData.get('name'),
         email: formData.get('email'),
         phone: formData.get('phone') || undefined,
+        linkedinUrl: formData.get('linkedinUrl') || undefined,
         portfolioUrl: formData.get('portfolioUrl') || undefined,
+        lastJobTitle: formData.get('lastJobTitle') || undefined,
+        experienceYears: formData.get('experienceYears') || undefined,
         message: formData.get('message') || undefined,
         consent: formData.get('consent') === 'true',
       }

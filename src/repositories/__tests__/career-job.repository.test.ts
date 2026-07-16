@@ -87,6 +87,8 @@ describe('CareerJobRepository', () => {
         title: 'New Job',
         summary: 'Resumo da vaga',
         content,
+        locationType: 'ON_SITE',
+        employmentType: 'FULL_TIME',
       })
 
       const job = expectOk(result)
@@ -102,6 +104,8 @@ describe('CareerJobRepository', () => {
         title: 'Another',
         summary: 'Resumo',
         content,
+        locationType: 'ON_SITE',
+        employmentType: 'FULL_TIME',
       })
 
       expectErr(result, 'CAREER_JOB_SLUG_TAKEN')
@@ -194,6 +198,8 @@ describe('CareerJobRepository', () => {
         title: 'X',
         summary: 'Resumo',
         content,
+        locationType: 'ON_SITE',
+        employmentType: 'FULL_TIME',
       })
 
       expectErr(result, 'DATABASE_ERROR')

@@ -17,7 +17,10 @@ export const CareerApplicationEmail = ({
   name = 'Ana Silva',
   email = 'ana@example.com',
   phone,
+  linkedinUrl,
   portfolioUrl,
+  lastJobTitle,
+  experienceYears,
   message,
   resumeUrl = 'https://example.com/resume.pdf',
 }: CareerApplicationEmailProps) => (
@@ -33,27 +36,18 @@ export const CareerApplicationEmail = ({
           <Text className='text-sm text-muted-foreground'>{jobTitle}</Text>
           <Hr />
           <Section>
-            <Text className='text-sm'>
-              <strong>Nome:</strong> {name}
-            </Text>
-            <Text className='text-sm'>
-              <strong>E-mail:</strong> {email}
-            </Text>
-            {phone && (
-              <Text className='text-sm'>
-                <strong>Telefone:</strong> {phone}
-              </Text>
-            )}
-            {portfolioUrl && (
-              <Text className='text-sm'>
-                <strong>Portfólio:</strong> {portfolioUrl}
-              </Text>
+            <Text className='text-sm'><strong>Nome:</strong> {name}</Text>
+            <Text className='text-sm'><strong>E-mail:</strong> {email}</Text>
+            {phone && <Text className='text-sm'><strong>Telefone:</strong> {phone}</Text>}
+            {linkedinUrl && <Text className='text-sm'><strong>LinkedIn:</strong> {linkedinUrl}</Text>}
+            {portfolioUrl && <Text className='text-sm'><strong>Portfólio:</strong> {portfolioUrl}</Text>}
+            {lastJobTitle && <Text className='text-sm'><strong>Última experiência:</strong> {lastJobTitle}</Text>}
+            {experienceYears != null && (
+              <Text className='text-sm'><strong>Tempo de experiência:</strong> {experienceYears} {experienceYears === 1 ? 'ano' : 'anos'}</Text>
             )}
             {message && (
               <>
-                <Text className='text-sm'>
-                  <strong>Mensagem:</strong>
-                </Text>
+                <Text className='text-sm'><strong>Mensagem:</strong></Text>
                 <Text className='text-sm whitespace-pre-line'>{message}</Text>
               </>
             )}

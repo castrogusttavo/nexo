@@ -1,4 +1,10 @@
-import type { CareerJob, CareerJobStatus, Prisma } from '@prisma/client'
+import type {
+  CareerEmploymentType,
+  CareerJob,
+  CareerJobStatus,
+  CareerLocationType,
+  Prisma,
+} from '@prisma/client'
 import { careerJobNotFound, careerJobSlugTaken } from '../errors'
 import { prisma } from '../lib/prisma'
 import { err, ok, type Result } from '../lib/result'
@@ -59,6 +65,9 @@ export const CareerJobRepository = {
     department?: string
     summary: string
     content: Prisma.InputJsonValue
+    location?: string
+    locationType: CareerLocationType
+    employmentType: CareerEmploymentType
   }): Promise<Result<CareerJob>> {
     try {
       const job = await prisma.careerJob.create({ data })
@@ -79,6 +88,9 @@ export const CareerJobRepository = {
       department?: string | null
       summary?: string
       content?: Prisma.InputJsonValue
+      location?: string | null
+      locationType?: CareerLocationType
+      employmentType?: CareerEmploymentType
     },
   ): Promise<Result<CareerJob>> {
     try {

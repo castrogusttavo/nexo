@@ -70,7 +70,10 @@ export interface CareerApplicationEmailProps {
   name: string
   email: string
   phone?: string | null
+  linkedinUrl?: string | null
   portfolioUrl?: string | null
+  lastJobTitle?: string | null
+  experienceYears?: number | null
   message?: string | null
   resumeUrl: string
 }

@@ -1,6 +1,14 @@
 import z from 'zod'
 
 export const CAREER_JOB_STATUSES = ['DRAFT', 'OPEN', 'CLOSED'] as const
+export const CAREER_LOCATION_TYPES = ['REMOTE', 'HYBRID', 'ON_SITE'] as const
+export const CAREER_EMPLOYMENT_TYPES = [
+  'FULL_TIME',
+  'PART_TIME',
+  'INTERNSHIP',
+  'CONTRACT',
+  'TEMPORARY',
+] as const
 
 const slugRegex = /^[a-z0-9-]+$/
 
@@ -37,6 +45,12 @@ const careerJobBullet = z
   .min(2, 'Item muito curto')
   .max(300, 'Item muito longo')
 
+export const careerJobLocation = z
+  .string()
+  .trim()
+  .min(2, 'Localização deve ter ao mesno 2 caracteres')
+  .max(120, 'Localização deve ter no máximo 120 caracteres')
+
 export const CareerJobContentSchema = z.object({
   about: z
     .string()
@@ -64,6 +78,9 @@ export const CreateCareerJobSchema = z.object({
   department: careerJobDepartment.optional(),
   summary: careerJobSummary,
   content: CareerJobContentSchema,
+  location: careerJobLocation.optional(),
+  locationType: z.enum(CAREER_LOCATION_TYPES),
+  employmentType: z.enum(CAREER_EMPLOYMENT_TYPES),
 })
 
 export type CreateCareerJobDTO = z.infer<typeof CreateCareerJobSchema>

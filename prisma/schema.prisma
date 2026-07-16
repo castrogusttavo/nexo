@@ -466,15 +466,18 @@ model ProjectFavorite {
 }
 
 model CareerJob {
-  id         String          @id @default(cuid())
-  slug       String          @unique
-  title      String
-  department String?
-  summary    String
-  content    Json            @map("content")
-  status     CareerJobStatus @default(DRAFT) @map("status")
-  createdAt  DateTime        @default(now()) @map("created_at")
-  updatedAt  DateTime        @updatedAt @map("updated_at")
+  id             String               @id @default(cuid())
+  slug           String               @unique
+  title          String
+  department     String?
+  summary        String
+  content        Json                 @map("content")
+  location       String?              @map("location")
+  locationType   CareerLocationType   @default(REMOTE) @map("location_type")
+  employmentType CareerEmploymentType @default(CONTRACT) @map("employment_type")
+  status         CareerJobStatus      @default(DRAFT) @map("status")
+  createdAt      DateTime             @default(now()) @map("created_at")
+  updatedAt      DateTime             @updatedAt @map("updated_at")
 
   applications CareerApplication[]
 
@@ -482,20 +485,23 @@ model CareerJob {
 }
 
 model CareerApplication {
-  id             String                  @id @default(cuid())
-  jobId          String                  @map("job_id")
-  name           String
-  email          String
-  phone          String?
-  portfolioUrl   String?                 @map("portfolio_url")
-  message        String?
-  resumeBucket   String                  @map("resume_bucket")
-  resumeKey      String                  @map("resume_key")
-  resumeFileName String                  @map("resume_file_name")
-  consentAt      DateTime                @map("consent_at")
-  ipAddress      String                  @map("ip_address")
-  status         CareerApplicationStatus @default(RECEIVED) @map("status")
-  createdAt      DateTime                @default(now()) @map("created_at")
+  id              String                  @id @default(cuid())
+  jobId           String                  @map("job_id")
+  name            String
+  email           String
+  phone           String?
+  linkedinUrl     String?                 @map("linkedin_url")
+  portfolioUrl    String?                 @map("portfolio_url")
+  lastJobTitle    String?                 @map("last_job_title")
+  experienceYears Int?                    @map("experience_years")
+  message         String?
+  resumeBucket    String                  @map("resume_bucket")
+  resumeKey       String                  @map("resume_key")
+  resumeFileName  String                  @map("resume_file_name")
+  consentAt       DateTime                @map("consent_at")
+  ipAddress       String                  @map("ip_address")
+  status          CareerApplicationStatus @default(RECEIVED) @map("status")
+  createdAt       DateTime                @default(now()) @map("created_at")
 
   job CareerJob @relation(fields: [jobId], references: [id], onDelete: Cascade)
 
@@ -515,4 +521,18 @@ enum CareerApplicationStatus {
   REVIEWING
   REJECTED
   HIRED
+}
+
+enum CareerLocationType {
+  REMOTE
+  HYBRID
+  ON_SITE
+}
+
+enum CareerEmploymentType {
+  FULL_TIME
+  PART_TIME
+  INTERNSHIP
+  CONTRACT
+  TEMPORARY
 }

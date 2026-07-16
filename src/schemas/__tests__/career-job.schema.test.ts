@@ -17,6 +17,8 @@ const valid = {
   title: 'Junior Frontend Engineer',
   summary: 'Vaga para quem está começando a carreira em frontend.',
   content: validContent,
+  locationType: 'ON_SITE',
+  employmentType: 'FULL_TIME',
 }
 
 describe('CreateCareerJobSchema', () => {
