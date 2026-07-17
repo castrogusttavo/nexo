@@ -7,6 +7,7 @@ WORKDIR /app
 COPY package.json pnpm-lock.yaml* pnpm-workspace.yaml ./
 
 RUN --mount=type=secret,id=hugeicons_token \
+    --mount=type=cache,target=/root/.local/share/pnpm/store,sharing=locked \
     corepack enable pnpm && \
     if [ -f /run/secrets/hugeicons_token ]; then \
       echo "@hugeicons-pro:registry=https://npm.hugeicons.com" > .npmrc && \
@@ -40,7 +41,8 @@ ENV DATABASE_URL="postgresql://dummy:dummy@localhost:5432/dummy"
 ENV REDIS_URL="redis://localhost:6379"
 ENV SKIP_ENV_VALIDATION="true"
 
-RUN corepack enable pnpm && \
+RUN --mount=type=cache,target=/app/.next/cache \
+    corepack enable pnpm && \
     pnpm prisma:generate && \
     pnpm build && \
     pnpm worker:build

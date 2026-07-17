@@ -81,8 +81,8 @@ jobs:
           load: true
           tags: ${{ env.IMAGE_NAME }}:scan
           labels: ${{ steps.meta.outputs.labels }}
-          cache-from: type=registry,ref=${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:buildcache
-          cache-to: type=registry,ref=${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:buildcache,mode=max
+          cache-from: type=local,src=/var/www/nexo/.buildx-cache
+          cache-to: type=local,dest=/var/www/nexo/.buildx-cache,mode=max
           build-args: |
             NEXT_PUBLIC_URL=https://nexo.coodee.dev
             NEXT_PUBLIC_AXIOM_TOKEN=${{ secrets.NEXT_PUBLIC_AXIOM_TOKEN }}
