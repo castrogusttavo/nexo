@@ -2,6 +2,7 @@ import fs from 'node:fs/promises'
 import path from 'node:path'
 import matter from 'gray-matter'
 import { cache } from 'react'
+import rehypeSanitize from 'rehype-sanitize'
 import rehypeSlug from 'rehype-slug'
 import rehypeStringify from 'rehype-stringify'
 import { remark } from 'remark'
@@ -70,6 +71,7 @@ export const getPostBySlug = cache(
       const compiled = await remark()
         .use(remarkRehype)
         .use(rehypeSlug)
+        .use(rehypeSanitize)
         .use(rehypeStringify)
         .process(content)
       const contentHtml = compiled.toString()
