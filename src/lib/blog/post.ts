@@ -44,8 +44,13 @@ function extractHeadings(html: string): BlogPostHeading[] {
   }))
 }
 async function listMarkdownFiles() {
-  const fileNames = await fs.readdir(BLOG_DIR)
-  return fileNames.filter((name) => name.endsWith('.md'))
+  try {
+    const fileNames = await fs.readdir(BLOG_DIR)
+    return fileNames.filter((name) => name.endsWith('.md'))
+  } catch (error) {
+    if ((error as NodeJS.ErrnoException).code === 'ENOENT') return []
+    throw error
+  }
 }
 
 export const getAllPostsMeta = cache(async (): Promise<BlogPostMetaDTO[]> => {

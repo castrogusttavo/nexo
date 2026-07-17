@@ -5,18 +5,13 @@ import { Muted } from '@/components/typography/text/muted'
 import { Button } from '@/components/ui/button'
 import { BLOG_POST_TAG_LABELS } from '@/src/lib/blog/blog-labels'
 import { formatPostDate } from '@/src/lib/blog/format-ṕost-date'
-import { getAllPostsMeta, getPostBySlug } from '@/src/lib/blog/post'
+import { getPostBySlug } from '@/src/lib/blog/post'
 import { BlogContent } from './blog-content'
 import { CopyMarkdownButton } from './copy-markdown-button'
 import { TableOfContents } from './table-of-contents'
 
 interface Props {
   params: Promise<{ slug: string }>
-}
-
-export async function generateStaticParams() {
-  const posts = await getAllPostsMeta()
-  return posts.map((post) => ({ slug: post.slug }))
 }
 
 export default async function BlogPostPage({ params }: Props) {
