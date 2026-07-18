@@ -8,7 +8,7 @@ on:
 
 env:
   REGISTRY: ghcr.io
-  IMAGE_NAME: castrogusttavo/nexo
+  IMAGE_NAME: ${{ github.repository }}
 
 jobs:
   migrate:
