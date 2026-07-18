@@ -18,8 +18,14 @@ export const InviteToProjectSchema = z.object({
   role: z.enum(InvitableRoleValues).default('MEMBER'),
 })
 
+export const UpdateInvitationRoleSchema = z.object({
+  role: z.enum(InvitableRoleValues),
+})
+
 export type CreateInvitationDTO = z.infer<typeof CreateInvitationSchema>
 
 export type AcceptInvitationDTO = z.infer<typeof AcceptInvitationSchema>
 
 export type InviteToProjectDTO = z.infer<typeof InviteToProjectSchema>
+
+export type UpdateInvitationRoleDTO = z.infer<typeof UpdateInvitationRoleSchema>
