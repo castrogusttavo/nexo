@@ -58,11 +58,23 @@ jobs:
         uses: docker/setup-buildx-action@8d2750c68a42422c14e847fe6c8ac0403b4cbd6f # v3
 
       - name: Log in to Container Registry
-        uses: docker/login-action@c94ce9fb468520275223c153574b00df6fe4bcc9 # v3
-        with:
-          registry: ${{ env.REGISTRY }}
-          username: ${{ github.actor }}
-          password: ${{ secrets.GITHUB_TOKEN }}
+        # docker/login-action has no retry, and this runner's path to ghcr.io
+        # has been intermittently timing out ("Client.Timeout exceeded while
+        # awaiting headers") — a plain bash retry with backoff survives that
+        # without needing a manual re-run every time it happens.
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          for attempt in 1 2 3 4 5; do
+            if echo "$GITHUB_TOKEN" | docker login "${{ env.REGISTRY }}" -u "${{ github.actor }}" --password-stdin; then
+              echo "Logged in to ${{ env.REGISTRY }} on attempt $attempt"
+              exit 0
+            fi
+            echo "::warning::Login attempt $attempt failed, retrying in $((attempt * 5))s..."
+            sleep $((attempt * 5))
+          done
+          echo "::error::Failed to log in to ${{ env.REGISTRY }} after 5 attempts"
+          exit 1
 
       - name: Extract metadata
         id: meta
@@ -123,6 +135,10 @@ jobs:
           docker compose pull
           docker compose up -d
           docker image prune -f
+
+      - name: Log out of Container Registry
+        if: always()
+        run: docker logout "${{ env.REGISTRY }}" || true
 
   release:
     name: Tag & Release
