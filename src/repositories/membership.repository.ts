@@ -1,9 +1,12 @@
-import type { Membership, Role, Workspace } from '@prisma/client'
+import type { Account, Membership, Role, User, Workspace } from '@prisma/client'
 import { prisma } from '@/src/lib/prisma'
 import { err, ok, type Result } from '@/src/lib/result'
 import { dbError } from './db-error'
 
 export type MembershipWithWorkspace = Membership & { workspace: Workspace }
+export type MembershipWithUser = Membership & {
+  user: User & { accounts: Account[] }
+}
 
 export const MembershipRepository = {
   async findByUserAndWorkspace(
@@ -81,6 +84,42 @@ export const MembershipRepository = {
       return ok(memberships.map((m) => m.userId))
     } catch (error) {
       return err(dbError('Failed to list membership user ids', error))
+    }
+  },
+
+  async listByWorkspaceWithUser(
+    workspaceId: string,
+    filters: { search?: string; roles?: Role[] },
+  ): Promise<Result<MembershipWithUser[]>> {
+    try {
+      const memberships = await prisma.membership.findMany({
+        where: {
+          workspaceId,
+          ...(filters.roles?.length ? { role: { in: filters.roles } } : {}),
+          ...(filters.search
+            ? {
+                user: {
+                  OR: [
+                    { name: { contains: filters.search, mode: 'insensitive' } },
+                    {
+                      username: {
+                        contains: filters.search,
+                        mode: 'insensitive',
+                      },
+                    },
+                    {
+                      email: { contains: filters.search, mode: 'insensitive' },
+                    },
+                  ],
+                },
+              }
+            : {}),
+        },
+        include: { user: { include: { accounts: true } } },
+      })
+      return ok(memberships)
+    } catch (error) {
+      return err(dbError('Failed to list workspace members with user', error))
     }
   },
 }

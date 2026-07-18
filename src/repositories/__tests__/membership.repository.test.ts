@@ -216,4 +216,50 @@ describe('MembershipRepository', () => {
       expectErr(await MembershipRepository.listByUser('u'), 'DATABASE_ERROR')
     })
   })
+
+  describe('listByWorkspaceWithUser()', () => {
+    it('filters by role and includes linked accounts', async () => {
+      const workspace = await seedWorkspace()
+      const adminUser = await seedUser({ name: 'Ada Admin' })
+      const memberUser = await seedUser({ name: 'Mel Member' })
+      await seedMembership({
+        userId: adminUser.id,
+        workspaceId: workspace.id,
+        role: 'ADMIN',
+      })
+      await seedMembership({
+        userId: memberUser.id,
+        workspaceId: workspace.id,
+        role: 'MEMBER',
+      })
+
+      const result = await MembershipRepository.listByWorkspaceWithUser(
+        workspace.id,
+        {
+          roles: ['ADMIN'],
+        },
+      )
+
+      const rows = expectOk(result)
+      expect(rows).toHaveLength(1)
+      expect(rows[0].user.name).toBe('Ada Admin')
+      expect(rows[0].user.accounts).toEqual([])
+    })
+
+    it('filters by search across name, username and email', async () => {
+      const workspace = await seedWorkspace()
+      const user = await seedUser({ name: 'Zeta Search Target' })
+      await seedMembership({ userId: user.id, workspaceId: workspace.id })
+
+      const result = await MembershipRepository.listByWorkspaceWithUser(
+        workspace.id,
+        {
+          search: 'search target',
+        },
+      )
+
+      const rows = expectOk(result)
+      expect(rows).toHaveLength(1)
+    })
+  })
 })
