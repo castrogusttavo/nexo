@@ -56,24 +56,6 @@ jobs:
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@8d2750c68a42422c14e847fe6c8ac0403b4cbd6f # v3
 
-      - name: Log in to Container Registry
-        # Plain bash retry with backoff — the registry login has intermittently
-        # timed out on this runner before, so this survives a bad network
-        # window instead of failing the whole deploy on the first blip.
-        env:
-          DOCKERHUB_TOKEN: ${{ secrets.DOCKERHUB_TOKEN }}
-        run: |
-          for attempt in 1 2 3 4 5; do
-            if echo "$DOCKERHUB_TOKEN" | docker login "${{ env.REGISTRY }}" -u "${{ vars.DOCKERHUB_USERNAME }}" --password-stdin; then
-              echo "Logged in to ${{ env.REGISTRY }} on attempt $attempt"
-              exit 0
-            fi
-            echo "::warning::Login attempt $attempt failed, retrying in $((attempt * 5))s..."
-            sleep $((attempt * 5))
-          done
-          echo "::error::Failed to log in to ${{ env.REGISTRY }} after 5 attempts"
-          exit 1
-
       - name: Extract metadata
         id: meta
         uses: docker/metadata-action@c299e40c65443455700f0fdfc63efafe5b349051 # v5
@@ -112,14 +94,6 @@ jobs:
           ignore-unfixed: true
           exit-code: '1'
 
-      - name: Push scanned image
-        run: |
-          while IFS= read -r tag; do
-            [ -z "$tag" ] && continue
-            docker tag "${{ env.IMAGE_NAME }}:scan" "$tag"
-            docker push "$tag"
-          done <<< "${{ steps.meta.outputs.tags }}"
-
       - name: Decrypt production secrets
         run: |
           sops --decrypt secrets/production.enc.env > /var/www/nexo/.env
@@ -127,12 +101,55 @@ jobs:
           SOPS_AGE_KEY: ${{ secrets.SOPS_AGE_KEY }}
 
       - name: Deploy to server
+        # Deploys straight from the image just built and scanned on this same
+        # host — no registry round-trip. Registry connectivity from this
+        # runner has been unreliable for days (identical "context deadline
+        # exceeded" against ghcr.io AND Docker Hub; DNS, proxy env, memory/
+        # load and the containerd snapshotter were all tested and ruled out
+        # as the cause). Since build and deploy already happen on the same
+        # machine, pushing the image out and pulling it straight back in was
+        # pure overhead — and exactly the overhead that kept failing.
+        #
+        # The SHA tag below stays on disk (docker image prune -f only removes
+        # untagged images) as a manual rollback point:
+        #   docker tag <IMAGE_NAME>:<old-sha> <REGISTRY>/<IMAGE_NAME>:latest
+        #   cd /var/www/nexo && docker compose up -d
         run: |
+          docker tag "${{ env.IMAGE_NAME }}:scan" "${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest"
+          docker tag "${{ env.IMAGE_NAME }}:scan" "${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ github.event.workflow_run.head_sha }}"
           cp docker-compose.yml /var/www/nexo/docker-compose.yml
           cd /var/www/nexo/
-          docker compose pull
           docker compose up -d
           docker image prune -f
+
+      - name: Log in to Container Registry
+        # Best-effort from here down — the deploy above already happened
+        # without needing this. Push the image out when the network
+        # cooperates so there's an off-host copy/history; don't block or
+        # fail the job if it doesn't.
+        continue-on-error: true
+        env:
+          DOCKERHUB_TOKEN: ${{ secrets.DOCKERHUB_TOKEN }}
+        run: |
+          for attempt in 1 2; do
+            if echo "$DOCKERHUB_TOKEN" | docker login "${{ env.REGISTRY }}" -u "${{ vars.DOCKERHUB_USERNAME }}" --password-stdin; then
+              echo "Logged in to ${{ env.REGISTRY }} on attempt $attempt"
+              exit 0
+            fi
+            echo "::warning::Login attempt $attempt failed, retrying in $((attempt * 5))s..."
+            sleep $((attempt * 5))
+          done
+          echo "::warning::Failed to log in to ${{ env.REGISTRY }} after 2 attempts — skipping registry backup for this deploy"
+          exit 1
+
+      - name: Push image to registry (best effort)
+        continue-on-error: true
+        run: |
+          while IFS= read -r tag; do
+            [ -z "$tag" ] && continue
+            docker tag "${{ env.IMAGE_NAME }}:scan" "$tag"
+            docker push "$tag" || echo "::warning::Failed to push $tag"
+          done <<< "${{ steps.meta.outputs.tags }}"
 
       - name: Log out of Container Registry
         if: always()
