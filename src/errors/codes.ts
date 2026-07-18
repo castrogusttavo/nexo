@@ -39,6 +39,11 @@ export const ERROR_CODES = {
   CAREER_JOB_NOT_FOUND: { code: 'CAREER_JOB_NOT_FOUND', status: 404 },
   CAREER_JOB_CLOSED: { code: 'CAREER_JOB_CLOSED', status: 409 },
   CAREER_JOB_SLUG_TAKEN: { code: 'CAREER_JOB_SLUG_TAKEN', status: 409 },
+  MEMBER_IMPORT_INVALID_FORMAT: {
+    code: 'MEMBER_IMPORT_INVALID_FORMAT',
+    status: 422,
+  },
+  MEMBER_IMPORT_EMPTY: { code: 'MEMBER_IMPORT_EMPTY', status: 422 },
 
   // Server Errors (500)
   INTERNAL_SERVER_ERROR: { code: 'INTERNAL_SERVER_ERROR', status: 500 },

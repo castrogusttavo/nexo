@@ -128,3 +128,15 @@ export const careerJobForbidden = (
 export const careerJobSlugTaken = (
   message = 'Já existe uma vaga com este slug',
 ): AppError => appError('CAREER_JOB_SLUG_TAKEN', message)
+
+export const featureNotInPlan = (
+  message = 'Recurso não disponível no seu plano atual',
+): AppError => appError('FEATURE_NOT_IN_PLAN', message)
+
+export const memberImportInvalidFormat = (
+  message = 'Arquivo CSV inválido. Colunas esperadas: email, username, name, role',
+): AppError => appError('MEMBER_IMPORT_INVALID_FORMAT', message)
+
+export const memberImportEmpty = (
+  message = 'O arquivo CSV não contém linhas para importar',
+): AppError => appError('MEMBER_IMPORT_EMPTY', message)
