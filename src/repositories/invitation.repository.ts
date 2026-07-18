@@ -260,4 +260,19 @@ export const InvitationRepository = {
       return err(dbError('Failed to accept invitation', error))
     }
   },
+
+  async updateRole(
+    id: string,
+    role: Role,
+  ): Promise<Result<WorkspaceInvitation>> {
+    try {
+      const invitation = await prisma.workspaceInvitation.update({
+        where: { id },
+        data: { role },
+      })
+      return ok(invitation)
+    } catch (error) {
+      return err(dbError('Failed to update invitation role', error))
+    }
+  },
 }
