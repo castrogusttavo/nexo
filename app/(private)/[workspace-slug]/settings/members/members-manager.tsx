@@ -1,190 +1,67 @@
 'use client'
 
-import { type FormEvent, useState } from 'react'
-import { Muted } from '@/components/typography/text/muted'
-import { Badge } from '@/components/ui/badge'
-import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
-import {
-  Select,
-  SelectContent,
-  SelectGroup,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select'
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from '@/components/ui/table'
-import { notify } from '@/lib/notify'
-import {
-  useCreateInvitation,
-  useInvitations,
-  useResendInvitation,
-  useRevokeInvitation,
-} from '@/src/hooks/use-invitation'
-import { InvitableRoleValues } from '@/src/schemas/invitation.schema'
+import type { SortingState } from '@tanstack/react-table'
+import { useEffect, useState } from 'react'
+import { WorkspaceSettingsMemberHeader } from '@/app/_components/workspace/settings/members/workspace-settings-memeber-header'
+import { DataTable } from '@/components/ui/data-table/data-table'
+import { useMembers } from '@/src/hooks/use-member'
+import { memberColumns } from './columns'
+import { PendingInvitationsList } from './pending-invitations-list'
 
-const dateFmt = new Intl.DateTimeFormat('pt-BR', {
-  day: '2-digit',
-  month: 'short',
-  year: 'numeric',
-})
-
-const STATUS_LABEL: Record<string, string> = {
-  PENDING: 'Pendente',
-  ACCEPTED: 'Aceito',
-  REVOKED: 'Revogado',
-  EXPIRED: 'Expirado',
-}
-
-const ROLE_LABEL: Record<string, string> = {
-  ADMIN: 'Administrador',
-  MEMBER: 'Membro',
-  VIEWER: 'Visualizador',
-}
+const PAGE_SIZE = 20
 
 export function MembersManager({ workspaceId }: { workspaceId: string }) {
-  const [email, setEmail] = useState('')
-  const [role, setRole] = useState('MEMBER')
+  const [search, setSearch] = useState('')
+  const [debouncedSearch, setDebouncedSearch] = useState('')
+  const [roles, setRoles] = useState<string[]>([])
+  const [sorting, setSorting] = useState<SortingState>([
+    { id: 'joinedAt', desc: true },
+  ])
+  const [page, setPage] = useState(1)
 
-  const { data: invitations, isLoading } = useInvitations(workspaceId)
-  const createInvitation = useCreateInvitation(workspaceId)
-  const resendInvitation = useResendInvitation(workspaceId)
-  const revokeInvitation = useRevokeInvitation(workspaceId)
+  useEffect(() => {
+    const timeout = setTimeout(() => setDebouncedSearch(search), 300)
+    return () => clearTimeout(timeout)
+  }, [search])
 
-  function handleInvite(event: FormEvent) {
-    event.preventDefault()
+  useEffect(() => {
+    setPage(1)
+  }, [debouncedSearch, roles, sorting])
 
-    createInvitation.mutate(
-      { email, role },
-      {
-        onSuccess: () => {
-          notify.success('Convite enviado')
-          setEmail('')
-        },
-        onError: (error) =>
-          notify.error(error, 'Não foi possível enviar o convite'),
-      },
-    )
-  }
+  const sort = sorting[0]
 
-  function handleResend(invitationId: string) {
-    resendInvitation.mutate(invitationId, {
-      onSuccess: () => notify.success('Convite reenviando'),
-      onError: (error) =>
-        notify.error(error, 'Não foi possível reenviar o convite'),
-    })
-  }
-
-  function handleRevoke(invitationId: string) {
-    resendInvitation.mutate(invitationId, {
-      onSuccess: () => notify.success('Convite revogado'),
-      onError: (error) =>
-        notify.error(error, 'Não foi possível revogar o convite'),
-    })
-  }
+  const { data, isLoading } = useMembers(workspaceId, {
+    search: debouncedSearch || undefined,
+    roles: roles.length ? roles : undefined,
+    sortBy: sort?.id ?? 'joinedAt',
+    sortOrder: sort?.desc ? 'desc' : 'asc',
+    page,
+    pageSize: PAGE_SIZE,
+  })
 
   return (
-    <div className='space-y-6'>
-      <form onSubmit={handleInvite} className='flex items-center gap-2'>
-        <Input
-          type='email'
-          required
-          placeholder='email@exemplo.com'
-          value={email}
-          onChange={(event) => setEmail(event.target.value)}
-          disabled={createInvitation.isPending}
-          className='max-w-xs'
-        />
-        <Select
-          value={role}
-          onValueChange={(value) => setRole(value ?? 'MEMBER')}
-        >
-          <SelectTrigger className='w-44'>
-            <SelectValue placeholder='Papel' />
-          </SelectTrigger>
-          <SelectContent alignItemWithTrigger={false}>
-            <SelectGroup>
-              {InvitableRoleValues.map((value) => (
-                <SelectItem key={value} value={value}>
-                  {ROLE_LABEL[value] ?? value}
-                </SelectItem>
-              ))}
-            </SelectGroup>
-          </SelectContent>
-        </Select>
-        <Button type='submit' disabled={createInvitation.isPending || !email}>
-          {createInvitation.isPending ? 'Enviando...' : 'Convidar'}
-        </Button>
-      </form>
-
-      {isLoading ? (
-        <Muted>Carregando convites...</Muted>
-      ) : !invitations || invitations.length === 0 ? (
-        <Muted>Nenhum convite ainda.</Muted>
-      ) : (
-        <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead>E-mail</TableHead>
-              <TableHead>Papel</TableHead>
-              <TableHead>Status</TableHead>
-              <TableHead>Expira em</TableHead>
-              <TableHead className='text-right'>Ações</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {invitations.map((invitation) => {
-              const isPending = invitation.status === 'PENDING'
-
-              return (
-                <TableRow key={invitation.id}>
-                  <TableCell>{invitation.email}</TableCell>
-                  <TableCell>
-                    {ROLE_LABEL[invitation.role] ?? invitation.role}
-                  </TableCell>
-                  <TableCell>
-                    <Badge variant={isPending ? 'default' : 'secondary'}>
-                      {STATUS_LABEL[invitation.status] ?? invitation.status}
-                    </Badge>
-                  </TableCell>
-                  <TableCell>
-                    {dateFmt.format(new Date(invitation.expiresAt))}
-                  </TableCell>
-                  <TableCell className='text-right space-x-2'>
-                    <Button
-                      variant='ghost'
-                      size='sm'
-                      disabled={
-                        invitation.status === 'ACCEPTED' ||
-                        invitation.status === 'REVOKED' ||
-                        resendInvitation.isPending
-                      }
-                      onClick={() => handleResend(invitation.id)}
-                    >
-                      Reenviar
-                    </Button>
-                    <Button
-                      variant='ghost'
-                      size='sm'
-                      disabled={!isPending || revokeInvitation.isPending}
-                      onClick={() => handleRevoke(invitation.id)}
-                    >
-                      Revogar
-                    </Button>
-                  </TableCell>
-                </TableRow>
-              )
-            })}
-          </TableBody>
-        </Table>
-      )}
+    <div className='flex-1 min-h-0 flex flex-col gap-4'>
+      <WorkspaceSettingsMemberHeader
+        workspaceId={workspaceId}
+        search={search}
+        onSearchChange={setSearch}
+        roles={roles}
+        onRolesChange={setRoles}
+        resultCount={data?.total ?? 0}
+      />
+      <DataTable
+        columns={memberColumns}
+        data={data?.members ?? []}
+        sorting={sorting}
+        onSortingChange={setSorting}
+        page={page}
+        pageSize={PAGE_SIZE}
+        total={data?.total ?? 0}
+        onPageChange={setPage}
+        isLoading={isLoading}
+        emptyMessage='Nenhum membro encontrado.'
+      />
+      <PendingInvitationsList workspaceId={workspaceId} />
     </div>
   )
 }

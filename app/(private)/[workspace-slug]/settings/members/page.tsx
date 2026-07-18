@@ -40,7 +40,7 @@ export default async function SettingsMembersPage({
   const canManage = PRIVILEGED_ROLES.includes(membership.value.role)
 
   return (
-    <div className='w-full overflow-y-auto'>
+    <div className='w-full h-full flex flex-col overflow-hidden'>
       <HeaderInternalNavigation>
         <HeaderBreadcrumbList>
           <HeaderBreadcrumbCrumb title='Membros'>
@@ -52,12 +52,10 @@ export default async function SettingsMembersPage({
           </HeaderBreadcrumbCrumb>
         </HeaderBreadcrumbList>
       </HeaderInternalNavigation>
-      <div className='w-full p-6 space-y-6'>
+      <div className='w-full p-6 flex-1 min-h-0 flex flex-col gap-6 overflow-hidden'>
         <div>
           <H3>Membros</H3>
-          <Muted>
-            Convide pessoas para o workspace e acompanhe os convites pendentes.
-          </Muted>
+          <Muted>Gerencie o acesso a este workspace.</Muted>
         </div>
         {canManage ? (
           <MembersManager workspaceId={membership.value.workspaceId} />

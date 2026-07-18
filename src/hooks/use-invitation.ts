@@ -77,3 +77,26 @@ export function useAcceptInvitation() {
       ),
   })
 }
+
+export function useUpdateInvitationRole(workspaceId: string) {
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationFn: ({
+      invitationId,
+      role,
+    }: {
+      invitationId: string
+      role: string
+    }) =>
+      apiFetchJson<InvitationDTO>(
+        `/api/workspaces/${workspaceId}/invitations/${invitationId}`,
+        'PATCH',
+        { role },
+        'Erro ao atualizar o papel do convite',
+      ),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: [INVITATION_KEY, workspaceId] })
+    },
+  })
+}
