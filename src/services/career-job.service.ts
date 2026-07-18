@@ -1,5 +1,5 @@
 import { auditMutation } from '@/lib/axiom/audit'
-import { PLATFORM_ADMIN_EMAILS } from '@/lib/env/server'
+import { PLATFORM_ADMIN_EMAILS } from '@/lib/env/server-admin'
 import type { CareerJobDTO } from '@/types/career-job'
 import { careerJobForbidden } from '../errors'
 import { err, ok, type Result } from '../lib/result'

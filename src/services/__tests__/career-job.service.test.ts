@@ -1,7 +1,7 @@
 import { describe, expect, it, vi } from 'vitest'
 
-vi.mock('@/lib/env/server', async (importOriginal) => {
-  const actual = await importOriginal<typeof import('@/lib/env/server')>()
+vi.mock('@/lib/env/server-admin', async (importOriginal) => {
+  const actual = await importOriginal<typeof import('@/lib/env/server-admin')>()
   return {
     ...actual,
     PLATFORM_ADMIN_EMAILS: ['admin@nexo.coodee.dev'],

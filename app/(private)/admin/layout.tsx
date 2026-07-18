@@ -1,6 +1,6 @@
 import { redirect } from 'next/navigation'
 import type { ReactNode } from 'react'
-import { PLATFORM_ADMIN_EMAILS } from '@/lib/env/server'
+import { PLATFORM_ADMIN_EMAILS } from '@/lib/env/server-admin'
 import { getAuthSession } from '@/src/lib/auth-session'
 
 export default async function AdminLayout({
