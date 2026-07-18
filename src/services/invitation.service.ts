@@ -515,4 +515,37 @@ export const InvitationService = {
       auditMeta: { workspaceId, projectId: gate.value.id },
     })
   },
+
+  async updateRole(
+    actorId: string,
+    workspaceId: string,
+    invitationId: string,
+    role: CreateInvitationDTO['role'],
+  ): Promise<Result<InvitationDTO>> {
+    const privileged = await assertPrivileged(actorId, workspaceId)
+    if (!privileged.ok) return privileged
+
+    const invitation = await InvitationRepository.findById(invitationId)
+    if (!invitation.ok) return invitation
+    if (!invitation.value || invitation.value.workspaceId !== workspaceId) {
+      return err(invitationNotFound())
+    }
+    if (invitation.value.status !== 'PENDING') {
+      return err(invitationNotPending())
+    }
+
+    const updated = await InvitationRepository.updateRole(invitationId, role)
+    if (!updated.ok) return updated
+
+    auditMutation({
+      entity: 'invitation',
+      action: 'update',
+      actorId,
+      targetId: invitationId,
+      reason: 'role_change',
+      meta: { workspaceId, role },
+    })
+
+    return ok(toInvitationDTO(updated.value))
+  },
 }
