@@ -93,3 +93,28 @@ describe('GET /api/workspaces/[id]/invitations', () => {
     expect(data[0].token).toBeUndefined()
   })
 })
+
+describe('PATCH /api/workspaces/[id]/invitations/[invitationId]', () => {
+  it('should update the invite role', async () => {
+    const { user, workspace } = await authenticatedOwner()
+    const created = await createInvite(
+      workspace.id,
+      user.cookie,
+      'role@example.com',
+      'MEMBER',
+    )
+    const { data: invitation } = await created.json()
+
+    const res = await fetch(
+      `${BASE_URL}/api/workspaces/${workspace.id}/invitations/${invitation.id}`,
+      {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json', Cookie: user.cookie },
+        body: JSON.stringify({ role: 'ADMIN' }),
+      },
+    )
+    expect(res.status).toBe(200)
+    const { data } = await res.json()
+    expect(data.role).toBe('ADMIN')
+  })
+})
