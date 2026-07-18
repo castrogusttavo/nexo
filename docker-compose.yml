@@ -1,6 +1,6 @@
 services:
   nexo-app:
-    image: ghcr.io/castrogusttavo/nexo:latest
+    image: docker.io/castrogusttavo/nexoso:latest
     container_name: nextjs-app
     restart: unless-stopped
     ports:
@@ -16,7 +16,7 @@ services:
       - app-network
 
   nexo-worker:
-    image: ghcr.io/castrogusttavo/nexo:latest
+    image: docker.io/castrogusttavo/nexoso:latest
     container_name: nexo-worker
     restart: unless-stopped
     command: ["node", "dist/worker.cjs"]

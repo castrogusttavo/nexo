@@ -7,8 +7,8 @@ on:
     branches: [main]
 
 env:
-  REGISTRY: ghcr.io
-  IMAGE_NAME: ${{ github.repository }}
+  REGISTRY: docker.io
+  IMAGE_NAME: ${{ vars.DOCKERHUB_USERNAME }}/nexoso
 
 jobs:
   migrate:
@@ -46,7 +46,6 @@ jobs:
     runs-on: self-hosted
     permissions:
       contents: read
-      packages: write
     environment:
       name: production
       url: https://nexo.coodee.dev
@@ -58,15 +57,14 @@ jobs:
         uses: docker/setup-buildx-action@8d2750c68a42422c14e847fe6c8ac0403b4cbd6f # v3
 
       - name: Log in to Container Registry
-        # docker/login-action has no retry, and this runner's path to ghcr.io
-        # has been intermittently timing out ("Client.Timeout exceeded while
-        # awaiting headers") — a plain bash retry with backoff survives that
-        # without needing a manual re-run every time it happens.
+        # Plain bash retry with backoff — the registry login has intermittently
+        # timed out on this runner before, so this survives a bad network
+        # window instead of failing the whole deploy on the first blip.
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          DOCKERHUB_TOKEN: ${{ secrets.DOCKERHUB_TOKEN }}
         run: |
           for attempt in 1 2 3 4 5; do
-            if echo "$GITHUB_TOKEN" | docker login "${{ env.REGISTRY }}" -u "${{ github.actor }}" --password-stdin; then
+            if echo "$DOCKERHUB_TOKEN" | docker login "${{ env.REGISTRY }}" -u "${{ vars.DOCKERHUB_USERNAME }}" --password-stdin; then
               echo "Logged in to ${{ env.REGISTRY }} on attempt $attempt"
               exit 0
             fi
