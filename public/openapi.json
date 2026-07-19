@@ -55,6 +55,30 @@
     {
       "name": "Projetos",
       "description": "Projetos dentro de um workspace — criação, edição, arquivamento e exclusão"
+    },
+    {
+      "name": "Membros",
+      "description": "Membros de um workspace — listagem e importação em massa via CSV"
+    },
+    {
+      "name": "Convites",
+      "description": "Convites para workspaces e projetos — criação, listagem, reenvio, revogação e aceite"
+    },
+    {
+      "name": "Cupons",
+      "description": "Validação de cupons de desconto (AbacatePay) usados no checkout de planos"
+    },
+    {
+      "name": "Vendas",
+      "description": "Formulário público de contato comercial (fale com vendas)"
+    },
+    {
+      "name": "Carreiras",
+      "description": "Candidatura pública a vagas abertas"
+    },
+    {
+      "name": "Admin — Vagas",
+      "description": "Gestão de vagas de carreira. Restrito a e-mails na allowlist de administradores da plataforma"
     }
   ],
   "paths": {
@@ -591,12 +615,17 @@
                     "id": "clx1abc123",
                     "name": "João Silva",
                     "email": "joao@exemplo.com",
+                    "username": "joao",
                     "emailVerified": true,
                     "image": null,
+                    "coverImage": null,
                     "createdAt": "2026-01-01T00:00:00.000Z",
                     "deletionScheduledAt": null,
                     "acceptedTermsAt": "2026-01-01T00:00:00.000Z",
                     "acceptedPrivacyAt": "2026-01-01T00:00:00.000Z",
+                    "onboardingStep": null,
+                    "role": "DEVELOPER",
+                    "goals": ["ROADMAP", "SPRINTS"],
                     "memberships": [
                       {
                         "workspaceId": "clx2ws456",
@@ -912,6 +941,108 @@
         }
       }
     },
+    "/users/me/cookie-consent": {
+      "post": {
+        "tags": ["Privacidade (LGPD)"],
+        "summary": "Registrar consentimento de cookies",
+        "description": "Registra a decisão do usuário autenticado sobre o banner de cookies (aceite ou recusa), junto com IP e user-agent, para fins de auditoria LGPD. Idempotente: se a última decisão registrada já for a mesma, não grava um novo registro.",
+        "security": [{ "cookieAuth": [] }],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["accepted"],
+                "properties": {
+                  "accepted": { "type": "boolean", "example": true }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Consentimento registrado com sucesso.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    { "$ref": "#/components/schemas/SuccessResponse" },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "data": {
+                          "type": "object",
+                          "properties": {
+                            "accepted": { "type": "boolean" }
+                          }
+                        }
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "401": { "$ref": "#/components/responses/UnauthorizedError" },
+          "422": { "$ref": "#/components/responses/ValidationError" },
+          "429": { "$ref": "#/components/responses/RateLimitError" }
+        }
+      }
+    },
+    "/users/me/notifications": {
+      "get": {
+        "tags": ["Usuário"],
+        "summary": "Obter preferências de notificação",
+        "description": "Retorna as preferências de notificação do usuário autenticado (alterações de prioridade, de estado, comentários e menções).",
+        "security": [{ "cookieAuth": [] }],
+        "responses": {
+          "200": {
+            "description": "Preferências de notificação retornadas com sucesso.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/NotificationSettingResponse"
+                }
+              }
+            }
+          },
+          "401": { "$ref": "#/components/responses/UnauthorizedError" }
+        }
+      },
+      "patch": {
+        "tags": ["Usuário"],
+        "summary": "Atualizar preferências de notificação",
+        "description": "Atualiza uma ou mais preferências de notificação do usuário autenticado. Ao menos um campo deve ser informado.",
+        "security": [{ "cookieAuth": [] }],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateNotificationSettingInput"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Preferências de notificação atualizadas com sucesso.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/NotificationSettingResponse"
+                }
+              }
+            }
+          },
+          "401": { "$ref": "#/components/responses/UnauthorizedError" },
+          "422": { "$ref": "#/components/responses/ValidationError" },
+          "429": { "$ref": "#/components/responses/RateLimitError" }
+        }
+      }
+    },
     "/workspaces": {
       "post": {
         "tags": ["Workspaces"],
@@ -1062,6 +1193,684 @@
           "429": {
             "$ref": "#/components/responses/RateLimitError"
           }
+        }
+      }
+    },
+    "/workspaces/{id}/members": {
+      "parameters": [
+        {
+          "name": "id",
+          "in": "path",
+          "required": true,
+          "description": "ID (CUID) do workspace",
+          "schema": { "type": "string" }
+        }
+      ],
+      "get": {
+        "tags": ["Membros"],
+        "summary": "Listar membros do workspace",
+        "description": "Retorna os membros do workspace, com busca, filtro por papel, ordenação e paginação. Exige papel OWNER ou ADMIN.",
+        "security": [{ "cookieAuth": [] }],
+        "parameters": [
+          {
+            "name": "search",
+            "in": "query",
+            "required": false,
+            "description": "Busca por nome, username ou e-mail.",
+            "schema": { "type": "string", "maxLength": 100 }
+          },
+          {
+            "name": "roles",
+            "in": "query",
+            "required": false,
+            "description": "Lista de papéis separados por vírgula (ex.: `ADMIN,MEMBER`).",
+            "schema": { "type": "string", "example": "ADMIN,MEMBER" }
+          },
+          {
+            "name": "sortBy",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "enum": ["name", "username", "email", "role", "joinedAt"],
+              "default": "joinedAt"
+            }
+          },
+          {
+            "name": "sortOrder",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "enum": ["asc", "desc"],
+              "default": "desc"
+            }
+          },
+          {
+            "name": "page",
+            "in": "query",
+            "required": false,
+            "schema": { "type": "integer", "minimum": 1, "default": 1 }
+          },
+          {
+            "name": "pageSize",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 100,
+              "default": 20
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Lista paginada de membros retornada com sucesso.",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/MemberListResponse" }
+              }
+            }
+          },
+          "401": { "$ref": "#/components/responses/UnauthorizedError" },
+          "403": { "$ref": "#/components/responses/ForbiddenError" },
+          "422": { "$ref": "#/components/responses/ValidationError" },
+          "429": { "$ref": "#/components/responses/RateLimitError" }
+        }
+      }
+    },
+    "/workspaces/{id}/members/import": {
+      "parameters": [
+        {
+          "name": "id",
+          "in": "path",
+          "required": true,
+          "description": "ID (CUID) do workspace",
+          "schema": { "type": "string" }
+        }
+      ],
+      "post": {
+        "tags": ["Membros"],
+        "summary": "Importar membros via CSV",
+        "description": "Faz upload de um CSV (`multipart/form-data`, campo `file`) com colunas de e-mail e papel, e cria um convite pendente para cada linha válida. Linhas duplicadas ou de usuários já membros são reportadas como `skipped`, não como erro. Exige papel OWNER ou ADMIN e plano com o recurso `importMembersCsv` habilitado (a partir do Pro) — caso contrário retorna `FEATURE_NOT_IN_PLAN` (403).",
+        "security": [{ "cookieAuth": [] }],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "type": "object",
+                "required": ["file"],
+                "properties": {
+                  "file": {
+                    "type": "string",
+                    "format": "binary",
+                    "description": "Arquivo CSV com colunas `email` e `role`."
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Importação processada — a resposta detalha o resultado por linha.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MemberImportResponse"
+                }
+              }
+            }
+          },
+          "401": { "$ref": "#/components/responses/UnauthorizedError" },
+          "403": { "$ref": "#/components/responses/ForbiddenError" },
+          "422": { "$ref": "#/components/responses/ValidationError" },
+          "429": { "$ref": "#/components/responses/RateLimitError" }
+        }
+      }
+    },
+    "/workspaces/{id}/invitations": {
+      "parameters": [
+        {
+          "name": "id",
+          "in": "path",
+          "required": true,
+          "description": "ID (CUID) do workspace",
+          "schema": { "type": "string" }
+        }
+      ],
+      "get": {
+        "tags": ["Convites"],
+        "summary": "Listar convites do workspace",
+        "description": "Retorna todos os convites (pendentes, aceitos, expirados e revogados) do workspace. Exige papel OWNER ou ADMIN.",
+        "security": [{ "cookieAuth": [] }],
+        "responses": {
+          "200": {
+            "description": "Lista de convites retornada com sucesso.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/InvitationListResponse"
+                }
+              }
+            }
+          },
+          "401": { "$ref": "#/components/responses/UnauthorizedError" },
+          "403": { "$ref": "#/components/responses/ForbiddenError" },
+          "429": { "$ref": "#/components/responses/RateLimitError" }
+        }
+      },
+      "post": {
+        "tags": ["Convites"],
+        "summary": "Convidar membro para o workspace",
+        "description": "Cria um convite por e-mail para ingressar no workspace (opcionalmente já vinculado a um projeto via `projectId`) e dispara o e-mail de convite. Exige papel OWNER ou ADMIN e consentimento de cookies aceito. Falha com `INVITATION_ALREADY_MEMBER` (409) se o e-mail já pertencer ao workspace, `INVITATION_DUPLICATE` (409) se já houver convite pendente, ou `SEAT_LIMIT_REACHED` (403) se o plano não tiver assentos disponíveis (considerando convites pendentes).",
+        "security": [{ "cookieAuth": [] }],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/CreateInvitationInput" }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Convite criado com sucesso.",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/InvitationResponse" }
+              }
+            }
+          },
+          "401": { "$ref": "#/components/responses/UnauthorizedError" },
+          "403": { "$ref": "#/components/responses/ForbiddenError" },
+          "409": { "$ref": "#/components/responses/ConflictError" },
+          "422": { "$ref": "#/components/responses/ValidationError" },
+          "429": { "$ref": "#/components/responses/RateLimitError" }
+        }
+      }
+    },
+    "/workspaces/{id}/invitations/{invitationId}": {
+      "parameters": [
+        {
+          "name": "id",
+          "in": "path",
+          "required": true,
+          "description": "ID (CUID) do workspace",
+          "schema": { "type": "string" }
+        },
+        {
+          "name": "invitationId",
+          "in": "path",
+          "required": true,
+          "description": "ID (CUID) do convite",
+          "schema": { "type": "string" }
+        }
+      ],
+      "patch": {
+        "tags": ["Convites"],
+        "summary": "Atualizar papel de um convite pendente",
+        "description": "Altera o papel (`role`) de um convite ainda pendente. Exige papel OWNER ou ADMIN. Falha com `INVITATION_NOT_PENDING` (409) se o convite já tiver sido aceito, expirado ou revogado.",
+        "security": [{ "cookieAuth": [] }],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateInvitationRoleInput"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Convite atualizado com sucesso.",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/InvitationResponse" }
+              }
+            }
+          },
+          "401": { "$ref": "#/components/responses/UnauthorizedError" },
+          "403": { "$ref": "#/components/responses/ForbiddenError" },
+          "404": { "$ref": "#/components/responses/NotFoundError" },
+          "409": { "$ref": "#/components/responses/ConflictError" },
+          "422": { "$ref": "#/components/responses/ValidationError" },
+          "429": { "$ref": "#/components/responses/RateLimitError" }
+        }
+      },
+      "delete": {
+        "tags": ["Convites"],
+        "summary": "Revogar convite do workspace",
+        "description": "Revoga (cancela) um convite pendente do workspace. Exige papel OWNER ou ADMIN. Falha com `INVITATION_NOT_PENDING` (409) se o convite não estiver mais pendente.",
+        "security": [{ "cookieAuth": [] }],
+        "responses": {
+          "200": {
+            "description": "Convite revogado com sucesso.",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/InvitationResponse" }
+              }
+            }
+          },
+          "401": { "$ref": "#/components/responses/UnauthorizedError" },
+          "403": { "$ref": "#/components/responses/ForbiddenError" },
+          "404": { "$ref": "#/components/responses/NotFoundError" },
+          "409": { "$ref": "#/components/responses/ConflictError" },
+          "429": { "$ref": "#/components/responses/RateLimitError" }
+        }
+      }
+    },
+    "/workspaces/{id}/invitations/{invitationId}/resend": {
+      "parameters": [
+        {
+          "name": "id",
+          "in": "path",
+          "required": true,
+          "description": "ID (CUID) do workspace",
+          "schema": { "type": "string" }
+        },
+        {
+          "name": "invitationId",
+          "in": "path",
+          "required": true,
+          "description": "ID (CUID) do convite",
+          "schema": { "type": "string" }
+        }
+      ],
+      "post": {
+        "tags": ["Convites"],
+        "summary": "Reenviar convite do workspace",
+        "description": "Gera um novo token e uma nova data de expiração para o convite, e reenvia o e-mail. Exige papel OWNER ou ADMIN. Falha com `INVITATION_NOT_PENDING` (409) se o convite já tiver sido aceito ou revogado (convites expirados podem ser reenviados).",
+        "security": [{ "cookieAuth": [] }],
+        "responses": {
+          "200": {
+            "description": "Convite reenviado com sucesso.",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/InvitationResponse" }
+              }
+            }
+          },
+          "401": { "$ref": "#/components/responses/UnauthorizedError" },
+          "403": { "$ref": "#/components/responses/ForbiddenError" },
+          "404": { "$ref": "#/components/responses/NotFoundError" },
+          "409": { "$ref": "#/components/responses/ConflictError" },
+          "429": { "$ref": "#/components/responses/RateLimitError" }
+        }
+      }
+    },
+    "/invitations/accept": {
+      "post": {
+        "tags": ["Convites"],
+        "summary": "Aceitar convite",
+        "description": "Aceita um convite (workspace ou projeto) a partir do token recebido por e-mail e cria o vínculo do usuário autenticado. O e-mail da sessão deve corresponder ao e-mail convidado (`INVITATION_EMAIL_MISMATCH`, 403). Falha com `INVITATION_EXPIRED` (410) se o prazo tiver vencido, `INVITATION_NOT_PENDING` (409) se já aceito/revogado, ou `SEAT_LIMIT_REACHED` (403) se o workspace não tiver mais assentos disponíveis no momento do aceite.",
+        "security": [{ "cookieAuth": [] }],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AcceptInvitationInput"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Convite aceito com sucesso.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    { "$ref": "#/components/schemas/SuccessResponse" },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "data": {
+                          "type": "object",
+                          "properties": {
+                            "workspaceId": { "type": "string" },
+                            "slug": { "type": "string" }
+                          }
+                        }
+                      }
+                    }
+                  ]
+                },
+                "example": {
+                  "success": true,
+                  "statusCode": 200,
+                  "data": { "workspaceId": "clx2ws456", "slug": "acme" }
+                }
+              }
+            }
+          },
+          "401": { "$ref": "#/components/responses/UnauthorizedError" },
+          "403": { "$ref": "#/components/responses/ForbiddenError" },
+          "404": { "$ref": "#/components/responses/NotFoundError" },
+          "409": { "$ref": "#/components/responses/ConflictError" },
+          "410": { "$ref": "#/components/responses/GoneError" },
+          "422": { "$ref": "#/components/responses/ValidationError" },
+          "429": { "$ref": "#/components/responses/RateLimitError" }
+        }
+      }
+    },
+    "/coupons/validate": {
+      "get": {
+        "tags": ["Cupons"],
+        "summary": "Validar cupom de desconto",
+        "description": "Verifica no AbacatePay se um cupom existe, está ativo e ainda tem resgates disponíveis, e retorna o desconto aplicável. Usado no checkout de planos antes de criar a assinatura.",
+        "security": [{ "cookieAuth": [] }],
+        "parameters": [
+          {
+            "name": "code",
+            "in": "query",
+            "required": true,
+            "description": "Código do cupom (case-insensitive, normalizado para maiúsculas).",
+            "schema": { "type": "string", "example": "LANCAMENTO10" }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Cupom válido — desconto retornado.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CouponPreviewResponse"
+                }
+              }
+            }
+          },
+          "401": { "$ref": "#/components/responses/UnauthorizedError" },
+          "422": {
+            "description": "Cupom inválido, inexistente, expirado ou esgotado (`COUPON_INVALID`), ou parâmetro `code` ausente/malformado (`VALIDATION_ERROR`).",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ErrorResponse" }
+              }
+            }
+          },
+          "429": { "$ref": "#/components/responses/RateLimitError" },
+          "502": { "$ref": "#/components/responses/BadGatewayError" }
+        }
+      }
+    },
+    "/talk-to-sales": {
+      "post": {
+        "tags": ["Vendas"],
+        "summary": "Enviar contato comercial",
+        "description": "Formulário público (não autenticado) de contato com o time comercial, usado no fluxo Enterprise (\"fale com vendas\"). Limitado por IP.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/TalkToSalesInput" }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Mensagem recebida e encaminhada por e-mail ao time comercial.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    { "$ref": "#/components/schemas/SuccessResponse" },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "data": {
+                          "type": "object",
+                          "properties": {
+                            "received": { "type": "boolean", "example": true }
+                          }
+                        }
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "422": { "$ref": "#/components/responses/ValidationError" },
+          "429": { "$ref": "#/components/responses/RateLimitError" },
+          "502": { "$ref": "#/components/responses/BadGatewayError" }
+        }
+      }
+    },
+    "/careers/{slug}/apply": {
+      "parameters": [
+        {
+          "name": "slug",
+          "in": "path",
+          "required": true,
+          "description": "Slug da vaga",
+          "schema": { "type": "string" }
+        }
+      ],
+      "post": {
+        "tags": ["Carreiras"],
+        "summary": "Candidatar-se a uma vaga",
+        "description": "Formulário público (não autenticado) de candidatura a uma vaga aberta, via `multipart/form-data`. O currículo é enviado no campo `resume` (PDF). Inclui um campo honeypot invisível anti-bot: se preenchido, a rota responde sucesso sem processar a candidatura. Falha com `CAREER_JOB_CLOSED` (409) se a vaga não estiver com status `OPEN`. Limitado por IP.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "type": "object",
+                "required": ["name", "email", "resume", "consent"],
+                "properties": {
+                  "name": { "type": "string", "minLength": 2, "maxLength": 120 },
+                  "email": { "type": "string", "format": "email" },
+                  "phone": { "type": "string", "maxLength": 20 },
+                  "linkedinUrl": { "type": "string", "format": "uri" },
+                  "portfolioUrl": { "type": "string", "format": "uri" },
+                  "lastJobTitle": { "type": "string", "maxLength": 120 },
+                  "experienceYears": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 60
+                  },
+                  "message": { "type": "string", "maxLength": 2000 },
+                  "consent": {
+                    "type": "string",
+                    "enum": ["true"],
+                    "description": "Deve ser a string `\"true\"` — confirma o consentimento para uso dos dados."
+                  },
+                  "honeypot": {
+                    "type": "string",
+                    "description": "Campo-armadilha invisível; deve permanecer vazio.",
+                    "maxLength": 0
+                  },
+                  "resume": {
+                    "type": "string",
+                    "format": "binary",
+                    "description": "Currículo em PDF."
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Candidatura recebida com sucesso.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    { "$ref": "#/components/schemas/SuccessResponse" },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "data": {
+                          "type": "object",
+                          "properties": {
+                            "received": { "type": "boolean", "example": true }
+                          }
+                        }
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "404": { "$ref": "#/components/responses/NotFoundError" },
+          "409": { "$ref": "#/components/responses/ConflictError" },
+          "422": { "$ref": "#/components/responses/ValidationError" },
+          "429": { "$ref": "#/components/responses/RateLimitError" }
+        }
+      }
+    },
+    "/admin/careers": {
+      "get": {
+        "tags": ["Admin — Vagas"],
+        "summary": "Listar todas as vagas (admin)",
+        "description": "Retorna todas as vagas de carreira, independentemente do status. Restrito a e-mails na allowlist de administradores da plataforma (`CAREER_JOB_FORBIDDEN`, 403, caso contrário).",
+        "security": [{ "cookieAuth": [] }],
+        "responses": {
+          "200": {
+            "description": "Lista de vagas retornada com sucesso.",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/CareerJobListResponse" }
+              }
+            }
+          },
+          "401": { "$ref": "#/components/responses/UnauthorizedError" },
+          "403": { "$ref": "#/components/responses/ForbiddenError" }
+        }
+      },
+      "post": {
+        "tags": ["Admin — Vagas"],
+        "summary": "Criar vaga",
+        "description": "Cria uma nova vaga de carreira. Sempre criada com status `DRAFT` (a publicação é feita depois via endpoint de status). Restrito a administradores da plataforma.",
+        "security": [{ "cookieAuth": [] }],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/CreateCareerJobInput" }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Vaga criada com sucesso.",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/CareerJobResponse" }
+              }
+            }
+          },
+          "401": { "$ref": "#/components/responses/UnauthorizedError" },
+          "403": { "$ref": "#/components/responses/ForbiddenError" },
+          "409": { "$ref": "#/components/responses/ConflictError" },
+          "422": { "$ref": "#/components/responses/ValidationError" }
+        }
+      }
+    },
+    "/admin/careers/{id}": {
+      "parameters": [
+        {
+          "name": "id",
+          "in": "path",
+          "required": true,
+          "description": "ID (CUID) da vaga",
+          "schema": { "type": "string" }
+        }
+      ],
+      "get": {
+        "tags": ["Admin — Vagas"],
+        "summary": "Obter vaga por ID (admin)",
+        "description": "Retorna os detalhes completos de uma vaga, incluindo rascunhos. Restrito a administradores da plataforma.",
+        "security": [{ "cookieAuth": [] }],
+        "responses": {
+          "200": {
+            "description": "Vaga retornada com sucesso.",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/CareerJobResponse" }
+              }
+            }
+          },
+          "401": { "$ref": "#/components/responses/UnauthorizedError" },
+          "403": { "$ref": "#/components/responses/ForbiddenError" },
+          "404": { "$ref": "#/components/responses/NotFoundError" }
+        }
+      },
+      "patch": {
+        "tags": ["Admin — Vagas"],
+        "summary": "Atualizar vaga",
+        "description": "Atualiza um ou mais campos do conteúdo da vaga. Não altera o status — use o endpoint dedicado `/admin/careers/{id}/status` para isso. Restrito a administradores da plataforma.",
+        "security": [{ "cookieAuth": [] }],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/UpdateCareerJobInput" }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Vaga atualizada com sucesso.",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/CareerJobResponse" }
+              }
+            }
+          },
+          "401": { "$ref": "#/components/responses/UnauthorizedError" },
+          "403": { "$ref": "#/components/responses/ForbiddenError" },
+          "404": { "$ref": "#/components/responses/NotFoundError" },
+          "409": { "$ref": "#/components/responses/ConflictError" },
+          "422": { "$ref": "#/components/responses/ValidationError" }
+        }
+      }
+    },
+    "/admin/careers/{id}/status": {
+      "parameters": [
+        {
+          "name": "id",
+          "in": "path",
+          "required": true,
+          "description": "ID (CUID) da vaga",
+          "schema": { "type": "string" }
+        }
+      ],
+      "patch": {
+        "tags": ["Admin — Vagas"],
+        "summary": "Alterar status da vaga",
+        "description": "Transiciona o status da vaga (`DRAFT` → `OPEN` → `CLOSED`). Ação distinta da edição de conteúdo, com endpoint próprio. Restrito a administradores da plataforma.",
+        "security": [{ "cookieAuth": [] }],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ChangeCareerJobStatusInput"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Status da vaga alterado com sucesso.",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/CareerJobResponse" }
+              }
+            }
+          },
+          "401": { "$ref": "#/components/responses/UnauthorizedError" },
+          "403": { "$ref": "#/components/responses/ForbiddenError" },
+          "404": { "$ref": "#/components/responses/NotFoundError" },
+          "422": { "$ref": "#/components/responses/ValidationError" }
         }
       }
     },
@@ -1216,7 +2025,7 @@
       "post": {
         "tags": ["Assinaturas"],
         "summary": "Criar assinatura de plano",
-        "description": "Cria uma cobrança no AbacatePay para o plano escolhido e retorna a assinatura pendente com a URL de pagamento. Exige papel OWNER ou ADMIN no workspace.",
+        "description": "Cria uma cobrança no AbacatePay para o plano escolhido e retorna a assinatura pendente com a URL de pagamento. Exige papel OWNER ou ADMIN no workspace e consentimento de cookies aceito. Se `coupon` for informado, é validado no AbacatePay antes da criação da cobrança (`COUPON_INVALID`, 422, se inválido/expirado/esgotado).",
         "security": [{ "cookieAuth": [] }],
         "requestBody": {
           "required": true,
@@ -1250,6 +2059,9 @@
           },
           "429": {
             "$ref": "#/components/responses/RateLimitError"
+          },
+          "502": {
+            "$ref": "#/components/responses/BadGatewayError"
           }
         }
       }
@@ -1523,6 +2335,7 @@
             }
           },
           "401": { "$ref": "#/components/responses/UnauthorizedError" },
+          "403": { "$ref": "#/components/responses/ForbiddenError" },
           "422": { "$ref": "#/components/responses/ValidationError" },
           "429": { "$ref": "#/components/responses/RateLimitError" }
         }
@@ -1927,6 +2740,299 @@
           "429": { "$ref": "#/components/responses/RateLimitError" }
         }
       }
+    },
+    "/workspaces/{id}/projects/{slug}/members": {
+      "parameters": [
+        {
+          "name": "id",
+          "in": "path",
+          "required": true,
+          "description": "ID do workspace (cuid2).",
+          "schema": { "type": "string" }
+        },
+        {
+          "name": "slug",
+          "in": "path",
+          "required": true,
+          "description": "Slug do projeto.",
+          "schema": { "type": "string" }
+        }
+      ],
+      "get": {
+        "tags": ["Projetos"],
+        "summary": "Listar membros do projeto",
+        "description": "Retorna os membros do projeto. Projetos privados exigem que o usuário seja OWNER/ADMIN do workspace, lead ou membro do projeto.",
+        "security": [{ "cookieAuth": [] }],
+        "responses": {
+          "200": {
+            "description": "Lista de membros do projeto retornada com sucesso.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProjectMemberListResponse"
+                }
+              }
+            }
+          },
+          "401": { "$ref": "#/components/responses/UnauthorizedError" },
+          "403": { "$ref": "#/components/responses/ForbiddenError" },
+          "404": { "$ref": "#/components/responses/NotFoundError" },
+          "429": { "$ref": "#/components/responses/RateLimitError" }
+        }
+      },
+      "post": {
+        "tags": ["Projetos"],
+        "summary": "Adicionar membro ao projeto",
+        "description": "Adiciona diretamente um usuário já membro do workspace como membro do projeto (sem passar pelo fluxo de convite). Requer role OWNER/ADMIN ou ser o lead do projeto e consentimento de cookies aceito. Falha com `PROJECT_MEMBER_NOT_IN_WORKSPACE` (409) se o usuário não for membro do workspace.",
+        "security": [{ "cookieAuth": [] }],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AddProjectMemberInput"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Membro adicionado ao projeto com sucesso.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProjectMemberResponse"
+                }
+              }
+            }
+          },
+          "401": { "$ref": "#/components/responses/UnauthorizedError" },
+          "403": { "$ref": "#/components/responses/ForbiddenError" },
+          "404": { "$ref": "#/components/responses/NotFoundError" },
+          "409": { "$ref": "#/components/responses/ConflictError" },
+          "422": { "$ref": "#/components/responses/ValidationError" },
+          "429": { "$ref": "#/components/responses/RateLimitError" }
+        }
+      }
+    },
+    "/workspaces/{id}/projects/{slug}/members/{userId}": {
+      "parameters": [
+        {
+          "name": "id",
+          "in": "path",
+          "required": true,
+          "description": "ID do workspace (cuid2).",
+          "schema": { "type": "string" }
+        },
+        {
+          "name": "slug",
+          "in": "path",
+          "required": true,
+          "description": "Slug do projeto.",
+          "schema": { "type": "string" }
+        },
+        {
+          "name": "userId",
+          "in": "path",
+          "required": true,
+          "description": "ID (cuid2) do usuário a remover.",
+          "schema": { "type": "string" }
+        }
+      ],
+      "delete": {
+        "tags": ["Projetos"],
+        "summary": "Remover membro do projeto",
+        "description": "Remove um membro do projeto. Requer role OWNER/ADMIN ou ser o lead do projeto. O lead do projeto não pode ser removido por este endpoint (`PROJECT_FORBIDDEN`, 403).",
+        "security": [{ "cookieAuth": [] }],
+        "responses": {
+          "200": {
+            "description": "Membro removido do projeto com sucesso.",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/EmptySuccessResponse" }
+              }
+            }
+          },
+          "401": { "$ref": "#/components/responses/UnauthorizedError" },
+          "403": { "$ref": "#/components/responses/ForbiddenError" },
+          "404": { "$ref": "#/components/responses/NotFoundError" },
+          "429": { "$ref": "#/components/responses/RateLimitError" }
+        }
+      }
+    },
+    "/workspaces/{id}/projects/{slug}/members/invite": {
+      "parameters": [
+        {
+          "name": "id",
+          "in": "path",
+          "required": true,
+          "description": "ID do workspace (cuid2).",
+          "schema": { "type": "string" }
+        },
+        {
+          "name": "slug",
+          "in": "path",
+          "required": true,
+          "description": "Slug do projeto.",
+          "schema": { "type": "string" }
+        }
+      ],
+      "get": {
+        "tags": ["Convites"],
+        "summary": "Listar convites do projeto",
+        "description": "Retorna os convites criados para o projeto. Requer role OWNER/ADMIN ou ser o lead do projeto.",
+        "security": [{ "cookieAuth": [] }],
+        "responses": {
+          "200": {
+            "description": "Lista de convites do projeto retornada com sucesso.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/InvitationListResponse"
+                }
+              }
+            }
+          },
+          "401": { "$ref": "#/components/responses/UnauthorizedError" },
+          "403": { "$ref": "#/components/responses/ForbiddenError" },
+          "404": { "$ref": "#/components/responses/NotFoundError" },
+          "429": { "$ref": "#/components/responses/RateLimitError" }
+        }
+      },
+      "post": {
+        "tags": ["Convites"],
+        "summary": "Convidar para o projeto",
+        "description": "Convida um e-mail para o projeto. Se o e-mail já pertencer a um membro do workspace, é adicionado diretamente ao projeto (resposta `200`, `kind: \"added\"`); caso contrário, um convite por e-mail é criado (resposta `201`, `kind: \"invited\"`). Requer role OWNER/ADMIN ou ser o lead do projeto e consentimento de cookies aceito.",
+        "security": [{ "cookieAuth": [] }],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/InviteToProjectInput" }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Usuário já era membro do workspace — adicionado diretamente ao projeto.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/InviteToProjectResponse"
+                }
+              }
+            }
+          },
+          "201": {
+            "description": "Convite por e-mail criado para o projeto.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/InviteToProjectResponse"
+                }
+              }
+            }
+          },
+          "401": { "$ref": "#/components/responses/UnauthorizedError" },
+          "403": { "$ref": "#/components/responses/ForbiddenError" },
+          "404": { "$ref": "#/components/responses/NotFoundError" },
+          "409": { "$ref": "#/components/responses/ConflictError" },
+          "422": { "$ref": "#/components/responses/ValidationError" },
+          "429": { "$ref": "#/components/responses/RateLimitError" }
+        }
+      }
+    },
+    "/workspaces/{id}/projects/{slug}/members/invite/{invitationId}": {
+      "parameters": [
+        {
+          "name": "id",
+          "in": "path",
+          "required": true,
+          "description": "ID do workspace (cuid2).",
+          "schema": { "type": "string" }
+        },
+        {
+          "name": "slug",
+          "in": "path",
+          "required": true,
+          "description": "Slug do projeto.",
+          "schema": { "type": "string" }
+        },
+        {
+          "name": "invitationId",
+          "in": "path",
+          "required": true,
+          "description": "ID (CUID) do convite",
+          "schema": { "type": "string" }
+        }
+      ],
+      "delete": {
+        "tags": ["Convites"],
+        "summary": "Revogar convite do projeto",
+        "description": "Revoga um convite pendente do projeto. Requer role OWNER/ADMIN ou ser o lead do projeto. Falha com `INVITATION_NOT_PENDING` (409) se o convite não estiver mais pendente.",
+        "security": [{ "cookieAuth": [] }],
+        "responses": {
+          "200": {
+            "description": "Convite revogado com sucesso.",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/InvitationResponse" }
+              }
+            }
+          },
+          "401": { "$ref": "#/components/responses/UnauthorizedError" },
+          "403": { "$ref": "#/components/responses/ForbiddenError" },
+          "404": { "$ref": "#/components/responses/NotFoundError" },
+          "409": { "$ref": "#/components/responses/ConflictError" },
+          "429": { "$ref": "#/components/responses/RateLimitError" }
+        }
+      }
+    },
+    "/workspaces/{id}/projects/{slug}/members/invite/{invitationId}/resend": {
+      "parameters": [
+        {
+          "name": "id",
+          "in": "path",
+          "required": true,
+          "description": "ID do workspace (cuid2).",
+          "schema": { "type": "string" }
+        },
+        {
+          "name": "slug",
+          "in": "path",
+          "required": true,
+          "description": "Slug do projeto.",
+          "schema": { "type": "string" }
+        },
+        {
+          "name": "invitationId",
+          "in": "path",
+          "required": true,
+          "description": "ID (CUID) do convite",
+          "schema": { "type": "string" }
+        }
+      ],
+      "post": {
+        "tags": ["Convites"],
+        "summary": "Reenviar convite do projeto",
+        "description": "Gera um novo token e uma nova data de expiração para o convite do projeto, e reenvia o e-mail. Requer role OWNER/ADMIN ou ser o lead do projeto. Falha com `INVITATION_NOT_PENDING` (409) se o convite já tiver sido aceito ou revogado.",
+        "security": [{ "cookieAuth": [] }],
+        "responses": {
+          "200": {
+            "description": "Convite reenviado com sucesso.",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/InvitationResponse" }
+              }
+            }
+          },
+          "401": { "$ref": "#/components/responses/UnauthorizedError" },
+          "403": { "$ref": "#/components/responses/ForbiddenError" },
+          "404": { "$ref": "#/components/responses/NotFoundError" },
+          "409": { "$ref": "#/components/responses/ConflictError" },
+          "429": { "$ref": "#/components/responses/RateLimitError" }
+        }
+      }
     }
   },
   "components": {
@@ -2056,8 +3162,14 @@
             "format": "email",
             "example": "joao@exemplo.com"
           },
+          "username": {
+            "type": "string",
+            "description": "Gerado automaticamente a partir do e-mail no cadastro; pode ser alterado depois.",
+            "example": "joao"
+          },
           "emailVerified": { "type": "boolean", "example": true },
           "image": { "type": "string", "nullable": true, "example": null },
+          "coverImage": { "type": "string", "nullable": true, "example": null },
           "createdAt": {
             "type": "string",
             "format": "date-time",
@@ -2081,6 +3193,41 @@
             "nullable": true,
             "example": "2026-01-01T00:00:00.000Z"
           },
+          "onboardingStep": {
+            "type": "string",
+            "enum": ["PROFILE", "ROLE", "BRINGS", "WORKSPACE"],
+            "nullable": true,
+            "description": "`null` indica onboarding concluído.",
+            "example": null
+          },
+          "role": {
+            "type": "string",
+            "enum": [
+              "PRODUCT_MANAGER",
+              "ENGINEERING_MANAGER",
+              "DESIGNER",
+              "DEVELOPER",
+              "FOUNDER_EXECUTIVE",
+              "OPERATIONS_MANAGER",
+              "OTHER"
+            ],
+            "nullable": true,
+            "example": "DEVELOPER"
+          },
+          "goals": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "enum": [
+                "ROADMAP",
+                "SPRINTS",
+                "CROSS_FUNCTIONAL",
+                "REPLACE_TOOL",
+                "EXPLORING"
+              ]
+            },
+            "example": ["ROADMAP", "SPRINTS"]
+          },
           "memberships": {
             "type": "array",
             "items": { "$ref": "#/components/schemas/Membership" }
@@ -2100,6 +3247,19 @@
             "type": "string",
             "format": "email",
             "example": "joao.santos@exemplo.com"
+          },
+          "username": {
+            "type": "string",
+            "minLength": 3,
+            "maxLength": 39,
+            "pattern": "^[a-z0-9._-]+$",
+            "description": "Apenas letras minúsculas, números, ponto, hífen e underscore.",
+            "example": "joao.santos"
+          },
+          "coverImage": {
+            "type": "string",
+            "description": "URL absoluta ou caminho relativo (iniciado por `/`).",
+            "example": "https://exemplo.com/capa.png"
           }
         }
       },
@@ -2226,6 +3386,22 @@
             "description": "Valor em centavos.",
             "example": 4990
           },
+          "seats": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 10000,
+            "example": 5
+          },
+          "interval": {
+            "type": "string",
+            "enum": ["monthly", "yearly"],
+            "example": "monthly"
+          },
+          "coupon": {
+            "type": "string",
+            "nullable": true,
+            "example": null
+          },
           "paymentUrl": {
             "type": "string",
             "format": "uri",
@@ -2238,14 +3414,31 @@
       },
       "CreateSubscriptionInput": {
         "type": "object",
-        "required": ["plan", "workspaceId"],
+        "description": "Enterprise não é um plano de checkout self-service — use o formulário `/talk-to-sales`.",
+        "required": ["plan", "workspaceId", "seats", "interval"],
         "properties": {
           "plan": {
             "type": "string",
-            "enum": ["PRO", "BUSINESS", "ENTERPRISE"],
+            "enum": ["PRO", "BUSINESS"],
             "example": "PRO"
           },
-          "workspaceId": { "type": "string", "example": "clx2ws456" }
+          "workspaceId": { "type": "string", "example": "clx2ws456" },
+          "seats": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 10000,
+            "example": 5
+          },
+          "interval": {
+            "type": "string",
+            "enum": ["monthly", "yearly"],
+            "example": "monthly"
+          },
+          "coupon": {
+            "type": "string",
+            "description": "Código de cupom (case-insensitive, normalizado para maiúsculas).",
+            "example": "LANCAMENTO10"
+          }
         }
       },
       "ComponentKey": {
@@ -2684,6 +3877,7 @@
           "emoji": { "type": "string", "nullable": true, "example": "🚀" },
           "coverImage": { "type": "string", "format": "uri", "nullable": true, "example": null },
           "isPublic": { "type": "boolean", "example": false },
+          "isFavorited": { "type": "boolean", "example": false },
           "leadId": { "type": "string", "example": "clx0v5k2p0000qwer5678efgh" },
           "workspaceId": { "type": "string", "example": "clx0v5k2p0000qwer9012ijkl" },
           "archivedAt": { "type": "string", "format": "date-time", "nullable": true, "example": null },
@@ -2714,7 +3908,7 @@
             "maxLength": 500,
             "example": "Melhoria no fluxo de cadastro e ativação"
           },
-          "emoji": { "type": "string", "maxLength": 10, "example": "🚀" },
+          "emoji": { "type": "string", "maxLength": 30, "example": "🚀" },
           "coverImage": { "type": "string", "format": "uri", "example": "https://exemplo.com/capa.png" },
           "isPublic": { "type": "boolean", "default": false }
         }
@@ -2736,7 +3930,7 @@
             "example": "redesign-onboarding-v2"
           },
           "description": { "type": "string", "maxLength": 500 },
-          "emoji": { "type": "string", "maxLength": 10 },
+          "emoji": { "type": "string", "maxLength": 30 },
           "coverImage": { "type": "string", "format": "uri" },
           "isPublic": { "type": "boolean" }
         }
@@ -2761,6 +3955,567 @@
               "data": {
                 "type": "array",
                 "items": { "$ref": "#/components/schemas/Project" }
+              }
+            }
+          }
+        ]
+      },
+      "ProjectMember": {
+        "type": "object",
+        "properties": {
+          "userId": { "type": "string", "example": "clx0v5k2p0000qwer5678efgh" },
+          "name": { "type": "string", "example": "João Silva" },
+          "username": { "type": "string", "example": "joao" },
+          "image": { "type": "string", "nullable": true, "example": null },
+          "isLead": { "type": "boolean", "example": true },
+          "createdAt": { "type": "string", "format": "date-time" }
+        }
+      },
+      "ProjectMemberResponse": {
+        "allOf": [
+          { "$ref": "#/components/schemas/SuccessResponse" },
+          {
+            "type": "object",
+            "properties": {
+              "data": { "$ref": "#/components/schemas/ProjectMember" }
+            }
+          }
+        ]
+      },
+      "ProjectMemberListResponse": {
+        "allOf": [
+          { "$ref": "#/components/schemas/SuccessResponse" },
+          {
+            "type": "object",
+            "properties": {
+              "data": {
+                "type": "array",
+                "items": { "$ref": "#/components/schemas/ProjectMember" }
+              }
+            }
+          }
+        ]
+      },
+      "AddProjectMemberInput": {
+        "type": "object",
+        "required": ["userId"],
+        "properties": {
+          "userId": {
+            "type": "string",
+            "description": "ID (cuid2) de um usuário já membro do workspace.",
+            "example": "clx0v5k2p0000qwer5678efgh"
+          }
+        }
+      },
+      "MemberRole": {
+        "type": "string",
+        "enum": ["OWNER", "ADMIN", "MEMBER", "VIEWER"],
+        "example": "MEMBER"
+      },
+      "InvitableRole": {
+        "type": "string",
+        "description": "Papéis atribuíveis por convite — não inclui OWNER.",
+        "enum": ["ADMIN", "MEMBER", "VIEWER"],
+        "example": "MEMBER"
+      },
+      "Member": {
+        "type": "object",
+        "description": "Membro do workspace com metadados agregados da conta do usuário.",
+        "properties": {
+          "membershipId": { "type": "string", "example": "clx6mb901" },
+          "userId": { "type": "string", "example": "clx1abc123" },
+          "name": { "type": "string", "example": "João Silva" },
+          "username": { "type": "string", "example": "joao" },
+          "email": {
+            "type": "string",
+            "format": "email",
+            "example": "joao@exemplo.com"
+          },
+          "image": { "type": "string", "nullable": true, "example": null },
+          "role": { "$ref": "#/components/schemas/MemberRole" },
+          "accountStatus": {
+            "type": "string",
+            "enum": ["ACTIVE", "UNVERIFIED", "PENDING_DELETION"],
+            "example": "ACTIVE"
+          },
+          "authMethods": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "enum": ["EMAIL_PASSWORD", "GOOGLE", "GITHUB"]
+            },
+            "example": ["EMAIL_PASSWORD"]
+          },
+          "twoFactorEnabled": { "type": "boolean", "example": false },
+          "joinedAt": { "type": "string", "format": "date-time" }
+        }
+      },
+      "MemberListResponse": {
+        "allOf": [
+          { "$ref": "#/components/schemas/SuccessResponse" },
+          {
+            "type": "object",
+            "properties": {
+              "data": {
+                "type": "object",
+                "properties": {
+                  "members": {
+                    "type": "array",
+                    "items": { "$ref": "#/components/schemas/Member" }
+                  },
+                  "total": { "type": "integer", "example": 12 },
+                  "page": { "type": "integer", "example": 1 },
+                  "pageSize": { "type": "integer", "example": 20 }
+                }
+              }
+            }
+          }
+        ]
+      },
+      "MemberImportRowResult": {
+        "type": "object",
+        "properties": {
+          "row": {
+            "type": "integer",
+            "description": "Número da linha no CSV (1-based).",
+            "example": 1
+          },
+          "email": { "type": "string", "format": "email" },
+          "status": {
+            "type": "string",
+            "enum": ["invited", "skipped", "error"],
+            "example": "invited"
+          },
+          "reason": {
+            "type": "string",
+            "description": "Presente quando `status` é `skipped` ou `error`.",
+            "example": "Já é membro do workspace"
+          }
+        }
+      },
+      "MemberImportResult": {
+        "type": "object",
+        "properties": {
+          "invited": { "type": "integer", "example": 8 },
+          "skipped": { "type": "integer", "example": 1 },
+          "errors": { "type": "integer", "example": 0 },
+          "rows": {
+            "type": "array",
+            "items": { "$ref": "#/components/schemas/MemberImportRowResult" }
+          }
+        }
+      },
+      "MemberImportResponse": {
+        "allOf": [
+          { "$ref": "#/components/schemas/SuccessResponse" },
+          {
+            "type": "object",
+            "properties": {
+              "data": { "$ref": "#/components/schemas/MemberImportResult" }
+            }
+          }
+        ]
+      },
+      "InvitationStatus": {
+        "type": "string",
+        "enum": ["PENDING", "ACCEPTED", "EXPIRED", "REVOKED"],
+        "example": "PENDING"
+      },
+      "Invitation": {
+        "type": "object",
+        "properties": {
+          "id": { "type": "string", "example": "clx7inv234" },
+          "email": {
+            "type": "string",
+            "format": "email",
+            "example": "novo.membro@exemplo.com"
+          },
+          "role": { "$ref": "#/components/schemas/InvitableRole" },
+          "status": { "$ref": "#/components/schemas/InvitationStatus" },
+          "expiresAt": { "type": "string", "format": "date-time" },
+          "workspaceId": { "type": "string", "example": "clx2ws456" },
+          "projectId": {
+            "type": "string",
+            "nullable": true,
+            "description": "Presente quando o convite é escopado a um projeto.",
+            "example": null
+          },
+          "invitedById": { "type": "string", "example": "clx1abc123" },
+          "createdAt": { "type": "string", "format": "date-time" },
+          "updatedAt": { "type": "string", "format": "date-time" }
+        }
+      },
+      "CreateInvitationInput": {
+        "type": "object",
+        "required": ["email"],
+        "properties": {
+          "email": {
+            "type": "string",
+            "format": "email",
+            "example": "novo.membro@exemplo.com"
+          },
+          "role": {
+            "allOf": [{ "$ref": "#/components/schemas/InvitableRole" }],
+            "default": "MEMBER"
+          },
+          "projectId": {
+            "type": "string",
+            "description": "Se informado, o convidado também é adicionado a este projeto ao aceitar.",
+            "example": "clx0v5k2p0000qwer1234abcd"
+          }
+        }
+      },
+      "InviteToProjectInput": {
+        "type": "object",
+        "required": ["email"],
+        "properties": {
+          "email": {
+            "type": "string",
+            "format": "email",
+            "example": "novo.membro@exemplo.com"
+          },
+          "role": {
+            "allOf": [{ "$ref": "#/components/schemas/InvitableRole" }],
+            "default": "MEMBER"
+          }
+        }
+      },
+      "UpdateInvitationRoleInput": {
+        "type": "object",
+        "required": ["role"],
+        "properties": {
+          "role": { "$ref": "#/components/schemas/InvitableRole" }
+        }
+      },
+      "AcceptInvitationInput": {
+        "type": "object",
+        "required": ["token"],
+        "properties": {
+          "token": {
+            "type": "string",
+            "description": "Token recebido por e-mail.",
+            "example": "8f3e2c1a9b7d4f6e5a2c1b0d9e8f7a6c"
+          }
+        }
+      },
+      "InvitationResponse": {
+        "allOf": [
+          { "$ref": "#/components/schemas/SuccessResponse" },
+          {
+            "type": "object",
+            "properties": {
+              "data": { "$ref": "#/components/schemas/Invitation" }
+            }
+          }
+        ]
+      },
+      "InvitationListResponse": {
+        "allOf": [
+          { "$ref": "#/components/schemas/SuccessResponse" },
+          {
+            "type": "object",
+            "properties": {
+              "data": {
+                "type": "array",
+                "items": { "$ref": "#/components/schemas/Invitation" }
+              }
+            }
+          }
+        ]
+      },
+      "InviteToProjectResponse": {
+        "allOf": [
+          { "$ref": "#/components/schemas/SuccessResponse" },
+          {
+            "type": "object",
+            "properties": {
+              "data": {
+                "oneOf": [
+                  {
+                    "type": "object",
+                    "properties": {
+                      "kind": { "type": "string", "enum": ["invited"] },
+                      "invitation": {
+                        "$ref": "#/components/schemas/Invitation"
+                      }
+                    }
+                  },
+                  {
+                    "type": "object",
+                    "properties": {
+                      "kind": { "type": "string", "enum": ["added"] },
+                      "member": {
+                        "$ref": "#/components/schemas/ProjectMember"
+                      }
+                    }
+                  }
+                ]
+              }
+            }
+          }
+        ]
+      },
+      "CouponPreview": {
+        "type": "object",
+        "properties": {
+          "code": { "type": "string", "example": "LANCAMENTO10" },
+          "discount": { "type": "number", "example": 10 },
+          "discountKind": {
+            "type": "string",
+            "enum": ["PERCENTAGE", "FIXED"],
+            "example": "PERCENTAGE"
+          }
+        }
+      },
+      "CouponPreviewResponse": {
+        "allOf": [
+          { "$ref": "#/components/schemas/SuccessResponse" },
+          {
+            "type": "object",
+            "properties": {
+              "data": { "$ref": "#/components/schemas/CouponPreview" }
+            }
+          }
+        ]
+      },
+      "TalkToSalesInput": {
+        "type": "object",
+        "required": ["name", "email", "teamSize", "message"],
+        "properties": {
+          "name": {
+            "type": "string",
+            "minLength": 2,
+            "maxLength": 120,
+            "example": "João Silva"
+          },
+          "email": {
+            "type": "string",
+            "format": "email",
+            "maxLength": 254,
+            "example": "joao@empresa.com"
+          },
+          "teamSize": {
+            "type": "string",
+            "enum": ["1-10", "11-50", "51-200", "201-500", "500+"],
+            "example": "51-200"
+          },
+          "message": {
+            "type": "string",
+            "minLength": 10,
+            "maxLength": 2000,
+            "example": "Gostaríamos de entender o plano Enterprise para 150 pessoas."
+          }
+        }
+      },
+      "NotificationSetting": {
+        "type": "object",
+        "properties": {
+          "priorityChanges": { "type": "boolean", "example": true },
+          "stateChanges": { "type": "boolean", "example": true },
+          "comments": { "type": "boolean", "example": true },
+          "mentions": { "type": "boolean", "example": true }
+        }
+      },
+      "UpdateNotificationSettingInput": {
+        "type": "object",
+        "description": "Pelo menos um campo deve ser informado.",
+        "minProperties": 1,
+        "properties": {
+          "priorityChanges": { "type": "boolean", "example": false },
+          "stateChanges": { "type": "boolean", "example": true },
+          "comments": { "type": "boolean", "example": true },
+          "mentions": { "type": "boolean", "example": true }
+        }
+      },
+      "NotificationSettingResponse": {
+        "allOf": [
+          { "$ref": "#/components/schemas/SuccessResponse" },
+          {
+            "type": "object",
+            "properties": {
+              "data": { "$ref": "#/components/schemas/NotificationSetting" }
+            }
+          }
+        ]
+      },
+      "CareerJobStatus": {
+        "type": "string",
+        "enum": ["DRAFT", "OPEN", "CLOSED"],
+        "example": "OPEN"
+      },
+      "CareerLocationType": {
+        "type": "string",
+        "enum": ["REMOTE", "HYBRID", "ON_SITE"],
+        "example": "REMOTE"
+      },
+      "CareerEmploymentType": {
+        "type": "string",
+        "enum": [
+          "FULL_TIME",
+          "PART_TIME",
+          "INTERNSHIP",
+          "CONTRACT",
+          "TEMPORARY"
+        ],
+        "example": "FULL_TIME"
+      },
+      "CareerJobContent": {
+        "type": "object",
+        "required": ["about", "responsibilities", "requirements", "stack"],
+        "properties": {
+          "about": {
+            "type": "string",
+            "minLength": 10,
+            "maxLength": 2000,
+            "example": "Buscamos um(a) engenheiro(a) para o time de plataforma."
+          },
+          "responsibilities": {
+            "type": "array",
+            "minItems": 1,
+            "items": { "type": "string", "minLength": 2, "maxLength": 300 }
+          },
+          "requirements": {
+            "type": "array",
+            "minItems": 1,
+            "items": { "type": "string", "minLength": 2, "maxLength": 300 }
+          },
+          "niceToHave": {
+            "type": "array",
+            "items": { "type": "string", "minLength": 2, "maxLength": 300 }
+          },
+          "stack": {
+            "type": "array",
+            "minItems": 1,
+            "items": { "type": "string", "minLength": 2, "maxLength": 300 }
+          }
+        }
+      },
+      "CareerJob": {
+        "type": "object",
+        "properties": {
+          "id": { "type": "string", "example": "clx8job567" },
+          "slug": { "type": "string", "example": "engenheiro-backend" },
+          "title": { "type": "string", "example": "Engenheiro(a) Backend" },
+          "department": {
+            "type": "string",
+            "nullable": true,
+            "example": "Engenharia"
+          },
+          "summary": {
+            "type": "string",
+            "example": "Vaga para o time de plataforma, atuando em Node.js e PostgreSQL."
+          },
+          "content": { "$ref": "#/components/schemas/CareerJobContent" },
+          "location": {
+            "type": "string",
+            "nullable": true,
+            "example": "São Paulo, SP"
+          },
+          "locationType": { "$ref": "#/components/schemas/CareerLocationType" },
+          "employmentType": {
+            "$ref": "#/components/schemas/CareerEmploymentType"
+          },
+          "status": { "$ref": "#/components/schemas/CareerJobStatus" },
+          "createdAt": { "type": "string", "format": "date-time" },
+          "updatedAt": { "type": "string", "format": "date-time" }
+        }
+      },
+      "CreateCareerJobInput": {
+        "type": "object",
+        "required": [
+          "slug",
+          "title",
+          "summary",
+          "content",
+          "locationType",
+          "employmentType"
+        ],
+        "properties": {
+          "slug": {
+            "type": "string",
+            "minLength": 2,
+            "maxLength": 100,
+            "pattern": "^[a-z0-9-]+$",
+            "example": "engenheiro-backend"
+          },
+          "title": {
+            "type": "string",
+            "minLength": 2,
+            "maxLength": 120,
+            "example": "Engenheiro(a) Backend"
+          },
+          "department": {
+            "type": "string",
+            "maxLength": 80,
+            "example": "Engenharia"
+          },
+          "summary": {
+            "type": "string",
+            "minLength": 10,
+            "maxLength": 700,
+            "example": "Vaga para o time de plataforma, atuando em Node.js e PostgreSQL."
+          },
+          "content": { "$ref": "#/components/schemas/CareerJobContent" },
+          "location": {
+            "type": "string",
+            "minLength": 2,
+            "maxLength": 120,
+            "example": "São Paulo, SP"
+          },
+          "locationType": { "$ref": "#/components/schemas/CareerLocationType" },
+          "employmentType": {
+            "$ref": "#/components/schemas/CareerEmploymentType"
+          }
+        }
+      },
+      "UpdateCareerJobInput": {
+        "type": "object",
+        "description": "Todos os campos de CreateCareerJobInput, opcionais. Não altera o status.",
+        "properties": {
+          "slug": {
+            "type": "string",
+            "minLength": 2,
+            "maxLength": 100,
+            "pattern": "^[a-z0-9-]+$"
+          },
+          "title": { "type": "string", "minLength": 2, "maxLength": 120 },
+          "department": { "type": "string", "maxLength": 80 },
+          "summary": { "type": "string", "minLength": 10, "maxLength": 700 },
+          "content": { "$ref": "#/components/schemas/CareerJobContent" },
+          "location": { "type": "string", "minLength": 2, "maxLength": 120 },
+          "locationType": { "$ref": "#/components/schemas/CareerLocationType" },
+          "employmentType": {
+            "$ref": "#/components/schemas/CareerEmploymentType"
+          }
+        }
+      },
+      "ChangeCareerJobStatusInput": {
+        "type": "object",
+        "required": ["status"],
+        "properties": {
+          "status": { "$ref": "#/components/schemas/CareerJobStatus" }
+        }
+      },
+      "CareerJobResponse": {
+        "allOf": [
+          { "$ref": "#/components/schemas/SuccessResponse" },
+          {
+            "type": "object",
+            "properties": {
+              "data": { "$ref": "#/components/schemas/CareerJob" }
+            }
+          }
+        ]
+      },
+      "CareerJobListResponse": {
+        "allOf": [
+          { "$ref": "#/components/schemas/SuccessResponse" },
+          {
+            "type": "object",
+            "properties": {
+              "data": {
+                "type": "array",
+                "items": { "$ref": "#/components/schemas/CareerJob" }
               }
             }
           }
@@ -2853,6 +4608,34 @@
                 "code": "RATE_LIMITED",
                 "details": { "retryAfterSeconds": 30 }
               }
+            }
+          }
+        }
+      },
+      "GoneError": {
+        "description": "O recurso existiu, mas não está mais disponível (ex.: convite expirado)",
+        "content": {
+          "application/json": {
+            "schema": { "$ref": "#/components/schemas/ErrorResponse" },
+            "example": {
+              "success": false,
+              "statusCode": 410,
+              "message": "Convite expirado",
+              "error": { "code": "INVITATION_EXPIRED" }
+            }
+          }
+        }
+      },
+      "BadGatewayError": {
+        "description": "Falha ao se comunicar com um serviço externo (AbacatePay, provedor de e-mail)",
+        "content": {
+          "application/json": {
+            "schema": { "$ref": "#/components/schemas/ErrorResponse" },
+            "example": {
+              "success": false,
+              "statusCode": 502,
+              "message": "Não foi possível validar o cupom",
+              "error": { "code": "PAYMENT_ERROR" }
             }
           }
         }
