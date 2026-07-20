@@ -12,7 +12,7 @@
     "check:ci": "biome check",
     "check:staged": "biome check --fix --staged --no-errors-on-unmatched",
     "lint": "biome lint --write",
-    "format": "biome format --write",
+    "format": "biome format --write && prisma format",
     "format:check": "biome format",
     "test": "vitest",
     "test:unit": "vitest --project unit",

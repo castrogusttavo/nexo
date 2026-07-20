@@ -7,36 +7,36 @@ datasource db {
 }
 
 model User {
-  id                   String    @id @default(cuid())
-  name                 String
-  email                String    @unique
-  username             String    @unique
-  emailVerified        Boolean   @default(false) @map("email_verified")
-  image                String?
-  coverImage           String?   @map("cover_image")
-  twoFactorEnabled     Boolean   @default(false) @map("two_factor_enabled")
-  deletionScheduledAt  DateTime? @map("deletion_scheduled_at")
-  acceptedTermsAt      DateTime? @map("accepted_terms_at")
-  acceptedPrivacyAt    DateTime? @map("accepted_privacy_at")
-  createdAt            DateTime  @default(now()) @map("created_at")
-  updatedAt            DateTime  @updatedAt @map("updated_at")
-  onboardingStep       OnboardingStep?      @default(PROFILE) @map("onboarding_step")
-  role                 UserRole?  @map("role")
-  goals                UserGoal[] @map("goals")
-  preference           UserPreference?
+  id                  String               @id @default(cuid())
+  name                String
+  email               String               @unique
+  username            String               @unique
+  emailVerified       Boolean              @default(false) @map("email_verified")
+  image               String?
+  coverImage          String?              @map("cover_image")
+  twoFactorEnabled    Boolean              @default(false) @map("two_factor_enabled")
+  deletionScheduledAt DateTime?            @map("deletion_scheduled_at")
+  acceptedTermsAt     DateTime?            @map("accepted_terms_at")
+  acceptedPrivacyAt   DateTime?            @map("accepted_privacy_at")
+  createdAt           DateTime             @default(now()) @map("created_at")
+  updatedAt           DateTime             @updatedAt @map("updated_at")
+  onboardingStep      OnboardingStep?      @default(PROFILE) @map("onboarding_step")
+  role                UserRole?            @map("role")
+  goals               UserGoal[]           @map("goals")
+  preference          UserPreference?
   notificationSetting NotificationSetting?
 
-  memberships   Membership[]
-  sessions      Session[]
-  accounts      Account[]
-  twoFactors    TwoFactor[]
-  shortLinks    ShortLink[]
-  stickyNotes   StickyNote[]
-  consentEvents ConsentEvent[]
-  projectsLed   Project[]       @relation("ProjectLead")
-  projectMemberships  ProjectMember[]
-  projectFavourites ProjectFavorite[]
-  sentInvitations WorkspaceInvitation[] @relation("SentInvitations")
+  memberships        Membership[]
+  sessions           Session[]
+  accounts           Account[]
+  twoFactors         TwoFactor[]
+  shortLinks         ShortLink[]
+  stickyNotes        StickyNote[]
+  consentEvents      ConsentEvent[]
+  projectsLed        Project[]             @relation("ProjectLead")
+  projectMemberships ProjectMember[]
+  projectFavourites  ProjectFavorite[]
+  sentInvitations    WorkspaceInvitation[] @relation("SentInvitations")
 
   @@index([deletionScheduledAt])
   @@map("users")
@@ -90,16 +90,16 @@ enum QuickSendShortcut {
 }
 
 model UserPreference {
-  id       String          @id @default(cuid())
-  userId   String          @unique @map("user_id")
-  theme    Theme           @default(SYSTEM)
-  smoothCursor  Boolean    @default(false) @map("smooth_cursor")
-  quickSendShortcut   QuickSendShortcut    @default(ENTER) @map("quick_send_shortcut")
-  timezone  String    @default("UTC")
-  weekStartsOn  Int   @default(1) @map("week_starts_on")
-  weekendDays   Int[] @default([0, 6]) @map("weekend_days")
-  createdAt     DateTime    @default(now()) @map("created_at")
-  updatedAt     DateTime    @updatedAt @map("updated_at")
+  id                String            @id @default(cuid())
+  userId            String            @unique @map("user_id")
+  theme             Theme             @default(SYSTEM)
+  smoothCursor      Boolean           @default(false) @map("smooth_cursor")
+  quickSendShortcut QuickSendShortcut @default(ENTER) @map("quick_send_shortcut")
+  timezone          String            @default("UTC")
+  weekStartsOn      Int               @default(1) @map("week_starts_on")
+  weekendDays       Int[]             @default([0, 6]) @map("weekend_days")
+  createdAt         DateTime          @default(now()) @map("created_at")
+  updatedAt         DateTime          @updatedAt @map("updated_at")
 
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
@@ -251,21 +251,21 @@ enum BillingInterval {
 }
 
 model WorkspaceInvitation {
-  id  String @id @default(cuid())
-  email String
-  role  Role  @default(MEMBER)
-  token String  @unique @default(cuid())
-  status  InviteStatus  @default(PENDING)
-  expiresAt DateTime  @map("expiresa_at")
-  invitedById  String  @map("invited_by_id")
-  workspaceId String  @map("workspace_id")
-  projectId String? @map("project_id")
-  createdAt DateTime @default(now()) @map("created_at")
-  updatedAt DateTime  @updatedAt @map("updated_at")
+  id          String       @id @default(cuid())
+  email       String
+  role        Role         @default(MEMBER)
+  token       String       @unique @default(cuid())
+  status      InviteStatus @default(PENDING)
+  expiresAt   DateTime     @map("expiresa_at")
+  invitedById String       @map("invited_by_id")
+  workspaceId String       @map("workspace_id")
+  projectId   String?      @map("project_id")
+  createdAt   DateTime     @default(now()) @map("created_at")
+  updatedAt   DateTime     @updatedAt @map("updated_at")
 
   workspace Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
-  inviter User  @relation("SentInvitations", fields: [invitedById], references: [id], onDelete: Cascade)
-  project Project? @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  inviter   User      @relation("SentInvitations", fields: [invitedById], references: [id], onDelete: Cascade)
+  project   Project?  @relation(fields: [projectId], references: [id], onDelete: Cascade)
 
   @@index([workspaceId, status])
   @@index([email])
@@ -373,14 +373,14 @@ model IncidentUpdate {
 }
 
 model ShortLink {
-  id        String        @id @default(cuid())
-  title     String        @map("title")
-  url       String        @map("url")
-  createdAt DateTime      @default(now()) @map("created_at")
-  updatedAt DateTime      @updatedAt @map("updated_at")
+  id        String   @id @default(cuid())
+  title     String   @map("title")
+  url       String   @map("url")
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
 
-  user      User          @relation(fields: [userId], references: [id], onDelete: Cascade)
-  userId    String        @map("user_id")
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId String @map("user_id")
 
   @@index([createdAt])
   @@map("short_links")
@@ -396,37 +396,37 @@ enum StickyColor {
 }
 
 model StickyNote {
-  id        String        @id @default(cuid())
-  content   Json          @map("content")
-  color     StickyColor   @default(ZINC) @map("color")
-  createdAt DateTime      @default(now()) @map("created_at")
-  updatedAt DateTime      @updatedAt @map("updated_at")
+  id        String      @id @default(cuid())
+  content   Json        @map("content")
+  color     StickyColor @default(ZINC) @map("color")
+  createdAt DateTime    @default(now()) @map("created_at")
+  updatedAt DateTime    @updatedAt @map("updated_at")
 
-  user      User          @relation(fields: [userId], references: [id], onDelete: Cascade)
-  userId    String        @map("user_id")
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId String @map("user_id")
 
   @@index([userId, updatedAt])
   @@map("sticky_notes")
 }
 
 model Project {
-  id          String    @id @default(cuid())
-  name        String
-  slug        String
-  description String?
-  emoji       String?
-  coverImage  String?   @map("cover_image")
-  isPublic    Boolean   @default(false) @map("is_public")
-  leadId      String    @map("lead_id")
-  workspaceId String    @map("workspace_id")
-  archivedAt  DateTime? @map("archived_at")
-  createdAt   DateTime  @default(now()) @map("created_at")
-  updatedAt   DateTime  @updatedAt @map("updated_at")
+  id                String    @id @default(cuid())
+  name              String
+  slug              String
+  description       String?
+  emoji             String?
+  coverImage        String?   @map("cover_image")
+  isPublic          Boolean   @default(false) @map("is_public")
+  leadId            String    @map("lead_id")
+  workspaceId       String    @map("workspace_id")
+  archivedAt        DateTime? @map("archived_at")
+  createdAt         DateTime  @default(now()) @map("created_at")
+  updatedAt         DateTime  @updatedAt @map("updated_at")
 
-  lead      User            @relation("ProjectLead", fields: [leadId], references: [id])
-  workspace Workspace       @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
-  members   ProjectMember[]
-  favourites ProjectFavorite[]
+  lead        User                  @relation("ProjectLead", fields: [leadId], references: [id])
+  workspace   Workspace             @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  members     ProjectMember[]
+  favourites  ProjectFavorite[]
   invitations WorkspaceInvitation[]
 
   @@unique([workspaceId, slug])
