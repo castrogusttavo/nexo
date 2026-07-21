@@ -65,6 +65,34 @@ export function useCreateProject(workspaceId: string) {
   })
 }
 
+export function useUpdateProject(workspaceId: string, slug: string) {
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationFn: (data: {
+      name?: string
+      slug?: string
+      description?: string
+      emoji?: string
+      coverImage?: string
+      isPublic?: boolean
+      issueTypesEnabled?: boolean
+      modulesEnabled?: boolean
+      cyclesEnabled?: boolean
+    }) =>
+      apiFetchJson<ProjectDTO>(
+        `/api/workspaces/${workspaceId}/projects/${slug}`,
+        'PATCH',
+        data,
+        'Erro ao atualizar projeto',
+      ),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: projectsKey(workspaceId) })
+      queryClient.invalidateQueries({ queryKey: projectKey(workspaceId, slug) })
+    },
+  })
+}
+
 export function useArchiveProject(workspaceId: string, slug: string) {
   const queryClient = useQueryClient()
 
