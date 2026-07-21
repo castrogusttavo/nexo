@@ -4,6 +4,16 @@ import { prisma } from '../lib/prisma'
 import { err, ok, type Result } from '../lib/result'
 import { dbError } from './db-error'
 
+export const DEFAULT_STATES: Array<
+  Pick<State, 'name' | 'group' | 'order' | 'isDefault'>
+> = [
+  { name: 'Backlog', group: 'BACKLOG', order: 0, isDefault: false },
+  { name: 'Pendente', group: 'UNSTARTED', order: 0, isDefault: true },
+  { name: 'Em progresso', group: 'STARTED', order: 0, isDefault: false },
+  { name: 'Concluído', group: 'COMPLETED', order: 0, isDefault: false },
+  { name: 'Cancelado', group: 'CANCELLED', order: 0, isDefault: false },
+]
+
 export const StateRepository = {
   async findById(id: string): Promise<Result<State>> {
     try {

@@ -13,6 +13,7 @@ import {
 import { prisma } from '../lib/prisma'
 import { err, ok, type Result } from '../lib/result'
 import { dbError } from './db-error'
+import { DEFAULT_STATES } from './state.repository'
 
 export type ProjectWithDetails = Project & {
   members: Pick<ProjectMember, 'userId'>[]
@@ -154,6 +155,12 @@ export const ProjectRepository = {
         const p = await tx.project.create({ data })
         await tx.projectMember.create({
           data: { userId: data.leadId, projectId: p.id },
+        })
+        await tx.state.createMany({
+          data: DEFAULT_STATES.map((state) => ({
+            ...state,
+            projectId: p.id,
+          })),
         })
         return p
       })

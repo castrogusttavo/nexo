@@ -198,6 +198,34 @@ describe('ProjectRepository', () => {
 
       expectErr(result, 'PROJECT_SLUG_CONFLICT')
     })
+
+    it('should seed the 5 default states', async () => {
+      const user = await seedUser()
+      const ws = await seedWorkspace()
+
+      const result = await ProjectRepository.create({
+        name: 'Duplicate',
+        slug: 'dup-slug',
+        isPublic: false,
+        issueTypesEnabled: true,
+        modulesEnabled: true,
+        cyclesEnabled: true,
+        leadId: user.id,
+        workspaceId: ws.id,
+      })
+
+      const project = expectOk(result)
+      const states = await prisma.state.findMany({
+        where: { projectId: project.id },
+      })
+
+      expect(states).toHaveLength(5)
+      expect(states.map((s) => s.group).sort()).toEqual(
+        ['BACKLOG', 'CANCELLED', 'COMPLETED', 'STARTED', 'UNSTARTED'].sort(),
+      )
+      const defaultState = states.find((s) => s.isDefault)
+      expect(defaultState?.name).toBe('Pendente')
+    })
   })
 
   describe('archive() / restore()', () => {
