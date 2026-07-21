@@ -48,6 +48,8 @@ export const ERROR_CODES = {
   STATE_FORBIDDEN: { code: 'STATE_FORBIDDEN', status: 403 },
   STATE_LAST_IN_GROUP: { code: 'STATE_LAST_IN_GROUP', status: 409 },
   STATE_IS_DEFAULT: { code: 'STATE_IS_DEFAULT', status: 409 },
+  LABEL_NOT_FOUND: { code: 'LABEL_NOT_FOUND', status: 404 },
+  LABEL_FORBIDDEN: { code: 'LABEL_FORBIDDEN', status: 403 },
 
   // Server Errors (500)
   INTERNAL_SERVER_ERROR: { code: 'INTERNAL_SERVER_ERROR', status: 500 },

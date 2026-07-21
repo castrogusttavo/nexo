@@ -154,3 +154,9 @@ export const stateLastInGroup = (
 export const stateIsDefault = (
   message = 'Defina outro state como padrão antes de excluir este',
 ): AppError => appError('STATE_IS_DEFAULT', message)
+
+export const labelNotFound = (): AppError =>
+  appError('LABEL_NOT_FOUND', 'Label not found')
+
+export const labelForbidden = (message = 'Sem acesso a este label'): AppError =>
+  appError('LABEL_FORBIDDEN', message)

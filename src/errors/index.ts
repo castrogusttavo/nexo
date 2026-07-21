@@ -16,6 +16,8 @@ export {
   invitationExpired,
   invitationNotFound,
   invitationNotPending,
+  labelForbidden,
+  labelNotFound,
   mailError,
   memberImportEmpty,
   memberImportInvalidFormat,
