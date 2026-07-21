@@ -432,6 +432,7 @@ model Project {
   favourites  ProjectFavorite[]
   invitations WorkspaceInvitation[]
   states      State[]
+  labels      Label[]
 
   @@unique([workspaceId, slug])
   @@index([workspaceId, archivedAt])
@@ -574,4 +575,19 @@ enum TagColor {
   GREEN
   PURPLE
   ZINC
+}
+
+model Label {
+  id          String   @id @default(cuid())
+  name        String
+  description String?
+  color       TagColor @default(ZINC)
+  projectId   String   @map("project_id")
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  project Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+
+  @@index([projectId])
+  @@map("labels")
 }
