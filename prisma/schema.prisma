@@ -431,6 +431,7 @@ model Project {
   members     ProjectMember[]
   favourites  ProjectFavorite[]
   invitations WorkspaceInvitation[]
+  states      State[]
 
   @@unique([workspaceId, slug])
   @@index([workspaceId, archivedAt])
@@ -538,4 +539,39 @@ enum CareerEmploymentType {
   INTERNSHIP
   CONTRACT
   TEMPORARY
+}
+
+model State {
+  id          String     @id @default(cuid())
+  name        String
+  description String?
+  group       StateGroup
+  color       TagColor   @default(ZINC)
+  order       Int        @default(0)
+  isDefault   Boolean    @default(false) @map("is_default")
+  projectId   String     @map("project_id")
+  createdAt   DateTime   @default(now()) @map("created_at")
+  updatedAt   DateTime   @updatedAt @map("updated_at")
+
+  project Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+
+  @@index([projectId, group])
+  @@map("states")
+}
+
+enum StateGroup {
+  BACKLOG
+  UNSTARTED
+  STARTED
+  COMPLETED
+  CANCELLED
+}
+
+enum TagColor {
+  RED
+  YELLOW
+  BLUE
+  GREEN
+  PURPLE
+  ZINC
 }
