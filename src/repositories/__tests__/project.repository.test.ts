@@ -161,6 +161,9 @@ describe('ProjectRepository', () => {
         name: 'New Project',
         slug: 'new-proj',
         isPublic: false,
+        issueTypesEnabled: true,
+        modulesEnabled: true,
+        cyclesEnabled: true,
         leadId: user.id,
         workspaceId: ws.id,
       })
@@ -186,6 +189,9 @@ describe('ProjectRepository', () => {
         name: 'Duplicate',
         slug: 'dup-slug',
         isPublic: false,
+        issueTypesEnabled: true,
+        modulesEnabled: true,
+        cyclesEnabled: true,
         leadId: user.id,
         workspaceId: ws.id,
       })
@@ -356,6 +362,9 @@ describe('ProjectRepository', () => {
         name: 'X',
         slug: 'x',
         isPublic: false,
+        issueTypesEnabled: true,
+        modulesEnabled: true,
+        cyclesEnabled: true,
         leadId: 'u',
         workspaceId: 'ws',
       })

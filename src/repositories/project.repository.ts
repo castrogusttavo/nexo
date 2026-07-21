@@ -143,6 +143,9 @@ export const ProjectRepository = {
     emoji?: string
     coverImage?: string
     isPublic: boolean
+    issueTypesEnabled: boolean
+    modulesEnabled: boolean
+    cyclesEnabled: boolean
     leadId: string
     workspaceId: string
   }): Promise<Result<Project>> {
@@ -173,6 +176,9 @@ export const ProjectRepository = {
       emoji?: string | null
       coverImage?: string | null
       isPublic?: boolean
+      issueTypesEnabled?: boolean
+      modulesEnabled?: boolean
+      cyclesEnabled?: boolean
       leadId?: string
     },
   ): Promise<Result<Project>> {

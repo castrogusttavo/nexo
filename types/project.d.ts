@@ -6,6 +6,9 @@ export interface ProjectDTO {
   emoji: string | null
   coverImage: string | null
   isPublic: boolean
+  issueTypesEnabled: boolean
+  modulesEnabled: boolean
+  cyclesEnabled: boolean
   isFavorited: boolean
   leadId: string
   workspaceId: string
