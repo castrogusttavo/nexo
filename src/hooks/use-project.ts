@@ -1,6 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import type { ProjectDTO } from '@/types/project'
-import { apiFetch, apiFetchJson } from './_fetch'
+import { apiFetch, apiFetchJson, apiSend } from './_fetch'
 
 const PROJECTS_KEY = ['projects']
 
@@ -132,7 +132,7 @@ export function useDeleteProject(workspaceId: string, slug: string) {
 
   return useMutation({
     mutationFn: () =>
-      apiFetch<ProjectDTO>(
+      apiSend(
         `/api/workspaces/${workspaceId}/projects/${slug}`,
         { method: 'DELETE' },
         'Erro ao deletar projeto',
