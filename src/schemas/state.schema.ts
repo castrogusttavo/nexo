@@ -1,4 +1,5 @@
 import z from 'zod'
+import { TagColorSchema } from './_shared'
 
 const stateName = z
   .string()
@@ -17,20 +18,11 @@ export const StateGroupSchema = z.enum([
   'CANCELLED',
 ])
 
-export const StateColorSchema = z.enum([
-  'RED',
-  'YELLOW',
-  'BLUE',
-  'GREEN',
-  'PURPLE',
-  'ZINC',
-])
-
 export const CreateStateSchema = z.object({
   name: stateName,
   description: stateDescription.optional(),
   group: StateGroupSchema,
-  color: StateColorSchema.default('ZINC'),
+  color: TagColorSchema.default('ZINC'),
 })
 
 export type CreateStateDTO = z.infer<typeof CreateStateSchema>
@@ -38,7 +30,7 @@ export type CreateStateDTO = z.infer<typeof CreateStateSchema>
 export const UpdateStateSchema = z.object({
   name: stateName.optional(),
   description: stateDescription.optional(),
-  color: StateColorSchema.optional(),
+  color: TagColorSchema.optional(),
   order: z.number().int().optional(),
 })
 
