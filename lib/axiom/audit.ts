@@ -17,6 +17,7 @@ type AuditEntity =
   | 'invitation'
   | 'career_job'
   | 'career_application'
+  | 'state'
 
 type AuditAction =
   | 'create'

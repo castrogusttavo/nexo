@@ -150,3 +150,7 @@ export const stateForbidden = (message = 'Sem acesso a este state'): AppError =>
 export const stateLastInGroup = (
   message = 'O grupo precisa manter ao menos um state',
 ): AppError => appError('STATE_LAST_IN_GROUP', message)
+
+export const stateIsDefault = (
+  message = 'Defina outro state como padrão antes de excluir este',
+): AppError => appError('STATE_IS_DEFAULT', message)

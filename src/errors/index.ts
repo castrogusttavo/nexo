@@ -30,6 +30,7 @@ export {
   rateLimited,
   seatLimitReached,
   stateForbidden,
+  stateIsDefault,
   stateLastInGroup,
   stateNotFound,
   storageError,
