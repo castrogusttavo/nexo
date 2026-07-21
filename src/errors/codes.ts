@@ -44,6 +44,9 @@ export const ERROR_CODES = {
     status: 422,
   },
   MEMBER_IMPORT_EMPTY: { code: 'MEMBER_IMPORT_EMPTY', status: 422 },
+  STATE_NOT_FOUND: { code: 'STATE_NOT_FOUND', status: 404 },
+  STATE_FORBIDDEN: { code: 'STATE_FORBIDDEN', status: 403 },
+  STATE_LAST_IN_GROUP: { code: 'STATE_LAST_IN_GROUP', status: 409 },
 
   // Server Errors (500)
   INTERNAL_SERVER_ERROR: { code: 'INTERNAL_SERVER_ERROR', status: 500 },

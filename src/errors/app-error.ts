@@ -140,3 +140,13 @@ export const memberImportInvalidFormat = (
 export const memberImportEmpty = (
   message = 'O arquivo CSV não contém linhas para importar',
 ): AppError => appError('MEMBER_IMPORT_EMPTY', message)
+
+export const stateNotFound = (): AppError =>
+  appError('STATE_NOT_FOUND', 'State not found')
+
+export const stateForbidden = (message = 'Sem acesso a este state'): AppError =>
+  appError('STATE_FORBIDDEN', message)
+
+export const stateLastInGroup = (
+  message = 'O grupo precisa manter ao menos um state',
+): AppError => appError('STATE_LAST_IN_GROUP', message)
