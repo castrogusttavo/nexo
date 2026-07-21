@@ -36,6 +36,9 @@ export const CreateProjectSchema = z.object({
   emoji: projectEmoji.optional(),
   coverImage: projectCoverImage.optional(),
   isPublic: z.boolean().default(false),
+  issueTypesEnabled: z.boolean().default(true),
+  modulesEnabled: z.boolean().default(true),
+  cyclesEnabled: z.boolean().default(true),
 })
 
 export type CreateProjectDTO = z.infer<typeof CreateProjectSchema>
@@ -47,6 +50,9 @@ export const UpdateProjectSchema = z.object({
   emoji: projectEmoji.optional(),
   coverImage: projectCoverImage.optional(),
   isPublic: z.boolean().optional(),
+  issueTypesEnabled: z.boolean().optional(),
+  modulesEnabled: z.boolean().optional(),
+  cyclesEnabled: z.boolean().optional(),
 })
 
 export type UpdateProjectDTO = z.infer<typeof UpdateProjectSchema>

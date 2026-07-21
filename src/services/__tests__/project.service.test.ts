@@ -242,6 +242,9 @@ describe('ProjectService', () => {
         name: 'New Project',
         slug: 'new-project',
         isPublic: false,
+        issueTypesEnabled: true,
+        modulesEnabled: true,
+        cyclesEnabled: true,
       })
 
       const dto = expectOk(result)
@@ -258,6 +261,9 @@ describe('ProjectService', () => {
         name: 'New Project',
         slug: 'new-project',
         isPublic: false,
+        issueTypesEnabled: true,
+        modulesEnabled: true,
+        cyclesEnabled: true,
       })
       expectErr(result, 'FORBIDDEN')
     })
@@ -271,6 +277,9 @@ describe('ProjectService', () => {
         name: 'New Project',
         slug: 'new-project',
         isPublic: false,
+        issueTypesEnabled: true,
+        modulesEnabled: true,
+        cyclesEnabled: true,
       })
 
       expectErr(result, 'DATABASE_ERROR')
@@ -287,6 +296,9 @@ describe('ProjectService', () => {
         name: 'New Project',
         slug: 'new-project',
         isPublic: false,
+        issueTypesEnabled: true,
+        modulesEnabled: true,
+        cyclesEnabled: true,
       })
 
       expectErr(result, 'DATABASE_ERROR')

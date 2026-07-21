@@ -417,6 +417,9 @@ model Project {
   emoji             String?
   coverImage        String?   @map("cover_image")
   isPublic          Boolean   @default(false) @map("is_public")
+  issueTypesEnabled Boolean   @default(true) @map("issue_types_enabled")
+  modulesEnabled    Boolean   @default(true) @map("modules_enabled")
+  cyclesEnabled     Boolean   @default(true) @map("cycles_enabled")
   leadId            String    @map("lead_id")
   workspaceId       String    @map("workspace_id")
   archivedAt        DateTime? @map("archived_at")
