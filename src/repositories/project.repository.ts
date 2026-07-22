@@ -169,6 +169,9 @@ export const ProjectRepository = {
             projectId: p.id,
           })),
         })
+        await tx.estimateSettings.create({
+          data: { projectId: p.id },
+        })
         return p
       })
       return ok(project)

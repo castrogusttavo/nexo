@@ -250,6 +250,30 @@ describe('ProjectRepository', () => {
       expect(labels).toHaveLength(2)
       expect(labels.map((l) => l.name).sort()).toEqual(['Code', 'Design'])
     })
+
+    it('should seed default estimate settings', async () => {
+      const user = await seedUser()
+      const ws = await seedWorkspace()
+
+      const result = await ProjectRepository.create({
+        name: 'New Project',
+        slug: 'seeded-estimate-proj',
+        isPublic: false,
+        issueTypesEnabled: true,
+        modulesEnabled: true,
+        cyclesEnabled: true,
+        leadId: user.id,
+        workspaceId: ws.id,
+      })
+
+      const project = expectOk(result)
+      const settings = await prisma.estimateSettings.findUnique({
+        where: { projectId: project.id },
+      })
+
+      expect(settings?.system).toBe('POINTS')
+      expect(settings?.model).toBe('FIBONACCI')
+    })
   })
 
   describe('archive() / restore()', () => {
