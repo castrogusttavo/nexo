@@ -19,6 +19,7 @@ type AuditEntity =
   | 'career_application'
   | 'state'
   | 'label'
+  | 'estimate_settings'
 
 type AuditAction =
   | 'create'

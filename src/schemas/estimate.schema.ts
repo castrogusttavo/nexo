@@ -3,7 +3,7 @@ import z from 'zod'
 export const EstimateSystemSchema = z.enum(['POINTS', 'CATEGORIES', 'TIME'])
 
 export const EstimateModelSchema = z.enum([
-  'FIBONECCI',
+  'FIBONACCI',
   'LINEAR',
   'SQUARES',
   'T_SHIRT_SIZES',
@@ -15,7 +15,7 @@ const VALID_MODELS_BY_SYSTEM: Record<
   z.infer<typeof EstimateSystemSchema>,
   z.infer<typeof EstimateModelSchema>[]
 > = {
-  POINTS: ['FIBONECCI', 'LINEAR', 'SQUARES'],
+  POINTS: ['FIBONACCI', 'LINEAR', 'SQUARES'],
   CATEGORIES: ['T_SHIRT_SIZES', 'EASY_TO_HARD'],
   TIME: ['HOURS'],
 }
@@ -30,6 +30,6 @@ export const UpdateEstimateSettingsSchema = z
     path: ['model'],
   })
 
-export type UpdateEstimateSeettingsDTO = z.infer<
+export type UpdateEstimateSettingsDTO = z.infer<
   typeof UpdateEstimateSettingsSchema
 >
