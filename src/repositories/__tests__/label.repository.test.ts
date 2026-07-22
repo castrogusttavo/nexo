@@ -24,13 +24,13 @@ describe('LabelRepository', () => {
       const project = await setupProject()
       const seeded = await seedLabel(project.id, { name: 'Bug' })
 
-      const result = await LabelRepository.findByid(seeded.id)
+      const result = await LabelRepository.findById(seeded.id)
 
       expect(expectOk(result).name).toBe('Bug')
     })
 
     it('should return LABEL_NOT_FOUND when label does not exist', async () => {
-      const result = await LabelRepository.findByid('nonexistent')
+      const result = await LabelRepository.findById('nonexistent')
       expectErr(result, 'LABEL_NOT_FOUND')
     })
   })
@@ -82,7 +82,7 @@ describe('LabelRepository', () => {
 
       await LabelRepository.delete(seeded.id)
 
-      const result = await LabelRepository.findByid(seeded.id)
+      const result = await LabelRepository.findById(seeded.id)
       expectErr(result, 'LABEL_NOT_FOUND')
     })
   })

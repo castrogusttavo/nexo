@@ -5,7 +5,7 @@ import { err, ok, type Result } from '../lib/result'
 import { dbError } from './db-error'
 
 export const LabelRepository = {
-  async findByid(id: string): Promise<Result<Label>> {
+  async findById(id: string): Promise<Result<Label>> {
     try {
       const label = await prisma.label.findUnique({ where: { id } })
       if (!label) return err(labelNotFound())
