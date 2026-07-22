@@ -426,13 +426,14 @@ model Project {
   createdAt         DateTime  @default(now()) @map("created_at")
   updatedAt         DateTime  @updatedAt @map("updated_at")
 
-  lead        User                  @relation("ProjectLead", fields: [leadId], references: [id])
-  workspace   Workspace             @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
-  members     ProjectMember[]
-  favourites  ProjectFavorite[]
-  invitations WorkspaceInvitation[]
-  states      State[]
-  labels      Label[]
+  lead             User                  @relation("ProjectLead", fields: [leadId], references: [id])
+  workspace        Workspace             @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  members          ProjectMember[]
+  favourites       ProjectFavorite[]
+  invitations      WorkspaceInvitation[]
+  states           State[]
+  labels           Label[]
+  estimateSettings EstimateSettings?
 
   @@unique([workspaceId, slug])
   @@index([workspaceId, archivedAt])
@@ -590,4 +591,32 @@ model Label {
 
   @@index([projectId])
   @@map("labels")
+}
+
+model EstimateSettings {
+  id        String         @id @default(cuid())
+  system    EstimateSystem @default(POINTS)
+  model     EstimateModel  @default(FIBONACCI)
+  projectId String         @unique @map("project_id")
+  createdAt DateTime       @default(now()) @map("created_at")
+  updatedAt DateTime       @updatedAt @map("updated_at")
+
+  project Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+
+  @@map("estimate_settings")
+}
+
+enum EstimateSystem {
+  POINTS
+  CATEGORIES
+  TIME
+}
+
+enum EstimateModel {
+  FIBONACCI
+  LINEAR
+  SQUARES
+  T_SHIRT_SIZES
+  EASY_TO_HARD
+  HOURS
 }
