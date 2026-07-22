@@ -9,30 +9,9 @@ import {
 } from '../errors'
 import { err, ok, type Result } from '../lib/result'
 import { toStateDTO } from '../mappers/state.mapper'
-import { ProjectRepository } from '../repositories/project.repository'
 import { StateRepository } from '../repositories/state.repository'
 import type { CreateStateDTO, UpdateStateDTO } from '../schemas/state.schema'
-import { assertMember } from './_authz'
-
-async function resolveProject(
-  actorId: string,
-  workspaceId: string,
-  projectSlug: string,
-) {
-  const [membership, projectResult] = await Promise.all([
-    assertMember(actorId, workspaceId),
-    ProjectRepository.findByWorkspaceAndSlug(workspaceId, projectSlug, actorId),
-  ])
-  if (!membership.ok) return { ok: false as const, error: membership.error }
-  if (!projectResult.ok)
-    return { ok: false as const, error: projectResult.error }
-
-  return {
-    ok: true as const,
-    membership: membership.value,
-    project: projectResult.value,
-  }
-}
+import { resolveProject } from './_project-scope'
 
 export const StateService = {
   async list(
