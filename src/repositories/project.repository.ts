@@ -13,6 +13,7 @@ import {
 import { prisma } from '../lib/prisma'
 import { err, ok, type Result } from '../lib/result'
 import { dbError } from './db-error'
+import { DEFAULT_LABELS } from './label.repository'
 import { DEFAULT_STATES } from './state.repository'
 
 export type ProjectWithDetails = Project & {
@@ -159,6 +160,12 @@ export const ProjectRepository = {
         await tx.state.createMany({
           data: DEFAULT_STATES.map((state) => ({
             ...state,
+            projectId: p.id,
+          })),
+        })
+        await tx.label.createMany({
+          data: DEFAULT_LABELS.map((label) => ({
+            ...label,
             projectId: p.id,
           })),
         })

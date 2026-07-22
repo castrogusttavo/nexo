@@ -204,8 +204,8 @@ describe('ProjectRepository', () => {
       const ws = await seedWorkspace()
 
       const result = await ProjectRepository.create({
-        name: 'Duplicate',
-        slug: 'dup-slug',
+        name: 'New Project',
+        slug: 'seeded-states-proj',
         isPublic: false,
         issueTypesEnabled: true,
         modulesEnabled: true,
@@ -225,6 +225,30 @@ describe('ProjectRepository', () => {
       )
       const defaultState = states.find((s) => s.isDefault)
       expect(defaultState?.name).toBe('Pendente')
+    })
+
+    it('should seed the 2 default labels', async () => {
+      const user = await seedUser()
+      const ws = await seedWorkspace()
+
+      const result = await ProjectRepository.create({
+        name: 'New Project',
+        slug: 'seeded-labels-proj',
+        isPublic: false,
+        issueTypesEnabled: true,
+        modulesEnabled: true,
+        cyclesEnabled: true,
+        leadId: user.id,
+        workspaceId: ws.id,
+      })
+
+      const project = expectOk(result)
+      const labels = await prisma.label.findMany({
+        where: { projectId: project.id },
+      })
+
+      expect(labels).toHaveLength(2)
+      expect(labels.map((l) => l.name).sort()).toEqual(['Code', 'Design'])
     })
   })
 

@@ -4,6 +4,11 @@ import { prisma } from '../lib/prisma'
 import { err, ok, type Result } from '../lib/result'
 import { dbError } from './db-error'
 
+export const DEFAULT_LABELS: Array<Pick<Label, 'name'>> = [
+  { name: 'Design' },
+  { name: 'Code' },
+]
+
 export const LabelRepository = {
   async findById(id: string): Promise<Result<Label>> {
     try {
