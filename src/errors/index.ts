@@ -7,6 +7,8 @@ export {
   conflict,
   couponInvalid,
   databaseError,
+  estimateSettingsForbidden,
+  estimateSettingsNotFound,
   featureNotInPlan,
   forbidden,
   invalidCredentials,

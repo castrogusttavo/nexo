@@ -50,6 +50,14 @@ export const ERROR_CODES = {
   STATE_IS_DEFAULT: { code: 'STATE_IS_DEFAULT', status: 409 },
   LABEL_NOT_FOUND: { code: 'LABEL_NOT_FOUND', status: 404 },
   LABEL_FORBIDDEN: { code: 'LABEL_FORBIDDEN', status: 403 },
+  ESTIMATE_SETTINGS_NOT_FOUND: {
+    code: 'ESTIMATE_SETTINGS_NOT_FOUND',
+    status: 404,
+  },
+  ESTIMATE_SETTINGS_FORBIDDEN: {
+    code: 'ESTIMATE_SETTINGS_NOT_FOUND',
+    status: 403,
+  },
 
   // Server Errors (500)
   INTERNAL_SERVER_ERROR: { code: 'INTERNAL_SERVER_ERROR', status: 500 },

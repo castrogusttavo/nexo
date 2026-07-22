@@ -160,3 +160,10 @@ export const labelNotFound = (): AppError =>
 
 export const labelForbidden = (message = 'Sem acesso a este label'): AppError =>
   appError('LABEL_FORBIDDEN', message)
+
+export const estimateSettingsNotFound = (): AppError =>
+  appError('ESTIMATE_SETTINGS_NOT_FOUND', 'Estimate settings not found')
+
+export const estimateSettingsForbidden = (
+  message = 'Sem acesso às configurações de estimativas',
+): AppError => appError('ESTIMATE_SETTINGS_FORBIDDEN', message)
