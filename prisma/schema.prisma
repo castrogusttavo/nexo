@@ -37,6 +37,9 @@ model User {
   projectMemberships ProjectMember[]
   projectFavourites  ProjectFavorite[]
   sentInvitations    WorkspaceInvitation[] @relation("SentInvitations")
+  modulesLed         Module[]              @relation("ModuleLead")
+  moduleMemberships  ModuleMember[]
+  moduleFavourites   ModuleFavorite[]
 
   @@index([deletionScheduledAt])
   @@map("users")
@@ -434,6 +437,7 @@ model Project {
   states           State[]
   labels           Label[]
   estimateSettings EstimateSettings?
+  modules          Module[]
 
   @@unique([workspaceId, slug])
   @@index([workspaceId, archivedAt])
@@ -619,4 +623,65 @@ enum EstimateModel {
   T_SHIRT_SIZES
   EASY_TO_HARD
   HOURS
+}
+
+model Module {
+  id        String       @id @default(cuid())
+  name      String
+  progress  Int          @default(0)
+  status    ModuleStatus @default(BACKLOG)
+  startDate DateTime?    @map("start_date")
+  endDate   DateTime?    @map("end_date")
+  leadId    String       @map("lead_id")
+  projectId String       @map("project_id")
+  createdAt DateTime     @default(now()) @map("created_at")
+  updatedAt DateTime     @updatedAt @map("updated_at")
+
+  lead       User             @relation("ModuleLead", fields: [leadId], references: [id])
+  project    Project          @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  members    ModuleMember[]
+  favourites ModuleFavorite[]
+
+  @@index([projectId, status])
+  @@index([leadId])
+  @@map("modules")
+}
+
+model ModuleMember {
+  id        String   @id @default(cuid())
+  userId    String   @map("user_id")
+  moduleId  String   @map("module_id")
+  createdAt DateTime @default(now()) @map("created_at")
+
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  module Module @relation(fields: [moduleId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, moduleId])
+  @@index([userId])
+  @@index([moduleId])
+  @@map("module_members")
+}
+
+model ModuleFavorite {
+  id        String   @id @default(cuid())
+  userId    String   @map("user_id")
+  moduleId  String   @map("module_id")
+  createdAt DateTime @default(now()) @map("created_at")
+
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  module Module @relation(fields: [moduleId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, moduleId])
+  @@index([userId])
+  @@index([moduleId])
+  @@map("module_favorites")
+}
+
+enum ModuleStatus {
+  BACKLOG
+  PLANNED
+  IN_PROGRESS
+  PAUSED
+  COMPLETED
+  CANCELLED
 }
