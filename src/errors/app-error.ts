@@ -167,3 +167,16 @@ export const estimateSettingsNotFound = (): AppError =>
 export const estimateSettingsForbidden = (
   message = 'Sem acesso às configurações de estimativas',
 ): AppError => appError('ESTIMATE_SETTINGS_FORBIDDEN', message)
+
+export const moduleNotFound = (): AppError =>
+  appError('MODULE_NOT_FOUND', 'Module not found')
+
+export const moduleForbidden = (
+  message = 'Sem acesso a este módulo',
+): AppError => appError('MODULE_FORBIDDEN', message)
+
+export const moduleMemberAlreadyExists = (): AppError =>
+  appError('MODULE_MEMBER_ALREADY_EXISTS', 'Usuário já é membro do módulo')
+
+export const moduleMemberNotFound = (): AppError =>
+  appError('MODULE_MEMBER_NOT_FOUND', 'Membro do módulo não encontrado')

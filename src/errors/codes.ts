@@ -58,6 +58,13 @@ export const ERROR_CODES = {
     code: 'ESTIMATE_SETTINGS_NOT_FOUND',
     status: 403,
   },
+  MODULE_NOT_FOUND: { code: 'MODULE_NOT_FOUND', status: 404 },
+  MODULE_FORBIDDEN: { code: 'MODULE_FORBIDDEN', status: 403 },
+  MODULE_MEMBER_ALREADY_EXISTS: {
+    code: 'MODULE_MEMBER_ALREADY_EXISTS',
+    status: 405,
+  },
+  MODULE_MEMBER_NOT_FOUND: { code: 'MODULE_MEMBER_NOT_FOUND', status: 404 },
 
   // Server Errors (500)
   INTERNAL_SERVER_ERROR: { code: 'INTERNAL_SERVER_ERROR', status: 500 },
