@@ -20,6 +20,7 @@ type AuditEntity =
   | 'state'
   | 'label'
   | 'estimate_settings'
+  | 'module'
 
 type AuditAction =
   | 'create'
