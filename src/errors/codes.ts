@@ -65,6 +65,14 @@ export const ERROR_CODES = {
     status: 405,
   },
   MODULE_MEMBER_NOT_FOUND: { code: 'MODULE_MEMBER_NOT_FOUND', status: 404 },
+  CYCLE_NOT_FOUND: { code: 'CYCLE_NOT_FOUND', status: 404 },
+  CYCLE_FORBIDDEN: { code: 'CYCLE_FORBIDDEN', status: 403 },
+  CYCLE_ALREADY_ACTIVE: { code: 'CYCLE_ALREADY_ACTIVE', status: 409 },
+  CYCLE_MEMBER_ALREADY_EXISTS: {
+    code: 'CYCLE_MEMBER_ALREADY_EXISTS',
+    status: 409,
+  },
+  CYCLE_MEMBER_NOT_FOUND: { code: 'CYCLE_MEMBER_NOT_FOUND', status: 404 },
 
   // Server Errors (500)
   INTERNAL_SERVER_ERROR: { code: 'INTERNAL_SERVER_ERROR', status: 500 },

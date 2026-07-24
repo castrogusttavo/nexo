@@ -180,3 +180,19 @@ export const moduleMemberAlreadyExists = (): AppError =>
 
 export const moduleMemberNotFound = (): AppError =>
   appError('MODULE_MEMBER_NOT_FOUND', 'Membro do módulo não encontrado')
+
+export const cycleNotFound = (): AppError =>
+  appError('CYCLE_NOT_FOUND', 'Cycle not found')
+
+export const cycleForbidden = (message = 'Sem acesso a este cycle'): AppError =>
+  appError('CYCLE_FORBIDDEN', message)
+
+export const cycleAlreadyActive = (
+  message = 'Já existe um ciclo em progresso neste projeto',
+): AppError => appError('CYCLE_ALREADY_ACTIVE', message)
+
+export const cycleMemberAlreadyExists = (): AppError =>
+  appError('CYCLE_MEMBER_ALREADY_EXISTS', 'Usuário já é membro do ciclo')
+
+export const cycleMemberNotFound = (): AppError =>
+  appError('CYCLE_MEMBER_NOT_FOUND', 'Membro do ciclo não encontrado')
