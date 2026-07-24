@@ -21,7 +21,7 @@ export const CreateCycleSchema = z.object({
   name: cycleName,
   description: cycleDescription.optional(),
   status: CycleStatusSchema.default('NOT_STARTED'),
-  starDate: IsoDate.optional(),
+  startDate: IsoDate.optional(),
   endDate: IsoDate.optional(),
 })
 
@@ -31,7 +31,7 @@ export const UpdateCycleSchema = z.object({
   name: cycleName.optional(),
   description: cycleDescription.optional(),
   status: CycleStatusSchema.optional(),
-  starDate: IsoDate.nullable().optional(),
+  startDate: IsoDate.nullable().optional(),
   endDate: IsoDate.nullable().optional(),
 })
 

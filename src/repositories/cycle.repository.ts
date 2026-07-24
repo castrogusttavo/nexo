@@ -122,8 +122,8 @@ export const CycleRepository = {
       name?: string
       description?: string | null
       status?: Cycle['status']
-      startDate?: Date
-      endDate?: Date
+      startDate?: Date | null
+      endDate?: Date | null
     },
   ): Promise<Result<Cycle>> {
     try {
