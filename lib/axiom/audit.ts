@@ -21,6 +21,7 @@ type AuditEntity =
   | 'label'
   | 'estimate_settings'
   | 'module'
+  | 'cycle'
 
 type AuditAction =
   | 'create'
