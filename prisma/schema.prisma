@@ -40,6 +40,8 @@ model User {
   modulesLed         Module[]              @relation("ModuleLead")
   moduleMemberships  ModuleMember[]
   moduleFavourites   ModuleFavorite[]
+  cyclesLed          Cycle[]               @relation("CycleLead")
+  cycleMemberships   CycleMember[]
 
   @@index([deletionScheduledAt])
   @@map("users")
@@ -438,6 +440,7 @@ model Project {
   labels           Label[]
   estimateSettings EstimateSettings?
   modules          Module[]
+  cycles           Cycle[]
 
   @@unique([workspaceId, slug])
   @@index([workspaceId, archivedAt])
@@ -684,4 +687,46 @@ enum ModuleStatus {
   PAUSED
   COMPLETED
   CANCELLED
+}
+
+enum CycleStatus {
+  NOT_STARTED
+  IN_PROGRESS
+  COMPLETED
+}
+
+model Cycle {
+  id          String      @id @default(cuid())
+  name        String
+  description String?
+  status      CycleStatus @default(NOT_STARTED)
+  startDate   DateTime?   @map("start_date")
+  endDate     DateTime?   @map("end_date")
+  leadId      String      @map("lead_id")
+  projectId   String      @map("project_id")
+  createdAt   DateTime    @default(now()) @map("created_at")
+  updatedAt   DateTime    @updatedAt @map("updated_at")
+
+  lead    User          @relation("CycleLead", fields: [leadId], references: [id])
+  project Project       @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  members CycleMember[]
+
+  @@index([projectId, status])
+  @@index([leadId])
+  @@map("cycles")
+}
+
+model CycleMember {
+  id      String @id @default(cuid())
+  userId  String @map("user_id")
+  cycleId String @map("cycle_id")
+  createdAt DateTime @default(now()) @map("created_at")
+
+  user  User  @relation(fields: [userId], references: [id], onDelete: Cascade)
+  cycle Cycle @relation(fields: [cycleId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, cycleId])
+  @@index([cycleId])
+  @@index([userId])
+  @@map("cycle_members")
 }
