@@ -717,9 +717,9 @@ model Cycle {
 }
 
 model CycleMember {
-  id      String @id @default(cuid())
-  userId  String @map("user_id")
-  cycleId String @map("cycle_id")
+  id        String   @id @default(cuid())
+  userId    String   @map("user_id")
+  cycleId   String   @map("cycle_id")
   createdAt DateTime @default(now()) @map("created_at")
 
   user  User  @relation(fields: [userId], references: [id], onDelete: Cascade)
