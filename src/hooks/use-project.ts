@@ -41,6 +41,20 @@ export function useProjects(workspaceId: string, archived = false) {
   })
 }
 
+export function useProject(workspaceId: string, slug: string) {
+  return useQuery({
+    queryKey: [...projectsKey(workspaceId)],
+    queryFn: () =>
+      apiFetch<ProjectDTO[]>(
+        `/api/workspaces/${workspaceId}/projects/${slug}`,
+        undefined,
+        'Erro ao buscar projeto',
+      ),
+    enabled: !!workspaceId && !!slug,
+    staleTime: 2 * 60 * 1000,
+  })
+}
+
 export function useCreateProject(workspaceId: string) {
   const queryClient = useQueryClient()
 
@@ -72,6 +86,7 @@ export function useUpdateProject(workspaceId: string, slug: string) {
     mutationFn: (data: {
       name?: string
       slug?: string
+      identifier?: string
       description?: string
       emoji?: string
       coverImage?: string
