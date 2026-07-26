@@ -418,6 +418,7 @@ model Project {
   id                String    @id @default(cuid())
   name              String
   slug              String
+  identifier        String?   @map("identifier")
   description       String?
   emoji             String?
   coverImage        String?   @map("cover_image")
@@ -443,6 +444,7 @@ model Project {
   cycles           Cycle[]
 
   @@unique([workspaceId, slug])
+  @@unique([workspaceId, identifier])
   @@index([workspaceId, archivedAt])
   @@index([leadId])
   @@map("projects")

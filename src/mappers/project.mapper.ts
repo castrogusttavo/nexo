@@ -11,6 +11,7 @@ export function toProjectDTO(
     id: project.id,
     name: project.name,
     slug: project.slug,
+    identifier: project.identifier,
     description: project.description ?? null,
     emoji: project.emoji ?? null,
     coverImage: project.coverImage ?? null,

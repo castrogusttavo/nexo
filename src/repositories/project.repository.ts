@@ -5,6 +5,7 @@ import type {
   User,
 } from '@prisma/client'
 import {
+  projectIdentifierConflict,
   projectMemberAlreadyExists,
   projectMemberNotFound,
   projectNotFound,
@@ -141,6 +142,7 @@ export const ProjectRepository = {
   async create(data: {
     name: string
     slug: string
+    identifier?: string
     description?: string
     emoji?: string
     coverImage?: string
@@ -177,6 +179,9 @@ export const ProjectRepository = {
       return ok(project)
     } catch (error) {
       if (error instanceof Error && 'code' in error && error.code === 'P2002') {
+        const target = (error as { meta?: { target?: string[] } }).meta?.target
+        if (target?.includes('identifier'))
+          return err(projectIdentifierConflict())
         return err(projectSlugConflict())
       }
 
@@ -189,6 +194,7 @@ export const ProjectRepository = {
     data: {
       name?: string
       slug?: string
+      identifier?: string | null
       description?: string | null
       emoji?: string | null
       coverImage?: string | null
@@ -204,6 +210,9 @@ export const ProjectRepository = {
       return ok(project)
     } catch (error) {
       if (error instanceof Error && 'code' in error && error.code === 'P2002') {
+        const target = (error as { meta?: { target?: string[] } }).meta?.target
+        if (target?.includes('identifier'))
+          return err(projectIdentifierConflict())
         return err(projectSlugConflict())
       }
 

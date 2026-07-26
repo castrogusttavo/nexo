@@ -196,3 +196,7 @@ export const cycleMemberAlreadyExists = (): AppError =>
 
 export const cycleMemberNotFound = (): AppError =>
   appError('CYCLE_MEMBER_NOT_FOUND', 'Membro do ciclo não encontrado')
+
+export const projectIdentifierConflict = (
+  message = 'ID já está em uso neste workspace',
+): AppError => appError('PROJECT_IDENTIFIER_CONFLICT', message)

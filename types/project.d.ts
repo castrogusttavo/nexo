@@ -2,6 +2,7 @@ export interface ProjectDTO {
   id: string
   name: string
   slug: string
+  identifier: string | null
   description: string | null
   emoji: string | null
   coverImage: string | null

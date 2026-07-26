@@ -26,6 +26,7 @@ describe('toProjectDTO', () => {
       id: 'proj-1',
       name: 'Alpha',
       slug: 'alpha',
+      identifier: null,
       description: 'A great project',
       emoji: '🚀',
       coverImage: 'https://example.com/cover.jpg',

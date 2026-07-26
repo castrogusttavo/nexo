@@ -29,6 +29,12 @@ const projectCoverImage = z
     'URL de capa inválida',
   )
 
+const projectIdentifier = z
+  .string()
+  .min(2, 'ID deve ter ao menos 2 caracteres')
+  .max(10, 'ID deve ter no máximo 10 caracteres')
+  .regex(/^[A-Z0-9]+$/, 'ID deve conter apenas letras maiúsculas e números')
+
 export const CreateProjectSchema = z.object({
   name: projectName,
   slug: projectSlug,
@@ -39,6 +45,7 @@ export const CreateProjectSchema = z.object({
   issueTypesEnabled: z.boolean().default(true),
   modulesEnabled: z.boolean().default(true),
   cyclesEnabled: z.boolean().default(true),
+  identifier: projectIdentifier.optional(),
 })
 
 export type CreateProjectDTO = z.infer<typeof CreateProjectSchema>
@@ -53,6 +60,7 @@ export const UpdateProjectSchema = z.object({
   issueTypesEnabled: z.boolean().optional(),
   modulesEnabled: z.boolean().optional(),
   cyclesEnabled: z.boolean().optional(),
+  identifier: projectIdentifier.optional(),
 })
 
 export type UpdateProjectDTO = z.infer<typeof UpdateProjectSchema>

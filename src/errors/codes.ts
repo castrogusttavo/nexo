@@ -35,6 +35,10 @@ export const ERROR_CODES = {
     code: 'PROJECT_MEMBER_NOT_IN_WORKSPACE',
     status: 409,
   },
+  PROJECT_IDENTIFIER_CONFLICT: {
+    code: 'PROJECT_IDENTIFIER_CONFLICT',
+    status: 409,
+  },
   COUPON_INVALID: { code: 'COUPON_INVALID', status: 422 },
   CAREER_JOB_NOT_FOUND: { code: 'CAREER_JOB_NOT_FOUND', status: 404 },
   CAREER_JOB_CLOSED: { code: 'CAREER_JOB_CLOSED', status: 409 },
