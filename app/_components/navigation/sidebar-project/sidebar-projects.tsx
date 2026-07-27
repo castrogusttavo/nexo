@@ -39,7 +39,7 @@ import type { ProjectDTO } from '@/types/project'
 
 const PROJECT_NAV_ITEMS = [
   { label: 'Visão geral', segment: '/overview' },
-  { label: 'Itens', segment: '/items' },
+  { label: 'Issues', segment: '/issues' },
   { label: 'Ciclos', segment: '/cycles' },
   { label: 'Módulos', segment: '/modules' },
   { label: 'Visualizações', segment: '/views' },
