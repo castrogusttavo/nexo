@@ -147,7 +147,7 @@ export function CareerJobForm({ mode, jobId, initial }: CareerJobFormProps) {
 
   const saving = createJob.isPending || updateJob.isPending
 
-  async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
+  async function handleSubmit(e: React.SyntheticEvent<HTMLFormElement>) {
     e.preventDefault()
 
     // Slug is derived from the title on create and never shown to the

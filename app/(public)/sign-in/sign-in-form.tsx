@@ -105,7 +105,9 @@ export function SignInForm({ redirectTo = '/' }: { redirectTo?: string }) {
     }
   }
 
-  async function handleVerifyBackupCode(e: React.FormEvent<HTMLFormElement>) {
+  async function handleVerifyBackupCode(
+    e: React.SyntheticEvent<HTMLFormElement>,
+  ) {
     e.preventDefault()
     if (!backupCode.trim()) {
       setOtpError('Informe um código de backup')
