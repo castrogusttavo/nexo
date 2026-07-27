@@ -43,9 +43,9 @@ export function useProjects(workspaceId: string, archived = false) {
 
 export function useProject(workspaceId: string, slug: string) {
   return useQuery({
-    queryKey: [...projectsKey(workspaceId)],
+    queryKey: projectKey(workspaceId, slug),
     queryFn: () =>
-      apiFetch<ProjectDTO[]>(
+      apiFetch<ProjectDTO>(
         `/api/workspaces/${workspaceId}/projects/${slug}`,
         undefined,
         'Erro ao buscar projeto',
