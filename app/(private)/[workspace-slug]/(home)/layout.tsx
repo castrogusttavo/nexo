@@ -26,7 +26,7 @@ import { SidebarProjects } from '@/app/_components/navigation/sidebar-project/si
 import { NexoIcon } from '@/components/icon/icon'
 import { Button } from '@/components/ui/button'
 import { getAuthSession } from '@/src/lib/auth-session'
-import { MembershipService } from '@/src/services/membership.service'
+import { getWorkspaceMembership } from '@/src/lib/workspace-context'
 
 export default async function HomeLayout({
   children,
@@ -41,10 +41,7 @@ export default async function HomeLayout({
   const session = await getAuthSession()
   let workspaceId: string | null = null
   if (session.ok) {
-    const membership = await MembershipService.getByUserAndSlug(
-      session.value.user.id,
-      slug,
-    )
+    const membership = await getWorkspaceMembership(session.value.user.id, slug)
     if (membership.ok && membership.value) {
       workspaceId = membership.value.workspaceId
     }

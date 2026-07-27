@@ -6,6 +6,7 @@ import { HeaderPromotionBanner } from '@/app/_components/header/header-promotion
 import { GlobalSidebarNavigation } from '@/app/_components/navigation/sidebar-global'
 import { TRIAL_BANNER_DAYS } from '@/src/config/trial'
 import { getAuthSession } from '@/src/lib/auth-session'
+import { getWorkspaceMembership } from '@/src/lib/workspace-context'
 import { MembershipService } from '@/src/services/membership.service'
 import { SubscriptionService } from '@/src/services/subscription.service'
 import { UserService } from '@/src/services/user.service'
@@ -40,7 +41,7 @@ export default async function WorkspaceLayout({
 
   const [userResult, membership] = await Promise.all([
     UserService.getProfile(session.value.user.id),
-    MembershipService.getByUserAndSlug(session.value.user.id, slug),
+    getWorkspaceMembership(session.value.user.id, slug),
   ])
 
   const isMember = membership.ok && membership.value !== null
