@@ -60,6 +60,15 @@ describe('LabelRepository', () => {
       expect(label.name).toBe('Bug')
       expect(label.color).toBe('ZINC')
     })
+
+    it('should return DATABASE_ERROR for a nonexistent project id', async () => {
+      const result = await LabelRepository.create({
+        name: 'Orphan',
+        projectId: 'nonexistent',
+      })
+
+      expectErr(result, 'DATABASE_ERROR')
+    })
   })
 
   describe('update()', () => {
@@ -73,6 +82,14 @@ describe('LabelRepository', () => {
 
       expect(expectOk(result).name).toBe('Renamed')
     })
+
+    it('should return DATABASE_ERROR for a nonexistent id', async () => {
+      const result = await LabelRepository.update('nonexistent', {
+        name: 'Renamed',
+      })
+
+      expectErr(result, 'DATABASE_ERROR')
+    })
   })
 
   describe('delete()', () => {
@@ -84,6 +101,11 @@ describe('LabelRepository', () => {
 
       const result = await LabelRepository.findById(seeded.id)
       expectErr(result, 'LABEL_NOT_FOUND')
+    })
+
+    it('should return DATABASE_ERROR for a nonexistent id', async () => {
+      const result = await LabelRepository.delete('nonexistent')
+      expectErr(result, 'DATABASE_ERROR')
     })
   })
 })
