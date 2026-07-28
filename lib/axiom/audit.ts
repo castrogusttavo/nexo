@@ -20,6 +20,7 @@ type AuditEntity =
   | 'state'
   | 'label'
   | 'estimate_settings'
+  | 'estimate_value'
   | 'module'
   | 'cycle'
 

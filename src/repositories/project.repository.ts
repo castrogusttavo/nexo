@@ -14,6 +14,7 @@ import {
 import { prisma } from '../lib/prisma'
 import { err, ok, type Result } from '../lib/result'
 import { dbError } from './db-error'
+import { DEFAULT_ESTIMATE_VALUES } from './estimate-value.repository'
 import { DEFAULT_LABELS } from './label.repository'
 import { DEFAULT_STATES } from './state.repository'
 
@@ -23,11 +24,11 @@ export type ProjectWithDetails = Project & {
 }
 
 export type ProjectMemberWithUser = ProjectMember & {
-  user: Pick<User, 'id' | 'name' | 'username' | 'image'>
+  user: Pick<User, 'id' | 'name' | 'username' | 'image' | 'email'>
 }
 
 const memberUserSelect = {
-  select: { id: true, name: true, username: true, image: true },
+  select: { id: true, name: true, username: true, image: true, email: true },
 } as const
 
 export const ProjectRepository = {
@@ -150,12 +151,16 @@ export const ProjectRepository = {
     issueTypesEnabled: boolean
     modulesEnabled: boolean
     cyclesEnabled: boolean
+    estimatesEnabled?: boolean
     leadId: string
     workspaceId: string
   }): Promise<Result<Project>> {
     try {
       const project = await prisma.$transaction(async (tx) => {
         const p = await tx.project.create({ data })
+        const estimateSettings = await tx.estimateSettings.create({
+          data: { projectId: p.id },
+        })
         await tx.projectMember.create({
           data: { userId: data.leadId, projectId: p.id },
         })
@@ -171,8 +176,12 @@ export const ProjectRepository = {
             projectId: p.id,
           })),
         })
-        await tx.estimateSettings.create({
-          data: { projectId: p.id },
+        await tx.estimateValue.createMany({
+          data: DEFAULT_ESTIMATE_VALUES.map((value, index) => ({
+            value,
+            order: index,
+            estimateSettingsId: estimateSettings.id,
+          })),
         })
         return p
       })
@@ -202,6 +211,7 @@ export const ProjectRepository = {
       issueTypesEnabled?: boolean
       modulesEnabled?: boolean
       cyclesEnabled?: boolean
+      estimatesEnabled?: boolean
       leadId?: string
     },
   ): Promise<Result<Project>> {
