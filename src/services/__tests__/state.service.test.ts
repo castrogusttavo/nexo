@@ -31,10 +31,11 @@ const memberMembership = createFakeMembership({
 
 function projectWith(
   overrides?: Partial<ReturnType<typeof createFakeProject>>,
+  members: { userId: string }[] = [],
 ) {
   return {
     ...createFakeProject({ id: 'proj-1', leadId: 'lead-1', ...overrides }),
-    members: [] as { userId: string }[],
+    members,
     favourites: [] as { id: string }[],
   }
 }
@@ -46,7 +47,7 @@ describe('StateService', () => {
         ok(memberMembership),
       )
       mockedProject.findByWorkspaceAndSlug.mockResolvedValue(
-        ok(projectWith({ isPublic: true })),
+        ok(projectWith({ isPublic: true }, [{ userId: 'actor' }])),
       )
       mockedState.listByProject.mockResolvedValue(ok([createFakeState()]))
 
@@ -105,9 +106,179 @@ describe('StateService', () => {
       expectErr(result, 'STATE_FORBIDDEN')
       expect(mockedState.create).not.toHaveBeenCalled()
     })
+
+    it('should propagate repo error', async () => {
+      mockedMembership.findByUserAndWorkspace.mockResolvedValue(
+        ok(memberMembership),
+      )
+      mockedProject.findByWorkspaceAndSlug.mockResolvedValue(
+        ok(projectWith({ leadId: 'actor' })),
+      )
+      mockedState.create.mockResolvedValue(err(databaseError()))
+
+      const result = await StateService.create('actor', 'ws1', 'proj-slug', {
+        name: 'Custom',
+        group: 'STARTED',
+        color: 'ZINC',
+      })
+
+      expectErr(result, 'DATABASE_ERROR')
+    })
+  })
+
+  describe('update()', () => {
+    it('should update a state when actor is lead', async () => {
+      mockedMembership.findByUserAndWorkspace.mockResolvedValue(
+        ok(memberMembership),
+      )
+      mockedProject.findByWorkspaceAndSlug.mockResolvedValue(
+        ok(projectWith({ leadId: 'actor' })),
+      )
+      mockedState.findById.mockResolvedValue(
+        ok(createFakeState({ id: 'state-1', projectId: 'proj-1' })),
+      )
+      mockedState.update.mockResolvedValue(
+        ok(createFakeState({ id: 'state-1', name: 'Renamed' })),
+      )
+
+      const result = await StateService.update(
+        'actor',
+        'ws1',
+        'proj-slug',
+        'state-1',
+        { name: 'Renamed' },
+      )
+
+      expect(expectOk(result).name).toBe('Renamed')
+    })
+
+    it('should return STATE_FORBIDDEN when actor is neither lead nor privileged', async () => {
+      mockedMembership.findByUserAndWorkspace.mockResolvedValue(
+        ok(memberMembership),
+      )
+      mockedProject.findByWorkspaceAndSlug.mockResolvedValue(
+        ok(projectWith({ leadId: 'someone-else' })),
+      )
+
+      const result = await StateService.update(
+        'actor',
+        'ws1',
+        'proj-slug',
+        'state-1',
+        { name: 'Renamed' },
+      )
+
+      expectErr(result, 'STATE_FORBIDDEN')
+      expect(mockedState.findById).not.toHaveBeenCalled()
+    })
+
+    it('should return STATE_NOT_FOUND when state belongs to a different project', async () => {
+      mockedMembership.findByUserAndWorkspace.mockResolvedValue(
+        ok(memberMembership),
+      )
+      mockedProject.findByWorkspaceAndSlug.mockResolvedValue(
+        ok(projectWith({ leadId: 'actor' })),
+      )
+      mockedState.findById.mockResolvedValue(
+        ok(createFakeState({ projectId: 'other-proj' })),
+      )
+
+      const result = await StateService.update(
+        'actor',
+        'ws1',
+        'proj-slug',
+        'state-1',
+        { name: 'Renamed' },
+      )
+
+      expectErr(result, 'STATE_NOT_FOUND')
+    })
+
+    it('should propagate repo update error', async () => {
+      mockedMembership.findByUserAndWorkspace.mockResolvedValue(
+        ok(memberMembership),
+      )
+      mockedProject.findByWorkspaceAndSlug.mockResolvedValue(
+        ok(projectWith({ leadId: 'actor' })),
+      )
+      mockedState.findById.mockResolvedValue(
+        ok(createFakeState({ id: 'state-1', projectId: 'proj-1' })),
+      )
+      mockedState.update.mockResolvedValue(err(databaseError()))
+
+      const result = await StateService.update(
+        'actor',
+        'ws1',
+        'proj-slug',
+        'state-1',
+        { name: 'Renamed' },
+      )
+
+      expectErr(result, 'DATABASE_ERROR')
+    })
   })
 
   describe('delete()', () => {
+    it('should return STATE_FORBIDDEN when actor is neither lead nor privileged', async () => {
+      mockedMembership.findByUserAndWorkspace.mockResolvedValue(
+        ok(memberMembership),
+      )
+      mockedProject.findByWorkspaceAndSlug.mockResolvedValue(
+        ok(projectWith({ leadId: 'someone-else' })),
+      )
+
+      const result = await StateService.delete(
+        'actor',
+        'ws1',
+        'proj-slug',
+        'state-1',
+      )
+
+      expectErr(result, 'STATE_FORBIDDEN')
+      expect(mockedState.findById).not.toHaveBeenCalled()
+    })
+
+    it('should propagate repo error from countByGroup', async () => {
+      mockedMembership.findByUserAndWorkspace.mockResolvedValue(
+        ok(ownerMembership),
+      )
+      mockedProject.findByWorkspaceAndSlug.mockResolvedValue(ok(projectWith()))
+      mockedState.findById.mockResolvedValue(
+        ok(createFakeState({ projectId: 'proj-1', isDefault: false })),
+      )
+      mockedState.countByGroup.mockResolvedValue(err(databaseError()))
+
+      const result = await StateService.delete(
+        'actor',
+        'ws1',
+        'proj-slug',
+        'state-1',
+      )
+
+      expectErr(result, 'DATABASE_ERROR')
+    })
+
+    it('should propagate repo delete error', async () => {
+      mockedMembership.findByUserAndWorkspace.mockResolvedValue(
+        ok(ownerMembership),
+      )
+      mockedProject.findByWorkspaceAndSlug.mockResolvedValue(ok(projectWith()))
+      mockedState.findById.mockResolvedValue(
+        ok(createFakeState({ projectId: 'proj-1', isDefault: false })),
+      )
+      mockedState.countByGroup.mockResolvedValue(ok(2))
+      mockedState.delete.mockResolvedValue(err(databaseError()))
+
+      const result = await StateService.delete(
+        'actor',
+        'ws1',
+        'proj-slug',
+        'state-1',
+      )
+
+      expectErr(result, 'DATABASE_ERROR')
+    })
+
     it('should return STATE_IS_DEFAULT when deleting the default state', async () => {
       mockedMembership.findByUserAndWorkspace.mockResolvedValue(
         ok(ownerMembership),
@@ -225,6 +396,64 @@ describe('StateService', () => {
       )
 
       expect(expectOk(result).isDefault).toBe(true)
+    })
+
+    it('should return STATE_FORBIDDEN when actor is neither lead nor privileged', async () => {
+      mockedMembership.findByUserAndWorkspace.mockResolvedValue(
+        ok(memberMembership),
+      )
+      mockedProject.findByWorkspaceAndSlug.mockResolvedValue(
+        ok(projectWith({ leadId: 'someone-else' })),
+      )
+
+      const result = await StateService.setDefault(
+        'actor',
+        'ws1',
+        'proj-slug',
+        'state-1',
+      )
+
+      expectErr(result, 'STATE_FORBIDDEN')
+      expect(mockedState.findById).not.toHaveBeenCalled()
+    })
+
+    it('should return STATE_NOT_FOUND when state belongs to a different project', async () => {
+      mockedMembership.findByUserAndWorkspace.mockResolvedValue(
+        ok(ownerMembership),
+      )
+      mockedProject.findByWorkspaceAndSlug.mockResolvedValue(ok(projectWith()))
+      mockedState.findById.mockResolvedValue(
+        ok(createFakeState({ projectId: 'other-proj' })),
+      )
+
+      const result = await StateService.setDefault(
+        'actor',
+        'ws1',
+        'proj-slug',
+        'state-1',
+      )
+
+      expectErr(result, 'STATE_NOT_FOUND')
+    })
+
+    it('should propagate repo error', async () => {
+      mockedMembership.findByUserAndWorkspace.mockResolvedValue(
+        ok(ownerMembership),
+      )
+      mockedProject.findByWorkspaceAndSlug.mockResolvedValue(ok(projectWith()))
+      mockedState.findById.mockResolvedValue(
+        ok(createFakeState({ projectId: 'proj-1' })),
+      )
+      mockedState.setDefault.mockResolvedValue(err(databaseError()))
+
+      const result = await StateService.setDefault(
+        'actor',
+        'ws1',
+        'proj-slug',
+        'state-1',
+      )
+
+      expectErr(result, 'DATABASE_ERROR')
     })
   })
 
