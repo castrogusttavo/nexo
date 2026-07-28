@@ -168,6 +168,17 @@ export const estimateSettingsForbidden = (
   message = 'Sem acesso às configurações de estimativas',
 ): AppError => appError('ESTIMATE_SETTINGS_FORBIDDEN', message)
 
+export const estimateValueNotFound = (): AppError =>
+  appError('ESTIMATE_VALUE_NOT_FOUND', 'Estimate value not found')
+
+export const estimateValueForbidden = (
+  message = 'Sem acesos a este valor de estimativa',
+): AppError => appError('ESTIMATE_VALUE_FORBIDDEN', message)
+
+export const estimateValueLastRemaining = (
+  message = 'É preciso manter ao menos um valor de estimativa',
+): AppError => appError('ESTIMATE_VALUE_LAST_REMAINING', message)
+
 export const moduleNotFound = (): AppError =>
   appError('MODULE_NOT_FOUND', 'Module not found')
 
