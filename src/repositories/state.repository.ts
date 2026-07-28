@@ -5,13 +5,43 @@ import { err, ok, type Result } from '../lib/result'
 import { dbError } from './db-error'
 
 export const DEFAULT_STATES: Array<
-  Pick<State, 'name' | 'group' | 'order' | 'isDefault'>
+  Pick<State, 'name' | 'group' | 'order' | 'isDefault' | 'color'>
 > = [
-  { name: 'Backlog', group: 'BACKLOG', order: 0, isDefault: false },
-  { name: 'Pendente', group: 'UNSTARTED', order: 0, isDefault: true },
-  { name: 'Em progresso', group: 'STARTED', order: 0, isDefault: false },
-  { name: 'Concluído', group: 'COMPLETED', order: 0, isDefault: false },
-  { name: 'Cancelado', group: 'CANCELLED', order: 0, isDefault: false },
+  {
+    name: 'Backlog',
+    group: 'BACKLOG',
+    order: 0,
+    isDefault: true,
+    color: 'ZINC',
+  },
+  {
+    name: 'Pendente',
+    group: 'UNSTARTED',
+    order: 0,
+    isDefault: false,
+    color: 'ZINC',
+  },
+  {
+    name: 'Em progresso',
+    group: 'STARTED',
+    order: 0,
+    isDefault: false,
+    color: 'YELLOW',
+  },
+  {
+    name: 'Concluído',
+    group: 'COMPLETED',
+    order: 0,
+    isDefault: false,
+    color: 'GREEN',
+  },
+  {
+    name: 'Cancelado',
+    group: 'CANCELLED',
+    order: 0,
+    isDefault: false,
+    color: 'RED',
+  },
 ]
 
 export const StateRepository = {

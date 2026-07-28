@@ -224,7 +224,7 @@ describe('ProjectRepository', () => {
         ['BACKLOG', 'CANCELLED', 'COMPLETED', 'STARTED', 'UNSTARTED'].sort(),
       )
       const defaultState = states.find((s) => s.isDefault)
-      expect(defaultState?.name).toBe('Pendente')
+      expect(defaultState?.name).toBe('Backlog')
     })
 
     it('should seed the 2 default labels', async () => {
