@@ -1,11 +1,13 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
+import { logger } from '@/lib/axiom/logger'
 import { createFakeInvitation } from '@/src/__tests__/factories/invitation.factory'
 import { createFakeMembership } from '@/src/__tests__/factories/membership.factory'
 import { createFakeUser } from '@/src/__tests__/factories/user.factory'
 import { createFakeWorkspace } from '@/src/__tests__/factories/workspace.factory'
 import { expectErr, expectOk } from '@/src/__tests__/helpers/result.helpers'
+import { databaseError } from '@/src/errors'
 import { sendInviteUserToWorkspaceEmail } from '@/src/lib/mail/workspace/send-invite-user-to-workspace'
-import { ok } from '@/src/lib/result'
+import { err, ok } from '@/src/lib/result'
 import { InvitationRepository } from '@/src/repositories/invitation.repository'
 import { MembershipRepository } from '@/src/repositories/membership.repository'
 import { UserRepository } from '@/src/repositories/user.repository'
@@ -129,6 +131,190 @@ describe('InvitationService', () => {
         expect.anything(),
       )
       expect(mockedEmail).toHaveBeenCalledTimes(1)
+    })
+
+    it('should expire a stale pending invite and create a new one', async () => {
+      mockedMembership.findByUserAndWorkspace.mockResolvedValue(
+        ok(ownerMembership),
+      )
+      mockedUser.findByEmail.mockResolvedValue(ok(null))
+      mockedInvite.findPendingByWorkspaceAndEmail.mockResolvedValue(
+        ok(
+          createFakeInvitation({
+            id: 'stale',
+            status: 'PENDING',
+            expiresAt: new Date(Date.now() - 1000),
+          }),
+        ),
+      )
+      mockedInvite.create.mockResolvedValue(
+        ok(createFakeInvitation({ email: 'new@example.com' })),
+      )
+
+      const result = await InvitationService.create('actor', 'ws1', {
+        email: 'new@example.com',
+        role: 'MEMBER',
+      })
+
+      expectOk(result)
+      expect(mockedInvite.updateStatus).toHaveBeenCalledWith('stale', 'EXPIRED')
+      expect(mockedInvite.create).toHaveBeenCalled()
+    })
+
+    it('should still create the invite when the notification email fails to send', async () => {
+      mockedMembership.findByUserAndWorkspace.mockResolvedValue(
+        ok(ownerMembership),
+      )
+      mockedUser.findByEmail.mockResolvedValue(ok(null))
+      mockedInvite.findPendingByWorkspaceAndEmail.mockResolvedValue(ok(null))
+      mockedInvite.create.mockResolvedValue(
+        ok(createFakeInvitation({ email: 'new@example.com' })),
+      )
+      mockedEmail.mockRejectedValue(new Error('smtp down'))
+
+      const result = await InvitationService.create('actor', 'ws1', {
+        email: 'new@example.com',
+        role: 'MEMBER',
+      })
+
+      expectOk(result)
+      expect(vi.mocked(logger).warn).toHaveBeenCalledWith(
+        'invitation.email_failed',
+        expect.objectContaining({ workspaceId: 'ws1' }),
+      )
+    })
+  })
+
+  describe('list()', () => {
+    it('should return invitations for a privileged actor', async () => {
+      mockedMembership.findByUserAndWorkspace.mockResolvedValue(
+        ok(ownerMembership),
+      )
+      mockedInvite.listByWorkspace.mockResolvedValue(
+        ok([createFakeInvitation({ workspaceId: 'ws1' })]),
+      )
+
+      const result = await InvitationService.list('actor', 'ws1')
+
+      expect(expectOk(result)).toHaveLength(1)
+    })
+
+    it('should return FORBIDDEN when actor is not privileged', async () => {
+      mockedMembership.findByUserAndWorkspace.mockResolvedValue(
+        ok(memberMebership),
+      )
+
+      const result = await InvitationService.list('actor', 'ws1')
+
+      expectErr(result, 'FORBIDDEN')
+      expect(mockedInvite.listByWorkspace).not.toHaveBeenCalled()
+    })
+  })
+
+  describe('updateRole()', () => {
+    it('should update the role of a pending invite', async () => {
+      mockedMembership.findByUserAndWorkspace.mockResolvedValue(
+        ok(ownerMembership),
+      )
+      mockedInvite.findById.mockResolvedValue(
+        ok(
+          createFakeInvitation({
+            id: 'inv-1',
+            workspaceId: 'ws1',
+            status: 'PENDING',
+            role: 'MEMBER',
+          }),
+        ),
+      )
+      mockedInvite.updateRole.mockResolvedValue(
+        ok(createFakeInvitation({ id: 'inv-1', role: 'ADMIN' })),
+      )
+
+      const result = await InvitationService.updateRole(
+        'actor',
+        'ws1',
+        'inv-1',
+        'ADMIN',
+      )
+
+      expect(expectOk(result).role).toBe('ADMIN')
+    })
+
+    it('should return FORBIDDEN when actor is not privileged', async () => {
+      mockedMembership.findByUserAndWorkspace.mockResolvedValue(
+        ok(memberMebership),
+      )
+
+      const result = await InvitationService.updateRole(
+        'actor',
+        'ws1',
+        'inv-1',
+        'ADMIN',
+      )
+
+      expectErr(result, 'FORBIDDEN')
+      expect(mockedInvite.findById).not.toHaveBeenCalled()
+    })
+
+    it('should return INVITATION_NOT_FOUND when invite belongs to another workspace', async () => {
+      mockedMembership.findByUserAndWorkspace.mockResolvedValue(
+        ok(ownerMembership),
+      )
+      mockedInvite.findById.mockResolvedValue(
+        ok(createFakeInvitation({ workspaceId: 'other-ws' })),
+      )
+
+      const result = await InvitationService.updateRole(
+        'actor',
+        'ws1',
+        'inv-1',
+        'ADMIN',
+      )
+
+      expectErr(result, 'INVITATION_NOT_FOUND')
+    })
+
+    it('should return INVITATION_NOT_PENDING when the invite is no longer pending', async () => {
+      mockedMembership.findByUserAndWorkspace.mockResolvedValue(
+        ok(ownerMembership),
+      )
+      mockedInvite.findById.mockResolvedValue(
+        ok(
+          createFakeInvitation({
+            workspaceId: 'ws1',
+            status: 'ACCEPTED',
+          }),
+        ),
+      )
+
+      const result = await InvitationService.updateRole(
+        'actor',
+        'ws1',
+        'inv-1',
+        'ADMIN',
+      )
+
+      expectErr(result, 'INVITATION_NOT_PENDING')
+      expect(mockedInvite.updateRole).not.toHaveBeenCalled()
+    })
+
+    it('should propagate repo error', async () => {
+      mockedMembership.findByUserAndWorkspace.mockResolvedValue(
+        ok(ownerMembership),
+      )
+      mockedInvite.findById.mockResolvedValue(
+        ok(createFakeInvitation({ workspaceId: 'ws1', status: 'PENDING' })),
+      )
+      mockedInvite.updateRole.mockResolvedValue(err(databaseError()))
+
+      const result = await InvitationService.updateRole(
+        'actor',
+        'ws1',
+        'inv-1',
+        'ADMIN',
+      )
+
+      expectErr(result, 'DATABASE_ERROR')
     })
   })
 
@@ -276,6 +462,26 @@ describe('InvitationService', () => {
       expect(dto.status).toBe('REVOKED')
       expect(mockedInvite.updateStatus).toHaveBeenCalledWith('inv1', 'REVOKED')
     })
+
+    it('should return INVITATION_NOT_PENDING when the invite was already revoked', async () => {
+      mockedMembership.findByUserAndWorkspace.mockResolvedValue(
+        ok(ownerMembership),
+      )
+      mockedInvite.findById.mockResolvedValue(
+        ok(
+          createFakeInvitation({
+            id: 'inv1',
+            workspaceId: 'ws1',
+            status: 'REVOKED',
+          }),
+        ),
+      )
+
+      const result = await InvitationService.revoke('actor', 'ws1', 'inv1')
+
+      expectErr(result, 'INVITATION_NOT_PENDING')
+      expect(mockedInvite.updateStatus).not.toHaveBeenCalled()
+    })
   })
 
   describe('resend()', () => {
@@ -303,6 +509,26 @@ describe('InvitationService', () => {
         expect.any(Date),
       )
       expect(mockedEmail).toHaveBeenCalledTimes(1)
+    })
+
+    it('should return INVITATION_NOT_PENDING when the invite was already accepted', async () => {
+      mockedMembership.findByUserAndWorkspace.mockResolvedValue(
+        ok(ownerMembership),
+      )
+      mockedInvite.findById.mockResolvedValue(
+        ok(
+          createFakeInvitation({
+            id: 'inv1',
+            workspaceId: 'ws1',
+            status: 'ACCEPTED',
+          }),
+        ),
+      )
+
+      const result = await InvitationService.resend('actor', 'ws1', 'inv1')
+
+      expectErr(result, 'INVITATION_NOT_PENDING')
+      expect(mockedInvite.refreshToken).not.toHaveBeenCalled()
     })
   })
 
@@ -339,6 +565,56 @@ describe('InvitationService', () => {
       })
 
       expectErr(result, 'SEAT_LIMIT_REACHED')
+    })
+
+    it('should propagate a workspace lookup error', async () => {
+      mockedMembership.findByUserAndWorkspace.mockResolvedValue(
+        ok(ownerMembership),
+      )
+      mockedUser.findByEmail.mockResolvedValue(ok(null))
+      mockedInvite.findPendingByWorkspaceAndEmail.mockResolvedValue(ok(null))
+      mockedWorkspace.findById.mockResolvedValue(err(databaseError()))
+
+      const result = await InvitationService.create('actor', 'ws1', {
+        email: 'new@example.com',
+        role: 'MEMBER',
+      })
+
+      expectErr(result, 'DATABASE_ERROR')
+    })
+
+    it('should propagate a member count error', async () => {
+      mockedMembership.findByUserAndWorkspace.mockResolvedValue(
+        ok(ownerMembership),
+      )
+      mockedUser.findByEmail.mockResolvedValue(ok(null))
+      mockedInvite.findPendingByWorkspaceAndEmail.mockResolvedValue(ok(null))
+      mockedMembership.countByWorkspace.mockResolvedValue(err(databaseError()))
+
+      const result = await InvitationService.create('actor', 'ws1', {
+        email: 'new@example.com',
+        role: 'MEMBER',
+      })
+
+      expectErr(result, 'DATABASE_ERROR')
+    })
+
+    it('should propagate a pending invite count error', async () => {
+      mockedMembership.findByUserAndWorkspace.mockResolvedValue(
+        ok(ownerMembership),
+      )
+      mockedUser.findByEmail.mockResolvedValue(ok(null))
+      mockedInvite.findPendingByWorkspaceAndEmail.mockResolvedValue(ok(null))
+      mockedInvite.countPendingByWorkspace.mockResolvedValue(
+        err(databaseError()),
+      )
+
+      const result = await InvitationService.create('actor', 'ws1', {
+        email: 'new@example.com',
+        role: 'MEMBER',
+      })
+
+      expectErr(result, 'DATABASE_ERROR')
     })
 
     it('should allow create ona n unlimited (paid) plan', async () => {
