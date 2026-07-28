@@ -115,6 +115,9 @@ export default defineConfig({
         '**/*.config.*',
         '**/mockData/**',
         'src/generated/**',
+        // Pure re-export barrel, no logic to cover; v8 also misreports it as
+        // 0% when coverage is merged across the unit + integration projects.
+        'src/errors/index.ts',
       ],
     },
   },
