@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import { createFakeCycle } from '@/src/__tests__/factories/cycle.factory'
-import { toCycleDTO } from '../cycle.mapper'
+import type { CycleMemberWithUser } from '../../repositories/cycle.repository'
+import { toCycleDTO, toCycleMemberDTO } from '../cycle.mapper'
 
 describe('toCycleDTO', () => {
   it('should map all fields correctly', () => {
@@ -48,5 +49,54 @@ describe('toCycleDTO', () => {
     expect(dto.description).toBeNull()
     expect(dto.startDate).toBeNull()
     expect(dto.endDate).toBeNull()
+  })
+})
+
+describe('toCycleMemberDTO', () => {
+  const now = new Date('2025-03-01T10:00:00.000Z')
+
+  function buildMember(
+    overrides: Partial<CycleMemberWithUser> = {},
+  ): CycleMemberWithUser {
+    return {
+      cycleId: 'cyc-1',
+      userId: 'user-1',
+      createdAt: now,
+      user: { id: 'user-1', name: 'Ana', username: 'ana', image: null },
+      ...overrides,
+    } as CycleMemberWithUser
+  }
+
+  it('should map all fields correctly and flag the lead', () => {
+    const member = buildMember()
+
+    const dto = toCycleMemberDTO(member, 'user-1')
+
+    expect(dto).toEqual({
+      userId: 'user-1',
+      name: 'Ana',
+      username: 'Ana',
+      image: null,
+      isLead: true,
+      createdAt: '2025-03-01T10:00:00.000Z',
+    })
+  })
+
+  it('should not flag a non-lead member', () => {
+    const member = buildMember({ userId: 'user-2' })
+
+    const dto = toCycleMemberDTO(member, 'user-1')
+
+    expect(dto.isLead).toBe(false)
+  })
+
+  it('should fall back to null when the user has no image', () => {
+    const member = buildMember({
+      user: { id: 'user-1', name: 'Ana', username: 'ana', image: null },
+    })
+
+    const dto = toCycleMemberDTO(member, 'user-1')
+
+    expect(dto.image).toBeNull()
   })
 })
