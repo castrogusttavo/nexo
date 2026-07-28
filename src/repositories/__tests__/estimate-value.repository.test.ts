@@ -20,6 +20,42 @@ async function setupSettings() {
 }
 
 describe('EstimateValueRepository', () => {
+  describe('findById()', () => {
+    it('should return the value', async () => {
+      const settings = await setupSettings()
+      const created = expectOk(
+        await EstimateValueRepository.create(settings.id, '1'),
+      )
+
+      const result = await EstimateValueRepository.findById(created.id)
+
+      expect(expectOk(result).id).toBe(created.id)
+    })
+
+    it('should return ESTIMATE_VALUE_NOT_FOUND for a missing id', async () => {
+      const result = await EstimateValueRepository.findById('nonexistent')
+      expectErr(result, 'ESTIMATE_VALUE_NOT_FOUND')
+    })
+  })
+
+  describe('listByEstimateSettingsId()', () => {
+    it('should list values ordered ascending', async () => {
+      const settings = await setupSettings()
+      const first = expectOk(
+        await EstimateValueRepository.create(settings.id, '1'),
+      )
+      const second = expectOk(
+        await EstimateValueRepository.create(settings.id, '2'),
+      )
+
+      const result = await EstimateValueRepository.listByEstimateSettingsId(
+        settings.id,
+      )
+
+      expect(expectOk(result).map((v) => v.id)).toEqual([first.id, second.id])
+    })
+  })
+
   describe('create()', () => {
     it('should append a value with the next order', async () => {
       const settings = await setupSettings()
@@ -33,6 +69,11 @@ describe('EstimateValueRepository', () => {
 
       expect(first.order).toBe(0)
       expect(second.order).toBe(1)
+    })
+
+    it('should return DATABASE_ERROR for a nonexistent settings id', async () => {
+      const result = await EstimateValueRepository.create('nonexistent', '1')
+      expectErr(result, 'DATABASE_ERROR')
     })
   })
 
@@ -66,6 +107,11 @@ describe('EstimateValueRepository', () => {
       const found = await EstimateValueRepository.findById(created.id)
       expectErr(found, 'ESTIMATE_VALUE_NOT_FOUND')
     })
+
+    it('should return ESTIMATE_VALUE_NOT_FOUND for a missing id', async () => {
+      const result = await EstimateValueRepository.delete('nonexistent')
+      expectErr(result, 'ESTIMATE_VALUE_NOT_FOUND')
+    })
   })
 
   describe('countByEstimateSettingsId()', () => {
@@ -96,6 +142,18 @@ describe('EstimateValueRepository', () => {
       const values = expectOk(result)
       expect(values.map((v) => v.id)).toEqual([b.id, a.id])
       expect(values.map((v) => v.order)).toEqual([0, 1])
+    })
+
+    it('should return DATABASE_ERROR when a value id does not exist', async () => {
+      const settings = await setupSettings()
+      const a = expectOk(await EstimateValueRepository.create(settings.id, 'a'))
+
+      const result = await EstimateValueRepository.reorder(settings.id, [
+        a.id,
+        'nonexistent',
+      ])
+
+      expectErr(result, 'DATABASE_ERROR')
     })
   })
 })
