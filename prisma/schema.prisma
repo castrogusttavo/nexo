@@ -426,6 +426,7 @@ model Project {
   issueTypesEnabled Boolean   @default(true) @map("issue_types_enabled")
   modulesEnabled    Boolean   @default(true) @map("modules_enabled")
   cyclesEnabled     Boolean   @default(true) @map("cycles_enabled")
+  estimatesEnabled  Boolean   @default(true) @map("estimates_enabled")
   leadId            String    @map("lead_id")
   workspaceId       String    @map("workspace_id")
   archivedAt        DateTime? @map("archived_at")
@@ -602,6 +603,20 @@ model Label {
   @@map("labels")
 }
 
+model EstimateValue {
+  id                 String   @id @default(cuid())
+  value              String
+  order              Int      @default(0)
+  estimateSettingsId String   @map("estimate_settings_id")
+  createdAt          DateTime @default(now()) @map("created_at")
+  updatedAt          DateTime @updatedAt @map("updated_at")
+
+  estimateSettings EstimateSettings @relation(fields: [estimateSettingsId], references: [id], onDelete: Cascade)
+
+  @@index([estimateSettingsId])
+  @@map("estimate_values")
+}
+
 model EstimateSettings {
   id        String         @id @default(cuid())
   system    EstimateSystem @default(POINTS)
@@ -610,7 +625,8 @@ model EstimateSettings {
   createdAt DateTime       @default(now()) @map("created_at")
   updatedAt DateTime       @updatedAt @map("updated_at")
 
-  project Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  project Project         @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  values  EstimateValue[]
 
   @@map("estimate_settings")
 }
