@@ -19,6 +19,7 @@ export function toProjectDTO(
     issueTypesEnabled: project.issueTypesEnabled,
     modulesEnabled: project.modulesEnabled,
     cyclesEnabled: project.cyclesEnabled,
+    estimatesEnabled: project.estimatesEnabled,
     isFavorited,
     leadId: project.leadId,
     workspaceId: project.workspaceId,
@@ -36,6 +37,7 @@ export function toProjectMemberDTO(
     name: member.user.name,
     username: member.user.username,
     image: member.user.image ?? null,
+    email: member.user.email,
     isLead: member.userId === leadId,
     createdAt: member.createdAt.toISOString(),
   }

@@ -45,6 +45,7 @@ export const CreateProjectSchema = z.object({
   issueTypesEnabled: z.boolean().default(true),
   modulesEnabled: z.boolean().default(true),
   cyclesEnabled: z.boolean().default(true),
+  estimatesEnabled: z.boolean().default(true),
   identifier: projectIdentifier.optional(),
 })
 
@@ -60,7 +61,9 @@ export const UpdateProjectSchema = z.object({
   issueTypesEnabled: z.boolean().optional(),
   modulesEnabled: z.boolean().optional(),
   cyclesEnabled: z.boolean().optional(),
+  estimatesEnabled: z.boolean().optional(),
   identifier: projectIdentifier.optional(),
+  leadId: z.cuid2('ID de usuário inválido').optional(),
 })
 
 export type UpdateProjectDTO = z.infer<typeof UpdateProjectSchema>

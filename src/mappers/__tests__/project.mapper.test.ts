@@ -34,6 +34,7 @@ describe('toProjectDTO', () => {
       issueTypesEnabled: true,
       modulesEnabled: true,
       cyclesEnabled: true,
+      estimatesEnabled: true,
       isFavorited: false,
       leadId: 'user-1',
       workspaceId: 'ws-1',

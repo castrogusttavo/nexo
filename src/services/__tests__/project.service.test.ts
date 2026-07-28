@@ -245,6 +245,7 @@ describe('ProjectService', () => {
         issueTypesEnabled: true,
         modulesEnabled: true,
         cyclesEnabled: true,
+        estimatesEnabled: true,
       })
 
       const dto = expectOk(result)
@@ -264,6 +265,7 @@ describe('ProjectService', () => {
         issueTypesEnabled: true,
         modulesEnabled: true,
         cyclesEnabled: true,
+        estimatesEnabled: true,
       })
       expectErr(result, 'FORBIDDEN')
     })
@@ -280,6 +282,7 @@ describe('ProjectService', () => {
         issueTypesEnabled: true,
         modulesEnabled: true,
         cyclesEnabled: true,
+        estimatesEnabled: true,
       })
 
       expectErr(result, 'DATABASE_ERROR')
@@ -299,6 +302,7 @@ describe('ProjectService', () => {
         issueTypesEnabled: true,
         modulesEnabled: true,
         cyclesEnabled: true,
+        estimatesEnabled: true,
       })
 
       expectErr(result, 'DATABASE_ERROR')

@@ -10,6 +10,7 @@ export interface ProjectDTO {
   issueTypesEnabled: boolean
   modulesEnabled: boolean
   cyclesEnabled: boolean
+  estimatesEnabled: boolean,
   isFavorited: boolean
   leadId: string
   workspaceId: string
@@ -23,6 +24,7 @@ export interface ProjectMemberDTO {
   name: string
   username: string
   image: string | null
+  email: string
   isLead: boolean
   createdAt: string
 }
