@@ -31,10 +31,11 @@ const memberMembership = createFakeMembership({
 
 function projectWith(
   overrides?: Partial<ReturnType<typeof createFakeProject>>,
+  members: { userId: string }[] = [],
 ) {
   return {
     ...createFakeProject({ id: 'proj-1', leadId: 'lead-1', ...overrides }),
-    members: [] as { userId: string }[],
+    members,
     favourites: [] as { id: string }[],
   }
 }
@@ -46,7 +47,7 @@ describe('LabelService', () => {
         ok(memberMembership),
       )
       mockedProject.findByWorkspaceAndSlug.mockResolvedValue(
-        ok(projectWith({ isPublic: true })),
+        ok(projectWith({ isPublic: true }, [{ userId: 'actor' }])),
       )
       mockedLabel.listByProject.mockResolvedValue(ok([createFakeLabel()]))
 
@@ -103,9 +104,69 @@ describe('LabelService', () => {
       expectErr(result, 'LABEL_FORBIDDEN')
       expect(mockedLabel.create).not.toHaveBeenCalled()
     })
+
+    it('should propagate repo error', async () => {
+      mockedMembership.findByUserAndWorkspace.mockResolvedValue(
+        ok(memberMembership),
+      )
+      mockedProject.findByWorkspaceAndSlug.mockResolvedValue(
+        ok(projectWith({ leadId: 'actor' })),
+      )
+      mockedLabel.create.mockResolvedValue(err(databaseError()))
+
+      const result = await LabelService.create('actor', 'ws1', 'proj-slug', {
+        name: 'Bug',
+        color: 'RED',
+      })
+
+      expectErr(result, 'DATABASE_ERROR')
+    })
   })
 
   describe('update()', () => {
+    it('should return LABEL_FORBIDDEN when actor is neither lead nor privileged', async () => {
+      mockedMembership.findByUserAndWorkspace.mockResolvedValue(
+        ok(memberMembership),
+      )
+      mockedProject.findByWorkspaceAndSlug.mockResolvedValue(
+        ok(projectWith({ leadId: 'someone-else' })),
+      )
+
+      const result = await LabelService.update(
+        'actor',
+        'ws1',
+        'proj-slug',
+        'label-1',
+        { name: 'Renamed' },
+      )
+
+      expectErr(result, 'LABEL_FORBIDDEN')
+      expect(mockedLabel.findById).not.toHaveBeenCalled()
+    })
+
+    it('should propagate repo update error', async () => {
+      mockedMembership.findByUserAndWorkspace.mockResolvedValue(
+        ok(ownerMembership),
+      )
+      mockedProject.findByWorkspaceAndSlug.mockResolvedValue(
+        ok(projectWith({ id: 'proj-1' })),
+      )
+      mockedLabel.findById.mockResolvedValue(
+        ok(createFakeLabel({ projectId: 'proj-1' })),
+      )
+      mockedLabel.update.mockResolvedValue(err(databaseError()))
+
+      const result = await LabelService.update(
+        'actor',
+        'ws1',
+        'proj-slug',
+        'label-1',
+        { name: 'Renamed' },
+      )
+
+      expectErr(result, 'DATABASE_ERROR')
+    })
+
     it('should return LABEL_NOT_FOUND when label belongs to a different project', async () => {
       mockedMembership.findByUserAndWorkspace.mockResolvedValue(
         ok(ownerMembership),
@@ -175,6 +236,67 @@ describe('LabelService', () => {
       )
 
       expectOk(result)
+    })
+
+    it('should return LABEL_FORBIDDEN when actor is neither lead nor privileged', async () => {
+      mockedMembership.findByUserAndWorkspace.mockResolvedValue(
+        ok(memberMembership),
+      )
+      mockedProject.findByWorkspaceAndSlug.mockResolvedValue(
+        ok(projectWith({ leadId: 'someone-else' })),
+      )
+
+      const result = await LabelService.delete(
+        'actor',
+        'ws1',
+        'proj-slug',
+        'label-1',
+      )
+
+      expectErr(result, 'LABEL_FORBIDDEN')
+    })
+
+    it('should return LABEL_NOT_FOUND when label belongs to a different project', async () => {
+      mockedMembership.findByUserAndWorkspace.mockResolvedValue(
+        ok(ownerMembership),
+      )
+      mockedProject.findByWorkspaceAndSlug.mockResolvedValue(
+        ok(projectWith({ id: 'proj-1' })),
+      )
+      mockedLabel.findById.mockResolvedValue(
+        ok(createFakeLabel({ projectId: 'other-proj' })),
+      )
+
+      const result = await LabelService.delete(
+        'actor',
+        'ws1',
+        'proj-slug',
+        'label-1',
+      )
+
+      expectErr(result, 'LABEL_NOT_FOUND')
+    })
+
+    it('should propagate repo delete error', async () => {
+      mockedMembership.findByUserAndWorkspace.mockResolvedValue(
+        ok(ownerMembership),
+      )
+      mockedProject.findByWorkspaceAndSlug.mockResolvedValue(
+        ok(projectWith({ id: 'proj-1' })),
+      )
+      mockedLabel.findById.mockResolvedValue(
+        ok(createFakeLabel({ projectId: 'proj-1' })),
+      )
+      mockedLabel.delete.mockResolvedValue(err(databaseError()))
+
+      const result = await LabelService.delete(
+        'actor',
+        'ws1',
+        'proj-slug',
+        'label-1',
+      )
+
+      expectErr(result, 'DATABASE_ERROR')
     })
   })
 
