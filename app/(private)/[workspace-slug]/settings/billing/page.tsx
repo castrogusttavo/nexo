@@ -128,7 +128,7 @@ export default async function SettingsBillingPage({
                 <h4 className='font-bold text-sm'>
                   Seu teste de 14 dias do plano Business está ativo!
                 </h4>
-                <Badge className='bg-orange-50 text-orange-700 dark:bg-orange-950 dark:text-orange-300 rounded-sm'>
+                <Badge variant='warning'>
                   {trialDaysLeft === 1
                     ? 'O teste termina em 1 dia'
                     : `O teste termina em ${trialDaysLeft} dias`}
@@ -146,9 +146,7 @@ export default async function SettingsBillingPage({
           <div className='w-full flex items-center justify-between px-4 py-3 gap-2'>
             <div className='flex items-center gap-1.5'>
               <h4 className='text-sm font-semibold'>{planLabel}</h4>
-              <Badge className='bg-blue-50 text-blue-700 dark:bg-blue-950 dark:text-blue-300 rounded-sm'>
-                Seu Plano
-              </Badge>
+              <Badge variant='info'>Seu Plano</Badge>
             </div>
             {subscription && (
               <Button variant='outline' size='sm'>
