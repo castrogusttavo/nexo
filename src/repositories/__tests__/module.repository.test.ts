@@ -8,6 +8,7 @@ import { seedProject } from '@/src/__tests__/factories/project.factory'
 import { seedUser } from '@/src/__tests__/factories/user.factory'
 import { seedWorkspace } from '@/src/__tests__/factories/workspace.factory'
 import { expectErr, expectOk } from '@/src/__tests__/helpers/result.helpers'
+import { prisma } from '@/src/lib/prisma'
 import { ModuleRepository } from '../module.repository'
 
 afterEach(() => {
@@ -147,6 +148,85 @@ describe('ModuleRepository', () => {
       const removed = await ModuleRepository.removeFavorite(user.id, seeded.id)
 
       expectOk(removed)
+    })
+  })
+
+  describe('query failures', () => {
+    it('findById() returns DATABASE_ERROR when the query throws', async () => {
+      vi.spyOn(prisma.module, 'findUnique').mockRejectedValueOnce(
+        new Error('boom'),
+      )
+      expectErr(await ModuleRepository.findById('m'), 'DATABASE_ERROR')
+    })
+
+    it('listByProject() returns DATABASE_ERROR when the query throws', async () => {
+      vi.spyOn(prisma.module, 'findMany').mockRejectedValueOnce(
+        new Error('boom'),
+      )
+      expectErr(await ModuleRepository.listByProject('p'), 'DATABASE_ERROR')
+    })
+
+    it('listMembers() returns DATABASE_ERROR when the query throws', async () => {
+      vi.spyOn(prisma.moduleMember, 'findMany').mockRejectedValueOnce(
+        new Error('boom'),
+      )
+      expectErr(await ModuleRepository.listMembers('m'), 'DATABASE_ERROR')
+    })
+
+    it('addMember() returns DATABASE_ERROR for a non-conflict failure', async () => {
+      vi.spyOn(prisma.moduleMember, 'create').mockRejectedValueOnce(
+        new Error('boom'),
+      )
+      expectErr(await ModuleRepository.addMember('u', 'm'), 'DATABASE_ERROR')
+    })
+
+    it('removeMember() returns DATABASE_ERROR when the query throws', async () => {
+      vi.spyOn(prisma.moduleMember, 'deleteMany').mockRejectedValueOnce(
+        new Error('boom'),
+      )
+      expectErr(await ModuleRepository.removeMember('u', 'm'), 'DATABASE_ERROR')
+    })
+
+    it('create() returns DATABASE_ERROR when the transaction throws', async () => {
+      vi.spyOn(prisma, '$transaction').mockRejectedValueOnce(new Error('boom'))
+      expectErr(
+        await ModuleRepository.create({
+          name: 'X',
+          leadId: 'u',
+          projectId: 'p',
+        }),
+        'DATABASE_ERROR',
+      )
+    })
+
+    it('update() returns DATABASE_ERROR when the query throws', async () => {
+      vi.spyOn(prisma.module, 'update').mockRejectedValueOnce(new Error('boom'))
+      expectErr(
+        await ModuleRepository.update('m', { name: 'X' }),
+        'DATABASE_ERROR',
+      )
+    })
+
+    it('delete() returns DATABASE_ERROR when the query throws', async () => {
+      vi.spyOn(prisma.module, 'delete').mockRejectedValueOnce(new Error('boom'))
+      expectErr(await ModuleRepository.delete('m'), 'DATABASE_ERROR')
+    })
+
+    it('addFavorite() returns DATABASE_ERROR when the query throws', async () => {
+      vi.spyOn(prisma.moduleFavorite, 'upsert').mockRejectedValueOnce(
+        new Error('boom'),
+      )
+      expectErr(await ModuleRepository.addFavorite('u', 'm'), 'DATABASE_ERROR')
+    })
+
+    it('removeFavorite() returns DATABASE_ERROR when the query throws', async () => {
+      vi.spyOn(prisma.moduleFavorite, 'deleteMany').mockRejectedValueOnce(
+        new Error('boom'),
+      )
+      expectErr(
+        await ModuleRepository.removeFavorite('u', 'm'),
+        'DATABASE_ERROR',
+      )
     })
   })
 })

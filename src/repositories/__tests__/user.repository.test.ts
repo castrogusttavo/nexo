@@ -442,6 +442,113 @@ describe('UserRepository', () => {
     })
   })
 
+  describe('saveProfile()', () => {
+    it('should persist the name and next step', async () => {
+      const seeded = await seedUser()
+
+      const result = await UserRepository.saveProfile(
+        seeded.id,
+        'New Name',
+        'ROLE',
+      )
+
+      const user = expectOk(result)
+      expect(user.name).toBe('New Name')
+      expect(user.onboardingStep).toBe('ROLE')
+    })
+
+    it('should return RESOURCE_NOT_FOUND for unknown user', async () => {
+      const result = await UserRepository.saveProfile(
+        'nope',
+        'New Name',
+        'ROLE',
+      )
+      expectErr(result, 'RESOURCE_NOT_FOUND')
+    })
+
+    it('should return DATABASE_ERROR on non-P2025 failures', async () => {
+      vi.spyOn(prisma.user, 'update').mockRejectedValueOnce(new Error('boom'))
+
+      const result = await UserRepository.saveProfile('u', 'New Name', 'ROLE')
+
+      expectErr(result, 'DATABASE_ERROR')
+    })
+  })
+
+  describe('deleteAllSessions()', () => {
+    it('should delete all sessions for a user', async () => {
+      const seeded = await seedUser()
+
+      const result = await UserRepository.deleteAllSessions(seeded.id)
+
+      expectOk(result)
+    })
+
+    it('should return DATABASE_ERROR when the query throws', async () => {
+      vi.spyOn(prisma.session, 'deleteMany').mockRejectedValueOnce(
+        new Error('boom'),
+      )
+
+      const result = await UserRepository.deleteAllSessions('u')
+
+      expectErr(result, 'DATABASE_ERROR')
+    })
+  })
+
+  describe('hasCredentialAccount()', () => {
+    it('should return false when the user has no credential account', async () => {
+      const seeded = await seedUser()
+
+      const result = await UserRepository.hasCredentialAccount(seeded.id)
+
+      expect(expectOk(result)).toBe(false)
+    })
+
+    it('should return DATABASE_ERROR when the query throws', async () => {
+      vi.spyOn(prisma.account, 'findFirst').mockRejectedValueOnce(
+        new Error('boom'),
+      )
+
+      const result = await UserRepository.hasCredentialAccount('u')
+
+      expectErr(result, 'DATABASE_ERROR')
+    })
+  })
+
+  describe('acceptConsents()', () => {
+    it('should persist accepted-at timestamps and consent events', async () => {
+      const seeded = await seedUser()
+      const at = new Date()
+
+      const result = await UserRepository.acceptConsents(seeded.id, {
+        termsVersion: '2026-01-01',
+        privacyVersion: '2026-01-01',
+        ipAddress: '127.0.0.1',
+        userAgent: 'vitest',
+        at,
+      })
+
+      expectOk(result)
+      const updated = expectOk(await UserRepository.findById(seeded.id))
+      expect(updated.acceptedTermsAt).toEqual(at)
+      expect(updated.acceptedPrivacyAt).toEqual(at)
+    })
+
+    it('should return DATABASE_ERROR when the transaction throws', async () => {
+      vi.spyOn(prisma, '$transaction').mockRejectedValueOnce(new Error('boom'))
+
+      const result = await UserRepository.acceptConsents('u', {
+        termsVersion: '2026-01-01',
+        privacyVersion: '2026-01-01',
+        ipAddress: null,
+        userAgent: null,
+        at: new Date(),
+      })
+
+      expectErr(result, 'DATABASE_ERROR')
+    })
+  })
+
   describe('read and write query failures', () => {
     it('findById() returns DATABASE_ERROR when the query throws', async () => {
       vi.spyOn(prisma.user, 'findUnique').mockRejectedValueOnce(

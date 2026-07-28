@@ -215,6 +215,40 @@ describe('MembershipRepository', () => {
       )
       expectErr(await MembershipRepository.listByUser('u'), 'DATABASE_ERROR')
     })
+
+    it('listUserIdsByWorkspace() returns DATABASE_ERROR when the query throws', async () => {
+      vi.spyOn(prisma.membership, 'findMany').mockRejectedValueOnce(
+        new Error('boom'),
+      )
+      expectErr(
+        await MembershipRepository.listUserIdsByWorkspace('ws'),
+        'DATABASE_ERROR',
+      )
+    })
+
+    it('listByWorkspaceWithUser() returns DATABASE_ERROR when the query throws', async () => {
+      vi.spyOn(prisma.membership, 'findMany').mockRejectedValueOnce(
+        new Error('boom'),
+      )
+      expectErr(
+        await MembershipRepository.listByWorkspaceWithUser('ws', {}),
+        'DATABASE_ERROR',
+      )
+    })
+  })
+
+  describe('listUserIdsByWorkspace()', () => {
+    it('should list user ids for a workspace', async () => {
+      const workspace = await seedWorkspace()
+      const user = await seedUser()
+      await seedMembership({ userId: user.id, workspaceId: workspace.id })
+
+      const result = await MembershipRepository.listUserIdsByWorkspace(
+        workspace.id,
+      )
+
+      expect(expectOk(result)).toEqual([user.id])
+    })
   })
 
   describe('listByWorkspaceWithUser()', () => {

@@ -8,6 +8,7 @@ import { seedProject } from '@/src/__tests__/factories/project.factory'
 import { seedUser } from '@/src/__tests__/factories/user.factory'
 import { seedWorkspace } from '@/src/__tests__/factories/workspace.factory'
 import { expectErr, expectOk } from '@/src/__tests__/helpers/result.helpers'
+import { prisma } from '@/src/lib/prisma'
 import { CycleRepository } from '../cycle.repository'
 
 afterEach(() => {
@@ -151,6 +152,78 @@ describe('CycleRepository', () => {
       const result = await CycleRepository.removeMember(other.id, seeded.id)
 
       expectErr(result, 'CYCLE_MEMBER_NOT_FOUND')
+    })
+  })
+
+  describe('query failures', () => {
+    it('findById() returns DATABASE_ERROR when the query throws', async () => {
+      vi.spyOn(prisma.cycle, 'findUnique').mockRejectedValueOnce(
+        new Error('boom'),
+      )
+      expectErr(await CycleRepository.findById('c'), 'DATABASE_ERROR')
+    })
+
+    it('listByProject() returns DATABASE_ERROR when the query throws', async () => {
+      vi.spyOn(prisma.cycle, 'findMany').mockRejectedValueOnce(
+        new Error('boom'),
+      )
+      expectErr(await CycleRepository.listByProject('p'), 'DATABASE_ERROR')
+    })
+
+    it('findActiveByProject() returns DATABASE_ERROR when the query throws', async () => {
+      vi.spyOn(prisma.cycle, 'findFirst').mockRejectedValueOnce(
+        new Error('boom'),
+      )
+      expectErr(
+        await CycleRepository.findActiveByProject('p'),
+        'DATABASE_ERROR',
+      )
+    })
+
+    it('listmembers() returns DATABASE_ERROR when the query throws', async () => {
+      vi.spyOn(prisma.cycleMember, 'findMany').mockRejectedValueOnce(
+        new Error('boom'),
+      )
+      expectErr(await CycleRepository.listmembers('c'), 'DATABASE_ERROR')
+    })
+
+    it('addMember() returns DATABASE_ERROR for a non-conflict failure', async () => {
+      vi.spyOn(prisma.cycleMember, 'create').mockRejectedValueOnce(
+        new Error('boom'),
+      )
+      expectErr(await CycleRepository.addMember('u', 'c'), 'DATABASE_ERROR')
+    })
+
+    it('removeMember() returns DATABASE_ERROR when the query throws', async () => {
+      vi.spyOn(prisma.cycleMember, 'deleteMany').mockRejectedValueOnce(
+        new Error('boom'),
+      )
+      expectErr(await CycleRepository.removeMember('u', 'c'), 'DATABASE_ERROR')
+    })
+
+    it('create() returns DATABASE_ERROR when the transaction throws', async () => {
+      vi.spyOn(prisma, '$transaction').mockRejectedValueOnce(new Error('boom'))
+      expectErr(
+        await CycleRepository.create({
+          name: 'X',
+          leadId: 'u',
+          projectId: 'p',
+        }),
+        'DATABASE_ERROR',
+      )
+    })
+
+    it('update() returns DATABASE_ERROR when the query throws', async () => {
+      vi.spyOn(prisma.cycle, 'update').mockRejectedValueOnce(new Error('boom'))
+      expectErr(
+        await CycleRepository.update('c', { name: 'X' }),
+        'DATABASE_ERROR',
+      )
+    })
+
+    it('delete() returns DATABASE_ERROR when the query throws', async () => {
+      vi.spyOn(prisma.cycle, 'delete').mockRejectedValueOnce(new Error('boom'))
+      expectErr(await CycleRepository.delete('c'), 'DATABASE_ERROR')
     })
   })
 })
