@@ -1,0 +1,45 @@
+import { Progress03Icon } from '@hugeicons-pro/core-stroke-rounded'
+import { notFound } from 'next/navigation'
+import {
+  HeaderBreadcrumbCrumb,
+  HeaderBreadcrumbList,
+} from '@/app/_components/header/breadcrumb-page'
+import HeaderInternalNavigation from '@/app/_components/header/header-internal-navigation'
+import { NexoIcon } from '@/components/icon/icon'
+import { getProjectContext } from '@/src/lib/project-context'
+import { FeatureToggleSettings } from '../feature-toggle-settings'
+
+export default async function ProjectCyclesSettingsPage({
+  params,
+}: {
+  params: Promise<{ 'workspace-slug': string; slug: string }>
+}) {
+  const { 'workspace-slug': workspaceSlug, slug } = await params
+  const context = await getProjectContext(workspaceSlug, slug)
+  if (!context) notFound()
+
+  return (
+    <div className='w-full'>
+      <HeaderInternalNavigation>
+        <HeaderBreadcrumbList>
+          <HeaderBreadcrumbCrumb title='Ciclos'>
+            <NexoIcon
+              icon={Progress03Icon}
+              strokeWidth={2}
+              className='text-primary'
+            />
+          </HeaderBreadcrumbCrumb>
+        </HeaderBreadcrumbList>
+      </HeaderInternalNavigation>
+      <FeatureToggleSettings
+        workspaceId={context.workspaceId}
+        projectSlug={context.project.slug}
+        field='cyclesEnabled'
+        title='Ciclos'
+        description='Agende o trabalho em períodos flexíveis que se adaptam ao ritmo e ao tempo únicos deste projeto.'
+        toggleLabel='Ativar ciclos'
+        toggleDescription='Planeje o trabalho em períodos de tempo focados.'
+      />
+    </div>
+  )
+}
