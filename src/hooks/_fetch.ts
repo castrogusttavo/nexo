@@ -1,8 +1,13 @@
 import type { SuccessResponse } from '@/types/http-response'
 
+// Distinguishes a controlled, backend-supplied error message (already in
+// pt-BR, safe to show as-is) from any other thrown error (network failures,
+// unexpected runtime exceptions) whose `.message` is never meant for users.
+export class ApiError extends Error {}
+
 async function throwApiError(res: Response, fallback: string): Promise<never> {
   const body = await res.json().catch(() => null)
-  throw new Error(body?.message ?? fallback)
+  throw new ApiError(body?.message ?? fallback)
 }
 
 // Fetches and return the `data` payload, throwing `Error(message)` on failure
