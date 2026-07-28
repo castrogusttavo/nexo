@@ -1,13 +1,9 @@
 'use client'
 
 import { useState } from 'react'
+import { ColorSwatchPicker } from '@/app/_components/ui/color-swatch-picker'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from '@/components/ui/popover'
 import { notify } from '@/lib/notify'
 import { colorToDot, STATE_COLORS } from '@/lib/state-colors'
 import { cn } from '@/lib/utils'
@@ -39,59 +35,43 @@ export function LabelForm({
   async function handleSubmit(e: React.SyntheticEvent<HTMLFormElement>) {
     e.preventDefault()
 
+    const promise =
+      isEditing && label
+        ? updateLabel.mutateAsync({ labelId: label.id, data: { name, color } })
+        : createLabel.mutateAsync({ name, color })
+
     try {
-      if (isEditing && label) {
-        await updateLabel.mutateAsync({
-          labelId: label.id,
-          data: { name, color },
-        })
-        notify.success('Etiqueta atualizada')
-      } else {
-        await createLabel.mutateAsync({ name, color })
-        notify.success('Etiqueta criada')
-      }
+      await notify.mutate(promise, {
+        loading: isEditing ? 'Salvando etiqueta...' : 'Criando etiqueta...',
+        success: isEditing ? 'Etiqueta atualizada' : 'Etiqueta criada',
+        error: 'Erro ao salvar etiqueta',
+      })
       onClose()
-    } catch (err) {
-      notify.error(err)
+    } catch {
+      //
     }
   }
 
   return (
     <div className='w-full flex items-center rounded-sm border border-border px-3.5 py-2 my-2'>
       <form className='w-full flex items-center gap-2' onSubmit={handleSubmit}>
-        <Popover>
-          <PopoverTrigger
-            render={
-              <Button
-                type='button'
-                variant='outline'
-                size='icon-sm'
-                className='shrink-0'
-              >
-                <span
-                  className={cn('size-3.5 rounded-full', colorToDot(color))}
-                />
-              </Button>
-            }
-          />
-          <PopoverContent align='start' className='w-40'>
-            <div className='flex flex-wrap gap-2'>
-              {STATE_COLORS.map((c) => (
-                <Button
-                  key={c.value}
-                  type='button'
-                  onClick={() => setColor(c.value)}
-                  className={cn(
-                    'size-6 rounded-full cursor-pointer',
-                    c.bg,
-                    color === c.value &&
-                      'ring-2 ring-primary ring-offset-2 ring-offset-background',
-                  )}
-                />
-              ))}
-            </div>
-          </PopoverContent>
-        </Popover>
+        <ColorSwatchPicker
+          colors={STATE_COLORS}
+          value={color}
+          onChange={setColor}
+          trigger={
+            <Button
+              type='button'
+              variant='outline'
+              size='icon-sm'
+              className='shrink-0'
+            >
+              <span
+                className={cn('size-3.5 rounded-full', colorToDot(color))}
+              />
+            </Button>
+          }
+        />
         <Input
           autoFocus
           value={name}
@@ -104,7 +84,7 @@ export function LabelForm({
             Cancelar
           </Button>
           <Button type='submit' size='xs' disabled={isPending || !name.trim()}>
-            {isPending ? 'Salvando...' : isEditing ? 'Salvar' : 'Adicionar'}
+            {isEditing ? 'Salvar' : 'Adicionar'}
           </Button>
         </div>
       </form>

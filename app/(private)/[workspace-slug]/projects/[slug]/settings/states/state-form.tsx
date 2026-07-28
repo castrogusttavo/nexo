@@ -1,13 +1,9 @@
 'use client'
 
 import { useState } from 'react'
+import { ColorSwatchPicker } from '@/app/_components/ui/color-swatch-picker'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from '@/components/ui/popover'
 import { notify } from '@/lib/notify'
 import { cn } from '@/lib/utils'
 import { useCreateState, useUpdateState } from '@/src/hooks/use-state'
@@ -48,20 +44,25 @@ export function StateForm({
   async function handleSubmit(e: React.SyntheticEvent<HTMLFormElement>) {
     e.preventDefault()
 
+    const promise =
+      isEditing && state
+        ? updateState.mutateAsync({
+            stateId: state.id,
+            data: { name, description, color },
+          })
+        : group
+          ? createState.mutateAsync({ name, description, group, color })
+          : null
+    if (!promise) return
     try {
-      if (isEditing && state) {
-        await updateState.mutateAsync({
-          stateId: state.id,
-          data: { name, description, color },
-        })
-        notify.success('State atualizado')
-      } else if (group) {
-        await createState.mutateAsync({ name, description, group, color })
-        notify.success('State criado')
-      }
+      await notify.mutate(promise, {
+        loading: isEditing ? 'Salvando state...' : 'Criando state...',
+        success: isEditing ? 'State atualizado' : 'State criado',
+        error: 'Erro ao salvar state',
+      })
       onClose()
-    } catch (err) {
-      notify.error(err)
+    } catch {
+      //
     }
   }
 
@@ -69,39 +70,23 @@ export function StateForm({
     <div className='bg-accent/50 rounded-lg w-full space-y-2'>
       <form className='space-y-3 p-4' onSubmit={handleSubmit}>
         <div className='flex items-center gap-1.5'>
-          <Popover>
-            <PopoverTrigger
-              render={
-                <Button
-                  type='button'
-                  variant='outline'
-                  size='icon-sm'
-                  className='shrink-0'
-                >
-                  <span
-                    className={cn('size-3.5 rounded-full', colorToDot(color))}
-                  />
-                </Button>
-              }
-            />
-            <PopoverContent align='start' className='w-40'>
-              <div className='flex flex-wrap gap-2'>
-                {STATE_COLORS.map((c) => (
-                  <button
-                    key={c.value}
-                    type='button'
-                    onClick={() => setColor(c.value)}
-                    className={cn(
-                      'size-6 rounded-full cursor-pointer',
-                      c.bg,
-                      color === c.value &&
-                        'ring-2 ring-primary ring-offset-2 ring-offset-background',
-                    )}
-                  />
-                ))}
-              </div>
-            </PopoverContent>
-          </Popover>
+          <ColorSwatchPicker
+            colors={STATE_COLORS}
+            value={color}
+            onChange={setColor}
+            trigger={
+              <Button
+                type='button'
+                variant='outline'
+                size='icon-sm'
+                className='shrink-0'
+              >
+                <span
+                  className={cn('size-3.5 rounded-full', colorToDot(color))}
+                />
+              </Button>
+            }
+          />
           <Input
             autoFocus
             value={name}
@@ -121,7 +106,7 @@ export function StateForm({
             Cancelar
           </Button>
           <Button type='submit' size='sm' disabled={isPending || !name.trim()}>
-            {isPending ? 'Salvando...' : isEditing ? 'Salvar' : 'Criar'}
+            {isEditing ? 'Salvar' : 'Criar'}
           </Button>
         </div>
       </form>

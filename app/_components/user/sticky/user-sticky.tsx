@@ -18,13 +18,9 @@ import {
   useRef,
   useState,
 } from 'react'
+import { ColorSwatchPicker } from '@/app/_components/ui/color-swatch-picker'
 import { NexoIcon } from '@/components/icon/icon'
 import { Button } from '@/components/ui/button'
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from '@/components/ui/popover'
 import { notify } from '@/lib/notify'
 import { cn } from '@/lib/utils'
 import {
@@ -178,30 +174,16 @@ function StickPickerColor({
   onColorChange: (color: StickyColorDTO) => void
 }) {
   return (
-    <Popover>
-      <PopoverTrigger
-        render={
-          <StickTextPropsButton>
-            <NexoIcon icon={PaintBoardIcon} strokeWidth={2} />
-          </StickTextPropsButton>
-        }
-      />
-      <PopoverContent align='start' className='w-48'>
-        <div className='flex flex-wrap gap-2'>
-          {STICKY_COLORS.map((color) => (
-            <button
-              key={color.value}
-              type='button'
-              onClick={() => onColorChange(color.value)}
-              className={cn(
-                'size-6 rounded-sm cursor-pointer',
-                color.bg,
-                currentColor === color.value && 'ring-2 ring-primary',
-              )}
-            />
-          ))}
-        </div>
-      </PopoverContent>
-    </Popover>
+    <ColorSwatchPicker
+      colors={STICKY_COLORS}
+      value={currentColor}
+      onChange={onColorChange}
+      shape='square'
+      trigger={
+        <StickTextPropsButton>
+          <NexoIcon icon={PaintBoardIcon} strokeWidth={2} />
+        </StickTextPropsButton>
+      }
+    />
   )
 }
