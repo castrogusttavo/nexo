@@ -1,11 +1,15 @@
-import { describe, expect, it, vi } from 'vitest'
-import { createFakeEstimateSettings } from '@/src/__tests__/factories/estimate.factory'
+import { beforeEach, describe, expect, it, vi } from 'vitest'
+import {
+  createFakeEstimateSettings,
+  createFakeEstimateValue,
+} from '@/src/__tests__/factories/estimate.factory'
 import { createFakeMembership } from '@/src/__tests__/factories/membership.factory'
 import { createFakeProject } from '@/src/__tests__/factories/project.factory'
 import { expectErr, expectOk } from '@/src/__tests__/helpers/result.helpers'
 import { databaseError } from '@/src/errors'
 import { err, ok } from '@/src/lib/result'
 import { EstimateRepository } from '@/src/repositories/estimate.repository'
+import { EstimateValueRepository } from '@/src/repositories/estimate-value.repository'
 import { MembershipRepository } from '@/src/repositories/membership.repository'
 import { ProjectRepository } from '@/src/repositories/project.repository'
 import { EstimateService } from '../estimate.service'
@@ -13,10 +17,12 @@ import { EstimateService } from '../estimate.service'
 vi.mock('@/src/repositories/membership.repository')
 vi.mock('@/src/repositories/project.repository')
 vi.mock('@/src/repositories/estimate.repository')
+vi.mock('@/src/repositories/estimate-value.repository')
 
 const mockedMembership = vi.mocked(MembershipRepository)
 const mockedProject = vi.mocked(ProjectRepository)
 const mockedEstimate = vi.mocked(EstimateRepository)
+const mockedEstimateValue = vi.mocked(EstimateValueRepository)
 
 const memberMembership = createFakeMembership({
   userId: 'actor',
@@ -33,6 +39,10 @@ function projectWith(
     favourites: [] as { id: string }[],
   }
 }
+
+beforeEach(() => {
+  mockedEstimateValue.listByEstimateSettingsId.mockResolvedValue(ok([]))
+})
 
 describe('EstimateService', () => {
   describe('get()', () => {
@@ -101,6 +111,111 @@ describe('EstimateService', () => {
 
       expectErr(result, 'ESTIMATE_SETTINGS_FORBIDDEN')
       expect(mockedEstimate.update).not.toHaveBeenCalled()
+    })
+  })
+
+  describe('createValue()', () => {
+    it('should create when actor is lead', async () => {
+      mockedMembership.findByUserAndWorkspace.mockResolvedValue(
+        ok(memberMembership),
+      )
+      mockedProject.findByWorkspaceAndSlug.mockResolvedValue(
+        ok(projectWith({ leadId: 'actor' })),
+      )
+      mockedEstimateValue.create.mockResolvedValue(
+        ok(createFakeEstimateValue({ value: '3' })),
+      )
+
+      const result = await EstimateService.createValue(
+        'actor',
+        'ws1',
+        'proj-slug',
+        {
+          value: '3',
+        },
+      )
+
+      expect(expectOk(result).value).toBe('3')
+    })
+
+    it('should return ESTIMATE_SETTINGS_FORBIDDEN when actor is neither lead nor privileged', async () => {
+      mockedMembership.findByUserAndWorkspace.mockResolvedValue(
+        ok(memberMembership),
+      )
+      mockedProject.findByWorkspaceAndSlug.mockResolvedValue(
+        ok(projectWith({ leadId: 'someone-else' })),
+      )
+
+      const result = await EstimateService.createValue(
+        'actor',
+        'ws1',
+        'proj-slug',
+        {
+          value: '3',
+        },
+      )
+
+      expectErr(result, 'ESTIMATE_SETTINGS_FORBIDDEN')
+      expect(mockedEstimateValue.create).not.toHaveBeenCalled()
+    })
+  })
+
+  describe('deleteValue()', () => {
+    it('should return ESTIMATE_VALUE_LAST_REMAINING when it is the only value left', async () => {
+      mockedMembership.findByUserAndWorkspace.mockResolvedValue(
+        ok(memberMembership),
+      )
+      mockedProject.findByWorkspaceAndSlug.mockResolvedValue(
+        ok(projectWith({ leadId: 'actor' })),
+      )
+      mockedEstimateValue.findById.mockResolvedValue(
+        ok(
+          createFakeEstimateValue({ id: 'val-1', estimateSettingsId: 'est-1' }),
+        ),
+      )
+      mockedEstimate.findByProjectId.mockResolvedValue(
+        ok(createFakeEstimateSettings({ id: 'est-1' })),
+      )
+      mockedEstimateValue.countByEstimateSettingsId.mockResolvedValue(ok(1))
+
+      const result = await EstimateService.deleteValue(
+        'actor',
+        'ws1',
+        'proj-slug',
+        'val-1',
+      )
+
+      expectErr(result, 'ESTIMATE_VALUE_LAST_REMAINING')
+      expect(mockedEstimateValue.delete).not.toHaveBeenCalled()
+    })
+  })
+
+  describe('reorderValues()', () => {
+    it('should reorder when actor is lead', async () => {
+      mockedMembership.findByUserAndWorkspace.mockResolvedValue(
+        ok(memberMembership),
+      )
+      mockedProject.findByWorkspaceAndSlug.mockResolvedValue(
+        ok(projectWith({ leadId: 'actor' })),
+      )
+      mockedEstimate.findByProjectId.mockResolvedValue(
+        ok(createFakeEstimateSettings({ id: 'est-1' })),
+      )
+      mockedEstimateValue.reorder.mockResolvedValue(
+        ok([
+          createFakeEstimateValue({ id: 'val-2', order: 0 }),
+          createFakeEstimateValue({ id: 'val-1', order: 1 }),
+        ]),
+      )
+
+      const result = await EstimateService.reorderValues(
+        'actor',
+        'ws1',
+        'proj-slug',
+        { valueIds: ['val-2', 'val-1'] },
+      )
+
+      expect(expectOk(result).map((v) => v.id)).toEqual(['val-2', 'val-1'])
     })
   })
 

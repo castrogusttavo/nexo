@@ -1,5 +1,5 @@
 import { createId } from '@paralleldrive/cuid2'
-import type { EstimateSettings } from '@prisma/client'
+import type { EstimateSettings, EstimateValue } from '@prisma/client'
 import { prisma } from '@/src/lib/prisma'
 
 export function createFakeEstimateSettings(
@@ -24,6 +24,35 @@ export async function seedEstimateSettings(
   return prisma.estimateSettings.create({
     data: {
       projectId,
+      ...overrides,
+    },
+  })
+}
+
+export function createFakeEstimateValue(
+  overrides?: Partial<EstimateValue>,
+): EstimateValue {
+  const now = new Date()
+  return {
+    id: createId(),
+    value: '1',
+    order: 0,
+    estimateSettingsId: createId(),
+    createdAt: now,
+    updatedAt: now,
+    ...overrides,
+  }
+}
+
+export function seedEstimateValue(
+  estimateSettingsId: string,
+  overrides?: Partial<Pick<EstimateValue, 'value' | 'order'>>,
+) {
+  return prisma.estimateValue.create({
+    data: {
+      value: '1',
+      order: 0,
+      estimateSettingsId,
       ...overrides,
     },
   })
