@@ -4,6 +4,7 @@ import {
   addMember,
   authenticatedOwner,
   deleteJson,
+  getJson,
   patchJson,
   postJson,
 } from '@/src/__tests__/helpers/e2e'
@@ -89,10 +90,19 @@ describe('DELETE .../estimate/values/[valueId]', () => {
       user.cookie,
     )
     const settingsBody = await settingsRes.json()
-    const onlyValueId = settingsBody.data.values[0].id
+    const [onlyValue, ...rest] = settingsBody.data.values
+
+    // Project creation seeds a full default Fibonacci scale, so the guard is
+    // only exercised once every value but one has been removed.
+    for (const value of rest) {
+      await deleteJson(
+        `/api/workspaces/${workspace.id}/projects/${project.slug}/estimate/values/${value.id}`,
+        user.cookie,
+      )
+    }
 
     const res = await deleteJson(
-      `/api/workspaces/${workspace.id}/projects/${project.slug}/estimate/values/${onlyValueId}`,
+      `/api/workspaces/${workspace.id}/projects/${project.slug}/estimate/values/${onlyValue.id}`,
       user.cookie,
     )
 
@@ -117,15 +127,28 @@ describe('PATCH .../estimate/values/reorder', () => {
     const firstBody = await first.json()
     const secondBody = await second.json()
 
+    // Reordering only the two new values would tie their `order` with the
+    // untouched seeded defaults, so send the full set like the frontend does.
+    const settingsRes = await getJson(
+      `/api/workspaces/${workspace.id}/projects/${project.slug}/estimate`,
+      user.cookie,
+    )
+    const settingsBody = await settingsRes.json()
+    const defaultIds = settingsBody.data.values
+      .map((v: { id: string }) => v.id)
+      .filter(
+        (id: string) => id !== firstBody.data.id && id !== secondBody.data.id,
+      )
+
     const res = await patchJson(
       `/api/workspaces/${workspace.id}/projects/${project.slug}/estimate/values/reorder`,
-      { valueIds: [secondBody.data.id, firstBody.data.id] },
+      { valueIds: [secondBody.data.id, firstBody.data.id, ...defaultIds] },
       user.cookie,
     )
 
     expect(res.status).toBe(200)
     const body = await res.json()
-    expect(body.data.map((v: { id: string }) => v.id)).toEqual([
+    expect(body.data.map((v: { id: string }) => v.id).slice(0, 2)).toEqual([
       secondBody.data.id,
       firstBody.data.id,
     ])
