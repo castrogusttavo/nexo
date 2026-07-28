@@ -52,7 +52,7 @@ export function DataTable<TData, TValue>({
     <div className='flex-1 minh-0 flex flex-col gap-3'>
       <div className='flex-1 min-h-0 overflow-y-auto rounded-md border'>
         <Table>
-          <TableHeader className='sticky top-0 z-10 bg-primary-foreground'>
+          <TableHeader className='sticky top-0 z-10 bg-app'>
             {table.getHeaderGroups().map((headerGroup) => (
               <TableRow key={headerGroup.id}>
                 {headerGroup.headers.map((header) => (

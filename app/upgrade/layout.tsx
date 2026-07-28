@@ -10,7 +10,7 @@ export const metadata: Metadata = {
 export default function UpgradeLayout({ children }: { children: ReactNode }) {
   return (
     <div className='h-screen w-screen overflow-hidden bg-background p-2'>
-      <div className='h-full bg-primary-foreground w-full rounded-lg border border-border flex flex-col'>
+      <div className='h-full bg-app w-full rounded-lg border border-border flex flex-col'>
         <WebHeaderUpgrade />
         <div className='flex-1 overflow-y-auto flex items-start justify-center'>
           {children}

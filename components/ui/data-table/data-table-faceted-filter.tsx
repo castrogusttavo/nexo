@@ -56,7 +56,7 @@ export function DataTableFacetedFilter({
         )}
       </PopoverTrigger>
       <PopoverContent className='w-48 p-0' align='start'>
-        <Command>
+        <Command className='space-y-2'>
           <CommandInput placeholder={title} />
           <CommandList>
             <CommandEmpty>Nenhum resultado.</CommandEmpty>

@@ -91,7 +91,7 @@ export default async function WorkspaceLayout({
       <UserHeader slug={slug} />
       <div className='flex gap-x-1.5 flex-1 overflow-hidden min-h-0 pr-2 pb-2'>
         <GlobalSidebarNavigation slug={slug} />
-        <div className='flex-1 w-full flex items-start bg-primary-foreground rounded-lg border border-border overflow-hidden'>
+        <div className='flex-1 w-full flex items-start bg-app rounded-lg border border-border overflow-hidden'>
           {children}
         </div>
       </div>

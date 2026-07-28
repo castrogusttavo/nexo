@@ -110,7 +110,7 @@ export function BillingUpgrade({ currentPlan }: { currentPlan: string }) {
           })}
         </div>
 
-        <div className='grid grid-cols-4 bg-primary-foreground'>
+        <div className='grid grid-cols-4 bg-app'>
           <h6 className='p-4'>Destaques</h6>
           {UPGRADE_TIERS.map((tier) => (
             <ul

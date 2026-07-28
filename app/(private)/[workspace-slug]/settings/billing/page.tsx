@@ -157,7 +157,7 @@ export default async function SettingsBillingPage({
             )}
           </div>
 
-          <div className='w-full bg-primary-foreground p-4'>
+          <div className='w-full bg-app p-4'>
             <div className='grid grid-cols-3 max-w-4xl'>
               <div className='space-y-2'>
                 <Muted>Total de usuários</Muted>
