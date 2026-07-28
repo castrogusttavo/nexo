@@ -45,6 +45,14 @@ describe('MembershipService', () => {
 
       expectErr(result, 'DATABASE_ERROR')
     })
+
+    it('should return null when there is no membership for the slug', async () => {
+      mockedMembership.findByUserAndSlug.mockResolvedValue(ok(null))
+
+      const result = await MembershipService.getByUserAndSlug('user1', 'acme')
+
+      expect(expectOk(result)).toBeNull()
+    })
   })
 
   describe('listByUser()', () => {
@@ -58,6 +66,14 @@ describe('MembershipService', () => {
       expect(expectOk(result)).toHaveLength(1)
       expect(mockedMembership.listByUser).toHaveBeenCalledWith('user1')
     })
+
+    it('should propagate a repository error', async () => {
+      mockedMembership.listByUser.mockResolvedValue(err(databaseError()))
+
+      const result = await MembershipService.listByUser('user1')
+
+      expectErr(result, 'DATABASE_ERROR')
+    })
   })
 
   describe('countByWorkspace()', () => {
@@ -68,6 +84,14 @@ describe('MembershipService', () => {
 
       expect(expectOk(result)).toBe(3)
       expect(mockedMembership.countByWorkspace).toHaveBeenCalledWith('ws1')
+    })
+
+    it('should propagate a repository error', async () => {
+      mockedMembership.countByWorkspace.mockResolvedValue(err(databaseError()))
+
+      const result = await MembershipService.countByWorkspace('ws1')
+
+      expectErr(result, 'DATABASE_ERROR')
     })
   })
 })

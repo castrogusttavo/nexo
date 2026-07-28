@@ -492,5 +492,33 @@ describe('SubscriptionService', () => {
       expectErr(result, 'DATABASE_ERROR')
       expect(mockedWorkspaceCache.invalidate).not.toHaveBeenCalled()
     })
+
+    it('should propagate deactivation error and skip cache invalidation on cancelled', async () => {
+      const subscription = createFakeSubscription({
+        billId: 'bill_xyz',
+        workspaceId: 'ws1',
+      })
+      mockedSubRepo.findByBillId.mockResolvedValue(ok(subscription))
+      mockedSubRepo.deactivateByBillId.mockResolvedValue(err(databaseError()))
+
+      const result = await SubscriptionService.handleWebhookEvent(
+        'subscription.cancelled',
+        'bill_xyz',
+      )
+
+      expectErr(result, 'DATABASE_ERROR')
+      expect(mockedWorkspaceCache.invalidate).not.toHaveBeenCalled()
+    })
+  })
+
+  describe('getActiveByWorkspace()', () => {
+    it('should return the active subscription for a workspace', async () => {
+      const subscription = createFakeSubscription({ workspaceId: 'ws1' })
+      mockedSubRepo.findActiveByWorkspaceId.mockResolvedValue(ok(subscription))
+
+      const result = await SubscriptionService.getActiveByWorkspace('ws1')
+
+      expect(expectOk(result)?.workspaceId).toBe('ws1')
+    })
   })
 })

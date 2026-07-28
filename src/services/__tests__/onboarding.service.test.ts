@@ -62,6 +62,17 @@ describe('OnboardingService', () => {
         'ROLE',
       )
     })
+
+    it('propagates repository error and skips cache invalidation', async () => {
+      mockedUser.saveProfile.mockResolvedValue(err(databaseError()))
+
+      const result = await OnboardingService.saveOnboardingProfile('user1', {
+        name: 'Gusttavo',
+      })
+
+      expectErr(result, 'DATABASE_ERROR')
+      expect(mockedUserCache.invalidate).not.toHaveBeenCalled()
+    })
   })
 
   describe('saveOnboardingGoals()', () => {
@@ -155,6 +166,37 @@ describe('OnboardingService', () => {
       expectOk(result)
       expect(mockedUser.updateOnboardingStep).not.toHaveBeenCalled()
     })
+
+    it('should be a no-op when there is no current step', async () => {
+      mockedUser.findById.mockResolvedValue(
+        ok(createFakeUser({ onboardingStep: null })),
+      )
+
+      const result = await OnboardingService.goBackOnboardingStep('user1')
+
+      expectOk(result)
+      expect(mockedUser.updateOnboardingStep).not.toHaveBeenCalled()
+    })
+
+    it('propagates a findById error', async () => {
+      mockedUser.findById.mockResolvedValue(err(databaseError()))
+
+      const result = await OnboardingService.goBackOnboardingStep('user1')
+
+      expectErr(result, 'DATABASE_ERROR')
+    })
+
+    it('propagates an updateOnboardingStep error', async () => {
+      mockedUser.findById.mockResolvedValue(
+        ok(createFakeUser({ onboardingStep: 'BRINGS' })),
+      )
+      mockedUser.updateOnboardingStep.mockResolvedValue(err(databaseError()))
+
+      const result = await OnboardingService.goBackOnboardingStep('user1')
+
+      expectErr(result, 'DATABASE_ERROR')
+      expect(mockedUserCache.invalidate).not.toHaveBeenCalled()
+    })
   })
 
   describe('getOnboardingProfile()', () => {
@@ -169,6 +211,24 @@ describe('OnboardingService', () => {
       const profile = expectOk(result)
       expect(profile.name).toBe('Gusttavo')
       expect(profile.hasPassword).toBe(true)
+    })
+
+    it('propagates a findById error', async () => {
+      mockedUser.findById.mockResolvedValue(err(databaseError()))
+      mockedUser.hasCredentialAccount.mockResolvedValue(ok(true))
+
+      const result = await OnboardingService.getOnboardingProfile('user1')
+
+      expectErr(result, 'DATABASE_ERROR')
+    })
+
+    it('propagates a hasCredentialAccount error', async () => {
+      mockedUser.findById.mockResolvedValue(ok(createFakeUser()))
+      mockedUser.hasCredentialAccount.mockResolvedValue(err(databaseError()))
+
+      const result = await OnboardingService.getOnboardingProfile('user1')
+
+      expectErr(result, 'DATABASE_ERROR')
     })
   })
 })

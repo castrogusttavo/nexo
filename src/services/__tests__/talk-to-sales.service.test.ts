@@ -33,4 +33,12 @@ describe('TalkToSalesService.submit()', () => {
 
     expectErr(result, 'MAIL_ERROR')
   })
+
+  it('returns MAIL_ERROR when the rejection is not an Error instance', async () => {
+    mockedSend.mockRejectedValue('resend down')
+
+    const result = await TalkToSalesService.submit(dto)
+
+    expectErr(result, 'MAIL_ERROR')
+  })
 })
