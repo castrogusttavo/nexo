@@ -1,6 +1,10 @@
 import { auditMutation } from '@/lib/axiom/audit'
 import type { ProjectDTO, ProjectMemberDTO } from '@/types/project'
-import { projectForbidden, projectMemberNotInWorkspace } from '../errors'
+import {
+  projectForbidden,
+  projectMemberNotFound,
+  projectMemberNotInWorkspace,
+} from '../errors'
 import { err, ok, type Result } from '../lib/result'
 import { toProjectDTO, toProjectMemberDTO } from '../mappers/project.mapper'
 import { ProjectRepository } from '../repositories/project.repository'
@@ -243,6 +247,10 @@ export const ProjectService = {
       return err(
         projectForbidden('Apenas o lead ou ADMIN/OWNER podem editar o projeto'),
       )
+    }
+
+    if (dto.leadId && !project.members.some((m) => m.userId === dto.leadId)) {
+      return err(projectMemberNotFound())
     }
 
     const result = await ProjectRepository.update(project.id, dto)

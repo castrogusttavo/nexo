@@ -94,6 +94,8 @@ export function useUpdateProject(workspaceId: string, slug: string) {
       issueTypesEnabled?: boolean
       modulesEnabled?: boolean
       cyclesEnabled?: boolean
+      estimatesEnabled?: boolean
+      leadId?: string
     }) =>
       apiFetchJson<ProjectDTO>(
         `/api/workspaces/${workspaceId}/projects/${slug}`,

@@ -58,7 +58,13 @@ function memberWithUser(userId: string) {
     userId,
     projectId: 'proj-id',
     createdAt: new Date(),
-    user: { id: userId, name: 'Name', username: userId, image: null },
+    user: {
+      id: userId,
+      name: 'Name',
+      username: userId,
+      image: null,
+      email: `${userId}@example.com`,
+    },
   }
 }
 
