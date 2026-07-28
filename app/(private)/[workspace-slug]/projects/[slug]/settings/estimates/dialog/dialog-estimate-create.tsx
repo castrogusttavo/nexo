@@ -94,24 +94,31 @@ export function EstimateSystemForm({
 
   async function handleConfirm() {
     if (!model) return
-    try {
-      await updateSettings.mutateAsync({ system, model })
 
-      const preset =
-        MODELS_BY_SYSTEM[system].find((m) => m.value === model)?.preview ?? []
-      const oldValues = settings?.values ?? []
+    const selectedModel = model
+    const preset =
+      MODELS_BY_SYSTEM[system].find((m) => m.value === model)?.preview ?? []
+    const oldValues = settings?.values ?? []
 
+    async function run() {
+      await updateSettings.mutateAsync({ system, model: selectedModel })
       for (const value of preset) {
         await createValue.mutateAsync({ value })
       }
       for (const old of oldValues) {
         await deleteValue.mutateAsync(old.id)
       }
+    }
 
-      notify.success('Sistema de estimativa atualizado')
+    try {
+      await notify.mutate(run(), {
+        loading: 'Atualizando sistema de estimativa...',
+        success: 'Sistema de estimativa atualizando',
+        error: 'Erro ao atualizar sistema de estimativa',
+      })
       onDone()
-    } catch (err) {
-      notify.error(err)
+    } catch {
+      //
     }
   }
 
@@ -176,7 +183,7 @@ export function EstimateSystemForm({
           disabled={!model || isPending}
           onClick={handleConfirm}
         >
-          {isPending ? 'Salvando...' : 'Confirmar'}
+          Confirmar
         </Button>
       </DialogFooter>
     </div>

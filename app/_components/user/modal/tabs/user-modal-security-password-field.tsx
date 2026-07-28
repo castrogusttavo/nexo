@@ -20,20 +20,27 @@ export function UserModalSecurityPasswordField({
   async function handlePasswordReset() {
     if (!email) return
     setPwBusy(true)
-    const { error } = await authClient.requestPasswordReset({
-      email,
-      redirectTo: '/reset-password',
-    })
-    setPwBusy(false)
-    if (error) {
-      notify.error(error.message ?? 'Não foi possível enviar o e-mail')
-      return
+
+    const promise = authClient
+      .requestPasswordReset({ email, redirectTo: '/reset-password' })
+      .then(({ error }) => {
+        if (error) throw error
+      })
+
+    try {
+      await notify.mutate(promise, {
+        loading: 'Enviando e-mail...',
+        success:
+          hasPassword === false
+            ? 'Enviamos um e-mail para você definir sua senha'
+            : 'Enviamos um e-mail para você redefinir sua senha',
+        error: 'Não foi possível enviar o e-mail',
+      })
+    } catch {
+      //
+    } finally {
+      setPwBusy(false)
     }
-    notify.success(
-      hasPassword === false
-        ? 'Enviamos um e-mail para você definir sua senha'
-        : 'Enviamos um e-mail para você redefinir sua senha',
-    )
   }
 
   return (

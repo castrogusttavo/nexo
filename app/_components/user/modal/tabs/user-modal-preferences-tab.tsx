@@ -31,6 +31,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
+import { Skeleton } from '@/components/ui/skeleton'
 import { Switch } from '@/components/ui/switch'
 import { TabsContent } from '@/components/ui/tabs'
 import { notify } from '@/lib/notify'
@@ -72,15 +73,19 @@ export function UserModalPreferencesTab({ tab }: { tab: string }) {
 
   function save(patch: UpdateUserPreferenceDTO) {
     update.mutate(patch, {
-      onError: (error) =>
-        notify.error(error instanceof Error ? error.message : 'Erro ao salvar'),
+      onError: (error) => notify.error(error, 'Erro ao salvar'),
     })
   }
 
   if (isLoading || !prefs) {
     return (
-      <TabsContent value={tab}>
-        <Muted>Carregando preferências...</Muted>
+      <TabsContent value={tab} className='space-y-3'>
+        {Array.from({ length: 3 }).map((_, i) => (
+          <div key={i} className='flex items-center justify-between'>
+            <Skeleton className='h-4 w-40' />
+            <Skeleton className='h-3 w-64' />
+          </div>
+        ))}
       </TabsContent>
     )
   }

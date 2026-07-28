@@ -38,10 +38,11 @@ export function ProjectEstimatesSettings({
   const updateProject = useUpdateProject(workspaceId, projectSlug)
 
   function handleToggleEnabled(checked: boolean) {
-    updateProject.mutate(
-      { estimatesEnabled: checked },
-      { onError: notify.error },
-    )
+    notify.mutate(updateProject.mutateAsync({ estimatesEnabled: checked }), {
+      loading: 'Atualizando...',
+      success: 'Estimativas atualizadas',
+      error: 'Erro ao atualizar estimativas',
+    })
   }
 
   return (

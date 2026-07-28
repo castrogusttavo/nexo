@@ -82,38 +82,50 @@ export function ProjectGeneralSettingsForm({
     e.preventDefault()
 
     try {
-      await updateProject.mutateAsync({
-        name,
-        description,
-        identifier: identifier || undefined,
-        emoji,
-        coverImage,
-        isPublic,
-      })
-      notify.success('Projeto atualizado')
+      await notify.mutate(
+        updateProject.mutateAsync({
+          name,
+          description,
+          identifier: identifier || undefined,
+          emoji,
+          coverImage,
+          isPublic,
+        }),
+        {
+          loading: 'Salvando projeto...',
+          success: 'Projeto atualizado',
+          error: 'Erro ao atualizar projeto',
+        },
+      )
       router.refresh()
-    } catch (err) {
-      notify.error(err)
+    } catch {
+      //
     }
   }
 
   async function handleArchive() {
     try {
-      await archiveProject.mutateAsync()
-      notify.success('Projeto arquivado')
+      await notify.mutate(archiveProject.mutateAsync(), {
+        loading: 'Arquivando projeto...',
+        success: 'Projeto arquivado',
+        error: 'Erro ao arquivar projeto',
+      })
       router.push(`/${workspaceSlug}/projects`)
-    } catch (err) {
-      notify.error(err)
+    } catch {
+      //
     }
   }
 
   async function handleDelete() {
     try {
-      await deleteProject.mutateAsync()
-      notify.success('Projeto excluído')
+      await notify.mutate(archiveProject.mutateAsync(), {
+        loading: 'Excluindo projeto...',
+        success: 'Projeto excluído',
+        error: 'Erro ao excluir projeto',
+      })
       router.push(`/${workspaceSlug}/projects`)
-    } catch (err) {
-      notify.error(err)
+    } catch {
+      //
     }
   }
 
@@ -247,7 +259,7 @@ export function ProjectGeneralSettingsForm({
           </FieldSet>
           <Field orientation='horizontal' className='justify-between'>
             <Button type='submit' size='sm' disabled={updateProject.isPending}>
-              {updateProject.isPending ? 'Salvando...' : 'Atualizar Projeto'}
+              Atualizar projeto
             </Button>
             <Muted className='text-xs italic'>
               Criado em{' '}

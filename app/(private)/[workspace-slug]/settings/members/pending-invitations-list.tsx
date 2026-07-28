@@ -12,6 +12,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
+import { Skeleton } from '@/components/ui/skeleton'
 import { notify } from '@/lib/notify'
 import { getInitials } from '@/lib/user-name-initials'
 import {
@@ -48,34 +49,36 @@ export function PendingInvitationsList({
   )
 
   function handleRevoke(invitationId: string) {
-    revokeInvitation.mutate(invitationId, {
-      onSuccess: () => notify.success('Convite excluído'),
-      onError: (error) =>
-        notify.error(error, 'Não foi possível excluir o convite'),
+    notify.mutate(revokeInvitation.mutateAsync(invitationId), {
+      loading: 'Excluindo convite...',
+      success: 'Convite excluído',
+      error: 'Não foi possível excluir o convite',
     })
   }
 
   function handleRoleChange(invitationId: string, role: string) {
-    updateRole.mutate(
-      { invitationId, role },
-      {
-        onSuccess: () => notify.success('Papel do convite atualizado'),
-        onError: (error) =>
-          notify.error(error, 'Não foi possível atualizar o papel'),
-      },
-    )
+    notify.mutate(updateRole.mutateAsync({ invitationId, role }), {
+      loading: 'Atualizando papel...',
+      success: 'Papel do convite atualizado',
+      error: 'Não foi possível atualizar o papel',
+    })
   }
 
-  if (isLoading) return <Muted>Carregando convites...</Muted>
+  if (isLoading) {
+    return (
+      <div className='space-y-2'>
+        <Skeleton className='h-4 w-32' />
+        <Skeleton className='h-10 w-full rounded-sm' />
+      </div>
+    )
+  }
   if (pending.length === 0) return null
 
   return (
     <div className='shrink-0 space-y-2'>
       <div className='flex gap-2 items-center'>
         <Muted className='text-base text-primary'>Convites pendentes</Muted>
-        <Badge className='rounded-sm bg-blue-50 text-blue-700 dark:bg-blue-950 dark:text-blue-300'>
-          {invitations?.length}
-        </Badge>
+        <Badge variant='info'>{invitations?.length}</Badge>
       </div>
       <div className='max-h-48 overflow-y-auto divide-y'>
         {pending.map((invitation) => (
@@ -90,9 +93,7 @@ export function PendingInvitationsList({
               <Muted className='text-primary'>{invitation.email}</Muted>
             </div>
             <div className='flex items-center gap-2'>
-              <Badge className='rounded-sm bg-orange-50 text-orange-700 dark:bg-orange-950 dark:text-orange-300'>
-                {STATUS_LABEL[invitation.status]}
-              </Badge>
+              <Badge variant='warning'>{STATUS_LABEL[invitation.status]}</Badge>
               <DropdownMenu>
                 <DropdownMenuTrigger
                   render={<Button variant='ghost' size='sm' className='h-7' />}

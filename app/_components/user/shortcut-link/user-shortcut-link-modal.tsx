@@ -42,7 +42,6 @@ export function UserShortcutLinkModal() {
     title?: string
     url?: string
   }>({})
-  const [error, setError] = useState<string | null>(null)
 
   const isPending = createShortLink.isPending
 
@@ -50,7 +49,6 @@ export function UserShortcutLinkModal() {
     setTitle('')
     setUrl('')
     setFieldErrors({})
-    setError(null)
   }
 
   function handleOpenChange(next: boolean) {
@@ -60,7 +58,6 @@ export function UserShortcutLinkModal() {
 
   async function handleSubmit(e: React.SyntheticEvent<HTMLFormElement>) {
     e.preventDefault()
-    setError(null)
     setFieldErrors({})
 
     const errors: { title?: string; url?: string } = {}
@@ -76,11 +73,17 @@ export function UserShortcutLinkModal() {
     }
 
     try {
-      await createShortLink.mutateAsync({ title: trimmedTitle, url })
-      notify.success('Link rápido criado')
+      await notify.mutate(
+        createShortLink.mutateAsync({ title: trimmedTitle, url }),
+        {
+          loading: 'Criando link rápido...',
+          success: 'Link rápido criado',
+          error: 'Erro ao criar link rápido',
+        },
+      )
       handleOpenChange(false)
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Erro ao criar link rápido')
+    } catch {
+      //
     }
   }
 
@@ -100,11 +103,6 @@ export function UserShortcutLinkModal() {
             <DialogTitle>Adicionar Link rápido</DialogTitle>
           </DialogHeader>
           <FieldGroup>
-            {error && (
-              <div className='rounded-md bg-destructive/10 p-3 text-sm text-destructive'>
-                {error}
-              </div>
-            )}
             <Field data-invalid={!!fieldErrors.url || undefined}>
               <FieldLabel>
                 URL <span className='text-destructive'>*</span>
@@ -145,7 +143,7 @@ export function UserShortcutLinkModal() {
               }
             />
             <Button type='submit' disabled={isPending}>
-              {isPending ? 'Adicionando...' : 'Adicionar Link rápido'}
+              Adicionar Link rápido
             </Button>
           </DialogFooter>
         </form>

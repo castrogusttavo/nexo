@@ -58,37 +58,53 @@ export function EstimateValuesForm({
   const [editingValue, setEditingValue] = useState('')
 
   function handleReorder(newOrder: EstimateValueDTO[]) {
-    reorderValues.mutate(
-      newOrder.map((v) => v.id),
-      { onError: notify.error },
-    )
+    notify.mutate(reorderValues.mutateAsync(newOrder.map((v) => v.id)), {
+      loading: 'Reordenando...',
+      success: 'Ordem atualizada',
+      error: 'Erro ao reordenar valores',
+    })
   }
 
   async function handleAdd() {
     if (!newValue.trim()) return
     try {
-      await createValue.mutateAsync({ value: newValue.trim() })
+      await notify.mutate(createValue.mutateAsync({ value: newValue.trim() }), {
+        loading: 'Adicionando valor...',
+        success: 'Valor adicionado',
+        error: 'Erro ao adicionar valor',
+      })
       setNewValue('')
-    } catch (err) {
-      notify.error(err)
+    } catch {
+      //
     }
   }
 
   async function handleSaveEdit(valueId: string) {
     if (!editingValue.trim()) return
     try {
-      await updateValue.mutateAsync({
-        valueId,
-        data: { value: editingValue.trim() },
-      })
+      await notify.mutate(
+        updateValue.mutateAsync({
+          valueId,
+          data: { value: editingValue.trim() },
+        }),
+        {
+          loading: 'Salvando valor...',
+          success: 'Valor atualizado',
+          error: 'Erro ao atualizar valor',
+        },
+      )
       setEditingId(null)
-    } catch (err) {
-      notify.error(err)
+    } catch {
+      //
     }
   }
 
   function handleDelete(valueId: string) {
-    deleteValue.mutate(valueId, { onError: notify.error })
+    notify.mutate(deleteValue.mutateAsync(valueId), {
+      loading: 'Excluindo valor...',
+      success: 'Valor excluído',
+      error: 'Erro ao excluir valor',
+    })
   }
 
   return (

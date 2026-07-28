@@ -144,18 +144,24 @@ export function WorkspaceProjectModal({
   async function handleSubmit(e: React.SubmitEvent<HTMLFormElement>) {
     e.preventDefault()
     try {
-      await createProject.mutateAsync({
-        name,
-        slug,
-        description: description || undefined,
-        emoji,
-        coverImage: coverImage ?? undefined,
-        isPublic,
-      })
-      notify.success('Projeto criado')
+      await notify.mutate(
+        createProject.mutateAsync({
+          name,
+          slug,
+          description: description || undefined,
+          emoji,
+          coverImage: coverImage ?? undefined,
+          isPublic,
+        }),
+        {
+          loading: 'Criando projeto...',
+          success: 'Projeto criado',
+          error: 'Erro ao criar projeto',
+        },
+      )
       handleClose()
-    } catch (err) {
-      notify.error(err)
+    } catch {
+      //
     }
   }
 
@@ -355,7 +361,7 @@ export function WorkspaceProjectModal({
               type='submit'
               disabled={createProject.isPending || !name || !slug}
             >
-              {createProject.isPending ? 'Criando...' : 'Criar projeto'}
+              Criar projeto
             </Button>
           </div>
         </form>

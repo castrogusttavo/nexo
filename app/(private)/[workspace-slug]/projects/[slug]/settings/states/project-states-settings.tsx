@@ -34,6 +34,7 @@ import {
 } from '@/components/ui/alert-dialog'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
+import { Skeleton } from '@/components/ui/skeleton'
 import { notify } from '@/lib/notify'
 import { colorToText, STATE_GROUP_DEFAULT_COLOR } from '@/lib/state-colors'
 import { cn } from '@/lib/utils'
@@ -108,16 +109,18 @@ export function ProjectStatesSettings({
   }
 
   function handleSetDefault(stateId: string) {
-    setDefaultState.mutate(stateId, {
-      onSuccess: () => notify.success('State definido como padrão'),
-      onError: notify.error,
+    notify.mutate(setDefaultState.mutateAsync(stateId), {
+      loading: 'Definindo padrão...',
+      success: 'State definido como padrão',
+      error: 'Erro ao definir state padrão',
     })
   }
 
   function handleDelete(stateId: string) {
-    deleteState.mutate(stateId, {
-      onSuccess: () => notify.success('State excluído'),
-      onError: notify.error,
+    notify.mutate(deleteState.mutateAsync(stateId), {
+      loading: 'Excluindo state...',
+      success: 'State excluído',
+      error: 'Erro ao excluir state',
     })
   }
 
@@ -129,7 +132,19 @@ export function ProjectStatesSettings({
         progresso das suas issues.
       </Muted>
       {isLoading ? (
-        <Muted className='mt-6 text-sm'>Carregando...</Muted>
+        <div className='mt-6 space-y-4'>
+          {GROUPS.map((group) => (
+            <Card key={group.value} className='p-3 rounded-lg'>
+              <CardContent className='p-0 h-fit space-y-2'>
+                <div className='flex items-center gap-1.5'>
+                  <Skeleton className='size-4 rounded-full' />
+                  <Skeleton className='h-4 w-24' />
+                </div>
+                <Skeleton className='h-10 w-full rounded-lg' />
+              </CardContent>
+            </Card>
+          ))}
+        </div>
       ) : (
         <div className='mt-6 space-y-4'>
           {GROUPS.map((group) => {

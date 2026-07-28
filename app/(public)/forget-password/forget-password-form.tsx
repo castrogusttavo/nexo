@@ -8,17 +8,16 @@ import { Muted } from '@/components/typography/text/muted'
 import { Button, buttonVariants } from '@/components/ui/button'
 import { Field, FieldError, FieldLabel } from '@/components/ui/field'
 import { Input } from '@/components/ui/input'
+import { notify } from '@/lib/notify'
 import { authClient } from '@/src/lib/auth-client'
 
 export function ForgetPasswordForm() {
-  const [error, setError] = useState<string | null>(null)
   const [fieldError, setFieldError] = useState<string | null>(null)
   const [isPending, setIsPending] = useState(false)
   const [sent, setSent] = useState(false)
 
   async function handleSubmit(e: React.SyntheticEvent<HTMLFormElement>) {
     e.preventDefault()
-    setError(null)
     setFieldError(null)
 
     const formData = new FormData(e.currentTarget)
@@ -29,23 +28,25 @@ export function ForgetPasswordForm() {
       return
     }
 
-    setIsPending(true)
-    try {
-      const { error: requestError } = await authClient.requestPasswordReset({
+    const promise = authClient
+      .requestPasswordReset({
         email,
         redirectTo: '/reset-password',
       })
+      .then(({ error }) => {
+        if (error) throw error
+      })
 
-      if (requestError) {
-        setError(
-          requestError.message ??
-            'Não foi possível enviar o e-mail de redefinição',
-        )
-        return
-      }
-
-      // Neutral confirmation: never reveal whether the address has an account.
+    setIsPending(true)
+    try {
+      await notify.mutate(promise, {
+        loading: 'Enviando e-mail...',
+        success: 'E-mail enviado',
+        error: 'Não foi possível enviar o e-mail de redefinição',
+      })
       setSent(true)
+    } catch {
+      //
     } finally {
       setIsPending(false)
     }
@@ -82,11 +83,6 @@ export function ForgetPasswordForm() {
             </div>
 
             <form onSubmit={handleSubmit} className='w-full space-y-4'>
-              {error && (
-                <div className='rounded-md bg-destructive/10 p-3 text-sm text-destructive'>
-                  {error}
-                </div>
-              )}
               <Field data-invalid={!!fieldError || undefined}>
                 <FieldLabel>E-mail</FieldLabel>
                 <Input
@@ -99,7 +95,7 @@ export function ForgetPasswordForm() {
               </Field>
 
               <Button type='submit' className='w-full' disabled={isPending}>
-                {isPending ? 'Enviando...' : 'Enviar link de redefinição'}
+                Enviar link de redefinição
               </Button>
 
               <div className='text-center text-sm'>

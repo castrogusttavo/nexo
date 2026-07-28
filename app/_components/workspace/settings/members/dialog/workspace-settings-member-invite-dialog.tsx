@@ -1,4 +1,4 @@
-import { type FormEvent, useState } from 'react'
+import { type SyntheticEvent, useState } from 'react'
 import { Button } from '@/components/ui/button'
 import {
   Dialog,
@@ -38,21 +38,20 @@ export function WorkspaceSettingsMemberInviteDialog({
 
   const createInvitation = useCreateInvitation(workspaceId)
 
-  function handleInvite(event: FormEvent) {
+  async function handleInvite(event: SyntheticEvent) {
     event.preventDefault()
 
-    createInvitation.mutate(
-      { email, role },
-      {
-        onSuccess: () => {
-          notify.success('Convite enviado')
-          setEmail('')
-          setOpen(false)
-        },
-        onError: (error) =>
-          notify.error(error, 'Não foi possível enviar o convite'),
-      },
-    )
+    try {
+      await notify.mutate(createInvitation.mutateAsync({ email, role }), {
+        loading: 'Enviando convite...',
+        success: 'Convite enviado',
+        error: 'Não foi possível enviar o convite',
+      })
+      setEmail('')
+      setOpen(false)
+    } catch {
+      //
+    }
   }
 
   return (
@@ -95,7 +94,7 @@ export function WorkspaceSettingsMemberInviteDialog({
             </SelectContent>
           </Select>
           <Button type='submit' disabled={createInvitation.isPending || !email}>
-            {createInvitation.isPending ? 'Enviando...' : 'Convidar'}
+            Convidar
           </Button>
         </form>
       </DialogContent>

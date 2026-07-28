@@ -7,7 +7,7 @@ import {
 import HeaderInternalNavigation from '@/app/_components/header/header-internal-navigation'
 import { NexoIcon } from '@/components/icon/icon'
 import { getProjectContext } from '@/src/lib/project-context'
-import { ProjectStatesSettings } from './projec-states-settings'
+import { ProjectStatesSettings } from './project-states-settings'
 
 export default async function ProjectStatesPage({
   params,

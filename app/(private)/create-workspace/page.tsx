@@ -28,6 +28,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
+import { notify } from '@/lib/notify'
 import { useCacheUser } from '@/src/hooks/cache/use-user'
 import { useCreateWorkspace } from '@/src/hooks/use-workspace'
 
@@ -56,7 +57,6 @@ export default function CreateWorkspacePage() {
     name?: string
     slug?: string
   }>({})
-  const [error, setError] = useState<string | null>(null)
 
   const isPending = createWorkspace.isPending
   const canSubmit = name.trim().length >= 2 && slug.length >= 2 && !isPending
@@ -74,7 +74,6 @@ export default function CreateWorkspacePage() {
 
   async function handleSubmit(e: React.SyntheticEvent<HTMLFormElement>) {
     e.preventDefault()
-    setError(null)
     setFieldErrors({})
 
     const errors: { name?: string; slug?: string } = {}
@@ -92,13 +91,20 @@ export default function CreateWorkspacePage() {
     }
 
     try {
-      const workspace = await createWorkspace.mutateAsync({
-        name: trimmedName,
-        slug,
-      })
+      const workspace = await notify.mutate(
+        createWorkspace.mutateAsync({
+          name: trimmedName,
+          slug,
+        }),
+        {
+          loading: 'Criando workspace...',
+          success: 'Workspace criado',
+          error: 'Erro ao criar workspace',
+        },
+      )
       push(`/${workspace.slug}`)
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Erro ao criar workspace')
+    } catch {
+      //
     }
   }
 
@@ -121,11 +127,6 @@ export default function CreateWorkspacePage() {
             Crie seu workspace
           </FieldLegend>
           <FieldGroup>
-            {error && (
-              <div className='rounded-md bg-destructive/10 p-3 text-sm text-destructive'>
-                {error}
-              </div>
-            )}
             <Field data-invalid={!!fieldErrors.name || undefined}>
               <FieldLabel htmlFor='workspace-name'>
                 Nome do seu workspace
@@ -192,7 +193,7 @@ export default function CreateWorkspacePage() {
               }}
               className='aria-disabled:opacity-50 aria-disabled:pointer-events-none'
             >
-              {isPending ? 'Criando...' : 'Criar workspace'}
+              Criar workspace
             </Button>
             <Button
               type='button'

@@ -95,11 +95,14 @@ function UploadTab({
     if (!file.type.startsWith('image/')) return
     setPreview(URL.createObjectURL(file))
     try {
-      const url = await upload.mutateAsync(file)
+      const url = await notify.mutate(upload.mutateAsync(file), {
+        loading: 'Enviando imagem...',
+        success: 'Imagem enviada',
+        error: 'Não foi possível enviar a imagem',
+      })
       onSelect?.(url)
-    } catch (err) {
+    } catch {
       setPreview(null)
-      notify.error(err, 'Não foi possível enviar a imagem')
     }
   }
 
@@ -139,11 +142,7 @@ function UploadTab({
         ) : (
           <>
             <NexoIcon icon={Upload01Icon} size={20} />
-            <span className='text-xs'>
-              {upload.isPending
-                ? 'Enviando...'
-                : 'Arraste ou clique para enviar'}
-            </span>
+            <span className='text-xs'>Arraste ou clique para enviar</span>
           </>
         )}
       </button>

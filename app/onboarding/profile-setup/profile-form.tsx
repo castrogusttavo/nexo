@@ -8,6 +8,8 @@ import { Button } from '@/components/ui/button'
 import { Checkbox } from '@/components/ui/checkbox'
 import { Field, FieldLabel } from '@/components/ui/field'
 import { Input } from '@/components/ui/input'
+import { notify } from '@/lib/notify'
+import { ApiError } from '@/src/hooks/_fetch'
 import { type ProfileSetupState, saveProfileSetup } from './actions'
 import { ProfileTwoFactorSection } from './profile-two-factor-section'
 
@@ -27,7 +29,6 @@ export function ProfileForm({
   const [nameValue, setNameValue] = useState(name)
   const [imageUrl, setImageUrl] = useState<string | null>(image)
   const [uploading, setUploading] = useState(false)
-  const [uploadError, setUploadError] = useState<string | null>(null)
   const fileInputRef = useRef<HTMLInputElement>(null)
 
   const [state, formAction, isPending] = useActionState(
@@ -46,23 +47,30 @@ export function ProfileForm({
   async function handleImageChange(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0]
     if (!file) return
-    setUploadError(null)
     setUploading(true)
-    try {
-      const fd = new FormData()
-      fd.append('avatars', file)
+    const fd = new FormData()
+    fd.append('avatars', file)
+
+    async function run() {
       const res = await fetch('/api/users/me/avatar', {
         method: 'POST',
         body: fd,
       })
       const json = await res.json()
       if (!res.ok) {
-        setUploadError(json?.error?.message ?? 'Erro ao enviar imagem')
-        return
+        throw new ApiError(json?.error?.message ?? 'Erro ao enviar imagem')
       }
       setImageUrl(`${json.data.url}?t=${Date.now()}`)
+    }
+
+    try {
+      await notify.mutate(run(), {
+        loading: 'Enviando imagem...',
+        success: 'Imagem enviada',
+        error: 'Erro ao enviar imagem',
+      })
     } catch {
-      setUploadError('Erro de rede ao enviar imagem')
+      //
     } finally {
       setUploading(false)
       if (fileInputRef.current) fileInputRef.current.value = ''
@@ -103,11 +111,6 @@ export function ProfileForm({
             />
           </Field>
         </button>
-        {uploadError && (
-          <p className='text-sm text-destructive text-center' role='alert'>
-            {uploadError}
-          </p>
-        )}
       </div>
 
       <div className='flex flex-col gap-1.5'>
@@ -139,7 +142,7 @@ export function ProfileForm({
       />
 
       <Button type='submit' className='w-full' disabled={!isValid || isPending}>
-        {isPending ? 'Salvando...' : 'Continuar'}
+        Continuar
       </Button>
 
       <Field orientation='horizontal' className='w-fit mx-auto'>

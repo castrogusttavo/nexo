@@ -8,6 +8,7 @@ import {
   FieldDescription,
   FieldLabel,
 } from '@/components/ui/field'
+import { Skeleton } from '@/components/ui/skeleton'
 import { Switch } from '@/components/ui/switch'
 import { TabsContent } from '@/components/ui/tabs'
 import { notify } from '@/lib/notify'
@@ -56,15 +57,22 @@ export function UserModalNotificationsTab({ tab }: { tab: string }) {
     update.mutate(patch, {
       onSuccess: () =>
         notify.success('Preferências de notificação atualizadas'),
-      onError: (error) =>
-        notify.error(error instanceof Error ? error.message : 'Erro ao salvar'),
+      onError: (error) => notify.error(error, 'Erro ao salvar'),
     })
   }
 
   if (isLoading || !settings) {
     return (
-      <TabsContent value={tab}>
-        <Muted>Carregando notificações...</Muted>
+      <TabsContent value={tab} className='space-y-3'>
+        {Array.from({ length: 4 }).map((_, i) => (
+          <div key={i} className='flex items-center justify-between'>
+            <div className='space-y-1.5'>
+              <Skeleton className='h-4 w-40' />
+              <Skeleton className='h-3 w-64' />
+            </div>
+            <Skeleton className='h-5 w-9 rounded-full' />
+          </div>
+        ))}
       </TabsContent>
     )
   }

@@ -20,6 +20,7 @@ import {
   AlertDialogTrigger,
 } from '@/components/ui/alert-dialog'
 import { Button } from '@/components/ui/button'
+import { Skeleton } from '@/components/ui/skeleton'
 import { notify } from '@/lib/notify'
 import { colorToText } from '@/lib/state-colors'
 import { cn } from '@/lib/utils'
@@ -44,9 +45,10 @@ export function ProjectLabelsSettings({
   const [formTarget, setFormTarget] = useState<FormTarget | null>(null)
 
   function handleDelete(labelId: string) {
-    deleteLabel.mutate(labelId, {
-      onSuccess: () => notify.success('Etiqueta excluída'),
-      onError: notify.error,
+    notify.mutate(deleteLabel.mutateAsync(labelId), {
+      loading: 'Excluindo etiqueta...',
+      success: 'Etiqueta excluída',
+      error: 'Erro ao excluir etiqueta',
     })
   }
 
@@ -75,7 +77,17 @@ export function ProjectLabelsSettings({
         />
       )}
       {isLoading ? (
-        <Muted className='mt-4 text-sm'>Carregando...</Muted>
+        <div className='space-y-2 mt-2'>
+          {Array.from({ length: 4 }).map((_, i) => (
+            <div
+              key={i}
+              className='flex items-center gap-2 rounded-sm border border-border px-3.5 py-2 h-12'
+            >
+              <Skeleton className='size-3.5 rounded-full' />
+              <Skeleton className='h-4 w-32' />
+            </div>
+          ))}
+        </div>
       ) : (
         (labels ?? []).map((label) => (
           <div

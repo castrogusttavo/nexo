@@ -18,6 +18,7 @@ import {
   InputGroupAddon,
   InputGroupInput,
 } from '@/components/ui/input-group'
+import { Skeleton } from '@/components/ui/skeleton'
 import {
   Table,
   TableBody,
@@ -62,7 +63,11 @@ export function ProjectMembersManager({
   const [sorting, setSorting] = useState<SortingState>([])
 
   function handleRemove(userId: string) {
-    removeMember.mutate(userId, { onError: notify.error })
+    notify.mutate(removeMember.mutateAsync(userId), {
+      loading: 'Removendo membro...',
+      success: 'Membro removido',
+      error: 'Erro ao remover membro',
+    })
   }
 
   const columns = useMemo(
@@ -165,13 +170,15 @@ export function ProjectMembersManager({
           </TableHeader>
           <TableBody>
             {isLoading ? (
-              <TableRow>
-                <TableCell colSpan={columns.length}>
-                  <Muted className='py-4 text-center block'>
-                    Carregando...
-                  </Muted>
-                </TableCell>
-              </TableRow>
+              Array.from({ length: 5 }).map((_, i) => (
+                <TableRow key={i}>
+                  {columns.map((_, colIndex) => (
+                    <TableCell key={colIndex}>
+                      <Skeleton className='h-4 w-full max-w-32' />
+                    </TableCell>
+                  ))}
+                </TableRow>
+              ))
             ) : table.getRowModel().rows.length === 0 ? (
               <TableRow>
                 <TableCell colSpan={columns.length}>

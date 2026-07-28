@@ -59,15 +59,21 @@ export function UserModalProfileTab({ tab }: { tab: string }) {
   async function handleSave(e: React.SubmitEvent) {
     e.preventDefault()
     if (!dirty) return
-    try {
+    async function run() {
       await updateUser.mutateAsync({
         ...(name !== user?.name ? { name } : {}),
         ...(username !== user?.username ? { username } : {}),
       })
       await refetchSession?.()
-      notify.success('Perfil atualizado')
-    } catch (error) {
-      notify.error(error instanceof Error ? error.message : 'Erro ao salvar')
+    }
+    try {
+      await notify.mutate(run(), {
+        loading: 'Salvando perfil...',
+        success: 'Persil atualizado',
+        error: 'Erro ao salvar',
+      })
+    } catch {
+      //
     }
   }
 
@@ -75,27 +81,33 @@ export function UserModalProfileTab({ tab }: { tab: string }) {
     const file = e.target.files?.[0]
     e.target.value = ''
     if (!file) return
-    try {
-      await uploadAvatar.mutateAsync(file)
+    const avatarFile = file
+    async function run() {
+      await uploadAvatar.mutateAsync(avatarFile)
       await refetchSession?.()
-      notify.success('Avatar autalizado')
-    } catch (error) {
-      notify.error(
-        error instanceof Error ? error.message : 'Erro ao enviar avatar',
-      )
+    }
+    try {
+      await notify.mutate(run(), {
+        loading: 'Enviando avatar...',
+        success: 'Avatar atualizado',
+        error: 'Erro ao enviar avatar',
+      })
+    } catch {
+      // https://homologacao.stratustelecom.com.br/api/whatsapp/webhook/meta
     }
   }
 
   async function handleDeleteAccount() {
     try {
-      await deleteAccount.mutateAsync()
+      await notify.mutate(deleteAccount.mutateAsync(), {
+        loading: 'Desativando a conta...',
+        success: 'Conta desativada. Você será desconectado',
+        error: 'Erro ao desativar a conta',
+      })
       await authClient.signOut()
-      notify.success('Conta desativada. Você será desconectado.')
       router.push('/sign-in')
-    } catch (error) {
-      notify.error(
-        error instanceof Error ? error.message : 'Erro ao desativar conta',
-      )
+    } catch {
+      //
     }
   }
 
@@ -175,7 +187,7 @@ export function UserModalProfileTab({ tab }: { tab: string }) {
             className='w-fit'
             disabled={!dirty || updateUser.isPending}
           >
-            {updateUser.isPending ? 'Salvando...' : 'Salvar alterações'}
+            Salvar alterações
           </Button>
         </div>
       </form>
@@ -213,7 +225,7 @@ export function UserModalProfileTab({ tab }: { tab: string }) {
                 onClick={handleDeleteAccount}
                 disabled={deleteAccount.isPending}
               >
-                {deleteAccount.isPending ? 'Desativando...' : 'Desativar conta'}
+                Desativar conta
               </AlertDialogAction>
             </AlertDialogFooter>
           </AlertDialogContent>

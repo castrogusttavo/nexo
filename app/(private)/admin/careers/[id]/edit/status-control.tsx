@@ -30,11 +30,14 @@ export function StatusControl({ jobId, status }: Props) {
   async function handleClick() {
     if (!next) return
     try {
-      await changeStatus.mutateAsync({ status: next })
-      notify.success('Status atualizado')
+      await notify.mutate(changeStatus.mutateAsync({ status: next }), {
+        loading: 'Atualizando status...',
+        success: 'Status atualizado',
+        error: 'Não foi possível mudar o status',
+      })
       router.refresh()
-    } catch (err) {
-      notify.error(err, 'Não foi possível mudar o status')
+    } catch {
+      //
     }
   }
 

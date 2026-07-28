@@ -29,7 +29,11 @@ export function FeatureToggleSettings({
   const updateProject = useUpdateProject(workspaceId, projectSlug)
 
   function handleToggle(checked: boolean) {
-    updateProject.mutate({ [field]: checked }, { onError: notify.error })
+    notify.mutate(updateProject.mutateAsync({ [field]: checked }), {
+      loading: 'Atualizando...',
+      success: 'Configuração atualizada',
+      error: 'Erro ao atualizar',
+    })
   }
 
   return (

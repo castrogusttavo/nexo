@@ -22,14 +22,11 @@ function ImagesTab({ current }: { current?: string | null }) {
   const updateUser = useUpdateUser()
 
   async function handleSelect(src: string) {
-    try {
-      await updateUser.mutateAsync({ coverImage: src })
-      notify.success('Capa atualizada')
-    } catch (error) {
-      notify.error(
-        error instanceof Error ? error.message : 'Erro ao atualizar capa',
-      )
-    }
+    await notify.mutate(updateUser.mutateAsync({ coverImage: src }), {
+      loading: 'Atualizando capa...',
+      success: 'Capa atualizada',
+      error: 'Erro ao atualizar capa',
+    })
   }
 
   return (
@@ -63,11 +60,13 @@ function UploadTab() {
     if (!file.type.startsWith('image/')) return
     setPreview(URL.createObjectURL(file))
     try {
-      await upload.mutateAsync(file)
-      notify.success('Capa atualizada')
-    } catch (err) {
+      await notify.mutate(upload.mutateAsync(file), {
+        loading: 'Enviando capa...',
+        success: 'Capa atualizada',
+        error: 'Não foi possível enviar a capa',
+      })
+    } catch {
       setPreview(null)
-      notify.error(err, 'Não foi possível enviar a capa')
     }
   }
 
@@ -107,11 +106,7 @@ function UploadTab() {
         ) : (
           <>
             <NexoIcon icon={Upload01Icon} size={20} />
-            <span>
-              {upload.isPending
-                ? 'Enviando...'
-                : 'Arraste ou clique para enviar'}
-            </span>
+            <span>Arraste ou clique para enviar</span>
           </>
         )}
       </button>

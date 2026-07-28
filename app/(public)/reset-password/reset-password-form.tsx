@@ -9,6 +9,7 @@ import { Muted } from '@/components/typography/text/muted'
 import { Button, buttonVariants } from '@/components/ui/button'
 import { Field, FieldError, FieldLabel } from '@/components/ui/field'
 import { Input } from '@/components/ui/input'
+import { notify } from '@/lib/notify'
 import { authClient } from '@/src/lib/auth-client'
 
 interface ResetPasswordFormProps {
@@ -21,7 +22,6 @@ export function ResetPasswordForm({
   linkError,
 }: ResetPasswordFormProps) {
   const { push } = useRouter()
-  const [error, setError] = useState<string | null>(null)
   const [fieldErrors, setFieldErrors] = useState<{
     password?: string
     confirm?: string
@@ -35,7 +35,6 @@ export function ResetPasswordForm({
 
   async function handleSubmit(e: React.SyntheticEvent<HTMLFormElement>) {
     e.preventDefault()
-    setError(null)
     setFieldErrors({})
 
     const formData = new FormData(e.currentTarget)
@@ -52,23 +51,26 @@ export function ResetPasswordForm({
       return
     }
 
-    setIsPending(true)
-    try {
-      const { error: resetError } = await authClient.resetPassword({
+    const promise = authClient
+      .resetPassword({
         newPassword: password,
         token,
       })
+      .then(({ error }) => {
+        if (error) throw error
+      })
 
-      if (resetError) {
-        setError(
-          resetError.message ??
-            'Não foi possível redefinir a senha. O link pode ter expirado.',
-        )
-        return
-      }
-
+    setIsPending(true)
+    try {
+      await notify.mutate(promise, {
+        loading: 'Redefinindo a senha...',
+        success: 'Senha redefinida',
+        error: 'Não foi possível redefinir a senha. O link pode ter expirado',
+      })
       await authClient.signOut()
       push('/sign-in')
+    } catch {
+      //
     } finally {
       setIsPending(false)
     }
@@ -102,11 +104,6 @@ export function ResetPasswordForm({
             </div>
 
             <form onSubmit={handleSubmit} className='w-full space-y-4'>
-              {error && (
-                <div className='rounded-md bg-destructive/10 p-3 text-sm text-destructive'>
-                  {error}
-                </div>
-              )}
               <Field data-invalid={!!fieldErrors.password || undefined}>
                 <FieldLabel>Nova senha</FieldLabel>
                 <Input
@@ -133,7 +130,7 @@ export function ResetPasswordForm({
               </Field>
 
               <Button type='submit' className='w-full' disabled={isPending}>
-                {isPending ? 'Redefinindo...' : 'Redefinir senha'}
+                Redefinir senha
               </Button>
 
               <div className='text-center text-sm'>
