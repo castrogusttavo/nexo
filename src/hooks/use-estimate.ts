@@ -3,8 +3,9 @@ import type {
   EstimateModelDTO,
   EstimateSettingsDTO,
   EstimateSystemDTO,
+  EstimateValueDTO,
 } from '@/types/estimate'
-import { apiFetch, apiFetchJson } from './_fetch'
+import { apiFetch, apiFetchJson, apiSend } from './_fetch'
 
 const ESTIMATE_KEY = ['estimate-settings']
 
@@ -41,6 +42,99 @@ export function useUpdateEstimateSettings(
         'PATCH',
         data,
         'Erro ao atualizar configurações de estimativa',
+      ),
+    onSuccess: () => {
+      queryClient.invalidateQueries({
+        queryKey: estimateKey(workspaceId, projectSlug),
+      })
+    },
+  })
+}
+
+export function useCreateEstimateValue(
+  workspaceId: string,
+  projectSlug: string,
+) {
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationFn: (data: { value: string }) =>
+      apiFetchJson<EstimateValueDTO>(
+        `/api/workspaces/${workspaceId}/projects/${projectSlug}/estimate/values`,
+        'POST',
+        data,
+        'Erro ao criar valor de estimativa',
+      ),
+    onSuccess: () => {
+      queryClient.invalidateQueries({
+        queryKey: estimateKey(workspaceId, projectSlug),
+      })
+    },
+  })
+}
+
+export function useUpdateEstimateValue(
+  workspaceId: string,
+  projectSlug: string,
+) {
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationFn: ({
+      valueId,
+      data,
+    }: {
+      valueId: string
+      data: { value: string }
+    }) =>
+      apiFetchJson<EstimateValueDTO>(
+        `/api/workspaces/${workspaceId}/projects/${projectSlug}/estimate/values/${valueId}`,
+        'PATCH',
+        data,
+        'Erro ao atualizar valor de estimativa',
+      ),
+    onSuccess: () => {
+      queryClient.invalidateQueries({
+        queryKey: estimateKey(workspaceId, projectSlug),
+      })
+    },
+  })
+}
+
+export function useDeleteEstimateValue(
+  workspaceId: string,
+  projectSlug: string,
+) {
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationFn: (valueId: string) =>
+      apiSend(
+        `/api/workspaces/${workspaceId}/projects/${projectSlug}/estimate/values/${valueId}`,
+        { method: 'DELETE' },
+        'Erro ao excluir valor de estimativa',
+      ),
+    onSuccess: () => {
+      queryClient.invalidateQueries({
+        queryKey: estimateKey(workspaceId, projectSlug),
+      })
+    },
+  })
+}
+
+export function useReorderEstimateValues(
+  workspaceId: string,
+  projectSlug: string,
+) {
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationFn: (valueIds: string[]) =>
+      apiFetchJson<EstimateValueDTO[]>(
+        `/api/workspaces/${workspaceId}/projects/${projectSlug}/estimate/values/reorder`,
+        'PATCH',
+        { valueIds },
+        'Erro ao reordenar valores de estimativa',
       ),
     onSuccess: () => {
       queryClient.invalidateQueries({
