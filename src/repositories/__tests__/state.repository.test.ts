@@ -92,6 +92,16 @@ describe('StateRepository', () => {
       expect(state.name).toBe('Custom')
       expect(state.color).toBe('ZINC')
     })
+
+    it('should return DATABASE_ERROR for a nonexistent project id', async () => {
+      const result = await StateRepository.create({
+        name: 'Orphan',
+        group: 'STARTED',
+        projectId: 'nonexistent',
+      })
+
+      expectErr(result, 'DATABASE_ERROR')
+    })
   })
 
   describe('update()', () => {
@@ -105,6 +115,14 @@ describe('StateRepository', () => {
 
       expect(expectOk(result).name).toBe('Renamed')
     })
+
+    it('should return DATABASE_ERROR for a nonexistent id', async () => {
+      const result = await StateRepository.update('nonexistent', {
+        name: 'Renamed',
+      })
+
+      expectErr(result, 'DATABASE_ERROR')
+    })
   })
 
   describe('delete()', () => {
@@ -116,6 +134,11 @@ describe('StateRepository', () => {
 
       const result = await StateRepository.findById(seeded.id)
       expectErr(result, 'STATE_NOT_FOUND')
+    })
+
+    it('should return DATABASE_ERROR for a nonexistent id', async () => {
+      const result = await StateRepository.delete('nonexistent')
+      expectErr(result, 'DATABASE_ERROR')
     })
   })
 
@@ -133,6 +156,14 @@ describe('StateRepository', () => {
       expect(expectOk(result).isDefault).toBe(true)
       const previous = expectOk(await StateRepository.findById(oldDefault.id))
       expect(previous.isDefault).toBe(false)
+    })
+
+    it('should return DATABASE_ERROR for a nonexistent id', async () => {
+      const project = await setupProject()
+
+      const result = await StateRepository.setDefault('nonexistent', project.id)
+
+      expectErr(result, 'DATABASE_ERROR')
     })
   })
 })
