@@ -112,6 +112,23 @@ describe('EstimateService', () => {
       expectErr(result, 'ESTIMATE_SETTINGS_FORBIDDEN')
       expect(mockedEstimate.update).not.toHaveBeenCalled()
     })
+
+    it('should propagate repo error', async () => {
+      mockedMembership.findByUserAndWorkspace.mockResolvedValue(
+        ok(memberMembership),
+      )
+      mockedProject.findByWorkspaceAndSlug.mockResolvedValue(
+        ok(projectWith({ leadId: 'actor' })),
+      )
+      mockedEstimate.update.mockResolvedValue(err(databaseError()))
+
+      const result = await EstimateService.update('actor', 'ws1', 'proj-slug', {
+        system: 'TIME',
+        model: 'HOURS',
+      })
+
+      expectErr(result, 'DATABASE_ERROR')
+    })
   })
 
   describe('createValue()', () => {
@@ -158,9 +175,264 @@ describe('EstimateService', () => {
       expectErr(result, 'ESTIMATE_SETTINGS_FORBIDDEN')
       expect(mockedEstimateValue.create).not.toHaveBeenCalled()
     })
+
+    it('should propagate repo error', async () => {
+      mockedMembership.findByUserAndWorkspace.mockResolvedValue(
+        ok(memberMembership),
+      )
+      mockedProject.findByWorkspaceAndSlug.mockResolvedValue(
+        ok(projectWith({ leadId: 'actor' })),
+      )
+      mockedEstimateValue.create.mockResolvedValue(err(databaseError()))
+
+      const result = await EstimateService.createValue(
+        'actor',
+        'ws1',
+        'proj-slug',
+        { value: '3' },
+      )
+
+      expectErr(result, 'DATABASE_ERROR')
+    })
+  })
+
+  describe('updateValue()', () => {
+    it('should update when actor is lead', async () => {
+      mockedMembership.findByUserAndWorkspace.mockResolvedValue(
+        ok(memberMembership),
+      )
+      mockedProject.findByWorkspaceAndSlug.mockResolvedValue(
+        ok(projectWith({ leadId: 'actor' })),
+      )
+      mockedEstimateValue.findById.mockResolvedValue(
+        ok(
+          createFakeEstimateValue({ id: 'val-1', estimateSettingsId: 'est-1' }),
+        ),
+      )
+      mockedEstimate.findByProjectId.mockResolvedValue(
+        ok(createFakeEstimateSettings({ id: 'est-1' })),
+      )
+      mockedEstimateValue.update.mockResolvedValue(
+        ok(createFakeEstimateValue({ id: 'val-1', value: '5' })),
+      )
+
+      const result = await EstimateService.updateValue(
+        'actor',
+        'ws1',
+        'proj-slug',
+        'val-1',
+        { value: '5' },
+      )
+
+      expect(expectOk(result).value).toBe('5')
+    })
+
+    it('should return ESTIMATE_SETTINGS_FORBIDDEN when actor is neither lead nor privileged', async () => {
+      mockedMembership.findByUserAndWorkspace.mockResolvedValue(
+        ok(memberMembership),
+      )
+      mockedProject.findByWorkspaceAndSlug.mockResolvedValue(
+        ok(projectWith({ leadId: 'someone-else' })),
+      )
+
+      const result = await EstimateService.updateValue(
+        'actor',
+        'ws1',
+        'proj-slug',
+        'val-1',
+        { value: '5' },
+      )
+
+      expectErr(result, 'ESTIMATE_SETTINGS_FORBIDDEN')
+      expect(mockedEstimateValue.findById).not.toHaveBeenCalled()
+    })
+
+    it('should propagate not found from repo', async () => {
+      mockedMembership.findByUserAndWorkspace.mockResolvedValue(
+        ok(memberMembership),
+      )
+      mockedProject.findByWorkspaceAndSlug.mockResolvedValue(
+        ok(projectWith({ leadId: 'actor' })),
+      )
+      mockedEstimateValue.findById.mockResolvedValue(err(databaseError()))
+
+      const result = await EstimateService.updateValue(
+        'actor',
+        'ws1',
+        'proj-slug',
+        'val-1',
+        { value: '5' },
+      )
+
+      expectErr(result, 'DATABASE_ERROR')
+    })
+
+    it('should return ESTIMATE_VALUE_FORBIDDEN when value belongs to another settings group', async () => {
+      mockedMembership.findByUserAndWorkspace.mockResolvedValue(
+        ok(memberMembership),
+      )
+      mockedProject.findByWorkspaceAndSlug.mockResolvedValue(
+        ok(projectWith({ leadId: 'actor' })),
+      )
+      mockedEstimateValue.findById.mockResolvedValue(
+        ok(
+          createFakeEstimateValue({
+            id: 'val-1',
+            estimateSettingsId: 'other-est',
+          }),
+        ),
+      )
+      mockedEstimate.findByProjectId.mockResolvedValue(
+        ok(createFakeEstimateSettings({ id: 'est-1' })),
+      )
+
+      const result = await EstimateService.updateValue(
+        'actor',
+        'ws1',
+        'proj-slug',
+        'val-1',
+        { value: '5' },
+      )
+
+      expectErr(result, 'ESTIMATE_VALUE_FORBIDDEN')
+      expect(mockedEstimateValue.update).not.toHaveBeenCalled()
+    })
+
+    it('should propagate repo update error', async () => {
+      mockedMembership.findByUserAndWorkspace.mockResolvedValue(
+        ok(memberMembership),
+      )
+      mockedProject.findByWorkspaceAndSlug.mockResolvedValue(
+        ok(projectWith({ leadId: 'actor' })),
+      )
+      mockedEstimateValue.findById.mockResolvedValue(
+        ok(
+          createFakeEstimateValue({ id: 'val-1', estimateSettingsId: 'est-1' }),
+        ),
+      )
+      mockedEstimate.findByProjectId.mockResolvedValue(
+        ok(createFakeEstimateSettings({ id: 'est-1' })),
+      )
+      mockedEstimateValue.update.mockResolvedValue(err(databaseError()))
+
+      const result = await EstimateService.updateValue(
+        'actor',
+        'ws1',
+        'proj-slug',
+        'val-1',
+        { value: '5' },
+      )
+
+      expectErr(result, 'DATABASE_ERROR')
+    })
   })
 
   describe('deleteValue()', () => {
+    it('should delete when there is more than one value left', async () => {
+      mockedMembership.findByUserAndWorkspace.mockResolvedValue(
+        ok(memberMembership),
+      )
+      mockedProject.findByWorkspaceAndSlug.mockResolvedValue(
+        ok(projectWith({ leadId: 'actor' })),
+      )
+      mockedEstimateValue.findById.mockResolvedValue(
+        ok(
+          createFakeEstimateValue({ id: 'val-1', estimateSettingsId: 'est-1' }),
+        ),
+      )
+      mockedEstimate.findByProjectId.mockResolvedValue(
+        ok(createFakeEstimateSettings({ id: 'est-1' })),
+      )
+      mockedEstimateValue.countByEstimateSettingsId.mockResolvedValue(ok(2))
+      mockedEstimateValue.delete.mockResolvedValue(ok(undefined))
+
+      const result = await EstimateService.deleteValue(
+        'actor',
+        'ws1',
+        'proj-slug',
+        'val-1',
+      )
+
+      expectOk(result)
+      expect(mockedEstimateValue.delete).toHaveBeenCalledWith('val-1')
+    })
+
+    it('should return ESTIMATE_SETTINGS_FORBIDDEN when actor is neither lead nor privileged', async () => {
+      mockedMembership.findByUserAndWorkspace.mockResolvedValue(
+        ok(memberMembership),
+      )
+      mockedProject.findByWorkspaceAndSlug.mockResolvedValue(
+        ok(projectWith({ leadId: 'someone-else' })),
+      )
+
+      const result = await EstimateService.deleteValue(
+        'actor',
+        'ws1',
+        'proj-slug',
+        'val-1',
+      )
+
+      expectErr(result, 'ESTIMATE_SETTINGS_FORBIDDEN')
+      expect(mockedEstimateValue.findById).not.toHaveBeenCalled()
+    })
+
+    it('should return ESTIMATE_VALUE_FORBIDDEN when value belongs to another settings group', async () => {
+      mockedMembership.findByUserAndWorkspace.mockResolvedValue(
+        ok(memberMembership),
+      )
+      mockedProject.findByWorkspaceAndSlug.mockResolvedValue(
+        ok(projectWith({ leadId: 'actor' })),
+      )
+      mockedEstimateValue.findById.mockResolvedValue(
+        ok(
+          createFakeEstimateValue({
+            id: 'val-1',
+            estimateSettingsId: 'other-est',
+          }),
+        ),
+      )
+      mockedEstimate.findByProjectId.mockResolvedValue(
+        ok(createFakeEstimateSettings({ id: 'est-1' })),
+      )
+
+      const result = await EstimateService.deleteValue(
+        'actor',
+        'ws1',
+        'proj-slug',
+        'val-1',
+      )
+
+      expectErr(result, 'ESTIMATE_VALUE_FORBIDDEN')
+    })
+
+    it('should propagate repo delete error', async () => {
+      mockedMembership.findByUserAndWorkspace.mockResolvedValue(
+        ok(memberMembership),
+      )
+      mockedProject.findByWorkspaceAndSlug.mockResolvedValue(
+        ok(projectWith({ leadId: 'actor' })),
+      )
+      mockedEstimateValue.findById.mockResolvedValue(
+        ok(
+          createFakeEstimateValue({ id: 'val-1', estimateSettingsId: 'est-1' }),
+        ),
+      )
+      mockedEstimate.findByProjectId.mockResolvedValue(
+        ok(createFakeEstimateSettings({ id: 'est-1' })),
+      )
+      mockedEstimateValue.countByEstimateSettingsId.mockResolvedValue(ok(2))
+      mockedEstimateValue.delete.mockResolvedValue(err(databaseError()))
+
+      const result = await EstimateService.deleteValue(
+        'actor',
+        'ws1',
+        'proj-slug',
+        'val-1',
+      )
+
+      expectErr(result, 'DATABASE_ERROR')
+    })
+
     it('should return ESTIMATE_VALUE_LAST_REMAINING when it is the only value left', async () => {
       mockedMembership.findByUserAndWorkspace.mockResolvedValue(
         ok(memberMembership),
@@ -216,6 +488,47 @@ describe('EstimateService', () => {
       )
 
       expect(expectOk(result).map((v) => v.id)).toEqual(['val-2', 'val-1'])
+    })
+
+    it('should return ESTIMATE_SETTINGS_FORBIDDEN when actor is neither lead nor privileged', async () => {
+      mockedMembership.findByUserAndWorkspace.mockResolvedValue(
+        ok(memberMembership),
+      )
+      mockedProject.findByWorkspaceAndSlug.mockResolvedValue(
+        ok(projectWith({ leadId: 'someone-else' })),
+      )
+
+      const result = await EstimateService.reorderValues(
+        'actor',
+        'ws1',
+        'proj-slug',
+        { valueIds: ['val-1'] },
+      )
+
+      expectErr(result, 'ESTIMATE_SETTINGS_FORBIDDEN')
+      expect(mockedEstimateValue.reorder).not.toHaveBeenCalled()
+    })
+
+    it('should propagate repo error', async () => {
+      mockedMembership.findByUserAndWorkspace.mockResolvedValue(
+        ok(memberMembership),
+      )
+      mockedProject.findByWorkspaceAndSlug.mockResolvedValue(
+        ok(projectWith({ leadId: 'actor' })),
+      )
+      mockedEstimate.findByProjectId.mockResolvedValue(
+        ok(createFakeEstimateSettings({ id: 'est-1' })),
+      )
+      mockedEstimateValue.reorder.mockResolvedValue(err(databaseError()))
+
+      const result = await EstimateService.reorderValues(
+        'actor',
+        'ws1',
+        'proj-slug',
+        { valueIds: ['val-1'] },
+      )
+
+      expectErr(result, 'DATABASE_ERROR')
     })
   })
 
