@@ -31,10 +31,11 @@ const memberMembership = createFakeMembership({
 
 function projectWith(
   overrides?: Partial<ReturnType<typeof createFakeProject>>,
+  members: { userId: string }[] = [],
 ) {
   return {
     ...createFakeProject({ id: 'proj-1', leadId: 'lead-1', ...overrides }),
-    members: [] as { userId: string }[],
+    members,
     favourites: [] as { id: string }[],
   }
 }
@@ -46,7 +47,7 @@ describe('CycleService', () => {
         ok(memberMembership),
       )
       mockedProject.findByWorkspaceAndSlug.mockResolvedValue(
-        ok(projectWith({ isPublic: true })),
+        ok(projectWith({ isPublic: true }, [{ userId: 'actor' }])),
       )
       mockedCycle.listByProject.mockResolvedValue(ok([createFakeCycle()]))
 
@@ -125,9 +126,92 @@ describe('CycleService', () => {
       expectErr(result, 'CYCLE_FORBIDDEN')
       expect(mockedCycle.create).not.toHaveBeenCalled()
     })
+
+    it('should propagate repo error when creation fails', async () => {
+      mockedMembership.findByUserAndWorkspace.mockResolvedValue(
+        ok(memberMembership),
+      )
+      mockedProject.findByWorkspaceAndSlug.mockResolvedValue(
+        ok(projectWith({ leadId: 'actor' })),
+      )
+      mockedCycle.create.mockResolvedValue(err(databaseError()))
+
+      const result = await CycleService.create('actor', 'ws1', 'proj-slug', {
+        name: 'Sprint 1',
+        status: 'NOT_STARTED',
+      })
+
+      expectErr(result, 'DATABASE_ERROR')
+    })
   })
 
   describe('update()', () => {
+    it('should return CYCLE_FORBIDDEN when actor is neither lead nor privileged', async () => {
+      mockedMembership.findByUserAndWorkspace.mockResolvedValue(
+        ok(memberMembership),
+      )
+      mockedProject.findByWorkspaceAndSlug.mockResolvedValue(
+        ok(projectWith({ leadId: 'someone-else' })),
+      )
+
+      const result = await CycleService.update(
+        'actor',
+        'ws1',
+        'proj-slug',
+        'cyc-1',
+        { name: 'Renamed' },
+      )
+
+      expectErr(result, 'CYCLE_FORBIDDEN')
+      expect(mockedCycle.findById).not.toHaveBeenCalled()
+    })
+
+    it('should propagate repo update error', async () => {
+      mockedMembership.findByUserAndWorkspace.mockResolvedValue(
+        ok(ownerMembership),
+      )
+      mockedProject.findByWorkspaceAndSlug.mockResolvedValue(
+        ok(projectWith({ id: 'proj-1' })),
+      )
+      mockedCycle.findById.mockResolvedValue(
+        ok(createFakeCycle({ id: 'cyc-1', projectId: 'proj-1' })),
+      )
+      mockedCycle.update.mockResolvedValue(err(databaseError()))
+
+      const result = await CycleService.update(
+        'actor',
+        'ws1',
+        'proj-slug',
+        'cyc-1',
+        { name: 'Renamed' },
+      )
+
+      expectErr(result, 'DATABASE_ERROR')
+    })
+
+    it('should clear dates when explicitly set to null', async () => {
+      mockedMembership.findByUserAndWorkspace.mockResolvedValue(
+        ok(ownerMembership),
+      )
+      mockedProject.findByWorkspaceAndSlug.mockResolvedValue(
+        ok(projectWith({ id: 'proj-1' })),
+      )
+      mockedCycle.findById.mockResolvedValue(
+        ok(createFakeCycle({ id: 'cyc-1', projectId: 'proj-1' })),
+      )
+      mockedCycle.update.mockResolvedValue(ok(createFakeCycle()))
+
+      await CycleService.update('actor', 'ws1', 'proj-slug', 'cyc-1', {
+        startDate: null,
+        endDate: null,
+      })
+
+      expect(mockedCycle.update).toHaveBeenCalledWith(
+        'cyc-1',
+        expect.objectContaining({ startDate: null, endDate: null }),
+      )
+    })
+
     it('should return CYCLE_NOT_FOUND when cycle belongs to a different project', async () => {
       mockedMembership.findByUserAndWorkspace.mockResolvedValue(
         ok(ownerMembership),
@@ -227,9 +311,228 @@ describe('CycleService', () => {
 
       expectOk(result)
     })
+
+    it('should return CYCLE_FORBIDDEN when actor is neither lead nor privileged', async () => {
+      mockedMembership.findByUserAndWorkspace.mockResolvedValue(
+        ok(memberMembership),
+      )
+      mockedProject.findByWorkspaceAndSlug.mockResolvedValue(
+        ok(projectWith({ leadId: 'someone-else' })),
+      )
+
+      const result = await CycleService.delete(
+        'actor',
+        'ws1',
+        'proj-slug',
+        'cyc-1',
+      )
+
+      expectErr(result, 'CYCLE_FORBIDDEN')
+    })
+
+    it('should return CYCLE_NOT_FOUND when cycle belongs to a different project', async () => {
+      mockedMembership.findByUserAndWorkspace.mockResolvedValue(
+        ok(ownerMembership),
+      )
+      mockedProject.findByWorkspaceAndSlug.mockResolvedValue(
+        ok(projectWith({ id: 'proj-1' })),
+      )
+      mockedCycle.findById.mockResolvedValue(
+        ok(createFakeCycle({ projectId: 'other-proj' })),
+      )
+
+      const result = await CycleService.delete(
+        'actor',
+        'ws1',
+        'proj-slug',
+        'cyc-1',
+      )
+
+      expectErr(result, 'CYCLE_NOT_FOUND')
+    })
   })
 
-  describe('addMember() / removeMember()', () => {
+  describe('listMembers()', () => {
+    it('should list members for a project member', async () => {
+      mockedMembership.findByUserAndWorkspace.mockResolvedValue(
+        ok(memberMembership),
+      )
+      mockedProject.findByWorkspaceAndSlug.mockResolvedValue(
+        ok(
+          projectWith({ isPublic: true, id: 'proj-1' }, [{ userId: 'actor' }]),
+        ),
+      )
+      mockedCycle.findById.mockResolvedValue(
+        ok(createFakeCycle({ projectId: 'proj-1', leadId: 'lead-1' })),
+      )
+      mockedCycle.listmembers.mockResolvedValue(
+        ok([
+          {
+            id: 'cm-1',
+            cycleId: 'cyc-1',
+            userId: 'lead-1',
+            createdAt: new Date(),
+            user: {
+              id: 'lead-1',
+              name: 'Lead',
+              username: 'lead',
+              image: null,
+            },
+          },
+        ]),
+      )
+
+      const result = await CycleService.listMembers(
+        'actor',
+        'ws1',
+        'proj-slug',
+        'cyc-1',
+      )
+
+      const members = expectOk(result)
+      expect(members).toHaveLength(1)
+      expect(members[0].isLead).toBe(true)
+    })
+
+    it('should return PROJECT_FORBIDDEN for private project and non-member actor', async () => {
+      mockedMembership.findByUserAndWorkspace.mockResolvedValue(
+        ok(memberMembership),
+      )
+      mockedProject.findByWorkspaceAndSlug.mockResolvedValue(
+        ok(projectWith({ isPublic: false })),
+      )
+
+      const result = await CycleService.listMembers(
+        'actor',
+        'ws1',
+        'proj-slug',
+        'cyc-1',
+      )
+
+      expectErr(result, 'PROJECT_FORBIDDEN')
+      expect(mockedCycle.findById).not.toHaveBeenCalled()
+    })
+
+    it('should return CYCLE_NOT_FOUND when cycle belongs to a different project', async () => {
+      mockedMembership.findByUserAndWorkspace.mockResolvedValue(
+        ok(memberMembership),
+      )
+      mockedProject.findByWorkspaceAndSlug.mockResolvedValue(
+        ok(projectWith({ isPublic: true, id: 'proj-1' })),
+      )
+      mockedCycle.findById.mockResolvedValue(
+        ok(createFakeCycle({ projectId: 'other-proj' })),
+      )
+
+      const result = await CycleService.listMembers(
+        'actor',
+        'ws1',
+        'proj-slug',
+        'cyc-1',
+      )
+
+      expectErr(result, 'CYCLE_NOT_FOUND')
+    })
+  })
+
+  describe('addMember()', () => {
+    it('should add a member', async () => {
+      mockedMembership.findByUserAndWorkspace.mockResolvedValue(
+        ok(ownerMembership),
+      )
+      mockedProject.findByWorkspaceAndSlug.mockResolvedValue(
+        ok(projectWith({ id: 'proj-1' })),
+      )
+      mockedCycle.findById.mockResolvedValue(
+        ok(createFakeCycle({ projectId: 'proj-1', leadId: 'lead-1' })),
+      )
+      mockedCycle.addMember.mockResolvedValue(
+        ok({
+          id: 'cm-2',
+          cycleId: 'cyc-1',
+          userId: 'other',
+          createdAt: new Date(),
+          user: { id: 'other', name: 'Other', username: 'other', image: null },
+        }),
+      )
+
+      const result = await CycleService.addMember(
+        'actor',
+        'ws1',
+        'proj-slug',
+        'cyc-1',
+        'other',
+      )
+
+      expectOk(result)
+    })
+
+    it('should return CYCLE_FORBIDDEN when actor is neither lead nor privileged', async () => {
+      mockedMembership.findByUserAndWorkspace.mockResolvedValue(
+        ok(memberMembership),
+      )
+      mockedProject.findByWorkspaceAndSlug.mockResolvedValue(
+        ok(projectWith({ leadId: 'someone-else' })),
+      )
+
+      const result = await CycleService.addMember(
+        'actor',
+        'ws1',
+        'proj-slug',
+        'cyc-1',
+        'other',
+      )
+
+      expectErr(result, 'CYCLE_FORBIDDEN')
+    })
+
+    it('should return CYCLE_NOT_FOUND when cycle belongs to a different project', async () => {
+      mockedMembership.findByUserAndWorkspace.mockResolvedValue(
+        ok(ownerMembership),
+      )
+      mockedProject.findByWorkspaceAndSlug.mockResolvedValue(
+        ok(projectWith({ id: 'proj-1' })),
+      )
+      mockedCycle.findById.mockResolvedValue(
+        ok(createFakeCycle({ projectId: 'other-proj' })),
+      )
+
+      const result = await CycleService.addMember(
+        'actor',
+        'ws1',
+        'proj-slug',
+        'cyc-1',
+        'other',
+      )
+
+      expectErr(result, 'CYCLE_NOT_FOUND')
+    })
+
+    it('should propagate repo error when adding a member', async () => {
+      mockedMembership.findByUserAndWorkspace.mockResolvedValue(
+        ok(ownerMembership),
+      )
+      mockedProject.findByWorkspaceAndSlug.mockResolvedValue(
+        ok(projectWith({ id: 'proj-1' })),
+      )
+      mockedCycle.findById.mockResolvedValue(
+        ok(createFakeCycle({ projectId: 'proj-1' })),
+      )
+      mockedCycle.addMember.mockResolvedValue(err(databaseError()))
+
+      const result = await CycleService.addMember(
+        'actor',
+        'ws1',
+        'proj-slug',
+        'cyc-1',
+        'other',
+      )
+
+      expectErr(result, 'DATABASE_ERROR')
+    })
+  })
+
+  describe('removeMember()', () => {
     it('should block removing the cycle lead', async () => {
       mockedMembership.findByUserAndWorkspace.mockResolvedValue(
         ok(ownerMembership),
@@ -251,6 +554,93 @@ describe('CycleService', () => {
 
       expectErr(result, 'CYCLE_FORBIDDEN')
       expect(mockedCycle.removeMember).not.toHaveBeenCalled()
+    })
+
+    it('should remove a non-lead member', async () => {
+      mockedMembership.findByUserAndWorkspace.mockResolvedValue(
+        ok(ownerMembership),
+      )
+      mockedProject.findByWorkspaceAndSlug.mockResolvedValue(
+        ok(projectWith({ id: 'proj-1' })),
+      )
+      mockedCycle.findById.mockResolvedValue(
+        ok(createFakeCycle({ projectId: 'proj-1', leadId: 'lead-1' })),
+      )
+      mockedCycle.removeMember.mockResolvedValue(ok(undefined))
+
+      const result = await CycleService.removeMember(
+        'actor',
+        'ws1',
+        'proj-slug',
+        'cyc-1',
+        'other',
+      )
+
+      expectOk(result)
+    })
+
+    it('should return CYCLE_FORBIDDEN when actor is neither lead nor privileged', async () => {
+      mockedMembership.findByUserAndWorkspace.mockResolvedValue(
+        ok(memberMembership),
+      )
+      mockedProject.findByWorkspaceAndSlug.mockResolvedValue(
+        ok(projectWith({ leadId: 'someone-else' })),
+      )
+
+      const result = await CycleService.removeMember(
+        'actor',
+        'ws1',
+        'proj-slug',
+        'cyc-1',
+        'other',
+      )
+
+      expectErr(result, 'CYCLE_FORBIDDEN')
+    })
+
+    it('should return CYCLE_NOT_FOUND when cycle belongs to a different project', async () => {
+      mockedMembership.findByUserAndWorkspace.mockResolvedValue(
+        ok(ownerMembership),
+      )
+      mockedProject.findByWorkspaceAndSlug.mockResolvedValue(
+        ok(projectWith({ id: 'proj-1' })),
+      )
+      mockedCycle.findById.mockResolvedValue(
+        ok(createFakeCycle({ projectId: 'other-proj' })),
+      )
+
+      const result = await CycleService.removeMember(
+        'actor',
+        'ws1',
+        'proj-slug',
+        'cyc-1',
+        'other',
+      )
+
+      expectErr(result, 'CYCLE_NOT_FOUND')
+    })
+
+    it('should propagate repo error when removing a member', async () => {
+      mockedMembership.findByUserAndWorkspace.mockResolvedValue(
+        ok(ownerMembership),
+      )
+      mockedProject.findByWorkspaceAndSlug.mockResolvedValue(
+        ok(projectWith({ id: 'proj-1' })),
+      )
+      mockedCycle.findById.mockResolvedValue(
+        ok(createFakeCycle({ projectId: 'proj-1', leadId: 'lead-1' })),
+      )
+      mockedCycle.removeMember.mockResolvedValue(err(databaseError()))
+
+      const result = await CycleService.removeMember(
+        'actor',
+        'ws1',
+        'proj-slug',
+        'cyc-1',
+        'other',
+      )
+
+      expectErr(result, 'DATABASE_ERROR')
     })
   })
 
