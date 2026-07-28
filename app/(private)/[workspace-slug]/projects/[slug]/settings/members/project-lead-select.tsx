@@ -1,24 +1,11 @@
 'use client'
 
 import { CheckIcon } from '@hugeicons-pro/core-stroke-rounded'
-import { useState } from 'react'
+import { Combobox } from '@/app/_components/ui/combobox'
 import { NexoIcon } from '@/components/icon/icon'
 import { Muted } from '@/components/typography/text/muted'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Button } from '@/components/ui/button'
-import {
-  Command,
-  CommandEmpty,
-  CommandGroup,
-  CommandInput,
-  CommandItem,
-  CommandList,
-} from '@/components/ui/command'
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from '@/components/ui/popover'
 import { notify } from '@/lib/notify'
 import { getInitials } from '@/lib/user-name-initials'
 import { useProject, useUpdateProject } from '@/src/hooks/use-project'
@@ -37,22 +24,18 @@ export function ProjectLeadSelect({
   members,
   canManage,
 }: ProjectLeadSelectProps) {
-  const [open, setOpen] = useState(false)
   const { data: project } = useProject(workspaceId, projectSlug)
   const updateProject = useUpdateProject(workspaceId, projectSlug)
 
   const currentLead = members.find((m) => m.userId === project?.leadId)
 
   function handleSelect(userId: string) {
-    setOpen(false)
     if (userId === project?.leadId) return
-    updateProject.mutate(
-      { leadId: userId },
-      {
-        onSuccess: () => notify.success('Líder do projeto atualizado'),
-        onError: notify.error,
-      },
-    )
+    notify.mutate(updateProject.mutateAsync({ leadId: userId }), {
+      loading: 'Atualizando líder...',
+      success: 'Líder do projeto atualizado',
+      error: 'Erro ao atualizar líder',
+    })
   }
 
   return (
@@ -61,63 +44,51 @@ export function ProjectLeadSelect({
         <span className='text-sm font-medium'>Líder do projeto</span>
         <Muted className='text-xs'>Selecione o líder do projeto</Muted>
       </div>
-      <Popover open={open} onOpenChange={setOpen}>
-        <PopoverTrigger
-          render={
-            <Button
-              variant='outline'
-              size='sm'
-              disabled={!canManage || updateProject.isPending}
-              className='justify-start'
-            >
-              {currentLead ? (
-                <span className='flex items-center gap-2'>
-                  <Avatar size='sm'>
-                    <AvatarImage
-                      src={currentLead.image || ''}
-                      alt={currentLead.name}
-                    />
-                    <AvatarFallback>
-                      {getInitials(currentLead.name)}
-                    </AvatarFallback>
-                  </Avatar>
-                  @{currentLead.username}
-                </span>
-              ) : (
-                'Selecionar líder do projeto'
-              )}
-            </Button>
-          }
-        />
-        <PopoverContent align='end' className='w-64 p-0'>
-          <Command className='space-y-2'>
-            <CommandInput placeholder='Procurar membro...' />
-            <CommandList>
-              <CommandEmpty>Nenhum membro encontrado.</CommandEmpty>
-              <CommandGroup>
-                {members.map((member) => (
-                  <CommandItem
-                    key={member.userId}
-                    value={`${member.name} ${member.username}`}
-                    onSelect={() => handleSelect(member.userId)}
-                  >
-                    <Avatar size='sm'>
-                      <AvatarImage src={member.image || ''} alt={member.name} />
-                      <AvatarFallback>
-                        {getInitials(member.name)}
-                      </AvatarFallback>
-                    </Avatar>
-                    <span className='flex-1'>@{member.username}</span>
-                    {member.userId === project?.leadId && (
-                      <NexoIcon icon={CheckIcon} strokeWidth={2} />
-                    )}
-                  </CommandItem>
-                ))}
-              </CommandGroup>
-            </CommandList>
-          </Command>
-        </PopoverContent>
-      </Popover>
+      <Combobox
+        options={members}
+        getValue={(m) => m.userId}
+        getSearchText={(m) => `${m.name} ${m.username}`}
+        value={project?.leadId}
+        onChange={handleSelect}
+        searchPlaceholder='Procurar membro...'
+        emptyMessage='Nenhum membro encontrado.'
+        align='end'
+        trigger={
+          <Button
+            variant='outline'
+            size='sm'
+            disabled={!canManage || updateProject.isPending}
+            className='justify-start'
+          >
+            {currentLead ? (
+              <span className='flex items-center gap-2'>
+                <Avatar size='sm'>
+                  <AvatarImage
+                    src={currentLead.image || ''}
+                    alt={currentLead.name}
+                  />
+                  <AvatarFallback>
+                    {getInitials(currentLead.name)}
+                  </AvatarFallback>
+                </Avatar>
+                @{currentLead.username}
+              </span>
+            ) : (
+              'Selecionar líder do projeto'
+            )}
+          </Button>
+        }
+        renderItem={(member, selected) => (
+          <>
+            <Avatar size='sm'>
+              <AvatarImage src={member.image || ''} alt={member.name} />
+              <AvatarFallback>{getInitials(member.name)}</AvatarFallback>
+            </Avatar>
+            <span className='flex-1'>@{member.username}</span>
+            {selected && <NexoIcon icon={CheckIcon} strokeWidth={2} />}
+          </>
+        )}
+      />
     </div>
   )
 }
