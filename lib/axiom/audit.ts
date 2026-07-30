@@ -23,6 +23,7 @@ type AuditEntity =
   | 'estimate_value'
   | 'module'
   | 'cycle'
+  | 'issue_type'
 
 type AuditAction =
   | 'create'
