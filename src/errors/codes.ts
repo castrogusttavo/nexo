@@ -89,6 +89,10 @@ export const ERROR_CODES = {
     code: 'ISSUE_TYPE_SYSTEM_PROTECTED',
     status: 409,
   },
+  ISSUE_NOT_FOUND: { code: 'ISSUE_NOT_FOUND', status: 404 },
+  ISSUE_FORBIDDEN: { code: 'ISSUE_FORBIDDEN', status: 403 },
+  ISSUE_STATE_INVALID: { code: 'ISSUE_STATE_INVALID', status: 422 },
+  ISSUE_TYPE_INVALID: { code: 'ISSUE_TYPE_INVALID', status: 422 },
 
   // Server Errors (500)
   INTERNAL_SERVER_ERROR: { code: 'INTERNAL_SERVER_ERROR', status: 500 },

@@ -222,3 +222,17 @@ export const issueTypeForbidden = (
 export const issueTypeSystemProtected = (
   message = 'Tipos padrão (Task/Epic) não podem ser removidos',
 ): AppError => appError('ISSUE_TYPE_SYSTEM_PROTECTED', message)
+
+export const issueNotFound = (): AppError =>
+  appError('ISSUE_NOT_FOUND', 'Issue not found')
+
+export const issueForbidden = (message = 'Sem acesso a esta issue'): AppError =>
+  appError('ISSUE_FORBIDDEN', message)
+
+export const issueStateInvalid = (
+  message = 'Este state não pertence ao projeto da issue',
+): AppError => appError('ISSUE_STATE_INVALID', message)
+
+export const issueTypeInvalid = (
+  message = 'Este tipo não pertence ao projeto da issue',
+): AppError => appError('ISSUE_TYPE_INVALID', message)
