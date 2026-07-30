@@ -236,3 +236,13 @@ export const issueStateInvalid = (
 export const issueTypeInvalid = (
   message = 'Este tipo não pertence ao projeto da issue',
 ): AppError => appError('ISSUE_TYPE_INVALID', message)
+
+export const issueAssigneeAlreadyExists = (
+  message = 'Usuário já está atribuído a esta issue',
+): AppError => appError('ISSUE_ASSIGNEE_ALREADY_EXISTS', message)
+
+export const issueAssigneeNotFound = (): AppError =>
+  appError('ISSUE_ASSIGNEE_NOT_FOUND', 'Issue assignee not found')
+
+export const issueSubscriberNotFound = (): AppError =>
+  appError('ISSUE_SUBSCRIBER_NOT_FOUND', 'Issue assignee not found')
