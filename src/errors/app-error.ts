@@ -211,3 +211,14 @@ export const cycleMemberNotFound = (): AppError =>
 export const projectIdentifierConflict = (
   message = 'ID já está em uso neste workspace',
 ): AppError => appError('PROJECT_IDENTIFIER_CONFLICT', message)
+
+export const issueTypeNotFound = (): AppError =>
+  appError('ISSUE_TYPE_NOT_FOUND', 'Issue type not found')
+
+export const issueTypeForbidden = (
+  message = 'Sem acesso a este tipo de issue',
+): AppError => appError('ISSUE_TYPE_FORBIDDEN', message)
+
+export const issueTypeSystemProtected = (
+  message = 'Tipos padrão (Task/Epic) não podem ser removidos',
+): AppError => appError('ISSUE_TYPE_SYSTEM_PROTECTED', message)
