@@ -18,6 +18,7 @@ export function createFakeProject(overrides?: Partial<Project>): Project {
     modulesEnabled: true,
     cyclesEnabled: true,
     estimatesEnabled: true,
+    issueSequence: 0,
     leadId: createId(),
     workspaceId: createId(),
     archivedAt: null,

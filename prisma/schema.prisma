@@ -42,6 +42,8 @@ model User {
   moduleFavourites   ModuleFavorite[]
   cyclesLed          Cycle[]               @relation("CycleLead")
   cycleMemberships   CycleMember[]
+  issuesAuthored     Issue[]               @relation("IssueAuthor")
+  issuesAssigned     Issue[]               @relation("IssueAssignee")
 
   @@index([deletionScheduledAt])
   @@map("users")
@@ -427,6 +429,7 @@ model Project {
   modulesEnabled    Boolean   @default(true) @map("modules_enabled")
   cyclesEnabled     Boolean   @default(true) @map("cycles_enabled")
   estimatesEnabled  Boolean   @default(true) @map("estimates_enabled")
+  issueSequence     Int       @default(0) @map("issue_sequence")
   leadId            String    @map("lead_id")
   workspaceId       String    @map("workspace_id")
   archivedAt        DateTime? @map("archived_at")
@@ -444,6 +447,7 @@ model Project {
   modules          Module[]
   cycles           Cycle[]
   issueTypes       IssueType[]
+  issues           Issue[]
 
   @@unique([workspaceId, slug])
   @@unique([workspaceId, identifier])
@@ -567,6 +571,7 @@ model State {
   updatedAt   DateTime   @updatedAt @map("updated_at")
 
   project Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  issues  Issue[]
 
   @@index([projectId, group])
   @@map("states")
@@ -763,7 +768,44 @@ model IssueType {
   updatedAt   DateTime @updatedAt @map("updated_at")
 
   project Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  issues  Issue[]
 
   @@index([projectId])
   @@map("issue_types")
+}
+
+model Issue {
+  id          String        @id @default(cuid())
+  number      Int
+  title       String
+  description Json
+  priority    IssuePriority @default(NONE)
+  stateId     String        @map("state_id")
+  typeId      String        @map("type_id")
+  assigneeId  String?       @map("assignee_id")
+  authorId    String        @map("author_id")
+  projectId   String        @map("project_id")
+  deletedAt   DateTime?     @map("deleted_at")
+  createdAt   DateTime      @default(now()) @map("created_at")
+  updatedAt   DateTime      @updatedAt @map("updated_at")
+
+  state    State     @relation(fields: [stateId], references: [id])
+  type     IssueType @relation(fields: [typeId], references: [id])
+  assignee User?     @relation("IssueAssignee", fields: [assigneeId], references: [id])
+  author   User      @relation("IssueAuthor", fields: [authorId], references: [id])
+  project  Project   @relation(fields: [projectId], references: [id], onDelete: Cascade)
+
+  @@unique([projectId, number])
+  @@index([projectId, deletedAt])
+  @@index([stateId])
+  @@index([typeId])
+  @@map("issues")
+}
+
+enum IssuePriority {
+  NONE
+  LOW
+  MEDIUM
+  HIGH
+  URGENT
 }
