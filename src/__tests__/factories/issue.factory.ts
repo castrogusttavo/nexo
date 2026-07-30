@@ -1,5 +1,11 @@
 import { createId } from '@paralleldrive/cuid2'
-import type { Issue, IssuePriority, Prisma } from '@prisma/client'
+import type {
+  Issue,
+  IssueAssignee,
+  IssuePriority,
+  IssueSubscriber,
+  Prisma,
+} from '@prisma/client'
 import { prisma } from '@/src/lib/prisma'
 
 export function createFakeIssue(overrides?: Partial<Issue>): Issue {
@@ -44,4 +50,38 @@ export function seedIssue(
       ...overrides,
     },
   })
+}
+
+export function createFakeIssueAssignee(
+  overrides?: Partial<IssueAssignee>,
+): IssueAssignee {
+  const now = new Date()
+  return {
+    id: createId(),
+    issueId: createId(),
+    userId: createId(),
+    createdAt: now,
+    ...overrides,
+  }
+}
+
+export function seedIssueAssignee(issueId: string, userId: string) {
+  return prisma.issueAssignee.create({ data: { issueId, userId } })
+}
+
+export function createFakeIssueSubscriber(
+  overrides?: Partial<IssueSubscriber>,
+): IssueSubscriber {
+  const now = new Date()
+  return {
+    id: createId(),
+    issueId: createId(),
+    userId: createId(),
+    createdAt: now,
+    ...overrides,
+  }
+}
+
+export function seedIssueSubscriber(issueId: string, userId: string) {
+  return prisma.issueSubscriber.create({ data: { issueId, userId } })
 }
