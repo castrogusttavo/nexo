@@ -43,6 +43,8 @@ model User {
   cyclesLed          Cycle[]               @relation("CycleLead")
   cycleMemberships   CycleMember[]
   issuesAuthored     Issue[]               @relation("IssueAuthor")
+  issueAssignments   IssueAssignee[]       @relation("IssueAssignee")
+  issueSubscriptions IssueSubscriber[]     @relation("IssueSubscriber")
 
   @@index([deletionScheduledAt])
   @@map("users")
@@ -787,10 +789,12 @@ model Issue {
   createdAt   DateTime      @default(now()) @map("created_at")
   updatedAt   DateTime      @updatedAt @map("updated_at")
 
-  state    State     @relation(fields: [stateId], references: [id])
-  type     IssueType @relation(fields: [typeId], references: [id])
-  author   User      @relation("IssueAuthor", fields: [authorId], references: [id])
-  project  Project   @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  state       State             @relation(fields: [stateId], references: [id])
+  type        IssueType         @relation(fields: [typeId], references: [id])
+  author      User              @relation("IssueAuthor", fields: [authorId], references: [id])
+  project     Project           @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  assignees   IssueAssignee[]
+  subscribers IssueSubscriber[]
 
   @@unique([projectId, number])
   @@index([projectId, deletedAt])
@@ -805,4 +809,34 @@ enum IssuePriority {
   MEDIUM
   HIGH
   URGENT
+}
+
+model IssueAssignee {
+  id        String   @id @default(cuid())
+  issueId   String   @map("issue_id")
+  userId    String   @map("user_id")
+  createdAt DateTime @default(now()) @map("created_at")
+
+  issue Issue @relation(fields: [issueId], references: [id], onDelete: Cascade)
+  user  User  @relation("IssueAssignee", fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([issueId, userId])
+  @@index([issueId])
+  @@index([userId])
+  @@map("issue_assignees")
+}
+
+model IssueSubscriber {
+  id        String   @id @default(cuid())
+  issueId   String   @map("issue_id")
+  userId    String   @map("user_id")
+  createdAt DateTime @default(now()) @map("created_at")
+
+  issue Issue @relation(fields: [issueId], references: [id], onDelete: Cascade)
+  user  User  @relation("IssueSubscriber", fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([issueId, userId])
+  @@index([issueId])
+  @@index([userId])
+  @@map("issue_subscribers")
 }
