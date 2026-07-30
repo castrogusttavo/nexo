@@ -26,7 +26,6 @@ export const CreateIssueSchema = z.object({
   stateId: z.cuid2(),
   priority: IssuePrioritySchema.default('NONE'),
   typeId: z.cuid2().optional(),
-  assigneedId: z.cuid2().optional(),
 })
 
 export type CreateIssueDTO = z.infer<typeof CreateIssueSchema>

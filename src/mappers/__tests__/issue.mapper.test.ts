@@ -13,7 +13,6 @@ describe('toIssueDTO', () => {
       priority: 'HIGH',
       stateId: 'state-1',
       typeId: 'type-1',
-      assigneeId: 'user-2',
       authorId: 'user-1',
       projectId: 'proj-1',
       createdAt: now,
@@ -28,17 +27,10 @@ describe('toIssueDTO', () => {
       priority: 'HIGH',
       stateId: 'state-1',
       typeId: 'type-1',
-      assigneeId: 'user-2',
       authorId: 'user-1',
       projectId: 'proj-1',
       createdAt: '2025-03-01T10:00:00.000Z',
       updatedAt: '2025-03-01T10:00:00.000Z',
     })
-  })
-
-  it('should map a null assigneeId as null', () => {
-    const issue = createFakeIssue({ assigneeId: null })
-
-    expect(toIssueDTO(issue).assigneeId).toBeNull()
   })
 })

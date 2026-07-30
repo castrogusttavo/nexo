@@ -10,7 +10,6 @@ export interface IssueDTO {
   priority: IssuePriorityDTO
   stateId: string
   typeId: string
-  assigneeId: string | null
   authorId: string
   projectId: string
   createdAt: string

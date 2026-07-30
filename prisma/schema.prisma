@@ -43,7 +43,6 @@ model User {
   cyclesLed          Cycle[]               @relation("CycleLead")
   cycleMemberships   CycleMember[]
   issuesAuthored     Issue[]               @relation("IssueAuthor")
-  issuesAssigned     Issue[]               @relation("IssueAssignee")
 
   @@index([deletionScheduledAt])
   @@map("users")
@@ -782,7 +781,6 @@ model Issue {
   priority    IssuePriority @default(NONE)
   stateId     String        @map("state_id")
   typeId      String        @map("type_id")
-  assigneeId  String?       @map("assignee_id")
   authorId    String        @map("author_id")
   projectId   String        @map("project_id")
   deletedAt   DateTime?     @map("deleted_at")
@@ -791,7 +789,6 @@ model Issue {
 
   state    State     @relation(fields: [stateId], references: [id])
   type     IssueType @relation(fields: [typeId], references: [id])
-  assignee User?     @relation("IssueAssignee", fields: [assigneeId], references: [id])
   author   User      @relation("IssueAuthor", fields: [authorId], references: [id])
   project  Project   @relation(fields: [projectId], references: [id], onDelete: Cascade)
 

@@ -34,7 +34,6 @@ export const IssueRepository = {
     stateId: string
     typeId: string
     authorId: string
-    assigneeId?: string
     projectId: string
   }): Promise<Result<Issue>> {
     try {
@@ -61,7 +60,6 @@ export const IssueRepository = {
       priority?: IssuePriority
       stateId?: string
       typeId?: string
-      assigneeId?: string | null
     },
   ): Promise<Result<Issue>> {
     try {

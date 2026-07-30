@@ -12,7 +12,6 @@ export function createFakeIssue(overrides?: Partial<Issue>): Issue {
     priority: 'NONE',
     stateId: createId(),
     typeId: createId(),
-    assigneeId: null,
     authorId: createId(),
     projectId: createId(),
     deletedAt: null,
@@ -33,7 +32,6 @@ export function seedIssue(
     title?: string
     description?: Prisma.InputJsonValue
     priority?: IssuePriority
-    assigneeId?: string
     number?: number
   },
 ) {

@@ -15,7 +15,6 @@ export function toIssueDTO(issue: Issue): IssueDTO {
     priority: issue.priority,
     stateId: issue.stateId,
     typeId: issue.typeId,
-    assigneeId: issue.assigneeId ?? null,
     authorId: issue.authorId,
     projectId: issue.projectId,
     ...withTimestamps(issue),
