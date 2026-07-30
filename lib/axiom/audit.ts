@@ -24,6 +24,7 @@ type AuditEntity =
   | 'module'
   | 'cycle'
   | 'issue_type'
+  | 'issue'
 
 type AuditAction =
   | 'create'
