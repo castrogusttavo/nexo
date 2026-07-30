@@ -443,6 +443,7 @@ model Project {
   estimateSettings EstimateSettings?
   modules          Module[]
   cycles           Cycle[]
+  issueTypes       IssueType[]
 
   @@unique([workspaceId, slug])
   @@unique([workspaceId, identifier])
@@ -747,4 +748,22 @@ model CycleMember {
   @@index([cycleId])
   @@index([userId])
   @@map("cycle_members")
+}
+
+model IssueType {
+  id          String   @id @default(cuid())
+  name        String
+  description String?
+  color       TagColor @default(ZINC)
+  icon        String
+  isSystem    Boolean  @default(false) @map("is_system")
+  order       Int      @default(0)
+  projectId   String   @map("project_id")
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  project Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+
+  @@index([projectId])
+  @@map("issue_types")
 }
