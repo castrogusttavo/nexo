@@ -15,3 +15,23 @@ export interface IssueDTO {
   createdAt: string
   updatedAt: string
 }
+
+export interface IssueAssigneeDTO {
+  id: string
+  issueId: string
+  userId: string
+  user: {
+    id: string
+    name: string
+    username: string
+    image: string | null
+  }
+  createdAt: string
+}
+
+export interface IssueSubscriberDTO {
+  id: string
+  issueId: string
+  userId: string
+  createdAt: string
+}

@@ -1,6 +1,11 @@
-import type { Issue } from '@prisma/client'
+import type { Issue, IssueSubscriber } from '@prisma/client'
 import type { JSONContent } from '@tiptap/react'
-import type { IssueDTO } from '@/types/issue'
+import type {
+  IssueAssigneeDTO,
+  IssueDTO,
+  IssueSubscriberDTO,
+} from '@/types/issue'
+import type { IssueAssigneeWithUser } from '../repositories/issue-assignee.repository'
 import { withTimestamps } from './_shared'
 
 export function toIssueDTO(issue: Issue): IssueDTO {
@@ -18,5 +23,28 @@ export function toIssueDTO(issue: Issue): IssueDTO {
     authorId: issue.authorId,
     projectId: issue.projectId,
     ...withTimestamps(issue),
+  }
+}
+
+export function toIssueAssigneeDTO(
+  assignee: IssueAssigneeWithUser,
+): IssueAssigneeDTO {
+  return {
+    id: assignee.id,
+    issueId: assignee.issueId,
+    userId: assignee.userId,
+    user: assignee.user,
+    createdAt: assignee.createdAt.toISOString(),
+  }
+}
+
+export function toIssueSubscriberDTO(
+  subscriber: IssueSubscriber,
+): IssueSubscriberDTO {
+  return {
+    id: subscriber.id,
+    issueId: subscriber.issueId,
+    userId: subscriber.userId,
+    createdAt: subscriber.createdAt.toISOString(),
   }
 }

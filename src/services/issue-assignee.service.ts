@@ -1,10 +1,11 @@
 import { auditMutation } from '@/lib/axiom/audit'
+import type { IssueAssigneeDTO } from '@/types/issue'
 import { issueForbidden, issueNotFound, projectMemberNotFound } from '../errors'
 import { err, ok, type Result } from '../lib/result'
+import { toIssueAssigneeDTO } from '../mappers/issue.mapper'
 import { IssueRepository } from '../repositories/issue.repository'
 import {
   IssueAssigneeRepository,
-  type IssueAssigneeWithUser,
   IssueSubscriberRepository,
 } from '../repositories/issue-assignee.repository'
 import { resolveProject } from './_project-scope'
@@ -25,7 +26,7 @@ export const IssueAssigneeService = {
     workspaceId: string,
     projectSlug: string,
     issueId: string,
-  ): Promise<Result<IssueAssigneeWithUser[]>> {
+  ): Promise<Result<IssueAssigneeDTO[]>> {
     const resolved = await resolveProject(actorId, workspaceId, projectSlug)
     if (!resolved.ok) return err(resolved.error)
 
@@ -39,7 +40,10 @@ export const IssueAssigneeService = {
     const issueCheck = await assertIssueInProject(issueId, project.id)
     if (!issueCheck.ok) return issueCheck
 
-    return IssueAssigneeRepository.list(issueId)
+    const result = await IssueAssigneeRepository.list(issueId)
+    if (!result.ok) return result
+
+    return ok(result.value.map(toIssueAssigneeDTO))
   },
 
   async assign(
@@ -48,7 +52,7 @@ export const IssueAssigneeService = {
     projectSlug: string,
     issueId: string,
     userId: string,
-  ): Promise<Result<IssueAssigneeWithUser>> {
+  ): Promise<Result<IssueAssigneeDTO>> {
     const resolved = await resolveProject(actorId, workspaceId, projectSlug)
     if (!resolved.ok) return err(resolved.error)
 
@@ -79,7 +83,7 @@ export const IssueAssigneeService = {
       meta: { userId },
     })
 
-    return ok(result.value)
+    return ok(toIssueAssigneeDTO(result.value))
   },
 
   async unassign(
