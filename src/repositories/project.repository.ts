@@ -15,6 +15,7 @@ import { prisma } from '../lib/prisma'
 import { err, ok, type Result } from '../lib/result'
 import { dbError } from './db-error'
 import { DEFAULT_ESTIMATE_VALUES } from './estimate-value.repository'
+import { DEFAULT_ISSUE_TYPE } from './issue-type.repository'
 import { DEFAULT_LABELS } from './label.repository'
 import { DEFAULT_STATES } from './state.repository'
 
@@ -181,6 +182,14 @@ export const ProjectRepository = {
             value,
             order: index,
             estimateSettingsId: estimateSettings.id,
+          })),
+        })
+        await tx.issueType.createMany({
+          data: DEFAULT_ISSUE_TYPE.map((type, index) => ({
+            ...type,
+            isSystem: true,
+            order: index,
+            projectId: p.id,
           })),
         })
         return p
