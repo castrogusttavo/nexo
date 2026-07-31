@@ -79,6 +79,31 @@
     {
       "name": "Admin — Vagas",
       "description": "Gestão de vagas de carreira. Restrito a e-mails na allowlist de administradores da plataforma"
+    },
+    {
+      "name": "Ciclos",
+      "description": "Ciclos (sprints) de um projeto — período de trabalho com membros e status"
+    },
+    {
+      "name": "Estimativas",
+      "description": "Configurações de estimativa de um projeto (sistema, modelo e valores) e reordenação"
+    },
+    {
+      "name": "Issues",
+      "description": "Issues de um projeto — criação, edição, responsáveis e inscrição em notificações"
+    },
+    {
+      "name": "Tipos de Issue",
+      "description": "Tipos de issue de um projeto (ex.: Task, Epic) — criação, edição e reordenação"
+    },
+    { "name": "Labels", "description": "Labels de um projeto — categorização de issues por cor" },
+    {
+      "name": "Módulos",
+      "description": "Módulos de um projeto — agrupamento de trabalho com progresso, membros e favoritos"
+    },
+    {
+      "name": "Estados",
+      "description": "States (etapas do workflow) de um projeto — grupo, cor, ordem e state padrão"
     }
   ],
   "paths": {
@@ -3033,6 +3058,1636 @@
           "429": { "$ref": "#/components/responses/RateLimitError" }
         }
       }
+    },
+    "/workspaces/{id}/projects/{slug}/cycles": {
+      "parameters": [
+        {
+          "name": "id",
+          "in": "path",
+          "required": true,
+          "description": "ID do workspace (cuid2).",
+          "schema": { "type": "string" }
+        },
+        {
+          "name": "slug",
+          "in": "path",
+          "required": true,
+          "description": "Slug do projeto.",
+          "schema": { "type": "string" }
+        }
+      ],
+      "get": {
+        "tags": ["Ciclos"],
+        "summary": "Listar ciclos do projeto",
+        "description": "Retorna os ciclos (sprints) do projeto. Projetos privados exigem que o usuário seja OWNER/ADMIN do workspace, lead ou membro do projeto.",
+        "security": [{ "cookieAuth": [] }],
+        "responses": {
+          "200": {
+            "description": "Lista de ciclos retornada com sucesso.",
+            "content": {
+              "application/json": { "schema": { "$ref": "#/components/schemas/CycleListResponse" } }
+            }
+          },
+          "401": { "$ref": "#/components/responses/UnauthorizedError" },
+          "403": { "$ref": "#/components/responses/ForbiddenError" },
+          "404": { "$ref": "#/components/responses/NotFoundError" },
+          "429": { "$ref": "#/components/responses/RateLimitError" }
+        }
+      },
+      "post": {
+        "tags": ["Ciclos"],
+        "summary": "Criar ciclo",
+        "description": "Cria um novo ciclo (sprint) no projeto. Requer role OWNER/ADMIN do workspace ou ser o lead do projeto, e consentimento de cookies aceito. Falha com `CYCLE_ALREADY_ACTIVE` (409) se `status` for `IN_PROGRESS` e já existir um ciclo ativo no projeto.",
+        "security": [{ "cookieAuth": [] }],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": { "schema": { "$ref": "#/components/schemas/CreateCycleInput" } }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Ciclo criado com sucesso.",
+            "content": {
+              "application/json": { "schema": { "$ref": "#/components/schemas/CycleResponse" } }
+            }
+          },
+          "401": { "$ref": "#/components/responses/UnauthorizedError" },
+          "403": { "$ref": "#/components/responses/ForbiddenError" },
+          "404": { "$ref": "#/components/responses/NotFoundError" },
+          "409": { "$ref": "#/components/responses/ConflictError" },
+          "422": { "$ref": "#/components/responses/ValidationError" },
+          "429": { "$ref": "#/components/responses/RateLimitError" }
+        }
+      }
+    },
+    "/workspaces/{id}/projects/{slug}/cycles/{cycleId}": {
+      "parameters": [
+        {
+          "name": "id",
+          "in": "path",
+          "required": true,
+          "description": "ID do workspace (cuid2).",
+          "schema": { "type": "string" }
+        },
+        {
+          "name": "slug",
+          "in": "path",
+          "required": true,
+          "description": "Slug do projeto.",
+          "schema": { "type": "string" }
+        },
+        {
+          "name": "cycleId",
+          "in": "path",
+          "required": true,
+          "description": "ID do ciclo (cuid2).",
+          "schema": { "type": "string" }
+        }
+      ],
+      "patch": {
+        "tags": ["Ciclos"],
+        "summary": "Atualizar ciclo",
+        "description": "Atualiza um ciclo do projeto. Requer role OWNER/ADMIN do workspace ou ser o lead do projeto, e consentimento de cookies aceito. Falha com `CYCLE_ALREADY_ACTIVE` (409) ao mudar `status` para `IN_PROGRESS` havendo outro ciclo já ativo.",
+        "security": [{ "cookieAuth": [] }],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": { "schema": { "$ref": "#/components/schemas/UpdateCycleInput" } }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Ciclo atualizado com sucesso.",
+            "content": {
+              "application/json": { "schema": { "$ref": "#/components/schemas/CycleResponse" } }
+            }
+          },
+          "401": { "$ref": "#/components/responses/UnauthorizedError" },
+          "403": { "$ref": "#/components/responses/ForbiddenError" },
+          "404": { "$ref": "#/components/responses/NotFoundError" },
+          "409": { "$ref": "#/components/responses/ConflictError" },
+          "422": { "$ref": "#/components/responses/ValidationError" },
+          "429": { "$ref": "#/components/responses/RateLimitError" }
+        }
+      },
+      "delete": {
+        "tags": ["Ciclos"],
+        "summary": "Excluir ciclo",
+        "description": "Remove um ciclo do projeto. Requer role OWNER/ADMIN do workspace ou ser o lead do projeto, e consentimento de cookies aceito.",
+        "security": [{ "cookieAuth": [] }],
+        "responses": {
+          "200": {
+            "description": "Ciclo excluído com sucesso.",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/EmptySuccessResponse" }
+              }
+            }
+          },
+          "401": { "$ref": "#/components/responses/UnauthorizedError" },
+          "403": { "$ref": "#/components/responses/ForbiddenError" },
+          "404": { "$ref": "#/components/responses/NotFoundError" },
+          "429": { "$ref": "#/components/responses/RateLimitError" }
+        }
+      }
+    },
+    "/workspaces/{id}/projects/{slug}/cycles/{cycleId}/members": {
+      "parameters": [
+        {
+          "name": "id",
+          "in": "path",
+          "required": true,
+          "description": "ID do workspace (cuid2).",
+          "schema": { "type": "string" }
+        },
+        {
+          "name": "slug",
+          "in": "path",
+          "required": true,
+          "description": "Slug do projeto.",
+          "schema": { "type": "string" }
+        },
+        {
+          "name": "cycleId",
+          "in": "path",
+          "required": true,
+          "description": "ID do ciclo (cuid2).",
+          "schema": { "type": "string" }
+        }
+      ],
+      "get": {
+        "tags": ["Ciclos"],
+        "summary": "Listar membros do ciclo",
+        "description": "Retorna os membros do ciclo. Projetos privados exigem que o usuário seja OWNER/ADMIN do workspace, lead ou membro do projeto.",
+        "security": [{ "cookieAuth": [] }],
+        "responses": {
+          "200": {
+            "description": "Lista de membros do ciclo retornada com sucesso.",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/CycleMemberListResponse" }
+              }
+            }
+          },
+          "401": { "$ref": "#/components/responses/UnauthorizedError" },
+          "403": { "$ref": "#/components/responses/ForbiddenError" },
+          "404": { "$ref": "#/components/responses/NotFoundError" },
+          "429": { "$ref": "#/components/responses/RateLimitError" }
+        }
+      },
+      "post": {
+        "tags": ["Ciclos"],
+        "summary": "Adicionar membro ao ciclo",
+        "description": "Adiciona um usuário como membro do ciclo. Requer role OWNER/ADMIN do workspace ou ser o lead do projeto, e consentimento de cookies aceito. Falha com `CYCLE_MEMBER_ALREADY_EXISTS` (409) se o usuário já for membro do ciclo.",
+        "security": [{ "cookieAuth": [] }],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": { "schema": { "$ref": "#/components/schemas/AddCycleMemberInput" } }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Membro adicionado ao ciclo com sucesso.",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/CycleMemberResponse" }
+              }
+            }
+          },
+          "401": { "$ref": "#/components/responses/UnauthorizedError" },
+          "403": { "$ref": "#/components/responses/ForbiddenError" },
+          "404": { "$ref": "#/components/responses/NotFoundError" },
+          "409": { "$ref": "#/components/responses/ConflictError" },
+          "422": { "$ref": "#/components/responses/ValidationError" },
+          "429": { "$ref": "#/components/responses/RateLimitError" }
+        }
+      }
+    },
+    "/workspaces/{id}/projects/{slug}/cycles/{cycleId}/members/{userId}": {
+      "parameters": [
+        {
+          "name": "id",
+          "in": "path",
+          "required": true,
+          "description": "ID do workspace (cuid2).",
+          "schema": { "type": "string" }
+        },
+        {
+          "name": "slug",
+          "in": "path",
+          "required": true,
+          "description": "Slug do projeto.",
+          "schema": { "type": "string" }
+        },
+        {
+          "name": "cycleId",
+          "in": "path",
+          "required": true,
+          "description": "ID do ciclo (cuid2).",
+          "schema": { "type": "string" }
+        },
+        {
+          "name": "userId",
+          "in": "path",
+          "required": true,
+          "description": "ID do usuário membro do ciclo (cuid2).",
+          "schema": { "type": "string" }
+        }
+      ],
+      "delete": {
+        "tags": ["Ciclos"],
+        "summary": "Remover membro do ciclo",
+        "description": "Remove um membro do ciclo. Requer role OWNER/ADMIN do workspace ou ser o lead do projeto, e consentimento de cookies aceito. Falha com `CYCLE_FORBIDDEN` (403) ao tentar remover o lead do ciclo.",
+        "security": [{ "cookieAuth": [] }],
+        "responses": {
+          "200": {
+            "description": "Membro removido do ciclo com sucesso.",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/EmptySuccessResponse" }
+              }
+            }
+          },
+          "401": { "$ref": "#/components/responses/UnauthorizedError" },
+          "403": { "$ref": "#/components/responses/ForbiddenError" },
+          "404": { "$ref": "#/components/responses/NotFoundError" },
+          "429": { "$ref": "#/components/responses/RateLimitError" }
+        }
+      }
+    },
+    "/workspaces/{id}/projects/{slug}/estimate": {
+      "parameters": [
+        {
+          "name": "id",
+          "in": "path",
+          "required": true,
+          "description": "ID do workspace (cuid2).",
+          "schema": { "type": "string" }
+        },
+        {
+          "name": "slug",
+          "in": "path",
+          "required": true,
+          "description": "Slug do projeto.",
+          "schema": { "type": "string" }
+        }
+      ],
+      "get": {
+        "tags": ["Estimativas"],
+        "summary": "Obter configurações de estimativa",
+        "description": "Retorna o sistema, modelo e valores de estimativa configurados para o projeto. Projetos privados exigem que o usuário seja OWNER/ADMIN do workspace, lead ou membro do projeto.",
+        "security": [{ "cookieAuth": [] }],
+        "responses": {
+          "200": {
+            "description": "Configurações de estimativa retornadas com sucesso.",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/EstimateSettingsResponse" }
+              }
+            }
+          },
+          "401": { "$ref": "#/components/responses/UnauthorizedError" },
+          "403": { "$ref": "#/components/responses/ForbiddenError" },
+          "404": { "$ref": "#/components/responses/NotFoundError" },
+          "429": { "$ref": "#/components/responses/RateLimitError" }
+        }
+      },
+      "patch": {
+        "tags": ["Estimativas"],
+        "summary": "Atualizar sistema e modelo de estimativa",
+        "description": "Atualiza o sistema (`POINTS`/`CATEGORIES`/`TIME`) e o modelo de estimativa do projeto. Requer role OWNER/ADMIN do workspace ou ser o lead do projeto, e consentimento de cookies aceito.",
+        "security": [{ "cookieAuth": [] }],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/UpdateEstimateSettingsInput" }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Configurações de estimativa atualizadas com sucesso.",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/EstimateSettingsResponse" }
+              }
+            }
+          },
+          "401": { "$ref": "#/components/responses/UnauthorizedError" },
+          "403": { "$ref": "#/components/responses/ForbiddenError" },
+          "404": { "$ref": "#/components/responses/NotFoundError" },
+          "422": { "$ref": "#/components/responses/ValidationError" },
+          "429": { "$ref": "#/components/responses/RateLimitError" }
+        }
+      }
+    },
+    "/workspaces/{id}/projects/{slug}/estimate/values": {
+      "parameters": [
+        {
+          "name": "id",
+          "in": "path",
+          "required": true,
+          "description": "ID do workspace (cuid2).",
+          "schema": { "type": "string" }
+        },
+        {
+          "name": "slug",
+          "in": "path",
+          "required": true,
+          "description": "Slug do projeto.",
+          "schema": { "type": "string" }
+        }
+      ],
+      "post": {
+        "tags": ["Estimativas"],
+        "summary": "Criar valor de estimativa",
+        "description": "Adiciona um novo valor à lista de estimativas do projeto. Requer role OWNER/ADMIN do workspace ou ser o lead do projeto, e consentimento de cookies aceito.",
+        "security": [{ "cookieAuth": [] }],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/CreateEstimateValueInput" }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Valor de estimativa criado com sucesso.",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/EstimateValueResponse" }
+              }
+            }
+          },
+          "401": { "$ref": "#/components/responses/UnauthorizedError" },
+          "403": { "$ref": "#/components/responses/ForbiddenError" },
+          "404": { "$ref": "#/components/responses/NotFoundError" },
+          "422": { "$ref": "#/components/responses/ValidationError" },
+          "429": { "$ref": "#/components/responses/RateLimitError" }
+        }
+      }
+    },
+    "/workspaces/{id}/projects/{slug}/estimate/values/reorder": {
+      "parameters": [
+        {
+          "name": "id",
+          "in": "path",
+          "required": true,
+          "description": "ID do workspace (cuid2).",
+          "schema": { "type": "string" }
+        },
+        {
+          "name": "slug",
+          "in": "path",
+          "required": true,
+          "description": "Slug do projeto.",
+          "schema": { "type": "string" }
+        }
+      ],
+      "patch": {
+        "tags": ["Estimativas"],
+        "summary": "Reordenar valores de estimativa",
+        "description": "Define a nova ordem dos valores de estimativa a partir da lista `valueIds`. Requer role OWNER/ADMIN do workspace ou ser o lead do projeto, e consentimento de cookies aceito.",
+        "security": [{ "cookieAuth": [] }],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/ReorderEstimateValuesInput" }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Valores de estimativa reordenados com sucesso.",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/EstimateValueListResponse" }
+              }
+            }
+          },
+          "401": { "$ref": "#/components/responses/UnauthorizedError" },
+          "403": { "$ref": "#/components/responses/ForbiddenError" },
+          "404": { "$ref": "#/components/responses/NotFoundError" },
+          "422": { "$ref": "#/components/responses/ValidationError" },
+          "429": { "$ref": "#/components/responses/RateLimitError" }
+        }
+      }
+    },
+    "/workspaces/{id}/projects/{slug}/estimate/values/{valueId}": {
+      "parameters": [
+        {
+          "name": "id",
+          "in": "path",
+          "required": true,
+          "description": "ID do workspace (cuid2).",
+          "schema": { "type": "string" }
+        },
+        {
+          "name": "slug",
+          "in": "path",
+          "required": true,
+          "description": "Slug do projeto.",
+          "schema": { "type": "string" }
+        },
+        {
+          "name": "valueId",
+          "in": "path",
+          "required": true,
+          "description": "ID do valor de estimativa (cuid2).",
+          "schema": { "type": "string" }
+        }
+      ],
+      "patch": {
+        "tags": ["Estimativas"],
+        "summary": "Atualizar valor de estimativa",
+        "description": "Atualiza o texto de um valor de estimativa. Requer role OWNER/ADMIN do workspace ou ser o lead do projeto, e consentimento de cookies aceito. Falha com `ESTIMATE_VALUE_FORBIDDEN` (403) se o valor pertencer a outro projeto.",
+        "security": [{ "cookieAuth": [] }],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/UpdateEstimateValueInput" }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Valor de estimativa atualizado com sucesso.",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/EstimateValueResponse" }
+              }
+            }
+          },
+          "401": { "$ref": "#/components/responses/UnauthorizedError" },
+          "403": { "$ref": "#/components/responses/ForbiddenError" },
+          "404": { "$ref": "#/components/responses/NotFoundError" },
+          "422": { "$ref": "#/components/responses/ValidationError" },
+          "429": { "$ref": "#/components/responses/RateLimitError" }
+        }
+      },
+      "delete": {
+        "tags": ["Estimativas"],
+        "summary": "Excluir valor de estimativa",
+        "description": "Remove um valor de estimativa do projeto. Requer role OWNER/ADMIN do workspace ou ser o lead do projeto, e consentimento de cookies aceito. Falha com `ESTIMATE_VALUE_LAST_REMAINING` (409) se for o último valor restante, e com `ESTIMATE_VALUE_FORBIDDEN` (403) se o valor pertencer a outro projeto.",
+        "security": [{ "cookieAuth": [] }],
+        "responses": {
+          "200": {
+            "description": "Valor de estimativa excluído com sucesso.",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/EmptySuccessResponse" }
+              }
+            }
+          },
+          "401": { "$ref": "#/components/responses/UnauthorizedError" },
+          "403": { "$ref": "#/components/responses/ForbiddenError" },
+          "404": { "$ref": "#/components/responses/NotFoundError" },
+          "409": { "$ref": "#/components/responses/ConflictError" },
+          "429": { "$ref": "#/components/responses/RateLimitError" }
+        }
+      }
+    },
+    "/workspaces/{id}/projects/{slug}/issues": {
+      "parameters": [
+        {
+          "name": "id",
+          "in": "path",
+          "required": true,
+          "description": "ID do workspace (cuid2).",
+          "schema": { "type": "string" }
+        },
+        {
+          "name": "slug",
+          "in": "path",
+          "required": true,
+          "description": "Slug do projeto.",
+          "schema": { "type": "string" }
+        }
+      ],
+      "get": {
+        "tags": ["Issues"],
+        "summary": "Listar issues do projeto",
+        "description": "Retorna as issues do projeto. Projetos privados exigem que o usuário seja OWNER/ADMIN do workspace, lead ou membro do projeto.",
+        "security": [{ "cookieAuth": [] }],
+        "responses": {
+          "200": {
+            "description": "Lista de issues retornada com sucesso.",
+            "content": {
+              "application/json": { "schema": { "$ref": "#/components/schemas/IssueListResponse" } }
+            }
+          },
+          "401": { "$ref": "#/components/responses/UnauthorizedError" },
+          "403": { "$ref": "#/components/responses/ForbiddenError" },
+          "404": { "$ref": "#/components/responses/NotFoundError" },
+          "429": { "$ref": "#/components/responses/RateLimitError" }
+        }
+      },
+      "post": {
+        "tags": ["Issues"],
+        "summary": "Criar issue",
+        "description": "Cria uma nova issue no projeto. Requer ser membro do projeto (ou OWNER/ADMIN do workspace, ou lead), e consentimento de cookies aceito. Se `typeId` for omitido, usa o tipo padrão do sistema (Task). Falha com `ISSUE_STATE_INVALID` (422) se `stateId` não pertencer ao projeto, `ISSUE_TYPE_INVALID` (422) se `typeId` não pertencer ao projeto, e erro de validação (422) se `dueDate` for anterior a `startDate`.",
+        "security": [{ "cookieAuth": [] }],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": { "schema": { "$ref": "#/components/schemas/CreateIssueInput" } }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Issue criada com sucesso.",
+            "content": {
+              "application/json": { "schema": { "$ref": "#/components/schemas/IssueResponse" } }
+            }
+          },
+          "401": { "$ref": "#/components/responses/UnauthorizedError" },
+          "403": { "$ref": "#/components/responses/ForbiddenError" },
+          "404": { "$ref": "#/components/responses/NotFoundError" },
+          "422": { "$ref": "#/components/responses/ValidationError" },
+          "429": { "$ref": "#/components/responses/RateLimitError" }
+        }
+      }
+    },
+    "/workspaces/{id}/projects/{slug}/issues/{issueId}": {
+      "parameters": [
+        {
+          "name": "id",
+          "in": "path",
+          "required": true,
+          "description": "ID do workspace (cuid2).",
+          "schema": { "type": "string" }
+        },
+        {
+          "name": "slug",
+          "in": "path",
+          "required": true,
+          "description": "Slug do projeto.",
+          "schema": { "type": "string" }
+        },
+        {
+          "name": "issueId",
+          "in": "path",
+          "required": true,
+          "description": "ID da issue (cuid2).",
+          "schema": { "type": "string" }
+        }
+      ],
+      "patch": {
+        "tags": ["Issues"],
+        "summary": "Atualizar issue",
+        "description": "Atualiza campos de uma issue. Requer ser membro do projeto (ou OWNER/ADMIN do workspace, ou lead), e consentimento de cookies aceito. Mesmas validações de `stateId`, `typeId` e ordem de datas do create.",
+        "security": [{ "cookieAuth": [] }],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": { "schema": { "$ref": "#/components/schemas/UpdateIssueInput" } }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Issue atualizada com sucesso.",
+            "content": {
+              "application/json": { "schema": { "$ref": "#/components/schemas/IssueResponse" } }
+            }
+          },
+          "401": { "$ref": "#/components/responses/UnauthorizedError" },
+          "403": { "$ref": "#/components/responses/ForbiddenError" },
+          "404": { "$ref": "#/components/responses/NotFoundError" },
+          "422": { "$ref": "#/components/responses/ValidationError" },
+          "429": { "$ref": "#/components/responses/RateLimitError" }
+        }
+      },
+      "delete": {
+        "tags": ["Issues"],
+        "summary": "Excluir issue",
+        "description": "Remove uma issue do projeto. Requer ser membro do projeto (ou OWNER/ADMIN do workspace, ou lead), e consentimento de cookies aceito.",
+        "security": [{ "cookieAuth": [] }],
+        "responses": {
+          "200": {
+            "description": "Issue excluída com sucesso.",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/EmptySuccessResponse" }
+              }
+            }
+          },
+          "401": { "$ref": "#/components/responses/UnauthorizedError" },
+          "403": { "$ref": "#/components/responses/ForbiddenError" },
+          "404": { "$ref": "#/components/responses/NotFoundError" },
+          "429": { "$ref": "#/components/responses/RateLimitError" }
+        }
+      }
+    },
+    "/workspaces/{id}/projects/{slug}/issues/{issueId}/assignees": {
+      "parameters": [
+        {
+          "name": "id",
+          "in": "path",
+          "required": true,
+          "description": "ID do workspace (cuid2).",
+          "schema": { "type": "string" }
+        },
+        {
+          "name": "slug",
+          "in": "path",
+          "required": true,
+          "description": "Slug do projeto.",
+          "schema": { "type": "string" }
+        },
+        {
+          "name": "issueId",
+          "in": "path",
+          "required": true,
+          "description": "ID da issue (cuid2).",
+          "schema": { "type": "string" }
+        }
+      ],
+      "get": {
+        "tags": ["Issues"],
+        "summary": "Listar responsáveis pela issue",
+        "description": "Retorna os usuários atribuídos à issue. Requer ser membro do projeto (ou OWNER/ADMIN do workspace, ou lead).",
+        "security": [{ "cookieAuth": [] }],
+        "responses": {
+          "200": {
+            "description": "Lista de responsáveis retornada com sucesso.",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/IssueAssigneeListResponse" }
+              }
+            }
+          },
+          "401": { "$ref": "#/components/responses/UnauthorizedError" },
+          "403": { "$ref": "#/components/responses/ForbiddenError" },
+          "404": { "$ref": "#/components/responses/NotFoundError" },
+          "429": { "$ref": "#/components/responses/RateLimitError" }
+        }
+      },
+      "post": {
+        "tags": ["Issues"],
+        "summary": "Atribuir responsável à issue",
+        "description": "Atribui um usuário à issue e o inscreve automaticamente nas notificações da issue. O usuário precisa já ser membro do projeto — falha com `PROJECT_MEMBER_NOT_FOUND` (404) caso contrário. Requer ser membro do projeto (ou OWNER/ADMIN do workspace, ou lead), e consentimento de cookies aceito. Falha com `ISSUE_ASSIGNEE_ALREADY_EXISTS` (409) se o usuário já estiver atribuído.",
+        "security": [{ "cookieAuth": [] }],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": { "schema": { "$ref": "#/components/schemas/AssignIssueInput" } }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Usuário atribuído à issue com sucesso.",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/IssueAssigneeResponse" }
+              }
+            }
+          },
+          "401": { "$ref": "#/components/responses/UnauthorizedError" },
+          "403": { "$ref": "#/components/responses/ForbiddenError" },
+          "404": { "$ref": "#/components/responses/NotFoundError" },
+          "409": { "$ref": "#/components/responses/ConflictError" },
+          "422": { "$ref": "#/components/responses/ValidationError" },
+          "429": { "$ref": "#/components/responses/RateLimitError" }
+        }
+      }
+    },
+    "/workspaces/{id}/projects/{slug}/issues/{issueId}/assignees/{userId}": {
+      "parameters": [
+        {
+          "name": "id",
+          "in": "path",
+          "required": true,
+          "description": "ID do workspace (cuid2).",
+          "schema": { "type": "string" }
+        },
+        {
+          "name": "slug",
+          "in": "path",
+          "required": true,
+          "description": "Slug do projeto.",
+          "schema": { "type": "string" }
+        },
+        {
+          "name": "issueId",
+          "in": "path",
+          "required": true,
+          "description": "ID da issue (cuid2).",
+          "schema": { "type": "string" }
+        },
+        {
+          "name": "userId",
+          "in": "path",
+          "required": true,
+          "description": "ID do usuário atribuído (cuid2).",
+          "schema": { "type": "string" }
+        }
+      ],
+      "delete": {
+        "tags": ["Issues"],
+        "summary": "Remover responsável da issue",
+        "description": "Remove a atribuição de um usuário à issue. Requer ser membro do projeto (ou OWNER/ADMIN do workspace, ou lead), e consentimento de cookies aceito. Falha com `ISSUE_ASSIGNEE_NOT_FOUND` (404) se o usuário não estiver atribuído.",
+        "security": [{ "cookieAuth": [] }],
+        "responses": {
+          "200": {
+            "description": "Responsável removido da issue com sucesso.",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/EmptySuccessResponse" }
+              }
+            }
+          },
+          "401": { "$ref": "#/components/responses/UnauthorizedError" },
+          "403": { "$ref": "#/components/responses/ForbiddenError" },
+          "404": { "$ref": "#/components/responses/NotFoundError" },
+          "429": { "$ref": "#/components/responses/RateLimitError" }
+        }
+      }
+    },
+    "/workspaces/{id}/projects/{slug}/issues/{issueId}/subscribe": {
+      "parameters": [
+        {
+          "name": "id",
+          "in": "path",
+          "required": true,
+          "description": "ID do workspace (cuid2).",
+          "schema": { "type": "string" }
+        },
+        {
+          "name": "slug",
+          "in": "path",
+          "required": true,
+          "description": "Slug do projeto.",
+          "schema": { "type": "string" }
+        },
+        {
+          "name": "issueId",
+          "in": "path",
+          "required": true,
+          "description": "ID da issue (cuid2).",
+          "schema": { "type": "string" }
+        }
+      ],
+      "post": {
+        "tags": ["Issues"],
+        "summary": "Inscrever-se na issue",
+        "description": "Inscreve o usuário autenticado nas notificações da issue. Requer ser membro do projeto (ou OWNER/ADMIN do workspace, ou lead), e consentimento de cookies aceito.",
+        "security": [{ "cookieAuth": [] }],
+        "responses": {
+          "201": {
+            "description": "Inscrição na issue realizada com sucesso.",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/EmptySuccessResponse" }
+              }
+            }
+          },
+          "401": { "$ref": "#/components/responses/UnauthorizedError" },
+          "403": { "$ref": "#/components/responses/ForbiddenError" },
+          "404": { "$ref": "#/components/responses/NotFoundError" },
+          "429": { "$ref": "#/components/responses/RateLimitError" }
+        }
+      },
+      "delete": {
+        "tags": ["Issues"],
+        "summary": "Cancelar inscrição na issue",
+        "description": "Remove a inscrição do usuário autenticado nas notificações da issue. Requer ser membro do projeto (ou OWNER/ADMIN do workspace, ou lead), e consentimento de cookies aceito. Falha com `ISSUE_SUBSCRIBER_NOT_FOUND` (404) se não houver inscrição.",
+        "security": [{ "cookieAuth": [] }],
+        "responses": {
+          "200": {
+            "description": "Inscrição na issue cancelada com sucesso.",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/EmptySuccessResponse" }
+              }
+            }
+          },
+          "401": { "$ref": "#/components/responses/UnauthorizedError" },
+          "403": { "$ref": "#/components/responses/ForbiddenError" },
+          "404": { "$ref": "#/components/responses/NotFoundError" },
+          "429": { "$ref": "#/components/responses/RateLimitError" }
+        }
+      }
+    },
+    "/workspaces/{id}/projects/{slug}/issue-types": {
+      "parameters": [
+        {
+          "name": "id",
+          "in": "path",
+          "required": true,
+          "description": "ID do workspace (cuid2).",
+          "schema": { "type": "string" }
+        },
+        {
+          "name": "slug",
+          "in": "path",
+          "required": true,
+          "description": "Slug do projeto.",
+          "schema": { "type": "string" }
+        }
+      ],
+      "get": {
+        "tags": ["Tipos de Issue"],
+        "summary": "Listar tipos de issue",
+        "description": "Retorna os tipos de issue do projeto, incluindo os tipos padrão do sistema (Task/Epic). Projetos privados exigem que o usuário seja OWNER/ADMIN do workspace, lead ou membro do projeto.",
+        "security": [{ "cookieAuth": [] }],
+        "responses": {
+          "200": {
+            "description": "Lista de tipos de issue retornada com sucesso.",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/IssueTypeListResponse" }
+              }
+            }
+          },
+          "401": { "$ref": "#/components/responses/UnauthorizedError" },
+          "403": { "$ref": "#/components/responses/ForbiddenError" },
+          "404": { "$ref": "#/components/responses/NotFoundError" },
+          "429": { "$ref": "#/components/responses/RateLimitError" }
+        }
+      },
+      "post": {
+        "tags": ["Tipos de Issue"],
+        "summary": "Criar tipo de issue",
+        "description": "Cria um novo tipo de issue no projeto. Requer role OWNER/ADMIN do workspace ou ser o lead do projeto, e consentimento de cookies aceito.",
+        "security": [{ "cookieAuth": [] }],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/CreateIssueTypeInput" }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Tipo de issue criado com sucesso.",
+            "content": {
+              "application/json": { "schema": { "$ref": "#/components/schemas/IssueTypeResponse" } }
+            }
+          },
+          "401": { "$ref": "#/components/responses/UnauthorizedError" },
+          "403": { "$ref": "#/components/responses/ForbiddenError" },
+          "404": { "$ref": "#/components/responses/NotFoundError" },
+          "422": { "$ref": "#/components/responses/ValidationError" },
+          "429": { "$ref": "#/components/responses/RateLimitError" }
+        }
+      }
+    },
+    "/workspaces/{id}/projects/{slug}/issue-types/{typeId}": {
+      "parameters": [
+        {
+          "name": "id",
+          "in": "path",
+          "required": true,
+          "description": "ID do workspace (cuid2).",
+          "schema": { "type": "string" }
+        },
+        {
+          "name": "slug",
+          "in": "path",
+          "required": true,
+          "description": "Slug do projeto.",
+          "schema": { "type": "string" }
+        },
+        {
+          "name": "typeId",
+          "in": "path",
+          "required": true,
+          "description": "ID do tipo de issue (cuid2).",
+          "schema": { "type": "string" }
+        }
+      ],
+      "patch": {
+        "tags": ["Tipos de Issue"],
+        "summary": "Atualizar tipo de issue",
+        "description": "Atualiza um tipo de issue do projeto. Requer role OWNER/ADMIN do workspace ou ser o lead do projeto, e consentimento de cookies aceito. Falha com `ISSUE_TYPE_SYSTEM_PROTECTED` (403) para os tipos padrão do sistema (Task/Epic).",
+        "security": [{ "cookieAuth": [] }],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/UpdateIssueTypeInput" }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Tipo de issue atualizado com sucesso.",
+            "content": {
+              "application/json": { "schema": { "$ref": "#/components/schemas/IssueTypeResponse" } }
+            }
+          },
+          "401": { "$ref": "#/components/responses/UnauthorizedError" },
+          "403": { "$ref": "#/components/responses/ForbiddenError" },
+          "404": { "$ref": "#/components/responses/NotFoundError" },
+          "422": { "$ref": "#/components/responses/ValidationError" },
+          "429": { "$ref": "#/components/responses/RateLimitError" }
+        }
+      },
+      "delete": {
+        "tags": ["Tipos de Issue"],
+        "summary": "Excluir tipo de issue",
+        "description": "Remove um tipo de issue do projeto. Requer role OWNER/ADMIN do workspace ou ser o lead do projeto, e consentimento de cookies aceito. Falha com `ISSUE_TYPE_SYSTEM_PROTECTED` (403) para os tipos padrão do sistema (Task/Epic).",
+        "security": [{ "cookieAuth": [] }],
+        "responses": {
+          "200": {
+            "description": "Tipo de issue excluído com sucesso.",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/EmptySuccessResponse" }
+              }
+            }
+          },
+          "401": { "$ref": "#/components/responses/UnauthorizedError" },
+          "403": { "$ref": "#/components/responses/ForbiddenError" },
+          "404": { "$ref": "#/components/responses/NotFoundError" },
+          "429": { "$ref": "#/components/responses/RateLimitError" }
+        }
+      }
+    },
+    "/workspaces/{id}/projects/{slug}/issue-types/reorder": {
+      "parameters": [
+        {
+          "name": "id",
+          "in": "path",
+          "required": true,
+          "description": "ID do workspace (cuid2).",
+          "schema": { "type": "string" }
+        },
+        {
+          "name": "slug",
+          "in": "path",
+          "required": true,
+          "description": "Slug do projeto.",
+          "schema": { "type": "string" }
+        }
+      ],
+      "patch": {
+        "tags": ["Tipos de Issue"],
+        "summary": "Reordenar tipos de issue",
+        "description": "Define a nova ordem dos tipos de issue a partir da lista `typeIds`. Requer role OWNER/ADMIN do workspace ou ser o lead do projeto, e consentimento de cookies aceito.",
+        "security": [{ "cookieAuth": [] }],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/ReorderIssueTypesInput" }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Tipos de issue reordenados com sucesso.",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/IssueTypeListResponse" }
+              }
+            }
+          },
+          "401": { "$ref": "#/components/responses/UnauthorizedError" },
+          "403": { "$ref": "#/components/responses/ForbiddenError" },
+          "404": { "$ref": "#/components/responses/NotFoundError" },
+          "422": { "$ref": "#/components/responses/ValidationError" },
+          "429": { "$ref": "#/components/responses/RateLimitError" }
+        }
+      }
+    },
+    "/workspaces/{id}/projects/{slug}/labels": {
+      "parameters": [
+        {
+          "name": "id",
+          "in": "path",
+          "required": true,
+          "description": "ID do workspace (cuid2).",
+          "schema": { "type": "string" }
+        },
+        {
+          "name": "slug",
+          "in": "path",
+          "required": true,
+          "description": "Slug do projeto.",
+          "schema": { "type": "string" }
+        }
+      ],
+      "get": {
+        "tags": ["Labels"],
+        "summary": "Listar labels do projeto",
+        "description": "Retorna as labels do projeto. Projetos privados exigem que o usuário seja OWNER/ADMIN do workspace, lead ou membro do projeto.",
+        "security": [{ "cookieAuth": [] }],
+        "responses": {
+          "200": {
+            "description": "Lista de labels retornada com sucesso.",
+            "content": {
+              "application/json": { "schema": { "$ref": "#/components/schemas/LabelListResponse" } }
+            }
+          },
+          "401": { "$ref": "#/components/responses/UnauthorizedError" },
+          "403": { "$ref": "#/components/responses/ForbiddenError" },
+          "404": { "$ref": "#/components/responses/NotFoundError" },
+          "429": { "$ref": "#/components/responses/RateLimitError" }
+        }
+      },
+      "post": {
+        "tags": ["Labels"],
+        "summary": "Criar label",
+        "description": "Cria uma nova label no projeto. Requer role OWNER/ADMIN do workspace ou ser o lead do projeto, e consentimento de cookies aceito.",
+        "security": [{ "cookieAuth": [] }],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": { "schema": { "$ref": "#/components/schemas/CreateLabelInput" } }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Label criada com sucesso.",
+            "content": {
+              "application/json": { "schema": { "$ref": "#/components/schemas/LabelResponse" } }
+            }
+          },
+          "401": { "$ref": "#/components/responses/UnauthorizedError" },
+          "403": { "$ref": "#/components/responses/ForbiddenError" },
+          "404": { "$ref": "#/components/responses/NotFoundError" },
+          "422": { "$ref": "#/components/responses/ValidationError" },
+          "429": { "$ref": "#/components/responses/RateLimitError" }
+        }
+      }
+    },
+    "/workspaces/{id}/projects/{slug}/labels/{labelId}": {
+      "parameters": [
+        {
+          "name": "id",
+          "in": "path",
+          "required": true,
+          "description": "ID do workspace (cuid2).",
+          "schema": { "type": "string" }
+        },
+        {
+          "name": "slug",
+          "in": "path",
+          "required": true,
+          "description": "Slug do projeto.",
+          "schema": { "type": "string" }
+        },
+        {
+          "name": "labelId",
+          "in": "path",
+          "required": true,
+          "description": "ID da label (cuid2).",
+          "schema": { "type": "string" }
+        }
+      ],
+      "patch": {
+        "tags": ["Labels"],
+        "summary": "Atualizar label",
+        "description": "Atualiza uma label do projeto. Requer role OWNER/ADMIN do workspace ou ser o lead do projeto, e consentimento de cookies aceito.",
+        "security": [{ "cookieAuth": [] }],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": { "schema": { "$ref": "#/components/schemas/UpdateLabelInput" } }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Label atualizada com sucesso.",
+            "content": {
+              "application/json": { "schema": { "$ref": "#/components/schemas/LabelResponse" } }
+            }
+          },
+          "401": { "$ref": "#/components/responses/UnauthorizedError" },
+          "403": { "$ref": "#/components/responses/ForbiddenError" },
+          "404": { "$ref": "#/components/responses/NotFoundError" },
+          "422": { "$ref": "#/components/responses/ValidationError" },
+          "429": { "$ref": "#/components/responses/RateLimitError" }
+        }
+      },
+      "delete": {
+        "tags": ["Labels"],
+        "summary": "Excluir label",
+        "description": "Remove uma label do projeto. Requer role OWNER/ADMIN do workspace ou ser o lead do projeto, e consentimento de cookies aceito.",
+        "security": [{ "cookieAuth": [] }],
+        "responses": {
+          "200": {
+            "description": "Label excluída com sucesso.",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/EmptySuccessResponse" }
+              }
+            }
+          },
+          "401": { "$ref": "#/components/responses/UnauthorizedError" },
+          "403": { "$ref": "#/components/responses/ForbiddenError" },
+          "404": { "$ref": "#/components/responses/NotFoundError" },
+          "429": { "$ref": "#/components/responses/RateLimitError" }
+        }
+      }
+    },
+    "/workspaces/{id}/projects/{slug}/modules": {
+      "parameters": [
+        {
+          "name": "id",
+          "in": "path",
+          "required": true,
+          "description": "ID do workspace (cuid2).",
+          "schema": { "type": "string" }
+        },
+        {
+          "name": "slug",
+          "in": "path",
+          "required": true,
+          "description": "Slug do projeto.",
+          "schema": { "type": "string" }
+        }
+      ],
+      "get": {
+        "tags": ["Módulos"],
+        "summary": "Listar módulos do projeto",
+        "description": "Retorna os módulos do projeto. Projetos privados exigem que o usuário seja OWNER/ADMIN do workspace, lead ou membro do projeto.",
+        "security": [{ "cookieAuth": [] }],
+        "responses": {
+          "200": {
+            "description": "Lista de módulos retornada com sucesso.",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ModuleListResponse" }
+              }
+            }
+          },
+          "401": { "$ref": "#/components/responses/UnauthorizedError" },
+          "403": { "$ref": "#/components/responses/ForbiddenError" },
+          "404": { "$ref": "#/components/responses/NotFoundError" },
+          "429": { "$ref": "#/components/responses/RateLimitError" }
+        }
+      },
+      "post": {
+        "tags": ["Módulos"],
+        "summary": "Criar módulo",
+        "description": "Cria um novo módulo no projeto. Requer role OWNER/ADMIN do workspace ou ser o lead do projeto, e consentimento de cookies aceito.",
+        "security": [{ "cookieAuth": [] }],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": { "schema": { "$ref": "#/components/schemas/CreateModuleInput" } }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Módulo criado com sucesso.",
+            "content": {
+              "application/json": { "schema": { "$ref": "#/components/schemas/ModuleResponse" } }
+            }
+          },
+          "401": { "$ref": "#/components/responses/UnauthorizedError" },
+          "403": { "$ref": "#/components/responses/ForbiddenError" },
+          "404": { "$ref": "#/components/responses/NotFoundError" },
+          "422": { "$ref": "#/components/responses/ValidationError" },
+          "429": { "$ref": "#/components/responses/RateLimitError" }
+        }
+      }
+    },
+    "/workspaces/{id}/projects/{slug}/modules/{moduleId}": {
+      "parameters": [
+        {
+          "name": "id",
+          "in": "path",
+          "required": true,
+          "description": "ID do workspace (cuid2).",
+          "schema": { "type": "string" }
+        },
+        {
+          "name": "slug",
+          "in": "path",
+          "required": true,
+          "description": "Slug do projeto.",
+          "schema": { "type": "string" }
+        },
+        {
+          "name": "moduleId",
+          "in": "path",
+          "required": true,
+          "description": "ID do módulo (cuid2).",
+          "schema": { "type": "string" }
+        }
+      ],
+      "patch": {
+        "tags": ["Módulos"],
+        "summary": "Atualizar módulo",
+        "description": "Atualiza um módulo do projeto. Requer role OWNER/ADMIN do workspace ou ser o lead do projeto, e consentimento de cookies aceito.",
+        "security": [{ "cookieAuth": [] }],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": { "schema": { "$ref": "#/components/schemas/UpdateModuleInput" } }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Módulo atualizado com sucesso.",
+            "content": {
+              "application/json": { "schema": { "$ref": "#/components/schemas/ModuleResponse" } }
+            }
+          },
+          "401": { "$ref": "#/components/responses/UnauthorizedError" },
+          "403": { "$ref": "#/components/responses/ForbiddenError" },
+          "404": { "$ref": "#/components/responses/NotFoundError" },
+          "422": { "$ref": "#/components/responses/ValidationError" },
+          "429": { "$ref": "#/components/responses/RateLimitError" }
+        }
+      },
+      "delete": {
+        "tags": ["Módulos"],
+        "summary": "Excluir módulo",
+        "description": "Remove um módulo do projeto. Requer role OWNER/ADMIN do workspace ou ser o lead do projeto, e consentimento de cookies aceito.",
+        "security": [{ "cookieAuth": [] }],
+        "responses": {
+          "200": {
+            "description": "Módulo excluído com sucesso.",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/EmptySuccessResponse" }
+              }
+            }
+          },
+          "401": { "$ref": "#/components/responses/UnauthorizedError" },
+          "403": { "$ref": "#/components/responses/ForbiddenError" },
+          "404": { "$ref": "#/components/responses/NotFoundError" },
+          "429": { "$ref": "#/components/responses/RateLimitError" }
+        }
+      }
+    },
+    "/workspaces/{id}/projects/{slug}/modules/{moduleId}/favorite": {
+      "parameters": [
+        {
+          "name": "id",
+          "in": "path",
+          "required": true,
+          "description": "ID do workspace (cuid2).",
+          "schema": { "type": "string" }
+        },
+        {
+          "name": "slug",
+          "in": "path",
+          "required": true,
+          "description": "Slug do projeto.",
+          "schema": { "type": "string" }
+        },
+        {
+          "name": "moduleId",
+          "in": "path",
+          "required": true,
+          "description": "ID do módulo (cuid2).",
+          "schema": { "type": "string" }
+        }
+      ],
+      "post": {
+        "tags": ["Módulos"],
+        "summary": "Favoritar módulo",
+        "description": "Marca o módulo como favorito do usuário autenticado. Requer consentimento de cookies.",
+        "security": [{ "cookieAuth": [] }],
+        "responses": {
+          "200": {
+            "description": "Módulo favoritado com sucesso.",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ModuleFavoriteResponse" }
+              }
+            }
+          },
+          "401": { "$ref": "#/components/responses/UnauthorizedError" },
+          "403": { "$ref": "#/components/responses/ForbiddenError" },
+          "404": { "$ref": "#/components/responses/NotFoundError" },
+          "429": { "$ref": "#/components/responses/RateLimitError" }
+        }
+      },
+      "delete": {
+        "tags": ["Módulos"],
+        "summary": "Desfavoritar módulo",
+        "description": "Remove o módulo dos favoritos do usuário autenticado. Requer consentimento de cookies.",
+        "security": [{ "cookieAuth": [] }],
+        "responses": {
+          "200": {
+            "description": "Módulo desfavoritado com sucesso.",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ModuleFavoriteResponse" }
+              }
+            }
+          },
+          "401": { "$ref": "#/components/responses/UnauthorizedError" },
+          "403": { "$ref": "#/components/responses/ForbiddenError" },
+          "404": { "$ref": "#/components/responses/NotFoundError" },
+          "429": { "$ref": "#/components/responses/RateLimitError" }
+        }
+      }
+    },
+    "/workspaces/{id}/projects/{slug}/modules/{moduleId}/members": {
+      "parameters": [
+        {
+          "name": "id",
+          "in": "path",
+          "required": true,
+          "description": "ID do workspace (cuid2).",
+          "schema": { "type": "string" }
+        },
+        {
+          "name": "slug",
+          "in": "path",
+          "required": true,
+          "description": "Slug do projeto.",
+          "schema": { "type": "string" }
+        },
+        {
+          "name": "moduleId",
+          "in": "path",
+          "required": true,
+          "description": "ID do módulo (cuid2).",
+          "schema": { "type": "string" }
+        }
+      ],
+      "get": {
+        "tags": ["Módulos"],
+        "summary": "Listar membros do módulo",
+        "description": "Retorna os membros do módulo. Projetos privados exigem que o usuário seja OWNER/ADMIN do workspace, lead ou membro do projeto.",
+        "security": [{ "cookieAuth": [] }],
+        "responses": {
+          "200": {
+            "description": "Lista de membros do módulo retornada com sucesso.",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ModuleMemberListResponse" }
+              }
+            }
+          },
+          "401": { "$ref": "#/components/responses/UnauthorizedError" },
+          "403": { "$ref": "#/components/responses/ForbiddenError" },
+          "404": { "$ref": "#/components/responses/NotFoundError" },
+          "429": { "$ref": "#/components/responses/RateLimitError" }
+        }
+      },
+      "post": {
+        "tags": ["Módulos"],
+        "summary": "Adicionar membro ao módulo",
+        "description": "Adiciona um usuário como membro do módulo. Requer role OWNER/ADMIN do workspace ou ser o lead do projeto, e consentimento de cookies aceito. Falha com `MODULE_MEMBER_ALREADY_EXISTS` (409) se o usuário já for membro do módulo.",
+        "security": [{ "cookieAuth": [] }],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/AddModuleMemberInput" }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Membro adicionado ao módulo com sucesso.",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ModuleMemberResponse" }
+              }
+            }
+          },
+          "401": { "$ref": "#/components/responses/UnauthorizedError" },
+          "403": { "$ref": "#/components/responses/ForbiddenError" },
+          "404": { "$ref": "#/components/responses/NotFoundError" },
+          "409": { "$ref": "#/components/responses/ConflictError" },
+          "422": { "$ref": "#/components/responses/ValidationError" },
+          "429": { "$ref": "#/components/responses/RateLimitError" }
+        }
+      }
+    },
+    "/workspaces/{id}/projects/{slug}/modules/{moduleId}/members/{userId}": {
+      "parameters": [
+        {
+          "name": "id",
+          "in": "path",
+          "required": true,
+          "description": "ID do workspace (cuid2).",
+          "schema": { "type": "string" }
+        },
+        {
+          "name": "slug",
+          "in": "path",
+          "required": true,
+          "description": "Slug do projeto.",
+          "schema": { "type": "string" }
+        },
+        {
+          "name": "moduleId",
+          "in": "path",
+          "required": true,
+          "description": "ID do módulo (cuid2).",
+          "schema": { "type": "string" }
+        },
+        {
+          "name": "userId",
+          "in": "path",
+          "required": true,
+          "description": "ID do usuário membro do módulo (cuid2).",
+          "schema": { "type": "string" }
+        }
+      ],
+      "delete": {
+        "tags": ["Módulos"],
+        "summary": "Remover membro do módulo",
+        "description": "Remove um membro do módulo. Requer role OWNER/ADMIN do workspace ou ser o lead do projeto, e consentimento de cookies aceito. Falha com `MODULE_FORBIDDEN` (403) ao tentar remover o lead do módulo.",
+        "security": [{ "cookieAuth": [] }],
+        "responses": {
+          "200": {
+            "description": "Membro removido do módulo com sucesso.",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/EmptySuccessResponse" }
+              }
+            }
+          },
+          "401": { "$ref": "#/components/responses/UnauthorizedError" },
+          "403": { "$ref": "#/components/responses/ForbiddenError" },
+          "404": { "$ref": "#/components/responses/NotFoundError" },
+          "429": { "$ref": "#/components/responses/RateLimitError" }
+        }
+      }
+    },
+    "/workspaces/{id}/projects/{slug}/states": {
+      "parameters": [
+        {
+          "name": "id",
+          "in": "path",
+          "required": true,
+          "description": "ID do workspace (cuid2).",
+          "schema": { "type": "string" }
+        },
+        {
+          "name": "slug",
+          "in": "path",
+          "required": true,
+          "description": "Slug do projeto.",
+          "schema": { "type": "string" }
+        }
+      ],
+      "get": {
+        "tags": ["Estados"],
+        "summary": "Listar states do projeto",
+        "description": "Retorna os states (etapas do workflow) do projeto. Projetos privados exigem que o usuário seja OWNER/ADMIN do workspace, lead ou membro do projeto.",
+        "security": [{ "cookieAuth": [] }],
+        "responses": {
+          "200": {
+            "description": "Lista de states retornada com sucesso.",
+            "content": {
+              "application/json": { "schema": { "$ref": "#/components/schemas/StateListResponse" } }
+            }
+          },
+          "401": { "$ref": "#/components/responses/UnauthorizedError" },
+          "403": { "$ref": "#/components/responses/ForbiddenError" },
+          "404": { "$ref": "#/components/responses/NotFoundError" },
+          "429": { "$ref": "#/components/responses/RateLimitError" }
+        }
+      },
+      "post": {
+        "tags": ["Estados"],
+        "summary": "Criar state",
+        "description": "Cria um novo state no projeto. Requer role OWNER/ADMIN do workspace ou ser o lead do projeto, e consentimento de cookies aceito.",
+        "security": [{ "cookieAuth": [] }],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": { "schema": { "$ref": "#/components/schemas/CreateStateInput" } }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "State criado com sucesso.",
+            "content": {
+              "application/json": { "schema": { "$ref": "#/components/schemas/StateResponse" } }
+            }
+          },
+          "401": { "$ref": "#/components/responses/UnauthorizedError" },
+          "403": { "$ref": "#/components/responses/ForbiddenError" },
+          "404": { "$ref": "#/components/responses/NotFoundError" },
+          "422": { "$ref": "#/components/responses/ValidationError" },
+          "429": { "$ref": "#/components/responses/RateLimitError" }
+        }
+      }
+    },
+    "/workspaces/{id}/projects/{slug}/states/{stateId}": {
+      "parameters": [
+        {
+          "name": "id",
+          "in": "path",
+          "required": true,
+          "description": "ID do workspace (cuid2).",
+          "schema": { "type": "string" }
+        },
+        {
+          "name": "slug",
+          "in": "path",
+          "required": true,
+          "description": "Slug do projeto.",
+          "schema": { "type": "string" }
+        },
+        {
+          "name": "stateId",
+          "in": "path",
+          "required": true,
+          "description": "ID do state (cuid2).",
+          "schema": { "type": "string" }
+        }
+      ],
+      "patch": {
+        "tags": ["Estados"],
+        "summary": "Atualizar state",
+        "description": "Atualiza um state do projeto (não permite alterar o `group`). Requer role OWNER/ADMIN do workspace ou ser o lead do projeto, e consentimento de cookies aceito.",
+        "security": [{ "cookieAuth": [] }],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": { "schema": { "$ref": "#/components/schemas/UpdateStateInput" } }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "State atualizado com sucesso.",
+            "content": {
+              "application/json": { "schema": { "$ref": "#/components/schemas/StateResponse" } }
+            }
+          },
+          "401": { "$ref": "#/components/responses/UnauthorizedError" },
+          "403": { "$ref": "#/components/responses/ForbiddenError" },
+          "404": { "$ref": "#/components/responses/NotFoundError" },
+          "422": { "$ref": "#/components/responses/ValidationError" },
+          "429": { "$ref": "#/components/responses/RateLimitError" }
+        }
+      },
+      "delete": {
+        "tags": ["Estados"],
+        "summary": "Excluir state",
+        "description": "Remove um state do projeto. Requer role OWNER/ADMIN do workspace ou ser o lead do projeto, e consentimento de cookies aceito. Falha com `STATE_IS_DEFAULT` (409) se for o state padrão do projeto, e com `STATE_LAST_IN_GROUP` (409) se for o último state do grupo.",
+        "security": [{ "cookieAuth": [] }],
+        "responses": {
+          "200": {
+            "description": "State excluído com sucesso.",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/EmptySuccessResponse" }
+              }
+            }
+          },
+          "401": { "$ref": "#/components/responses/UnauthorizedError" },
+          "403": { "$ref": "#/components/responses/ForbiddenError" },
+          "404": { "$ref": "#/components/responses/NotFoundError" },
+          "409": { "$ref": "#/components/responses/ConflictError" },
+          "429": { "$ref": "#/components/responses/RateLimitError" }
+        }
+      }
+    },
+    "/workspaces/{id}/projects/{slug}/states/{stateId}/default": {
+      "parameters": [
+        {
+          "name": "id",
+          "in": "path",
+          "required": true,
+          "description": "ID do workspace (cuid2).",
+          "schema": { "type": "string" }
+        },
+        {
+          "name": "slug",
+          "in": "path",
+          "required": true,
+          "description": "Slug do projeto.",
+          "schema": { "type": "string" }
+        },
+        {
+          "name": "stateId",
+          "in": "path",
+          "required": true,
+          "description": "ID do state (cuid2).",
+          "schema": { "type": "string" }
+        }
+      ],
+      "patch": {
+        "tags": ["Estados"],
+        "summary": "Definir state como padrão",
+        "description": "Define o state como o state padrão do projeto, usado ao criar novas issues. Requer role OWNER/ADMIN do workspace ou ser o lead do projeto, e consentimento de cookies aceito.",
+        "security": [{ "cookieAuth": [] }],
+        "responses": {
+          "200": {
+            "description": "State definido como padrão com sucesso.",
+            "content": {
+              "application/json": { "schema": { "$ref": "#/components/schemas/StateResponse" } }
+            }
+          },
+          "401": { "$ref": "#/components/responses/UnauthorizedError" },
+          "403": { "$ref": "#/components/responses/ForbiddenError" },
+          "404": { "$ref": "#/components/responses/NotFoundError" },
+          "429": { "$ref": "#/components/responses/RateLimitError" }
+        }
+      }
     }
   },
   "components": {
@@ -4517,6 +6172,613 @@
                 "type": "array",
                 "items": { "$ref": "#/components/schemas/CareerJob" }
               }
+            }
+          }
+        ]
+      },
+      "TagColor": {
+        "type": "string",
+        "enum": ["RED", "YELLOW", "BLUE", "GREEN", "PURPLE", "ZINC"],
+        "example": "BLUE"
+      },
+      "CycleStatus": {
+        "type": "string",
+        "enum": ["NOT_STARTED", "IN_PROGRESS", "COMPLETED"],
+        "example": "IN_PROGRESS"
+      },
+      "Cycle": {
+        "type": "object",
+        "properties": {
+          "id": { "type": "string", "example": "clx0v5k2p0000qwer1234abcd" },
+          "name": { "type": "string", "example": "Sprint 14" },
+          "description": {
+            "type": "string",
+            "nullable": true,
+            "example": "Foco em performance do dashboard"
+          },
+          "status": { "$ref": "#/components/schemas/CycleStatus" },
+          "startDate": { "type": "string", "format": "date-time", "nullable": true },
+          "endDate": { "type": "string", "format": "date-time", "nullable": true },
+          "leadId": { "type": "string", "example": "clx0v5k2p0000qwer5678efgh" },
+          "projectId": { "type": "string", "example": "clx0v5k2p0000qwer9012ijkl" },
+          "createdAt": { "type": "string", "format": "date-time" },
+          "updatedAt": { "type": "string", "format": "date-time" }
+        }
+      },
+      "CreateCycleInput": {
+        "type": "object",
+        "required": ["name"],
+        "properties": {
+          "name": { "type": "string", "minLength": 2, "maxLength": 100, "example": "Sprint 14" },
+          "description": { "type": "string", "maxLength": 500 },
+          "status": {
+            "allOf": [{ "$ref": "#/components/schemas/CycleStatus" }],
+            "default": "NOT_STARTED"
+          },
+          "startDate": { "type": "string", "format": "date-time" },
+          "endDate": { "type": "string", "format": "date-time" }
+        }
+      },
+      "UpdateCycleInput": {
+        "type": "object",
+        "properties": {
+          "name": { "type": "string", "minLength": 2, "maxLength": 100 },
+          "description": { "type": "string", "maxLength": 500 },
+          "status": { "$ref": "#/components/schemas/CycleStatus" },
+          "startDate": { "type": "string", "format": "date-time", "nullable": true },
+          "endDate": { "type": "string", "format": "date-time", "nullable": true }
+        }
+      },
+      "CycleMember": {
+        "type": "object",
+        "properties": {
+          "userId": { "type": "string", "example": "clx0v5k2p0000qwer5678efgh" },
+          "name": { "type": "string", "example": "Ana Souza" },
+          "username": { "type": "string", "example": "anasouza" },
+          "image": { "type": "string", "format": "uri", "nullable": true },
+          "isLead": { "type": "boolean", "example": false },
+          "createdAt": { "type": "string", "format": "date-time" }
+        }
+      },
+      "AddCycleMemberInput": {
+        "type": "object",
+        "required": ["userId"],
+        "properties": { "userId": { "type": "string", "example": "clx0v5k2p0000qwer5678efgh" } }
+      },
+      "CycleResponse": {
+        "allOf": [
+          { "$ref": "#/components/schemas/SuccessResponse" },
+          { "type": "object", "properties": { "data": { "$ref": "#/components/schemas/Cycle" } } }
+        ]
+      },
+      "CycleListResponse": {
+        "allOf": [
+          { "$ref": "#/components/schemas/SuccessResponse" },
+          {
+            "type": "object",
+            "properties": {
+              "data": { "type": "array", "items": { "$ref": "#/components/schemas/Cycle" } }
+            }
+          }
+        ]
+      },
+      "CycleMemberResponse": {
+        "allOf": [
+          { "$ref": "#/components/schemas/SuccessResponse" },
+          {
+            "type": "object",
+            "properties": { "data": { "$ref": "#/components/schemas/CycleMember" } }
+          }
+        ]
+      },
+      "CycleMemberListResponse": {
+        "allOf": [
+          { "$ref": "#/components/schemas/SuccessResponse" },
+          {
+            "type": "object",
+            "properties": {
+              "data": { "type": "array", "items": { "$ref": "#/components/schemas/CycleMember" } }
+            }
+          }
+        ]
+      },
+      "EstimateSystem": {
+        "type": "string",
+        "enum": ["POINTS", "CATEGORIES", "TIME"],
+        "example": "POINTS"
+      },
+      "EstimateModel": {
+        "type": "string",
+        "enum": ["FIBONACCI", "LINEAR", "SQUARES", "T_SHIRT_SIZES", "EASY_TO_HARD", "HOURS"],
+        "example": "FIBONACCI"
+      },
+      "EstimateValue": {
+        "type": "object",
+        "properties": {
+          "id": { "type": "string", "example": "clx0v5k2p0000qwer1234abcd" },
+          "value": { "type": "string", "example": "5" },
+          "order": { "type": "integer", "example": 2 },
+          "estimateSettingsId": { "type": "string", "example": "clx0v5k2p0000qwer9012ijkl" },
+          "createdAt": { "type": "string", "format": "date-time" },
+          "updatedAt": { "type": "string", "format": "date-time" }
+        }
+      },
+      "EstimateSettings": {
+        "type": "object",
+        "properties": {
+          "id": { "type": "string", "example": "clx0v5k2p0000qwer1234abcd" },
+          "system": { "$ref": "#/components/schemas/EstimateSystem" },
+          "model": { "$ref": "#/components/schemas/EstimateModel" },
+          "projectId": { "type": "string", "example": "clx0v5k2p0000qwer9012ijkl" },
+          "values": { "type": "array", "items": { "$ref": "#/components/schemas/EstimateValue" } },
+          "createdAt": { "type": "string", "format": "date-time" },
+          "updatedAt": { "type": "string", "format": "date-time" }
+        }
+      },
+      "UpdateEstimateSettingsInput": {
+        "type": "object",
+        "description": "O `model` precisa ser compatível com o `system` escolhido: POINTS aceita FIBONACCI/LINEAR/SQUARES, CATEGORIES aceita T_SHIRT_SIZES/EASY_TO_HARD, TIME aceita apenas HOURS.",
+        "required": ["system", "model"],
+        "properties": {
+          "system": { "$ref": "#/components/schemas/EstimateSystem" },
+          "model": { "$ref": "#/components/schemas/EstimateModel" }
+        }
+      },
+      "CreateEstimateValueInput": {
+        "type": "object",
+        "required": ["value"],
+        "properties": {
+          "value": { "type": "string", "minLength": 1, "maxLength": 20, "example": "8" }
+        }
+      },
+      "UpdateEstimateValueInput": {
+        "type": "object",
+        "required": ["value"],
+        "properties": {
+          "value": { "type": "string", "minLength": 1, "maxLength": 20, "example": "13" }
+        }
+      },
+      "ReorderEstimateValuesInput": {
+        "type": "object",
+        "required": ["valueIds"],
+        "properties": {
+          "valueIds": { "type": "array", "items": { "type": "string" }, "minItems": 1 }
+        }
+      },
+      "EstimateSettingsResponse": {
+        "allOf": [
+          { "$ref": "#/components/schemas/SuccessResponse" },
+          {
+            "type": "object",
+            "properties": { "data": { "$ref": "#/components/schemas/EstimateSettings" } }
+          }
+        ]
+      },
+      "EstimateValueResponse": {
+        "allOf": [
+          { "$ref": "#/components/schemas/SuccessResponse" },
+          {
+            "type": "object",
+            "properties": { "data": { "$ref": "#/components/schemas/EstimateValue" } }
+          }
+        ]
+      },
+      "EstimateValueListResponse": {
+        "allOf": [
+          { "$ref": "#/components/schemas/SuccessResponse" },
+          {
+            "type": "object",
+            "properties": {
+              "data": { "type": "array", "items": { "$ref": "#/components/schemas/EstimateValue" } }
+            }
+          }
+        ]
+      },
+      "IssuePriority": {
+        "type": "string",
+        "enum": ["NONE", "LOW", "MEDIUM", "HIGH", "URGENT"],
+        "example": "HIGH"
+      },
+      "IssueContent": {
+        "type": "object",
+        "additionalProperties": true,
+        "description": "Conteúdo rich text no formato Tiptap/ProseMirror (JSONContent). Serializado, não pode exceder 100.000 caracteres."
+      },
+      "Issue": {
+        "type": "object",
+        "properties": {
+          "id": { "type": "string", "example": "clx0v5k2p0000qwer1234abcd" },
+          "number": { "type": "integer", "example": 42 },
+          "title": {
+            "type": "string",
+            "example": "Corrigir loop infinito no worker de notificações"
+          },
+          "description": { "$ref": "#/components/schemas/IssueContent" },
+          "priority": { "$ref": "#/components/schemas/IssuePriority" },
+          "startDate": { "type": "string", "format": "date-time", "nullable": true },
+          "dueDate": { "type": "string", "format": "date-time", "nullable": true },
+          "stateId": { "type": "string", "example": "clx0v5k2p0000qwerstate01" },
+          "typeId": { "type": "string", "example": "clx0v5k2p0000qwertype001" },
+          "authorId": { "type": "string", "example": "clx0v5k2p0000qwer5678efgh" },
+          "projectId": { "type": "string", "example": "clx0v5k2p0000qwer9012ijkl" },
+          "createdAt": { "type": "string", "format": "date-time" },
+          "updatedAt": { "type": "string", "format": "date-time" }
+        }
+      },
+      "CreateIssueInput": {
+        "type": "object",
+        "required": ["title", "description", "stateId"],
+        "properties": {
+          "title": { "type": "string", "minLength": 1, "maxLength": 255 },
+          "description": { "$ref": "#/components/schemas/IssueContent" },
+          "stateId": {
+            "type": "string",
+            "description": "cuid2 de um state pertencente ao projeto."
+          },
+          "priority": {
+            "allOf": [{ "$ref": "#/components/schemas/IssuePriority" }],
+            "default": "NONE"
+          },
+          "startDate": { "type": "string", "format": "date-time" },
+          "dueDate": { "type": "string", "format": "date-time" },
+          "typeId": {
+            "type": "string",
+            "description": "cuid2 de um tipo de issue pertencente ao projeto. Se omitido, usa o tipo padrão do sistema (Task)."
+          }
+        }
+      },
+      "UpdateIssueInput": {
+        "type": "object",
+        "properties": {
+          "title": { "type": "string", "minLength": 1, "maxLength": 255 },
+          "description": { "$ref": "#/components/schemas/IssueContent" },
+          "stateId": { "type": "string" },
+          "priority": { "$ref": "#/components/schemas/IssuePriority" },
+          "startDate": { "type": "string", "format": "date-time", "nullable": true },
+          "dueDate": { "type": "string", "format": "date-time", "nullable": true },
+          "typeId": { "type": "string" }
+        }
+      },
+      "IssueResponse": {
+        "allOf": [
+          { "$ref": "#/components/schemas/SuccessResponse" },
+          { "type": "object", "properties": { "data": { "$ref": "#/components/schemas/Issue" } } }
+        ]
+      },
+      "IssueListResponse": {
+        "allOf": [
+          { "$ref": "#/components/schemas/SuccessResponse" },
+          {
+            "type": "object",
+            "properties": {
+              "data": { "type": "array", "items": { "$ref": "#/components/schemas/Issue" } }
+            }
+          }
+        ]
+      },
+      "IssueAssignee": {
+        "type": "object",
+        "properties": {
+          "id": { "type": "string", "example": "clx0v5k2p0000qwer1234abcd" },
+          "issueId": { "type": "string", "example": "clx0v5k2p0000qwerissue01" },
+          "userId": { "type": "string", "example": "clx0v5k2p0000qwer5678efgh" },
+          "user": {
+            "type": "object",
+            "properties": {
+              "id": { "type": "string" },
+              "name": { "type": "string", "example": "Ana Souza" },
+              "username": { "type": "string", "example": "anasouza" },
+              "image": { "type": "string", "format": "uri", "nullable": true }
+            }
+          },
+          "createdAt": { "type": "string", "format": "date-time" }
+        }
+      },
+      "AssignIssueInput": {
+        "type": "object",
+        "required": ["userId"],
+        "properties": { "userId": { "type": "string", "example": "clx0v5k2p0000qwer5678efgh" } }
+      },
+      "IssueAssigneeResponse": {
+        "allOf": [
+          { "$ref": "#/components/schemas/SuccessResponse" },
+          {
+            "type": "object",
+            "properties": { "data": { "$ref": "#/components/schemas/IssueAssignee" } }
+          }
+        ]
+      },
+      "IssueAssigneeListResponse": {
+        "allOf": [
+          { "$ref": "#/components/schemas/SuccessResponse" },
+          {
+            "type": "object",
+            "properties": {
+              "data": { "type": "array", "items": { "$ref": "#/components/schemas/IssueAssignee" } }
+            }
+          }
+        ]
+      },
+      "IssueType": {
+        "type": "object",
+        "properties": {
+          "id": { "type": "string", "example": "clx0v5k2p0000qwertype001" },
+          "name": { "type": "string", "example": "Bug" },
+          "description": {
+            "type": "string",
+            "nullable": true,
+            "example": "Comportamento inesperado ou incorreto"
+          },
+          "color": { "$ref": "#/components/schemas/TagColor" },
+          "icon": { "type": "string", "example": "bug" },
+          "isSystem": { "type": "boolean", "example": false },
+          "order": { "type": "integer", "example": 2 },
+          "projectId": { "type": "string", "example": "clx0v5k2p0000qwer9012ijkl" },
+          "createdAt": { "type": "string", "format": "date-time" },
+          "updatedAt": { "type": "string", "format": "date-time" }
+        }
+      },
+      "CreateIssueTypeInput": {
+        "type": "object",
+        "required": ["name", "icon"],
+        "properties": {
+          "name": { "type": "string", "minLength": 1, "maxLength": 50 },
+          "description": { "type": "string", "maxLength": 280 },
+          "color": { "allOf": [{ "$ref": "#/components/schemas/TagColor" }], "default": "ZINC" },
+          "icon": { "type": "string", "minLength": 1, "maxLength": 50 }
+        }
+      },
+      "UpdateIssueTypeInput": {
+        "type": "object",
+        "properties": {
+          "name": { "type": "string", "minLength": 1, "maxLength": 50 },
+          "description": { "type": "string", "maxLength": 280 },
+          "color": { "$ref": "#/components/schemas/TagColor" },
+          "icon": { "type": "string", "minLength": 1, "maxLength": 50 }
+        }
+      },
+      "ReorderIssueTypesInput": {
+        "type": "object",
+        "required": ["typeIds"],
+        "properties": {
+          "typeIds": { "type": "array", "items": { "type": "string" }, "minItems": 1 }
+        }
+      },
+      "IssueTypeResponse": {
+        "allOf": [
+          { "$ref": "#/components/schemas/SuccessResponse" },
+          {
+            "type": "object",
+            "properties": { "data": { "$ref": "#/components/schemas/IssueType" } }
+          }
+        ]
+      },
+      "IssueTypeListResponse": {
+        "allOf": [
+          { "$ref": "#/components/schemas/SuccessResponse" },
+          {
+            "type": "object",
+            "properties": {
+              "data": { "type": "array", "items": { "$ref": "#/components/schemas/IssueType" } }
+            }
+          }
+        ]
+      },
+      "Label": {
+        "type": "object",
+        "properties": {
+          "id": { "type": "string", "example": "clx0v5k2p0000qwerlabel01" },
+          "name": { "type": "string", "example": "Frontend" },
+          "description": { "type": "string", "nullable": true, "example": "Mudanças na interface" },
+          "color": { "$ref": "#/components/schemas/TagColor" },
+          "projectId": { "type": "string", "example": "clx0v5k2p0000qwer9012ijkl" },
+          "createdAt": { "type": "string", "format": "date-time" },
+          "updatedAt": { "type": "string", "format": "date-time" }
+        }
+      },
+      "CreateLabelInput": {
+        "type": "object",
+        "required": ["name"],
+        "properties": {
+          "name": { "type": "string", "minLength": 1, "maxLength": 50 },
+          "description": { "type": "string", "maxLength": 280 },
+          "color": { "allOf": [{ "$ref": "#/components/schemas/TagColor" }], "default": "ZINC" }
+        }
+      },
+      "UpdateLabelInput": {
+        "type": "object",
+        "properties": {
+          "name": { "type": "string", "minLength": 1, "maxLength": 50 },
+          "description": { "type": "string", "maxLength": 280 },
+          "color": { "$ref": "#/components/schemas/TagColor" }
+        }
+      },
+      "LabelResponse": {
+        "allOf": [
+          { "$ref": "#/components/schemas/SuccessResponse" },
+          { "type": "object", "properties": { "data": { "$ref": "#/components/schemas/Label" } } }
+        ]
+      },
+      "LabelListResponse": {
+        "allOf": [
+          { "$ref": "#/components/schemas/SuccessResponse" },
+          {
+            "type": "object",
+            "properties": {
+              "data": { "type": "array", "items": { "$ref": "#/components/schemas/Label" } }
+            }
+          }
+        ]
+      },
+      "ModuleStatus": {
+        "type": "string",
+        "enum": ["BACKLOG", "PLANNED", "IN_PROGRESS", "PAUSED", "COMPLETED", "CANCELLED"],
+        "example": "IN_PROGRESS"
+      },
+      "Module": {
+        "type": "object",
+        "properties": {
+          "id": { "type": "string", "example": "clx0v5k2p0000qwermodule1" },
+          "name": { "type": "string", "example": "Autenticação" },
+          "progress": { "type": "integer", "example": 40 },
+          "status": { "$ref": "#/components/schemas/ModuleStatus" },
+          "startDate": { "type": "string", "format": "date-time", "nullable": true },
+          "endDate": { "type": "string", "format": "date-time", "nullable": true },
+          "isFavorited": { "type": "boolean", "example": false },
+          "leadId": { "type": "string", "example": "clx0v5k2p0000qwer5678efgh" },
+          "projectId": { "type": "string", "example": "clx0v5k2p0000qwer9012ijkl" },
+          "createdAt": { "type": "string", "format": "date-time" },
+          "updatedAt": { "type": "string", "format": "date-time" }
+        }
+      },
+      "CreateModuleInput": {
+        "type": "object",
+        "required": ["name"],
+        "properties": {
+          "name": { "type": "string", "minLength": 2, "maxLength": 100 },
+          "status": {
+            "allOf": [{ "$ref": "#/components/schemas/ModuleStatus" }],
+            "default": "BACKLOG"
+          },
+          "startDate": { "type": "string", "format": "date-time" },
+          "endDate": { "type": "string", "format": "date-time" }
+        }
+      },
+      "UpdateModuleInput": {
+        "type": "object",
+        "properties": {
+          "name": { "type": "string", "minLength": 2, "maxLength": 100 },
+          "status": { "$ref": "#/components/schemas/ModuleStatus" },
+          "startDate": { "type": "string", "format": "date-time" },
+          "endDate": { "type": "string", "format": "date-time" },
+          "progress": { "type": "integer", "minimum": 0, "maximum": 100 }
+        }
+      },
+      "ModuleMember": {
+        "type": "object",
+        "properties": {
+          "userId": { "type": "string", "example": "clx0v5k2p0000qwer5678efgh" },
+          "name": { "type": "string", "example": "Ana Souza" },
+          "username": { "type": "string", "example": "anasouza" },
+          "image": { "type": "string", "format": "uri", "nullable": true },
+          "isLead": { "type": "boolean", "example": false },
+          "createdAt": { "type": "string", "format": "date-time" }
+        }
+      },
+      "AddModuleMemberInput": {
+        "type": "object",
+        "required": ["userId"],
+        "properties": { "userId": { "type": "string", "example": "clx0v5k2p0000qwer5678efgh" } }
+      },
+      "ModuleResponse": {
+        "allOf": [
+          { "$ref": "#/components/schemas/SuccessResponse" },
+          { "type": "object", "properties": { "data": { "$ref": "#/components/schemas/Module" } } }
+        ]
+      },
+      "ModuleListResponse": {
+        "allOf": [
+          { "$ref": "#/components/schemas/SuccessResponse" },
+          {
+            "type": "object",
+            "properties": {
+              "data": { "type": "array", "items": { "$ref": "#/components/schemas/Module" } }
+            }
+          }
+        ]
+      },
+      "ModuleMemberResponse": {
+        "allOf": [
+          { "$ref": "#/components/schemas/SuccessResponse" },
+          {
+            "type": "object",
+            "properties": { "data": { "$ref": "#/components/schemas/ModuleMember" } }
+          }
+        ]
+      },
+      "ModuleMemberListResponse": {
+        "allOf": [
+          { "$ref": "#/components/schemas/SuccessResponse" },
+          {
+            "type": "object",
+            "properties": {
+              "data": { "type": "array", "items": { "$ref": "#/components/schemas/ModuleMember" } }
+            }
+          }
+        ]
+      },
+      "ModuleFavoriteResponse": {
+        "type": "object",
+        "description": "Estado de favorito de um módulo após a operação.",
+        "allOf": [
+          { "$ref": "#/components/schemas/SuccessResponse" },
+          {
+            "type": "object",
+            "properties": {
+              "data": {
+                "type": "object",
+                "properties": { "favorited": { "type": "boolean", "example": true } }
+              }
+            }
+          }
+        ]
+      },
+      "StateGroup": {
+        "type": "string",
+        "enum": ["BACKLOG", "UNSTARTED", "STARTED", "COMPLETED", "CANCELLED"],
+        "example": "STARTED"
+      },
+      "State": {
+        "type": "object",
+        "properties": {
+          "id": { "type": "string", "example": "clx0v5k2p0000qwerstate01" },
+          "name": { "type": "string", "example": "Em progresso" },
+          "description": {
+            "type": "string",
+            "nullable": true,
+            "example": "Issue sendo trabalhada ativamente"
+          },
+          "group": { "$ref": "#/components/schemas/StateGroup" },
+          "color": { "$ref": "#/components/schemas/TagColor" },
+          "order": { "type": "integer", "example": 2 },
+          "isDefault": { "type": "boolean", "example": false },
+          "projectId": { "type": "string", "example": "clx0v5k2p0000qwer9012ijkl" },
+          "createdAt": { "type": "string", "format": "date-time" },
+          "updatedAt": { "type": "string", "format": "date-time" }
+        }
+      },
+      "CreateStateInput": {
+        "type": "object",
+        "required": ["name", "group"],
+        "properties": {
+          "name": { "type": "string", "minLength": 1, "maxLength": 50 },
+          "description": { "type": "string", "maxLength": 280 },
+          "group": { "$ref": "#/components/schemas/StateGroup" },
+          "color": { "allOf": [{ "$ref": "#/components/schemas/TagColor" }], "default": "ZINC" }
+        }
+      },
+      "UpdateStateInput": {
+        "type": "object",
+        "properties": {
+          "name": { "type": "string", "minLength": 1, "maxLength": 50 },
+          "description": { "type": "string", "maxLength": 280 },
+          "color": { "$ref": "#/components/schemas/TagColor" },
+          "order": { "type": "integer" }
+        }
+      },
+      "StateResponse": {
+        "allOf": [
+          { "$ref": "#/components/schemas/SuccessResponse" },
+          { "type": "object", "properties": { "data": { "$ref": "#/components/schemas/State" } } }
+        ]
+      },
+      "StateListResponse": {
+        "allOf": [
+          { "$ref": "#/components/schemas/SuccessResponse" },
+          {
+            "type": "object",
+            "properties": {
+              "data": { "type": "array", "items": { "$ref": "#/components/schemas/State" } }
             }
           }
         ]
