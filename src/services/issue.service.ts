@@ -2,17 +2,24 @@ import type { Prisma } from '@prisma/client'
 import { auditMutation } from '@/lib/axiom/audit'
 import type { IssueDTO } from '@/types/issue'
 import {
+  cycleNotFound,
+  estimateValueNotFound,
   issueForbidden,
   issueNotFound,
   issueStateInvalid,
   issueTypeInvalid,
+  moduleNotFound,
   projectForbidden,
   validationError,
 } from '../errors'
 import { err, ok, type Result } from '../lib/result'
 import { toIssueDTO } from '../mappers/issue.mapper'
+import { CycleRepository } from '../repositories/cycle.repository'
+import { EstimateRepository } from '../repositories/estimate.repository'
+import { EstimateValueRepository } from '../repositories/estimate-value.repository'
 import { IssueRepository } from '../repositories/issue.repository'
 import { IssueTypeRepository } from '../repositories/issue-type.repository'
+import { ModuleRepository } from '../repositories/module.repository'
 import { StateRepository } from '../repositories/state.repository'
 import type { CreateIssueDTO, UpdateIssueDTO } from '../schemas/issue.schema'
 import { resolveProject } from './_project-scope'
@@ -27,6 +34,40 @@ async function resolveDefaultTypeId(
   if (!task) return err(issueTypeInvalid())
 
   return ok(task.id)
+}
+
+async function assertAssociations(
+  projectId: string,
+  dto: {
+    cycleId?: string | null
+    moduleId?: string | null
+    estimateValueId?: string | null
+  },
+): Promise<Result<void>> {
+  if (dto.cycleId) {
+    const cycle = await CycleRepository.findById(dto.cycleId)
+    if (!cycle.ok) return cycle
+    if (cycle.value.projectId !== projectId) return err(cycleNotFound())
+  }
+
+  if (dto.moduleId) {
+    const module = await ModuleRepository.findById(dto.moduleId)
+    if (!module.ok) return module
+    if (module.value.projectId !== projectId) return err(moduleNotFound())
+  }
+
+  if (dto.estimateValueId) {
+    const value = await EstimateValueRepository.findById(dto.estimateValueId)
+    if (!value.ok) return value
+
+    const settings = await EstimateRepository.findByProjectId(projectId)
+    if (!settings.ok) return settings
+    if (value.value.estimateSettingsId !== settings.value.id) {
+      return err(estimateValueNotFound())
+    }
+  }
+
+  return ok(undefined)
 }
 
 function assertDateOrder(
@@ -107,6 +148,9 @@ export const IssueService = {
 
     const dateCheck = assertDateOrder(startDate, dueDate)
     if (!dateCheck.ok) return dateCheck
+
+    const assocCheck = await assertAssociations(project.id, dto)
+    if (!assocCheck.ok) return assocCheck
 
     const result = await IssueRepository.create({
       ...dto,
@@ -193,6 +237,9 @@ export const IssueService = {
 
     const dateCheck = assertDateOrder(startDate, dueDate)
     if (!dateCheck.ok) return dateCheck
+
+    const assocCheck = await assertAssociations(project.id, dto)
+    if (!assocCheck.ok) return assocCheck
 
     const result = await IssueRepository.update(issueId, {
       ...dto,

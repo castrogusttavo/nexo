@@ -13,6 +13,9 @@ export interface IssueDTO {
   dueDate: string | null
   stateId: string
   typeId: string
+  cycleId: string | null
+  moduleId: string | null
+  estimateValueId: string | null
   authorId: string
   projectId: string
   createdAt: string

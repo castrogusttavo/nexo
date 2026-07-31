@@ -1,4 +1,9 @@
 import { describe, expect, it, vi } from 'vitest'
+import { createFakeCycle } from '@/src/__tests__/factories/cycle.factory'
+import {
+  createFakeEstimateSettings,
+  createFakeEstimateValue,
+} from '@/src/__tests__/factories/estimate.factory'
 import { createFakeIssue } from '@/src/__tests__/factories/issue.factory'
 import { createFakeIssueType } from '@/src/__tests__/factories/issue-type.factory'
 import { createFakeMembership } from '@/src/__tests__/factories/membership.factory'
@@ -7,6 +12,9 @@ import { createFakeState } from '@/src/__tests__/factories/state.factory'
 import { expectErr, expectOk } from '@/src/__tests__/helpers/result.helpers'
 import { databaseError } from '@/src/errors'
 import { err, ok } from '@/src/lib/result'
+import { CycleRepository } from '@/src/repositories/cycle.repository'
+import { EstimateRepository } from '@/src/repositories/estimate.repository'
+import { EstimateValueRepository } from '@/src/repositories/estimate-value.repository'
 import { IssueRepository } from '@/src/repositories/issue.repository'
 import { IssueTypeRepository } from '@/src/repositories/issue-type.repository'
 import { MembershipRepository } from '@/src/repositories/membership.repository'
@@ -19,12 +27,19 @@ vi.mock('@/src/repositories/project.repository')
 vi.mock('@/src/repositories/issue.repository')
 vi.mock('@/src/repositories/issue-type.repository')
 vi.mock('@/src/repositories/state.repository')
+vi.mock('@/src/repositories/cycle.repository')
+vi.mock('@/src/repositories/module.repository')
+vi.mock('@/src/repositories/estimate.repository')
+vi.mock('@/src/repositories/estimate-value.repository')
 
 const mockedMembership = vi.mocked(MembershipRepository)
 const mockedProject = vi.mocked(ProjectRepository)
 const mockedIssue = vi.mocked(IssueRepository)
 const mockedIssueType = vi.mocked(IssueTypeRepository)
 const mockedState = vi.mocked(StateRepository)
+const mockedCycle = vi.mocked(CycleRepository)
+const mockedEstimate = vi.mocked(EstimateRepository)
+const mockedEstimateValue = vi.mocked(EstimateValueRepository)
 
 const memberMembership = createFakeMembership({
   userId: 'actor',
@@ -219,6 +234,63 @@ describe('IssueService', () => {
       })
 
       expectErr(result, 'VALIDATION_ERROR')
+      expect(mockedIssue.create).not.toHaveBeenCalled()
+    })
+
+    it('should return CYCLE_NOT_FOUND when the cycle belongs to another project', async () => {
+      mockedMembership.findByUserAndWorkspace.mockResolvedValue(
+        ok(memberMembership),
+      )
+      mockedProject.findByWorkspaceAndSlug.mockResolvedValue(
+        ok(projectWith({ id: 'proj-1' })),
+      )
+      mockedState.findById.mockResolvedValue(
+        ok(createFakeState({ projectId: 'proj-1' })),
+      )
+      mockedIssueType.listByProject.mockResolvedValue(ok([taskType]))
+      mockedCycle.findById.mockResolvedValue(
+        ok(createFakeCycle({ projectId: 'other-proj' })),
+      )
+
+      const result = await IssueService.create('actor', 'ws1', 'proj-slug', {
+        title: 'Bug',
+        description: { type: 'doc', content: [] },
+        stateId: 'state-1',
+        priority: 'NONE',
+        cycleId: 'cycle-1',
+      })
+
+      expectErr(result, 'CYCLE_NOT_FOUND')
+      expect(mockedIssue.create).not.toHaveBeenCalled()
+    })
+
+    it('should return ESTIMATE_VALUE_NOT_FOUND when the value belongs to another project', async () => {
+      mockedMembership.findByUserAndWorkspace.mockResolvedValue(
+        ok(memberMembership),
+      )
+      mockedProject.findByWorkspaceAndSlug.mockResolvedValue(
+        ok(projectWith({ id: 'proj-1' })),
+      )
+      mockedState.findById.mockResolvedValue(
+        ok(createFakeState({ projectId: 'proj-1' })),
+      )
+      mockedIssueType.listByProject.mockResolvedValue(ok([taskType]))
+      mockedEstimateValue.findById.mockResolvedValue(
+        ok(createFakeEstimateValue({ estimateSettingsId: 'other-settings' })),
+      )
+      mockedEstimate.findByProjectId.mockResolvedValue(
+        ok(createFakeEstimateSettings({ id: 'settings-1' })),
+      )
+
+      const result = await IssueService.create('actor', 'ws1', 'proj-slug', {
+        title: 'Bug',
+        description: { type: 'doc', content: [] },
+        stateId: 'state-1',
+        priority: 'NONE',
+        estimateValueId: 'value-1',
+      })
+
+      expectErr(result, 'ESTIMATE_VALUE_NOT_FOUND')
       expect(mockedIssue.create).not.toHaveBeenCalled()
     })
   })

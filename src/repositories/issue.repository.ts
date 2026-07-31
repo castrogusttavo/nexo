@@ -35,6 +35,9 @@ export const IssueRepository = {
     dueDate?: Date
     stateId: string
     typeId: string
+    cycleId?: string
+    moduleId?: string
+    estimateValueId?: string
     authorId: string
     projectId: string
   }): Promise<Result<Issue>> {
@@ -64,6 +67,9 @@ export const IssueRepository = {
       dueDate?: Date | null
       stateId?: string
       typeId?: string
+      cycleId?: string | null
+      moduleId?: string | null
+      estimateValueId?: string | null
     },
   ): Promise<Result<Issue>> {
     try {
