@@ -390,6 +390,61 @@ describe('IssueService', () => {
       expectErr(result, 'VALIDATION_ERROR')
       expect(mockedIssue.update).not.toHaveBeenCalled()
     })
+
+    it('should return ISSUE_PARENT_CYCLE when the parent is the issue itself', async () => {
+      mockedMembership.findByUserAndWorkspace.mockResolvedValue(
+        ok(memberMembership),
+      )
+      mockedProject.findByWorkspaceAndSlug.mockResolvedValue(
+        ok(projectWith({ id: 'proj-1' })),
+      )
+      mockedIssue.findById.mockResolvedValue(
+        ok(createFakeIssue({ id: 'issue-1', projectId: 'proj-1' })),
+      )
+
+      const result = await IssueService.update(
+        'actor',
+        'ws1',
+        'proj-slug',
+        'issue-1',
+        { parentId: 'issue-1' },
+      )
+
+      expectErr(result, 'ISSUE_PARENT_CYCLE')
+      expect(mockedIssue.update).not.toHaveBeenCalled()
+    })
+
+    it('should return ISSUE_PARENT_CYCLE when the parent is a descendant', async () => {
+      mockedMembership.findByUserAndWorkspace.mockResolvedValue(
+        ok(memberMembership),
+      )
+      mockedProject.findByWorkspaceAndSlug.mockResolvedValue(
+        ok(projectWith({ id: 'proj-1' })),
+      )
+      mockedIssue.findById.mockImplementation(async (id: string) => {
+        if (id === 'issue-1') {
+          return ok(createFakeIssue({ id: 'issue-1', projectId: 'proj-1' }))
+        }
+        return ok(
+          createFakeIssue({
+            id: 'issue-2',
+            projectId: 'proj-1',
+            parentId: 'issue-1',
+          }),
+        )
+      })
+
+      const result = await IssueService.update(
+        'actor',
+        'ws1',
+        'proj-slug',
+        'issue-1',
+        { parentId: 'issue-2' },
+      )
+
+      expectErr(result, 'ISSUE_PARENT_CYCLE')
+      expect(mockedIssue.update).not.toHaveBeenCalled()
+    })
   })
 
   describe('delete()', () => {

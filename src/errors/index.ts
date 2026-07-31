@@ -32,6 +32,7 @@ export {
   issueLabelAlreadyExists,
   issueLabelNotFound,
   issueNotFound,
+  issueParentCycle,
   issueStateInvalid,
   issueSubscriberNotFound,
   issueTypeForbidden,

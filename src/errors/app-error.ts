@@ -253,3 +253,7 @@ export const issueLabelAlreadyExists = (
 
 export const issueLabelNotFound = (): AppError =>
   appError('ISSUE_LABEL_NOT_FOUND', 'Issue label not found')
+
+export const issueParentCycle = (
+  message = 'Uma issue não pode ser subtarefa dela mesma ou de uma de suas subtarefas',
+): AppError => appError('ISSUE_PARENT_CYCLE', message)

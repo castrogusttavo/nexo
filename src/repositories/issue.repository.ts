@@ -27,6 +27,18 @@ export const IssueRepository = {
     }
   },
 
+  async listChildren(parentId: string): Promise<Result<Issue[]>> {
+    try {
+      const children = await prisma.issue.findMany({
+        where: { parentId, deletedAt: null },
+        orderBy: { number: 'asc' },
+      })
+      return ok(children)
+    } catch (error) {
+      return err(dbError('Failed to list issue children', error))
+    }
+  },
+
   async create(data: {
     title: string
     description: Prisma.InputJsonValue
@@ -40,6 +52,7 @@ export const IssueRepository = {
     estimateValueId?: string
     authorId: string
     projectId: string
+    parentId?: string
   }): Promise<Result<Issue>> {
     try {
       const issue = await prisma.$transaction(async (tx) => {
@@ -70,6 +83,7 @@ export const IssueRepository = {
       cycleId?: string | null
       moduleId?: string | null
       estimateValueId?: string | null
+      parentId?: string | null
     },
   ): Promise<Result<Issue>> {
     try {

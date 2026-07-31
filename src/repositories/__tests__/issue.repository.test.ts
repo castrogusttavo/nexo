@@ -111,6 +111,50 @@ describe('IssueRepository', () => {
     })
   })
 
+  describe('listChildren()', () => {
+    it('should list children ordered by number, excluding soft-deleted', async () => {
+      const { user, project, state, type } = await setupProject()
+      const parent = expectOk(
+        await IssueRepository.create(
+          issueInput({
+            stateId: state.id,
+            typeId: type.id,
+            authorId: user.id,
+            projectId: project.id,
+          }),
+        ),
+      )
+      const child = expectOk(
+        await IssueRepository.create({
+          ...issueInput({
+            stateId: state.id,
+            typeId: type.id,
+            authorId: user.id,
+            projectId: project.id,
+          }),
+          parentId: parent.id,
+        }),
+      )
+      const removed = expectOk(
+        await IssueRepository.create({
+          ...issueInput({
+            stateId: state.id,
+            typeId: type.id,
+            authorId: user.id,
+            projectId: project.id,
+          }),
+          parentId: parent.id,
+        }),
+      )
+
+      await IssueRepository.delete(removed.id)
+
+      const result = await IssueRepository.listChildren(parent.id)
+
+      expect(expectOk(result).map((i) => i.id)).toEqual([child.id])
+    })
+  })
+
   describe('create()', () => {
     it('should assign sequential numbers scoped to the project', async () => {
       const { user, project, state, type } = await setupProject()

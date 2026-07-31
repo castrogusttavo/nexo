@@ -18,6 +18,7 @@ export interface IssueDTO {
   estimateValueId: string | null
   authorId: string
   projectId: string
+  parentId: string | null
   createdAt: string
   updatedAt: string
 }

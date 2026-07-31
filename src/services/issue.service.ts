@@ -6,6 +6,7 @@ import {
   estimateValueNotFound,
   issueForbidden,
   issueNotFound,
+  issueParentCycle,
   issueStateInvalid,
   issueTypeInvalid,
   moduleNotFound,
@@ -70,6 +71,40 @@ async function assertAssociations(
   return ok(undefined)
 }
 
+async function assertNoParentCycle(
+  issueId: string,
+  parentId: string,
+): Promise<Result<void>> {
+  let currentId: string | null = parentId
+  const seen = new Set<string>()
+
+  while (currentId) {
+    if (currentId === issueId) return err(issueParentCycle())
+    if (seen.has(currentId)) break
+    seen.add(currentId)
+
+    const parent = await IssueRepository.findById(currentId)
+    if (!parent.ok) return parent
+    currentId = parent.value.parentId
+  }
+
+  return ok(undefined)
+}
+
+async function assertParent(
+  projectId: string,
+  parentId: string,
+  issueId?: string,
+): Promise<Result<void>> {
+  const parent = await IssueRepository.findById(parentId)
+  if (!parent.ok) return parent
+  if (parent.value.projectId !== projectId) return err(issueNotFound())
+
+  if (issueId) return assertNoParentCycle(issueId, parentId)
+
+  return ok(undefined)
+}
+
 function assertDateOrder(
   startDate: Date | null,
   dueDate: Date | null,
@@ -102,6 +137,33 @@ export const IssueService = {
     }
 
     const result = await IssueRepository.listByProject(project.id)
+    if (!result.ok) return result
+
+    return ok(result.value.map(toIssueDTO))
+  },
+
+  async listChildren(
+    actorId: string,
+    workspaceId: string,
+    projectSlug: string,
+    issueId: string,
+  ): Promise<Result<IssueDTO[]>> {
+    const resolved = await resolveProject(actorId, workspaceId, projectSlug)
+    if (!resolved.ok) return err(resolved.error)
+
+    const { membership, project } = resolved
+    const isLead = project.leadId === actorId
+    const isMember = project.members.some((m) => m.userId === actorId)
+
+    if (!project.isPublic && !membership.isPrivileged && !isLead && !isMember) {
+      return err(projectForbidden())
+    }
+
+    const issueResult = await IssueRepository.findById(issueId)
+    if (!issueResult.ok) return issueResult
+    if (issueResult.value.projectId !== project.id) return err(issueNotFound())
+
+    const result = await IssueRepository.listChildren(issueId)
     if (!result.ok) return result
 
     return ok(result.value.map(toIssueDTO))
@@ -151,6 +213,11 @@ export const IssueService = {
 
     const assocCheck = await assertAssociations(project.id, dto)
     if (!assocCheck.ok) return assocCheck
+
+    if (dto.parentId) {
+      const parentCheck = await assertParent(project.id, dto.parentId)
+      if (!parentCheck.ok) return parentCheck
+    }
 
     const result = await IssueRepository.create({
       ...dto,
@@ -240,6 +307,11 @@ export const IssueService = {
 
     const assocCheck = await assertAssociations(project.id, dto)
     if (!assocCheck.ok) return assocCheck
+
+    if (dto.parentId) {
+      const parentCheck = await assertParent(project.id, dto.parentId, issueId)
+      if (!parentCheck.ok) return parentCheck
+    }
 
     const result = await IssueRepository.update(issueId, {
       ...dto,

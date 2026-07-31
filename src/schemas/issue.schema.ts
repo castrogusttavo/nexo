@@ -33,6 +33,7 @@ export const CreateIssueSchema = z.object({
   cycleId: z.cuid2().optional(),
   moduleId: z.cuid2().optional(),
   estimateValueId: z.cuid2().optional(),
+  parentId: z.cuid2().optional(),
 })
 
 export type CreateIssueDTO = z.infer<typeof CreateIssueSchema>
@@ -43,6 +44,7 @@ export const UpdateIssueSchema = CreateIssueSchema.partial().extend({
   cycleId: z.cuid2().nullable().optional(),
   moduleId: z.cuid2().nullable().optional(),
   estimateValueId: z.cuid2().nullable().optional(),
+  parentId: z.cuid2().nullable().optional(),
 })
 
 export type UpdateIssueDTO = z.infer<typeof UpdateIssueSchema>

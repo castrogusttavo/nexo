@@ -30,6 +30,7 @@ export function toIssueDTO(issue: Issue): IssueDTO {
     estimateValueId: issue.estimateValueId ?? null,
     authorId: issue.authorId,
     projectId: issue.projectId,
+    parentId: issue.parentId ?? null,
     ...withTimestamps(issue),
   }
 }

@@ -20,6 +20,7 @@ describe('toIssueDTO', () => {
       typeId: 'type-1',
       authorId: 'user-1',
       projectId: 'proj-1',
+      parentId: 'parent-1',
       createdAt: now,
       updatedAt: now,
     })
@@ -39,6 +40,7 @@ describe('toIssueDTO', () => {
       estimateValueId: 'value-1',
       authorId: 'user-1',
       projectId: 'proj-1',
+      parentId: 'parent-1',
       createdAt: '2025-03-01T10:00:00.000Z',
       updatedAt: '2025-03-01T10:00:00.000Z',
     })
