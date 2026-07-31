@@ -26,6 +26,7 @@ export function createFakeIssue(overrides?: Partial<Issue>): Issue {
     estimateValueId: null,
     authorId: createId(),
     projectId: createId(),
+    parentId: null,
     deletedAt: null,
     createdAt: now,
     updatedAt: now,
