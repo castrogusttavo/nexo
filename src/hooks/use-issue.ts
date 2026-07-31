@@ -37,6 +37,7 @@ export function useCreateIssue(workspaceId: string, projectSlug: string) {
       cycleId?: string
       moduleId?: string
       estimateValueId?: string
+      parentId?: string
     }) =>
       apiFetchJson<IssueDTO>(
         `/api/workspaces/${workspaceId}/projects/${projectSlug}/issues`,
@@ -72,6 +73,7 @@ export function useUpdateIssue(workspaceId: string, projectSlug: string) {
         cycleId?: string | null
         moduleId?: string | null
         estimateValueId?: string | null
+        parentId?: string | null
       }
     }) =>
       apiFetchJson<IssueDTO>(
@@ -103,5 +105,23 @@ export function useDeleteIssue(workspaceId: string, projectSlug: string) {
         queryKey: issuesKey(workspaceId, projectSlug),
       })
     },
+  })
+}
+
+export function useIssueChildren(
+  workspaceId: string,
+  projectSlug: string,
+  issueId: string,
+) {
+  return useQuery({
+    queryKey: [...issuesKey(workspaceId, projectSlug), issueId, 'children'],
+    queryFn: () =>
+      apiFetch<IssueDTO[]>(
+        `/api/workspaces/${workspaceId}/projects/${projectSlug}/issues/${issueId}/children`,
+        undefined,
+        'Erro ao buscar sub-issues',
+      ),
+    enabled: !!workspaceId && !!projectSlug && !!issueId,
+    staleTime: 2 * 60 * 1000,
   })
 }
