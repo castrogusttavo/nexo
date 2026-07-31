@@ -31,6 +31,8 @@ export function useCreateIssue(workspaceId: string, projectSlug: string) {
       description: Record<string, unknown>
       stateId: string
       priority?: IssuePriorityDTO
+      startDate?: string
+      dueDate?: string
       typeId?: string
     }) =>
       apiFetchJson<IssueDTO>(
@@ -61,6 +63,8 @@ export function useUpdateIssue(workspaceId: string, projectSlug: string) {
         description?: Record<string, unknown>
         stateId?: string
         priority?: IssuePriorityDTO
+        startDate?: string | null
+        dueDate?: string | null
         typeId?: string
       }
     }) =>
