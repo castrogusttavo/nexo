@@ -255,5 +255,16 @@ export const issueLabelNotFound = (): AppError =>
   appError('ISSUE_LABEL_NOT_FOUND', 'Issue label not found')
 
 export const issueParentCycle = (
-  message = 'Uma issue não pode ser subtarefa dela mesma ou de uma de suas subtarefas',
+  message = 'Esta sub-issue criaria um loop entre as issues',
 ): AppError => appError('ISSUE_PARENT_CYCLE', message)
+
+export const issueDependencyAlreadyExists = (
+  message = 'Esta dependência já existe',
+): AppError => appError('ISSUE_DEPENDENCY_ALREADY_EXISTS', message)
+
+export const issueDependencyNotFound = (): AppError =>
+  appError('ISSUE_DEPENDENCY_NOT_FOUND', 'Issue dependency not found')
+
+export const issueDependencyCycle = (
+  message = 'Esta dependência criaria um loop entre as issues',
+): AppError => appError('ISSUE_DEPENDENCY_CYCLE', message)

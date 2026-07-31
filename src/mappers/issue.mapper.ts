@@ -1,7 +1,8 @@
-import type { Issue, IssueSubscriber } from '@prisma/client'
+import type { Issue, IssueDependency, IssueSubscriber } from '@prisma/client'
 import type { JSONContent } from '@tiptap/react'
 import type {
   IssueAssigneeDTO,
+  IssueDependencyDTO,
   IssueDTO,
   IssueLabelDTO,
   IssueSubscriberDTO,
@@ -67,5 +68,17 @@ export function toIssueLabelDTO(
     labelId: issueLabel.labelId,
     label: toLabelDTO(issueLabel.label),
     createdAt: issueLabel.createdAt.toISOString(),
+  }
+}
+
+export function toIssueDependencyDTO(
+  dependency: IssueDependency,
+): IssueDependencyDTO {
+  return {
+    id: dependency.id,
+    sourceId: dependency.sourceId,
+    targetId: dependency.targetId,
+    type: dependency.type,
+    createdAt: dependency.createdAt.toISOString(),
   }
 }

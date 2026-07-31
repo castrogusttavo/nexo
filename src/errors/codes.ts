@@ -108,6 +108,15 @@ export const ERROR_CODES = {
   },
   ISSUE_LABEL_NOT_FOUND: { code: 'ISSUE_LABEL_NOT_FOUND', status: 404 },
   ISSUE_PARENT_CYCLE: { code: 'ISSUE_PARENT_CYCLE', status: 409 },
+  ISSUE_DEPENDENCY_ALREADY_EXISTS: {
+    code: 'ISSUE_DEPENDENCY_ALREADY_EXISTS',
+    status: 409,
+  },
+  ISSUE_DEPENDENCY_NOT_FOUND: {
+    code: 'ISSUE_DEPENDENCY_NOT_FOUND',
+    status: 404,
+  },
+  ISSUE_DEPENDENCY_CYCLE: { code: 'ISSUE_DEPENDENCY_CYCLE', status: 409 },
 
   // Server Errors (500)
   INTERNAL_SERVER_ERROR: { code: 'INTERNAL_SERVER_ERROR', status: 500 },

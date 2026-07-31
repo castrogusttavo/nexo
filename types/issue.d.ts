@@ -50,3 +50,16 @@ export interface IssueLabelDTO {
   label: LabelDTO,
   createdAt: string
 }
+
+export type IssueDependencyTypeDTO =
+  | 'BLOCKS'
+  | 'STARTS_BEFORE'
+  | 'FINISHES_BEFORE'
+
+export interface IssueDependencyDTO {
+  id: string
+  sourceId: string
+  targetId: string
+  type: IssueDependencyTypeDTO
+  createdAt: string
+}
