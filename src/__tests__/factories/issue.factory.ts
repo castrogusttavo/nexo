@@ -16,6 +16,8 @@ export function createFakeIssue(overrides?: Partial<Issue>): Issue {
     title: 'Fix login bug',
     description: { type: 'doc', content: [] },
     priority: 'NONE',
+    startDate: null,
+    dueDate: null,
     stateId: createId(),
     typeId: createId(),
     authorId: createId(),

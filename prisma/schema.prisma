@@ -781,6 +781,8 @@ model Issue {
   title       String
   description Json
   priority    IssuePriority @default(NONE)
+  startDate   DateTime?     @map("start_date")
+  dueDate     DateTime?     @map("due_date")
   stateId     String        @map("state_id")
   typeId      String        @map("type_id")
   authorId    String        @map("author_id")
