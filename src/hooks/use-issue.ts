@@ -34,6 +34,9 @@ export function useCreateIssue(workspaceId: string, projectSlug: string) {
       startDate?: string
       dueDate?: string
       typeId?: string
+      cycleId?: string
+      moduleId?: string
+      estimateValueId?: string
     }) =>
       apiFetchJson<IssueDTO>(
         `/api/workspaces/${workspaceId}/projects/${projectSlug}/issues`,
@@ -66,6 +69,9 @@ export function useUpdateIssue(workspaceId: string, projectSlug: string) {
         startDate?: string | null
         dueDate?: string | null
         typeId?: string
+        cycleId?: string | null
+        moduleId?: string | null
+        estimateValueId?: string | null
       }
     }) =>
       apiFetchJson<IssueDTO>(
