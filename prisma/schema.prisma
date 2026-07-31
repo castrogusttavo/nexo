@@ -620,6 +620,7 @@ model EstimateValue {
   updatedAt          DateTime @updatedAt @map("updated_at")
 
   estimateSettings EstimateSettings @relation(fields: [estimateSettingsId], references: [id], onDelete: Cascade)
+  issues Issue[]
 
   @@index([estimateSettingsId])
   @@map("estimate_values")
@@ -670,6 +671,7 @@ model Module {
   project    Project          @relation(fields: [projectId], references: [id], onDelete: Cascade)
   members    ModuleMember[]
   favourites ModuleFavorite[]
+  issues Issue[]
 
   @@index([projectId, status])
   @@index([leadId])
@@ -736,6 +738,7 @@ model Cycle {
   lead    User          @relation("CycleLead", fields: [leadId], references: [id])
   project Project       @relation(fields: [projectId], references: [id], onDelete: Cascade)
   members CycleMember[]
+  issues Issue[]
 
   @@index([projectId, status])
   @@index([leadId])
@@ -786,6 +789,9 @@ model Issue {
   dueDate     DateTime?     @map("due_date")
   stateId     String        @map("state_id")
   typeId      String        @map("type_id")
+  cycleId String? @map("cycle_id")
+  moduleId String? @map("module_id")
+  estimateValueId String? @map("estimate_value_id")
   authorId    String        @map("author_id")
   projectId   String        @map("project_id")
   deletedAt   DateTime?     @map("deleted_at")
@@ -799,11 +805,16 @@ model Issue {
   assignees   IssueAssignee[]
   subscribers IssueSubscriber[]
   labels      IssueLabel[]
+  cycle Cycle? @relation(fields: [cycleId], references: [id], onDelete: SetNull)
+  module Module? @relation(fields: [moduleId], references: [id], onDelete: SetNull)
+  estimateValue EstimateValue? @relation(fields: [estimateValueId], references: [id], onDelete: SetNull)
 
   @@unique([projectId, number])
   @@index([projectId, deletedAt])
   @@index([stateId])
   @@index([typeId])
+  @@index([cycleId])
+  @@index([moduleId])
   @@map("issues")
 }
 
