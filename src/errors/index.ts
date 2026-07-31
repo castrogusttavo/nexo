@@ -29,6 +29,8 @@ export {
   issueAssigneeAlreadyExists,
   issueAssigneeNotFound,
   issueForbidden,
+  issueLabelAlreadyExists,
+  issueLabelNotFound,
   issueNotFound,
   issueStateInvalid,
   issueSubscriberNotFound,

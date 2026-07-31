@@ -102,6 +102,11 @@ export const ERROR_CODES = {
     code: 'ISSUE_SUBSCRIBER_NOT_FOUND',
     status: 404,
   },
+  ISSUE_LABEL_ALREADY_EXISTS: {
+    code: 'ISSUE_LABEL_ALREADY_EXISTS',
+    status: 409,
+  },
+  ISSUE_LABEL_NOT_FOUND: { code: 'ISSUE_LABEL_NOT_FOUND', status: 404 },
 
   // Server Errors (500)
   INTERNAL_SERVER_ERROR: { code: 'INTERNAL_SERVER_ERROR', status: 500 },

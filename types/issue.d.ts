@@ -1,4 +1,5 @@
 import type { JSONContent } from '@tiptap/react'
+import type { LabelDTO } from './label'
 
 export type IssuePriorityDTO = 'NONE' | 'LOW' | 'MEDIUM' | 'HIGH' | 'URGENT'
 
@@ -35,5 +36,13 @@ export interface IssueSubscriberDTO {
   id: string
   issueId: string
   userId: string
+  createdAt: string
+}
+
+export interface IssueLabelDTO {
+  id: string
+  issueId: string
+  labelId: string
+  label: LabelDTO,
   createdAt: string
 }

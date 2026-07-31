@@ -3,10 +3,13 @@ import type { JSONContent } from '@tiptap/react'
 import type {
   IssueAssigneeDTO,
   IssueDTO,
+  IssueLabelDTO,
   IssueSubscriberDTO,
 } from '@/types/issue'
 import type { IssueAssigneeWithUser } from '../repositories/issue-assignee.repository'
+import type { IssueLabelWithLabel } from '../repositories/issue-label.repository'
 import { withTimestamps } from './_shared'
+import { toLabelDTO } from './label.mapper'
 
 export function toIssueDTO(issue: Issue): IssueDTO {
   return {
@@ -48,5 +51,17 @@ export function toIssueSubscriberDTO(
     issueId: subscriber.issueId,
     userId: subscriber.userId,
     createdAt: subscriber.createdAt.toISOString(),
+  }
+}
+
+export function toIssueLabelDTO(
+  issueLabel: IssueLabelWithLabel,
+): IssueLabelDTO {
+  return {
+    id: issueLabel.id,
+    issueId: issueLabel.issueId,
+    labelId: issueLabel.labelId,
+    label: toLabelDTO(issueLabel.label),
+    createdAt: issueLabel.createdAt.toISOString(),
   }
 }

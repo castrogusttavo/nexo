@@ -246,3 +246,10 @@ export const issueAssigneeNotFound = (): AppError =>
 
 export const issueSubscriberNotFound = (): AppError =>
   appError('ISSUE_SUBSCRIBER_NOT_FOUND', 'Issue assignee not found')
+
+export const issueLabelAlreadyExists = (
+  message = 'Esta label já está aplicada à issue',
+): AppError => appError('ISSUE_LABEL_ALREADY_EXISTS', message)
+
+export const issueLabelNotFound = (): AppError =>
+  appError('ISSUE_LABEL_NOT_FOUND', 'Issue label not found')
