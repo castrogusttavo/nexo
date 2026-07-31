@@ -46,6 +46,7 @@ export function seedIssue(
     description?: Prisma.InputJsonValue
     priority?: IssuePriority
     number?: number
+    parentId?: string
   },
 ) {
   return prisma.issue.create({
