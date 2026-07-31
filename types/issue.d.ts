@@ -8,6 +8,8 @@ export interface IssueDTO {
   title: string
   description: JSONContent
   priority: IssuePriorityDTO
+  startDate: string | null
+  dueDate: string | null
   stateId: string
   typeId: string
   authorId: string

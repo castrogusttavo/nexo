@@ -7,6 +7,7 @@ import {
   issueStateInvalid,
   issueTypeInvalid,
   projectForbidden,
+  validationError,
 } from '../errors'
 import { err, ok, type Result } from '../lib/result'
 import { toIssueDTO } from '../mappers/issue.mapper'
@@ -26,6 +27,20 @@ async function resolveDefaultTypeId(
   if (!task) return err(issueTypeInvalid())
 
   return ok(task.id)
+}
+
+function assertDateOrder(
+  startDate: Date | null,
+  dueDate: Date | null,
+): Result<void> {
+  if (startDate && dueDate && dueDate < startDate) {
+    return err(
+      validationError(
+        'A data de vencimento não pode ser anterior à data de início',
+      ),
+    )
+  }
+  return ok(undefined)
 }
 
 export const IssueService = {
@@ -87,9 +102,17 @@ export const IssueService = {
       typeId = defaultType.value
     }
 
+    const startDate = dto.startDate ? new Date(dto.startDate) : null
+    const dueDate = dto.dueDate ? new Date(dto.dueDate) : null
+
+    const dateCheck = assertDateOrder(startDate, dueDate)
+    if (!dateCheck.ok) return dateCheck
+
     const result = await IssueRepository.create({
       ...dto,
       description: dto.description as Prisma.InputJsonValue,
+      startDate: startDate ?? undefined,
+      dueDate: dueDate ?? undefined,
       typeId,
       authorId: actorId,
       projectId: project.id,
@@ -153,9 +176,29 @@ export const IssueService = {
       }
     }
 
+    const issue = issueResult.value
+
+    const startDate =
+      dto.startDate === undefined
+        ? issue.startDate
+        : dto.startDate === null
+          ? null
+          : new Date(dto.startDate)
+    const dueDate =
+      dto.dueDate === undefined
+        ? issue.dueDate
+        : dto.dueDate === null
+          ? null
+          : new Date(dto.dueDate)
+
+    const dateCheck = assertDateOrder(startDate, dueDate)
+    if (!dateCheck.ok) return dateCheck
+
     const result = await IssueRepository.update(issueId, {
       ...dto,
       description: dto.description as Prisma.InputJsonValue | undefined,
+      startDate: dto.startDate === undefined ? undefined : startDate,
+      dueDate: dto.dueDate === undefined ? undefined : dueDate,
     })
     if (!result.ok) return result
 

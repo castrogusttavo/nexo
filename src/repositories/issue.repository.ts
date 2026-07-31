@@ -31,6 +31,8 @@ export const IssueRepository = {
     title: string
     description: Prisma.InputJsonValue
     priority?: IssuePriority
+    startDate?: Date
+    dueDate?: Date
     stateId: string
     typeId: string
     authorId: string
@@ -58,6 +60,8 @@ export const IssueRepository = {
       title?: string
       description?: Prisma.InputJsonValue
       priority?: IssuePriority
+      startDate?: Date | null
+      dueDate?: Date | null
       stateId?: string
       typeId?: string
     },

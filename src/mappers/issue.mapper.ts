@@ -18,6 +18,8 @@ export function toIssueDTO(issue: Issue): IssueDTO {
       content: [],
     },
     priority: issue.priority,
+    startDate: issue.startDate?.toISOString() ?? null,
+    dueDate: issue.dueDate?.toISOString() ?? null,
     stateId: issue.stateId,
     typeId: issue.typeId,
     authorId: issue.authorId,

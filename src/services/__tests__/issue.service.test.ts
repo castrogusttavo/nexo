@@ -196,6 +196,31 @@ describe('IssueService', () => {
 
       expectErr(result, 'DATABASE_ERROR')
     })
+
+    it('should return VALIDATION_ERROR when dueDate is before startDate', async () => {
+      mockedMembership.findByUserAndWorkspace.mockResolvedValue(
+        ok(memberMembership),
+      )
+      mockedProject.findByWorkspaceAndSlug.mockResolvedValue(
+        ok(projectWith({ id: 'proj-1' })),
+      )
+      mockedState.findById.mockResolvedValue(
+        ok(createFakeState({ projectId: 'proj-1' })),
+      )
+      mockedIssueType.listByProject.mockResolvedValue(ok([taskType]))
+
+      const result = await IssueService.create('actor', 'ws1', 'proj-slug', {
+        title: 'Bug',
+        description: { type: 'doc', content: [] },
+        stateId: 'state-1',
+        priority: 'NONE',
+        startDate: '2025-03-05T10:00:00.000Z',
+        dueDate: '2025-03-01T10:00:00.000Z',
+      })
+
+      expectErr(result, 'VALIDATION_ERROR')
+      expect(mockedIssue.create).not.toHaveBeenCalled()
+    })
   })
 
   describe('update()', () => {
@@ -264,6 +289,34 @@ describe('IssueService', () => {
 
       expectErr(result, 'ISSUE_FORBIDDEN')
       expect(mockedIssue.findById).not.toHaveBeenCalled()
+    })
+
+    it('should validate a new dueDate against the stored startDate', async () => {
+      mockedMembership.findByUserAndWorkspace.mockResolvedValue(
+        ok(memberMembership),
+      )
+      mockedProject.findByWorkspaceAndSlug.mockResolvedValue(
+        ok(projectWith({ id: 'proj-1' })),
+      )
+      mockedIssue.findById.mockResolvedValue(
+        ok(
+          createFakeIssue({
+            projectId: 'proj-1',
+            startDate: new Date('2025-03-05T10:00:00.000Z'),
+          }),
+        ),
+      )
+
+      const result = await IssueService.update(
+        'actor',
+        'ws1',
+        'proj-slug',
+        'issue-1',
+        { dueDate: '2025-03-01T10:00:00.000Z' },
+      )
+
+      expectErr(result, 'VALIDATION_ERROR')
+      expect(mockedIssue.update).not.toHaveBeenCalled()
     })
   })
 

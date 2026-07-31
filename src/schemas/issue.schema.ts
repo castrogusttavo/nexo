@@ -12,6 +12,8 @@ const IssueContentSchema = z
     'Descrição excede o tamanho permitido',
   )
 
+const IsoDate = z.iso.datetime({ offset: true })
+
 export const IssuePrioritySchema = z.enum([
   'NONE',
   'LOW',
@@ -25,11 +27,16 @@ export const CreateIssueSchema = z.object({
   description: IssueContentSchema,
   stateId: z.cuid2(),
   priority: IssuePrioritySchema.default('NONE'),
+  startDate: IsoDate.optional(),
+  dueDate: IsoDate.optional(),
   typeId: z.cuid2().optional(),
 })
 
 export type CreateIssueDTO = z.infer<typeof CreateIssueSchema>
 
-export const UpdateIssueSchema = CreateIssueSchema.partial()
+export const UpdateIssueSchema = CreateIssueSchema.partial().extend({
+  startDate: IsoDate.nullable().optional(),
+  dueDate: IsoDate.nullable().optional(),
+})
 
 export type UpdateIssueDTO = z.infer<typeof UpdateIssueSchema>
