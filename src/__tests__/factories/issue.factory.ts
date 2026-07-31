@@ -2,6 +2,8 @@ import { createId } from '@paralleldrive/cuid2'
 import type {
   Issue,
   IssueAssignee,
+  IssueDependency,
+  IssueDependencyType,
   IssueLabel,
   IssuePriority,
   IssueSubscriber,
@@ -109,4 +111,26 @@ export function createFakeIssueLabel(
 
 export function seedIssueLabel(issueId: string, labelId: string) {
   return prisma.issueLabel.create({ data: { issueId, labelId } })
+}
+
+export function createFakeIssueDependency(
+  overrides?: Partial<IssueDependency>,
+): IssueDependency {
+  const now = new Date()
+  return {
+    id: createId(),
+    sourceId: createId(),
+    targetId: createId(),
+    type: 'BLOCKS',
+    createdAt: now,
+    ...overrides,
+  }
+}
+
+export function seedIssueDependency(
+  sourceId: string,
+  targetId: string,
+  type: IssueDependencyType = 'BLOCKS',
+) {
+  return prisma.issueDependency.create({ data: { sourceId, targetId, type } })
 }
