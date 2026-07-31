@@ -2,6 +2,7 @@ import { createId } from '@paralleldrive/cuid2'
 import type {
   Issue,
   IssueAssignee,
+  IssueLabel,
   IssuePriority,
   IssueSubscriber,
   Prisma,
@@ -86,4 +87,21 @@ export function createFakeIssueSubscriber(
 
 export function seedIssueSubscriber(issueId: string, userId: string) {
   return prisma.issueSubscriber.create({ data: { issueId, userId } })
+}
+
+export function createFakeIssueLabel(
+  overrides?: Partial<IssueLabel>,
+): IssueLabel {
+  const now = new Date()
+  return {
+    id: createId(),
+    issueId: createId(),
+    labelId: createId(),
+    createdAt: now,
+    ...overrides,
+  }
+}
+
+export function seedIssueLabel(issueId: string, labelId: string) {
+  return prisma.issueLabel.create({ data: { issueId, labelId } })
 }
