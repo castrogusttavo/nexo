@@ -6,6 +6,8 @@ import type {
   IssueDependencyType,
   IssueLabel,
   IssuePriority,
+  IssueRelation,
+  IssueRelationType,
   IssueSubscriber,
   Prisma,
 } from '@prisma/client'
@@ -133,4 +135,26 @@ export function seedIssueDependency(
   type: IssueDependencyType = 'BLOCKS',
 ) {
   return prisma.issueDependency.create({ data: { sourceId, targetId, type } })
+}
+
+export function createFakeIssueRelation(
+  overrides?: Partial<IssueRelation>,
+): IssueRelation {
+  const now = new Date()
+  return {
+    id: createId(),
+    sourceId: createId(),
+    targetId: createId(),
+    type: 'RELATES_TO',
+    createdAt: now,
+    ...overrides,
+  }
+}
+
+export function seedIssueRelation(
+  sourceId: string,
+  targetId: string,
+  type: IssueRelationType = 'RELATES_TO',
+) {
+  return prisma.issueRelation.create({ data: { sourceId, targetId, type } })
 }
