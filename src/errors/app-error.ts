@@ -279,3 +279,6 @@ export const issueRelationNotFound = (): AppError =>
 export const issueRelationSelf = (
   message = 'Uma issue não pode se relacionar com ela mesma',
 ): AppError => appError('ISSUE_RELATION_SELF', message)
+
+export const attachmentNotFound = (): AppError =>
+  appError('ATTACHMENT_NOT_FOUND', 'Attachment not found')
