@@ -268,3 +268,14 @@ export const issueDependencyNotFound = (): AppError =>
 export const issueDependencyCycle = (
   message = 'Esta dependência criaria um loop entre as issues',
 ): AppError => appError('ISSUE_DEPENDENCY_CYCLE', message)
+
+export const issueRelationAlreadyExists = (
+  message = 'Estas issues já estão relacionadas',
+): AppError => appError('ISSUE_RELATION_ALREADY_EXISTS', message)
+
+export const issueRelationNotFound = (): AppError =>
+  appError('ISSUE_RELATION_NOT_FOUND', 'Issue relation not found')
+
+export const issueRelationSelf = (
+  message = 'Uma issue não pode se relacionar com ela mesma',
+): AppError => appError('ISSUE_RELATION_SELF', message)

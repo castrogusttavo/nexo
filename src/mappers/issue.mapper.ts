@@ -1,10 +1,16 @@
-import type { Issue, IssueDependency, IssueSubscriber } from '@prisma/client'
+import type {
+  Issue,
+  IssueDependency,
+  IssueRelation,
+  IssueSubscriber,
+} from '@prisma/client'
 import type { JSONContent } from '@tiptap/react'
 import type {
   IssueAssigneeDTO,
   IssueDependencyDTO,
   IssueDTO,
   IssueLabelDTO,
+  IssueRelationDTO,
   IssueSubscriberDTO,
 } from '@/types/issue'
 import type { IssueAssigneeWithUser } from '../repositories/issue-assignee.repository'
@@ -80,5 +86,15 @@ export function toIssueDependencyDTO(
     targetId: dependency.targetId,
     type: dependency.type,
     createdAt: dependency.createdAt.toISOString(),
+  }
+}
+
+export function toIssueRelationDTO(relation: IssueRelation): IssueRelationDTO {
+  return {
+    id: relation.id,
+    sourceId: relation.sourceId,
+    targetId: relation.targetId,
+    type: relation.type,
+    createdAt: relation.createdAt.toISOString(),
   }
 }

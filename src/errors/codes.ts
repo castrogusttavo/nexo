@@ -117,6 +117,12 @@ export const ERROR_CODES = {
     status: 404,
   },
   ISSUE_DEPENDENCY_CYCLE: { code: 'ISSUE_DEPENDENCY_CYCLE', status: 409 },
+  ISSUE_RELATION_ALREADY_EXISTS: {
+    code: 'ISSUE_RELATION_ALREADY_EXISTS',
+    status: 409,
+  },
+  ISSUE_RELATION_NOT_FOUND: { code: 'ISSUE_RELATION_NOT_FOUND', status: 404 },
+  ISSUE_RELATION_SELF: { code: 'ISSUE_RELATION_SELF', status: 422 },
 
   // Server Errors (500)
   INTERNAL_SERVER_ERROR: { code: 'INTERNAL_SERVER_ERROR', status: 500 },
