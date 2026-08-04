@@ -45,6 +45,7 @@ model User {
   issuesAuthored     Issue[]               @relation("IssueAuthor")
   issueAssignments   IssueAssignee[]       @relation("IssueAssignee")
   issueSubscriptions IssueSubscriber[]     @relation("IssueSubscriber")
+  attachments        Attachment[]
 
   @@index([deletionScheduledAt])
   @@map("users")
@@ -815,6 +816,7 @@ model Issue {
   dependenciesTo   IssueDependency[] @relation("IssueDependencyTarget")
   relationsFrom    IssueRelation[]   @relation("IssueRelationSource")
   relationsTo      IssueRelation[]   @relation("IssueRelationTarget")
+  attachments      Attachment[]
 
   @@unique([projectId, number])
   @@index([projectId, deletedAt])
@@ -920,4 +922,22 @@ model IssueRelation {
 enum IssueRelationType {
   RELATES_TO
   IMPLEMENTS
+}
+
+model Attachment {
+  id           String   @id @default(cuid())
+  fileName     String   @map("file_name")
+  contentType  String   @map("content_type")
+  size         Int
+  bucket       String
+  key          String
+  issueId      String   @map("issue_id")
+  uploadedById String   @map("uploaded_by_id")
+  createdAt    DateTime @default(now()) @map("created_at")
+
+  issue      Issue @relation(fields: [issueId], references: [id], onDelete: Cascade)
+  uploadedBy User  @relation(fields: [uploadedById], references: [id])
+
+  @@index([issueId])
+  @@map("attachments")
 }
