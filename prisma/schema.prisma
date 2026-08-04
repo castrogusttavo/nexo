@@ -46,6 +46,7 @@ model User {
   issueAssignments   IssueAssignee[]       @relation("IssueAssignee")
   issueSubscriptions IssueSubscriber[]     @relation("IssueSubscriber")
   attachments        Attachment[]
+  votes              IssueVote[]
 
   @@index([deletionScheduledAt])
   @@map("users")
@@ -817,6 +818,7 @@ model Issue {
   relationsFrom    IssueRelation[]   @relation("IssueRelationSource")
   relationsTo      IssueRelation[]   @relation("IssueRelationTarget")
   attachments      Attachment[]
+  votes            IssueVote[]
 
   @@unique([projectId, number])
   @@index([projectId, deletedAt])
@@ -940,4 +942,25 @@ model Attachment {
 
   @@index([issueId])
   @@map("attachments")
+}
+
+model IssueVote {
+  id        String        @id @default(cuid())
+  issueId   String        @map("issue_id")
+  userId    String        @map("user_id")
+  type      IssueVoteType
+  createdAt DateTime      @default(now()) @map("created_at")
+  updatedAt DateTime      @updatedAt @map("updated_at")
+
+  issue Issue @relation(fields: [issueId], references: [id], onDelete: Cascade)
+  user  User  @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([issueId, userId])
+  @@index([issueId])
+  @@map("issue_votes")
+}
+
+enum IssueVoteType {
+  UP
+  DOWN
 }
