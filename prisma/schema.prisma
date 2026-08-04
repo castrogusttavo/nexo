@@ -813,8 +813,8 @@ model Issue {
   children         Issue[]           @relation("IssueHierarchy")
   dependenciesFrom IssueDependency[] @relation("IssueDependencySource")
   dependenciesTo   IssueDependency[] @relation("IssueDependencyTarget")
-  relationsFrom IssueRelation[] @relation("IssueRelationSource")
-  relationsTo IssueRelation[] @relation("IssueRelationTarget")
+  relationsFrom    IssueRelation[]   @relation("IssueRelationSource")
+  relationsTo      IssueRelation[]   @relation("IssueRelationTarget")
 
   @@unique([projectId, number])
   @@index([projectId, deletedAt])
@@ -902,11 +902,11 @@ model IssueDependency {
 }
 
 model IssueRelation {
-  id String @id @default(cuid())
-  sourceId String @map("source_id")
-  targetId String @map("target_id")
-  type IssueRelationType
-  createdAt DateTime @default(now()) @map("created_at")
+  id        String            @id @default(cuid())
+  sourceId  String            @map("source_id")
+  targetId  String            @map("target_id")
+  type      IssueRelationType
+  createdAt DateTime          @default(now()) @map("created_at")
 
   source Issue @relation("IssueRelationSource", fields: [sourceId], references: [id], onDelete: Cascade)
   target Issue @relation("IssueRelationTarget", fields: [targetId], references: [id], onDelete: Cascade)
