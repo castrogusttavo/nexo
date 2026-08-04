@@ -282,3 +282,6 @@ export const issueRelationSelf = (
 
 export const attachmentNotFound = (): AppError =>
   appError('ATTACHMENT_NOT_FOUND', 'Attachment not found')
+
+export const issueVoteNotFound = (): AppError =>
+  appError('ISSUE_VOTE_NOT_FOUND', 'Issue vote not found')

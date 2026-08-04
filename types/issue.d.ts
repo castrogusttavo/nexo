@@ -4,6 +4,7 @@ import { IssueTypeDTO } from './issue-type'
 
 export type IssuePriorityDTO = 'NONE' | 'LOW' | 'MEDIUM' | 'HIGH' | 'URGENT'
 export type IssueRelationTypeDTO = 'RELATES_TO' | 'IMPLEMENTS'
+export type IssueVoteTypeDTO = 'UP' | 'DOWN'
 
 export interface IssueDTO {
   id: string
@@ -72,4 +73,10 @@ export interface IssueRelationDTO {
   targetId: string
   type: IssueRelationTypeDTO,
   createdAt: string
+}
+
+export interface IssueVoteSummaryDTO {
+  up: number
+  down: number
+  myVote: IssueVoteTypeDTO | null
 }

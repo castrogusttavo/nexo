@@ -9,6 +9,8 @@ import type {
   IssueRelation,
   IssueRelationType,
   IssueSubscriber,
+  IssueVote,
+  IssueVoteType,
   Prisma,
 } from '@prisma/client'
 import { prisma } from '@/src/lib/prisma'
@@ -157,4 +159,25 @@ export function seedIssueRelation(
   type: IssueRelationType = 'RELATES_TO',
 ) {
   return prisma.issueRelation.create({ data: { sourceId, targetId, type } })
+}
+
+export function createFakeIssueVote(overrides?: Partial<IssueVote>): IssueVote {
+  const now = new Date()
+  return {
+    id: createId(),
+    issueId: createId(),
+    userId: createId(),
+    type: 'UP',
+    createdAt: now,
+    updatedAt: now,
+    ...overrides,
+  }
+}
+
+export function seedIssueVote(
+  issueId: string,
+  userId: string,
+  type: IssueVoteType = 'UP',
+) {
+  return prisma.issueVote.create({ data: { issueId, userId, type } })
 }

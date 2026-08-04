@@ -46,6 +46,7 @@ export {
   issueTypeInvalid,
   issueTypeNotFound,
   issueTypeSystemProtected,
+  issueVoteNotFound,
   labelForbidden,
   labelNotFound,
   mailError,
