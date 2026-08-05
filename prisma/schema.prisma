@@ -47,6 +47,7 @@ model User {
   issueSubscriptions IssueSubscriber[]     @relation("IssueSubscriber")
   attachments        Attachment[]
   votes              IssueVote[]
+  comments           Comment[]
 
   @@index([deletionScheduledAt])
   @@map("users")
@@ -819,6 +820,7 @@ model Issue {
   relationsTo      IssueRelation[]   @relation("IssueRelationTarget")
   attachments      Attachment[]
   votes            IssueVote[]
+  comments         Comment[]
 
   @@unique([projectId, number])
   @@index([projectId, deletedAt])
@@ -963,4 +965,24 @@ model IssueVote {
 enum IssueVoteType {
   UP
   DOWN
+}
+
+model Comment {
+  id        String    @id @default(cuid())
+  content   Json
+  issueId   String    @map("issue_id")
+  authorId  String    @map("author_id")
+  parentId  String?   @map("parent_id")
+  editedAt  DateTime? @map("edited_at")
+  createdAt DateTime  @default(now()) @map("created_at")
+  updatedAt DateTime  @updatedAt @map("updated_at")
+
+  issue   Issue     @relation(fields: [issueId], references: [id], onDelete: Cascade)
+  author  User      @relation(fields: [authorId], references: [id])
+  parent  Comment?  @relation("CommentThread", fields: [parentId], references: [id], onDelete: Cascade)
+  replies Comment[] @relation("CommentThread")
+
+  @@index([issueId, createdAt])
+  @@index([parentId])
+  @@map("comments")
 }
