@@ -285,3 +285,14 @@ export const attachmentNotFound = (): AppError =>
 
 export const issueVoteNotFound = (): AppError =>
   appError('ISSUE_VOTE_NOT_FOUND', 'Issue vote not found')
+
+export const commentNotFound = (): AppError =>
+  appError('COMMENT_NOT_FOUND', 'Comment not found')
+
+export const commentForbidden = (
+  message = 'Você só pode editar ou excluir os seus próprios comentários',
+): AppError => appError('COMMENT_FORBIDDEN', message)
+
+export const commentNestingTooDeep = (
+  message = 'Não é possível responder a uma resposta',
+): AppError => appError('COMMENT_NESTING_TOO_DEEP', message)
