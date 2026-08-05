@@ -72,7 +72,7 @@ describe('POST /api/workspaces/[id]/projects/[slug]/issues/[issueId]/dependencie
     expect(res.status).toBe(201)
     const body = await res.json()
     expect(body.data.sourceId).toBe(source.id)
-    expect(body.data.targetId).toBe(source.id)
+    expect(body.data.targetId).toBe(target.id)
     expect(body.data.type).toBe('BLOCKS')
   })
 

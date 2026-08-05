@@ -49,7 +49,7 @@ describe('DELETE /api/workspaces/[id]/projects/[slug]/issues/[issueId]/dependenc
     const { data } = await created.json()
 
     const res = await deleteJson(
-      `/api/workspaces/${workspace.id}/projects/${project.slug}/issues/${source.id}/dependencies/${data}`,
+      `/api/workspaces/${workspace.id}/projects/${project.slug}/issues/${source.id}/dependencies/${data.id}`,
       user.cookie,
     )
 
@@ -70,7 +70,7 @@ describe('DELETE /api/workspaces/[id]/projects/[slug]/issues/[issueId]/dependenc
     const { data } = await created.json()
 
     const res = await deleteJson(
-      `/api/workspaces/${workspace.id}/projects/${project.slug}/issues/${target.id}/dependencies/${data}`,
+      `/api/workspaces/${workspace.id}/projects/${project.slug}/issues/${target.id}/dependencies/${data.id}`,
       user.cookie,
     )
 

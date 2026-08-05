@@ -50,7 +50,7 @@ describe('POST /api/workspaces/[id]/projects/[slug]/issues/[issueId]/relations',
     const { source, target } = await seedIssuePair(project.id, user.id)
 
     const res = await postJson(
-      `api/workspaces/${workspace.id}/projects/${project.slug}/issues${source.id}/relations`,
+      `/api/workspaces/${workspace.id}/projects/${project.slug}/issues/${source.id}/relations`,
       { targetId: target.id, type: 'NOT_A_TYPE' },
       user.cookie,
     )
@@ -64,7 +64,7 @@ describe('POST /api/workspaces/[id]/projects/[slug]/issues/[issueId]/relations',
     const { source, target } = await seedIssuePair(project.id, user.id)
 
     const res = await postJson(
-      `api/workspaces/${workspace.id}/projects/${project.slug}/issues${source.id}/relations`,
+      `/api/workspaces/${workspace.id}/projects/${project.slug}/issues/${source.id}/relations`,
       { targetId: target.id, type: 'RELATES_TO' },
       user.cookie,
     )
@@ -82,7 +82,7 @@ describe('POST /api/workspaces/[id]/projects/[slug]/issues/[issueId]/relations',
     const { source } = await seedIssuePair(project.id, user.id)
 
     const res = await postJson(
-      `api/workspaces/${workspace.id}/projects/${project.slug}/issues${source.id}/relations`,
+      `/api/workspaces/${workspace.id}/projects/${project.slug}/issues/${source.id}/relations`,
       { targetId: source.id, type: 'RELATES_TO' },
       user.cookie,
     )
@@ -95,16 +95,16 @@ describe('POST /api/workspaces/[id]/projects/[slug]/issues/[issueId]/relations',
   it('should return 409 when the pair is already linked in reverse', async () => {
     const { user, workspace } = await authenticatedOwner()
     const project = await seedProject(workspace.id, user.id)
-    const { source } = await seedIssuePair(project.id, user.id)
+    const { source, target } = await seedIssuePair(project.id, user.id)
 
     await postJson(
-      `api/workspaces/${workspace.id}/projects/${project.slug}/issues${source.id}/relations`,
-      { targetId: source.id, type: 'RELATES_TO' },
+      `/api/workspaces/${workspace.id}/projects/${project.slug}/issues/${source.id}/relations`,
+      { targetId: target.id, type: 'RELATES_TO' },
       user.cookie,
     )
 
     const res = await postJson(
-      `api/workspaces/${workspace.id}/projects/${project.slug}/issues${source.id}/relations`,
+      `/api/workspaces/${workspace.id}/projects/${project.slug}/issues/${target.id}/relations`,
       { targetId: source.id, type: 'RELATES_TO' },
       user.cookie,
     )
@@ -122,18 +122,18 @@ describe('GET /api/workspaces/[id]/projects/[slug]/issues/[issueId]/relations', 
     const { source, target } = await seedIssuePair(project.id, user.id)
 
     await postJson(
-      `api/workspaces/${workspace.id}/projects/${project.slug}/issues${source.id}/relations`,
-      { targetId: source.id, type: 'RELATES_TO' },
+      `/api/workspaces/${workspace.id}/projects/${project.slug}/issues/${source.id}/relations`,
+      { targetId: target.id, type: 'RELATES_TO' },
       user.cookie,
     )
 
     const fromSource = await getJson(
-      `api/workspaces/${workspace.id}/projects/${project.slug}/issues${source.id}/relations`,
+      `/api/workspaces/${workspace.id}/projects/${project.slug}/issues/${source.id}/relations`,
       user.cookie,
     )
 
     const fromTarget = await getJson(
-      `api/workspaces/${workspace.id}/projects/${project.slug}/issues${target.id}/relations`,
+      `/api/workspaces/${workspace.id}/projects/${project.slug}/issues/${target.id}/relations`,
       user.cookie,
     )
 

@@ -41,7 +41,7 @@ describe('DELETE /api/workspaces/[id]/projects/[slug]/issues/[issueId]/relations
     const { source, target } = await seedIssuePair(project.id, user.id)
 
     const created = await postJson(
-      `api/workspaces/${workspace.id}/projects/${project.slug}/issues${source.id}/relations`,
+      `/api/workspaces/${workspace.id}/projects/${project.slug}/issues/${source.id}/relations`,
       { targetId: target.id, type: 'RELATES_TO' },
       user.cookie,
     )
@@ -49,7 +49,7 @@ describe('DELETE /api/workspaces/[id]/projects/[slug]/issues/[issueId]/relations
     const { data } = await created.json()
 
     const res = await deleteJson(
-      `api/workspaces/${workspace.id}/projects/${project.slug}/issues${source.id}/relations/${data.id}`,
+      `/api/workspaces/${workspace.id}/projects/${project.slug}/issues/${source.id}/relations/${data.id}`,
       user.cookie,
     )
 
@@ -62,7 +62,7 @@ describe('DELETE /api/workspaces/[id]/projects/[slug]/issues/[issueId]/relations
     const { source, target } = await seedIssuePair(project.id, user.id)
 
     const created = await postJson(
-      `api/workspaces/${workspace.id}/projects/${project.slug}/issues${source.id}/relations`,
+      `/api/workspaces/${workspace.id}/projects/${project.slug}/issues/${source.id}/relations`,
       { targetId: target.id, type: 'RELATES_TO' },
       user.cookie,
     )
@@ -70,7 +70,7 @@ describe('DELETE /api/workspaces/[id]/projects/[slug]/issues/[issueId]/relations
     const { data } = await created.json()
 
     const res = await deleteJson(
-      `api/workspaces/${workspace.id}/projects/${project.slug}/issues${target.id}/relations/${data.id}`,
+      `/api/workspaces/${workspace.id}/projects/${project.slug}/issues/${target.id}/relations/${data.id}`,
       user.cookie,
     )
 
@@ -83,7 +83,7 @@ describe('DELETE /api/workspaces/[id]/projects/[slug]/issues/[issueId]/relations
     const { source } = await seedIssuePair(project.id, user.id)
 
     const res = await deleteJson(
-      `api/workspaces/${workspace.id}/projects/${project.slug}/issues${source.id}/relations/nonexistent`,
+      `/api/workspaces/${workspace.id}/projects/${project.slug}/issues/${source.id}/relations/nonexistent`,
       user.cookie,
     )
 

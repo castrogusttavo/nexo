@@ -142,6 +142,6 @@ describe('GET /api/workspaces/[id]/projects/[slug]/issues/[issueId]/attachments'
     expect(res.status).toBe(200)
     const body = await res.json()
     expect(body.data).toHaveLength(1)
-    expect(body.data.url).toContain('http')
+    expect(body.data[0].url).toContain('http')
   })
 })
