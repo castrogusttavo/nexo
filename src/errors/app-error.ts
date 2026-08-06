@@ -296,3 +296,10 @@ export const commentForbidden = (
 export const commentNestingTooDeep = (
   message = 'Não é possível responder a uma resposta',
 ): AppError => appError('COMMENT_NESTING_TOO_DEEP', message)
+
+export const issueUpdateNotFound = (): AppError =>
+  appError('ISSUE_UPDATE_NOT_FOUND', 'Issue update not found')
+
+export const issueUpdateForbidden = (
+  message = 'Você só pode editar ou excluir os seus próprios updates',
+): AppError => appError('ISSUE_UPDATE_FORBIDDEN', message)

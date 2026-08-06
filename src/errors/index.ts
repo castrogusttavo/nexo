@@ -49,6 +49,8 @@ export {
   issueTypeInvalid,
   issueTypeNotFound,
   issueTypeSystemProtected,
+  issueUpdateForbidden,
+  issueUpdateNotFound,
   issueVoteNotFound,
   labelForbidden,
   labelNotFound,
