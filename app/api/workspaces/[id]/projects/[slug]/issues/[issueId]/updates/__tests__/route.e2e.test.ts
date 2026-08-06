@@ -70,7 +70,7 @@ describe('POST /api/workspaces/[id]/projects/[slug]/issues/[issueId]/updates', (
       user.cookie,
     )
 
-    expect(res.status).toBe(200)
+    expect(res.status).toBe(201)
     const body = await res.json()
     expect(body.data.status).toBe('ON_TRACK')
     expect(body.data.content).toBeNull()
