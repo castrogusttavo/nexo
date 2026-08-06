@@ -70,7 +70,7 @@ export const ModuleService = {
       entity: 'module',
       action: 'create',
       actorId,
-      reason: result.value.id,
+      targetId: result.value.id,
     })
 
     return ok(toModuleDTO(result.value))
