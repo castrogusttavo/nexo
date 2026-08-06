@@ -49,6 +49,7 @@ model User {
   votes              IssueVote[]
   comments           Comment[]
   activities         Activity[]
+  issueUpdates       IssueUpdate[]
 
   @@index([deletionScheduledAt])
   @@map("users")
@@ -822,6 +823,7 @@ model Issue {
   attachments      Attachment[]
   votes            IssueVote[]
   comments         Comment[]
+  updates          IssueUpdate[]
 
   @@unique([projectId, number])
   @@index([projectId, deletedAt])
@@ -1008,4 +1010,27 @@ enum ActivityEntityType {
   ISSUE
   CYCLE
   MODULE
+}
+
+model IssueUpdate {
+  id        String            @id @default(cuid())
+  status    IssueUpdateStatus
+  content   String?
+  issueId   String            @map("issue_id")
+  authorId  String            @map("author_id")
+  editedAt  DateTime?         @map("edited_at")
+  createdAt DateTime          @default(now()) @map("created_at")
+  updatedAt DateTime          @updatedAt @map("updated_at")
+
+  issue  Issue @relation(fields: [issueId], references: [id], onDelete: Cascade)
+  author User  @relation(fields: [authorId], references: [id])
+
+  @@index([issueId, createdAt])
+  @@map("issue_updates")
+}
+
+enum IssueUpdateStatus {
+  ON_TRACK
+  AT_RISK
+  OFF_TRACK
 }
