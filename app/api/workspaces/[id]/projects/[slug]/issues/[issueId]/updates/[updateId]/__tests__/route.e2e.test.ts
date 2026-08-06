@@ -52,7 +52,7 @@ describe('PATCH /api/workspaces/[id]/projects/[slug]/issues/[issueId]/updates/[u
     const { data } = await created.json()
     expect(data.editedAt).toBeNull()
 
-    const res = await postJson(
+    const res = await patchJson(
       `/api/workspaces/${workspace.id}/projects/${project.slug}/issues/${issue.id}/updates/${data.id}`,
       { status: 'AT_RISK', content: 'Piorou um pouco' },
       user.cookie,
