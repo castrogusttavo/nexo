@@ -48,6 +48,7 @@ model User {
   attachments        Attachment[]
   votes              IssueVote[]
   comments           Comment[]
+  activities         Activity[]
 
   @@index([deletionScheduledAt])
   @@map("users")
@@ -985,4 +986,26 @@ model Comment {
   @@index([issueId, createdAt])
   @@index([parentId])
   @@map("comments")
+}
+
+model Activity {
+  id         String             @id @default(cuid())
+  entityType ActivityEntityType @map("entity_type")
+  entityId   String             @map("entity_id")
+  actorId    String             @map("actor_id")
+  field      String
+  oldValue   Json?              @map("old_value")
+  newValue   Json?              @map("new_value")
+  createdAt  DateTime           @default(now()) @map("created_at")
+
+  actor User @relation(fields: [actorId], references: [id])
+
+  @@index([entityType, entityId, createdAt])
+  @@map("activities")
+}
+
+enum ActivityEntityType {
+  ISSUE
+  CYCLE
+  MODULE
 }
