@@ -20,6 +20,7 @@ import { IssueTypeRepository } from '@/src/repositories/issue-type.repository'
 import { MembershipRepository } from '@/src/repositories/membership.repository'
 import { ProjectRepository } from '@/src/repositories/project.repository'
 import { StateRepository } from '@/src/repositories/state.repository'
+import { ActivityService } from '../activity.service'
 import { IssueService } from '../issue.service'
 
 vi.mock('@/src/repositories/membership.repository')
@@ -31,6 +32,7 @@ vi.mock('@/src/repositories/cycle.repository')
 vi.mock('@/src/repositories/module.repository')
 vi.mock('@/src/repositories/estimate.repository')
 vi.mock('@/src/repositories/estimate-value.repository')
+vi.mock('../activity.service')
 
 const mockedMembership = vi.mocked(MembershipRepository)
 const mockedProject = vi.mocked(ProjectRepository)
@@ -40,6 +42,7 @@ const mockedState = vi.mocked(StateRepository)
 const mockedCycle = vi.mocked(CycleRepository)
 const mockedEstimate = vi.mocked(EstimateRepository)
 const mockedEstimateValue = vi.mocked(EstimateValueRepository)
+const mockedActivityService = vi.mocked(ActivityService)
 
 const memberMembership = createFakeMembership({
   userId: 'actor',
@@ -444,6 +447,41 @@ describe('IssueService', () => {
 
       expectErr(result, 'ISSUE_PARENT_CYCLE')
       expect(mockedIssue.update).not.toHaveBeenCalled()
+    })
+
+    it('should record a priority change as an activity', async () => {
+      mockedMembership.findByUserAndWorkspace.mockResolvedValue(
+        ok(memberMembership),
+      )
+      mockedProject.findByWorkspaceAndSlug.mockResolvedValue(
+        ok(projectWith({ id: 'proj-1' })),
+      )
+      mockedIssue.findById.mockResolvedValue(
+        ok(
+          createFakeIssue({
+            id: 'issue-1',
+            projectId: 'proj-1',
+            priority: 'NONE',
+          }),
+        ),
+      )
+      mockedIssue.update.mockResolvedValue(
+        ok(createFakeIssue({ id: 'issue-1', priority: 'HIGH' })),
+      )
+
+      await IssueService.update('actor', 'ws1', 'proj-slug', 'issue-1', {
+        priority: 'HIGH',
+      })
+
+      expect(mockedActivityService.record).toHaveBeenCalledWith(
+        expect.objectContaining({
+          entityType: 'ISSUE',
+          entityId: 'issue-1',
+          field: 'priority',
+          oldValue: 'NONE',
+          newValue: 'HIGH',
+        }),
+      )
     })
   })
 

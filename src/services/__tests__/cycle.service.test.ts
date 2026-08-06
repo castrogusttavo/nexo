@@ -8,15 +8,18 @@ import { err, ok } from '@/src/lib/result'
 import { CycleRepository } from '@/src/repositories/cycle.repository'
 import { MembershipRepository } from '@/src/repositories/membership.repository'
 import { ProjectRepository } from '@/src/repositories/project.repository'
+import { ActivityService } from '../activity.service'
 import { CycleService } from '../cycle.service'
 
 vi.mock('@/src/repositories/membership.repository')
 vi.mock('@/src/repositories/project.repository')
 vi.mock('@/src/repositories/cycle.repository')
+vi.mock('../activity.service')
 
 const mockedMembership = vi.mocked(MembershipRepository)
 const mockedProject = vi.mocked(ProjectRepository)
 const mockedCycle = vi.mocked(CycleRepository)
+const mockedActivityService = vi.mocked(ActivityService)
 
 const ownerMembership = createFakeMembership({
   userId: 'actor',
@@ -286,6 +289,42 @@ describe('CycleService', () => {
 
       expectErr(result, 'CYCLE_ALREADY_ACTIVE')
       expect(mockedCycle.update).not.toHaveBeenCalled()
+    })
+
+    it('should record a status change as an activity', async () => {
+      mockedMembership.findByUserAndWorkspace.mockResolvedValue(
+        ok(ownerMembership),
+      )
+      mockedProject.findByWorkspaceAndSlug.mockResolvedValue(
+        ok(projectWith({ id: 'proj-1' })),
+      )
+      mockedCycle.findById.mockResolvedValue(
+        ok(
+          createFakeCycle({
+            id: 'cyc-1',
+            projectId: 'proj-1',
+            status: 'NOT_STARTED',
+          }),
+        ),
+      )
+      mockedCycle.findActiveByProject.mockResolvedValue(ok(null))
+      mockedCycle.update.mockResolvedValue(
+        ok(createFakeCycle({ id: 'cyc-1', status: 'IN_PROGRESS' })),
+      )
+
+      await CycleService.update('actor', 'ws1', 'proj-slug', 'cyc-1', {
+        status: 'IN_PROGRESS',
+      })
+
+      expect(mockedActivityService.record).toHaveBeenCalledWith(
+        expect.objectContaining({
+          entityType: 'CYCLE',
+          entityId: 'cyc-1',
+          field: 'status',
+          oldValue: 'NOT_STARTED',
+          newValue: 'IN_PROGRESS',
+        }),
+      )
     })
   })
 

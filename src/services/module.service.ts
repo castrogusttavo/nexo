@@ -5,6 +5,7 @@ import { err, ok, type Result } from '../lib/result'
 import { toModuleDTO, toModuleMemberDTO } from '../mappers/module.mapper'
 import { ModuleRepository } from '../repositories/module.repository'
 import type { CreateModuleDTO, UpdateModuleDTO } from '../schemas/module.schema'
+import { recordFieldChanges } from './_activity-diff'
 import { resolveProject } from './_project-scope'
 
 export const ModuleService = {
@@ -113,6 +114,30 @@ export const ModuleService = {
             : new Date(dto.endDate),
     })
     if (!result.ok) return result
+
+    recordFieldChanges(
+      'MODULE',
+      moduleId,
+      actorId,
+      {
+        status: moduleResult.value.status,
+        startDate: moduleResult.value.startDate,
+        endDate: moduleResult.value.endDate,
+        progress: moduleResult.value.progress,
+      },
+      {
+        status: dto.status ?? moduleResult.value.status,
+        startDate:
+          dto.startDate === undefined
+            ? moduleResult.value.startDate
+            : new Date(dto.startDate),
+        endDate:
+          dto.endDate === undefined
+            ? moduleResult.value.endDate
+            : new Date(dto.endDate),
+        progress: dto.progress ?? moduleResult.value.progress,
+      },
+    )
 
     auditMutation({
       entity: 'module',

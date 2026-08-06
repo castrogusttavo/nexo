@@ -8,15 +8,18 @@ import { err, ok } from '@/src/lib/result'
 import { MembershipRepository } from '@/src/repositories/membership.repository'
 import { ModuleRepository } from '@/src/repositories/module.repository'
 import { ProjectRepository } from '@/src/repositories/project.repository'
+import { ActivityService } from '../activity.service'
 import { ModuleService } from '../module.service'
 
 vi.mock('@/src/repositories/membership.repository')
 vi.mock('@/src/repositories/project.repository')
 vi.mock('@/src/repositories/module.repository')
+vi.mock('../activity.service')
 
 const mockedMembership = vi.mocked(MembershipRepository)
 const mockedProject = vi.mocked(ProjectRepository)
 const mockedModule = vi.mocked(ModuleRepository)
+const mockedActivityService = vi.mocked(ActivityService)
 
 const ownerMembership = createFakeMembership({
   userId: 'actor',
@@ -149,6 +152,41 @@ describe('ModuleService', () => {
       )
 
       expectErr(result, 'MODULE_NOT_FOUND')
+    })
+
+    it('should record a status change as an activity', async () => {
+      mockedMembership.findByUserAndWorkspace.mockResolvedValue(
+        ok(ownerMembership),
+      )
+      mockedProject.findByWorkspaceAndSlug.mockResolvedValue(
+        ok(projectWith({ id: 'proj-1' })),
+      )
+      mockedModule.findById.mockResolvedValue(
+        ok(
+          createFakeModule({
+            id: 'mod-1',
+            projectId: 'proj-1',
+            status: 'BACKLOG',
+          }),
+        ),
+      )
+      mockedModule.update.mockResolvedValue(
+        ok(createFakeModule({ id: 'mod-1', status: 'IN_PROGRESS' })),
+      )
+
+      await ModuleService.update('actor', 'ws1', 'proj-slug', 'mod-1', {
+        status: 'IN_PROGRESS',
+      })
+
+      expect(mockedActivityService.record).toHaveBeenCalledWith(
+        expect.objectContaining({
+          entityType: 'MODULE',
+          entityId: 'mod-1',
+          field: 'status',
+          oldValue: 'BACKLOG',
+          newValue: 'IN_PROGRESS',
+        }),
+      )
     })
   })
 

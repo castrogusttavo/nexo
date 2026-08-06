@@ -10,6 +10,7 @@ import { err, ok, type Result } from '../lib/result'
 import { toCycleDTO, toCycleMemberDTO } from '../mappers/cycle.mapper'
 import { CycleRepository } from '../repositories/cycle.repository'
 import type { CreateCycleDTO, UpdateCycleDTO } from '../schemas/cycle.schema'
+import { recordFieldChanges } from './_activity-diff'
 import { resolveProject } from './_project-scope'
 
 export const CycleService = {
@@ -133,6 +134,32 @@ export const CycleService = {
             : new Date(dto.endDate),
     })
     if (!result.ok) return result
+
+    recordFieldChanges(
+      'CYCLE',
+      cycleId,
+      actorId,
+      {
+        status: cycleResult.value.status,
+        startDate: cycleResult.value.startDate,
+        endDate: cycleResult.value.endDate,
+      },
+      {
+        status: dto.status ?? cycleResult.value.status,
+        startDate:
+          dto.startDate === undefined
+            ? cycleResult.value.startDate
+            : dto.startDate === null
+              ? null
+              : new Date(dto.startDate),
+        endDate:
+          dto.endDate === undefined
+            ? cycleResult.value.endDate
+            : dto.endDate === null
+              ? null
+              : new Date(dto.endDate),
+      },
+    )
 
     auditMutation({
       entity: 'cycle',

@@ -23,6 +23,7 @@ import { IssueTypeRepository } from '../repositories/issue-type.repository'
 import { ModuleRepository } from '../repositories/module.repository'
 import { StateRepository } from '../repositories/state.repository'
 import type { CreateIssueDTO, UpdateIssueDTO } from '../schemas/issue.schema'
+import { recordFieldChanges } from './_activity-diff'
 import { resolveProject } from './_project-scope'
 
 async function resolveDefaultTypeId(
@@ -320,6 +321,37 @@ export const IssueService = {
       dueDate: dto.dueDate === undefined ? undefined : dueDate,
     })
     if (!result.ok) return result
+
+    recordFieldChanges(
+      'ISSUE',
+      issueId,
+      actorId,
+      {
+        stateId: issue.stateId,
+        typeId: issue.typeId,
+        priority: issue.priority,
+        startDate: issue.startDate,
+        dueDate: issue.dueDate,
+        cycleId: issue.cycleId,
+        moduleId: issue.moduleId,
+        estimateValueId: issue.estimateValueId,
+        parentId: issue.parentId,
+      },
+      {
+        stateId: dto.stateId ?? issue.stateId,
+        typeId: dto.typeId ?? issue.typeId,
+        priority: dto.priority ?? issue.priority,
+        startDate,
+        dueDate,
+        cycleId: dto.cycleId === undefined ? issue.cycleId : dto.cycleId,
+        moduleId: dto.moduleId === undefined ? issue.moduleId : dto.moduleId,
+        estimateValueId:
+          dto.estimateValueId === undefined
+            ? issue.estimateValueId
+            : dto.estimateValueId,
+        parentId: dto.parentId === undefined ? issue.parentId : dto.parentId,
+      },
+    )
 
     auditMutation({
       entity: 'issue',
