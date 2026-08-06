@@ -76,7 +76,7 @@ describe('POST /api/workspaces/[id]/projects/[slug]/issues/[issueId]/comments', 
     expect(res.status).toBe(201)
     const body = await res.json()
     expect(body.data.issueId).toBe(issue.id)
-    expect(body.data.issueId).toBeNull()
+    expect(body.data.parentId).toBeNull()
     expect(body.data.author.id).toBe(user.id)
   })
 
