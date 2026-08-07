@@ -1,16 +1,9 @@
 'use client'
 
 import {
-  CancelCircleIcon,
-  CheckmarkCircle02Icon,
-} from '@hugeicons-pro/core-solid-rounded'
-import {
   Add01Icon,
-  CircleDotIcon,
-  DashedLineCircleIcon,
   Delete02Icon,
   PencilEdit01Icon,
-  StatusIcon,
 } from '@hugeicons-pro/core-stroke-rounded'
 import { useMemo, useState } from 'react'
 import { NexoIcon } from '@/components/icon/icon'
@@ -37,6 +30,7 @@ import { Card, CardContent } from '@/components/ui/card'
 import { Skeleton } from '@/components/ui/skeleton'
 import { notify } from '@/lib/notify'
 import { colorToText, STATE_GROUP_DEFAULT_COLOR } from '@/lib/state-colors'
+import { STATE_GROUP } from '@/lib/state-icons'
 import { cn } from '@/lib/utils'
 import {
   useDeleteState,
@@ -45,34 +39,6 @@ import {
 } from '@/src/hooks/use-state'
 import type { StateDTO, StateGroupDTO } from '@/types/state'
 import { StateForm } from './state-form'
-
-const GROUPS: Array<{
-  value: StateGroupDTO
-  label: string
-  icon: typeof DashedLineCircleIcon
-  strokeWidth?: number
-}> = [
-  {
-    value: 'BACKLOG',
-    label: 'Backlog',
-    icon: DashedLineCircleIcon,
-    strokeWidth: 2,
-  },
-  {
-    value: 'UNSTARTED',
-    label: 'Não iniciado',
-    icon: StatusIcon,
-    strokeWidth: 2,
-  },
-  {
-    value: 'STARTED',
-    label: 'Em progresso',
-    icon: CircleDotIcon,
-    strokeWidth: 2,
-  },
-  { value: 'COMPLETED', label: 'Concluído', icon: CheckmarkCircle02Icon },
-  { value: 'CANCELLED', label: 'Cancelado', icon: CancelCircleIcon },
-]
 
 type FormTarget =
   | { mode: 'create'; group: StateGroupDTO }
@@ -95,7 +61,7 @@ export function ProjectStatesSettings({
 
   const grouped = useMemo(() => {
     const map = new Map<StateGroupDTO, StateDTO[]>()
-    for (const group of GROUPS) map.set(group.value, [])
+    for (const group of STATE_GROUP) map.set(group.value, [])
     for (const state of states ?? []) map.get(state.group)?.push(state)
     for (const list of map.values()) list.sort((a, b) => a.order - b.order)
     return map
@@ -133,7 +99,7 @@ export function ProjectStatesSettings({
       </Muted>
       {isLoading ? (
         <div className='mt-6 space-y-4'>
-          {GROUPS.map((group) => (
+          {STATE_GROUP.map((group) => (
             <Card key={group.value} className='p-3 rounded-lg'>
               <CardContent className='p-0 h-fit space-y-2'>
                 <div className='flex items-center gap-1.5'>
@@ -147,7 +113,7 @@ export function ProjectStatesSettings({
         </div>
       ) : (
         <div className='mt-6 space-y-4'>
-          {GROUPS.map((group) => {
+          {STATE_GROUP.map((group) => {
             const groupStates = grouped.get(group.value) ?? []
             const formOpen = isFormOpenForGroup(group.value)
 
