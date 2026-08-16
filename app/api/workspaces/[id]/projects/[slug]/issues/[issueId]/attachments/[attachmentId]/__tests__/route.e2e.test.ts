@@ -6,7 +6,6 @@ import { seedState } from '@/src/__tests__/factories/state.factory'
 import {
   authenticatedOwner,
   deleteJson,
-  getJson,
 } from '@/src/__tests__/helpers/e2e'
 import { BASE_URL } from '@/src/__tests__/setup.e2e'
 import { ProjectRepository } from '@/src/repositories/project.repository'
