@@ -495,6 +495,108 @@ jobs:
         with:
           sarif_file: semgrep.sarif
 
+  # Monitoring/triage layer on top of the semgrep + snyk jobs above: correlates
+  # their raw findings (SAST + SCA only here — DAST isn't available on every
+  # push, see lpa2v-triage-full in security-dast.yml for the 3-domain version)
+  # through the LPA2v paraconsistent cluster to cut alert noise before a human
+  # looks at it. Kept out of the gate's needs while we build trust in it,
+  # same posture as the snyk job: it opens/updates a review Issue and only
+  # fails this job itself on a "critico" verdict, never blocks the deploy.
+  lpa2v-triage:
+    name: LPA2v Contextual Triage (SAST+SCA)
+    runs-on: ubuntu-latest
+    continue-on-error: true
+    permissions:
+      contents: read
+      issues: write
+    steps:
+      - name: Checkout nexo
+        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
+
+      - name: Checkout lpa2v-appsec
+        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
+        with:
+          repository: castrogusttavo/lpa2v-appsec
+          path: .lpa2v-appsec
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@a3252b78c470c02df07e9d59298aecedc3ccdd6d # v3
+
+      - name: Setup Node.js
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version: 24
+          cache: 'pnpm'
+          cache-dependency-path: .lpa2v-appsec/pnpm-lock.yaml
+
+      - name: Install lpa2v-appsec dependencies
+        working-directory: .lpa2v-appsec
+        run: pnpm install --frozen-lockfile
+
+      - name: Run Semgrep (JSON output)
+        run: |
+          docker run --rm -v "${PWD}:/src" semgrep/semgrep \
+            semgrep scan --config auto --config p/nextjs --config p/react --config p/typescript \
+            --json --output=/src/semgrep.json
+        env:
+          SEMGREP_APP_TOKEN: ${{ secrets.SEMGREP_APP_TOKEN }}
+
+      - name: Configure HugeIcons registry
+        run: |
+          echo "@hugeicons-pro:registry=https://npm.hugeicons.com" > .npmrc
+          echo "//npm.hugeicons.com/:_authToken=${{ secrets.HUGEICONS_TOKEN }}" >> .npmrc
+
+      - name: Install nexo dependencies (for snyk --all-projects)
+        run: pnpm install --frozen-lockfile
+
+      - name: Run Snyk (JSON output)
+        run: npx snyk test --all-projects --json > snyk.json || true
+        env:
+          SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
+
+      - name: Run LPA2v triage
+        id: triage
+        working-directory: .lpa2v-appsec
+        run: |
+          pnpm triage -- \
+            --semgrep ../semgrep.json \
+            --snyk ../snyk.json \
+            --out ../triage-results.json \
+            --issue-body ../triage-issue.md
+
+      - name: Upload triage results
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        if: always()
+        with:
+          name: lpa2v-triage-results
+          path: |
+            triage-results.json
+            triage-issue.md
+
+      - name: Open or update review Issue
+        if: always() && steps.triage.outputs.needs_review == 'true'
+        uses: actions/github-script@f28e40c7f34bde8b3046d885e986cb6290c5673b # v7
+        with:
+          script: |
+            const fs = require('fs');
+            const body = fs.readFileSync('triage-issue.md', 'utf-8');
+            const title = 'LPA2v: achados pendentes de revisão';
+            const { data: existing } = await github.rest.issues.listForRepo({
+              owner: context.repo.owner, repo: context.repo.repo,
+              state: 'open', labels: 'lpa2v-triage',
+            });
+            if (existing.length > 0) {
+              await github.rest.issues.update({
+                owner: context.repo.owner, repo: context.repo.repo,
+                issue_number: existing[0].number, body,
+              });
+            } else {
+              await github.rest.issues.create({
+                owner: context.repo.owner, repo: context.repo.repo,
+                title, body, labels: ['lpa2v-triage', 'security'],
+              });
+            }
+
   redis-tls-smoke:
     name: Redis TLS Smoke
     runs-on: ubuntu-latest
