@@ -10,7 +10,6 @@ import {
   AvatarImage,
 } from '@/components/ui/avatar'
 import { Button } from '@/components/ui/button'
-import { Checkbox } from '@/components/ui/checkbox'
 import { getInitials } from '@/lib/user-name-initials'
 import { useProjectMembers } from '@/src/hooks/use-project-member'
 import { Combobox } from '../../ui/combobox'

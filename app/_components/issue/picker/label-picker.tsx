@@ -3,7 +3,6 @@
 import { CheckIcon } from '@hugeicons-pro/core-stroke-rounded'
 import { NexoIcon } from '@/components/icon/icon'
 import { Button } from '@/components/ui/button'
-import { Checkbox } from '@/components/ui/checkbox'
 import { colorToText } from '@/lib/state-colors'
 import { useLabels } from '@/src/hooks/use-label'
 import { Combobox } from '../../ui/combobox'
