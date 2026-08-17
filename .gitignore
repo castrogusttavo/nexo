@@ -61,3 +61,4 @@ storybook-static
 .claude
 /docs
 CLAUDE.md
+.aider*
