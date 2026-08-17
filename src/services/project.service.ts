@@ -15,6 +15,17 @@ import type {
 } from '../schemas/project.schema'
 import { assertMember } from './_authz'
 
+function baseIdentifierFrom(name: string): string {
+  const cleaned = name.toUpperCase().replace(/[^A-Z0-9]/g, '')
+  const base = cleaned.slice(0, 6)
+  return base.length >= 2 ? base : base.padEnd(2, 'X')
+}
+
+function nextIdentifierCandidate(base: string, attempt: number): string {
+  const suffix = String(attempt)
+  return `${base.slice(0, 10 - suffix.length)}${suffix}`
+}
+
 export const ProjectService = {
   async list(
     actorId: string,
@@ -191,11 +202,32 @@ export const ProjectService = {
     const membership = await assertMember(actorId, workspaceId)
     if (!membership.ok) return membership
 
-    const result = await ProjectRepository.create({
+    const userProvidedIdentifier = dto.identifier
+    const base = baseIdentifierFrom(dto.name)
+    let identifier = userProvidedIdentifier ?? base
+    let attempt = 1
+    let result = await ProjectRepository.create({
       ...dto,
+      identifier,
       leadId: actorId,
       workspaceId,
     })
+
+    while (
+      !result.ok &&
+      result.error.code === 'PROJECT_IDENTIFIER_CONFLICT' &&
+      !userProvidedIdentifier &&
+      attempt < 5
+    ) {
+      attempt++
+      identifier = nextIdentifierCandidate(base, attempt)
+      result = await ProjectRepository.create({
+        ...dto,
+        identifier,
+        leadId: actorId,
+        workspaceId,
+      })
+    }
 
     if (!result.ok) {
       auditMutation({

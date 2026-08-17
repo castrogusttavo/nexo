@@ -9,7 +9,7 @@ export function createFakeProject(overrides?: Partial<Project>): Project {
     id: createId(),
     name: 'Text Project',
     slug: `proj-${createId().slice(0, 8)}`,
-    identifier: null,
+    identifier: createId().slice(0, 6).toUpperCase(),
     description: null,
     emoji: null,
     coverImage: null,
@@ -36,7 +36,7 @@ export function createFakeProjectDTO(
     id: createId(),
     name: 'Text Project',
     slug: `proj-${createId().slice(0, 8)}`,
-    identifier: null,
+    identifier: createId().slice(0, 6).toUpperCase(),
     description: null,
     emoji: null,
     coverImage: null,
@@ -63,6 +63,7 @@ export async function seedProject(
       Project,
       | 'name'
       | 'slug'
+      | 'identifier'
       | 'description'
       | 'emoji'
       | 'coverImage'
@@ -76,6 +77,7 @@ export async function seedProject(
     data: {
       name: 'Seed Project',
       slug,
+      identifier: createId().slice(0, 6).toUpperCase(),
       workspaceId,
       leadId,
       ...overrides,

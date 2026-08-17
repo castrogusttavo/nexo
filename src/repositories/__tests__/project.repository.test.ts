@@ -160,6 +160,7 @@ describe('ProjectRepository', () => {
       const result = await ProjectRepository.create({
         name: 'New Project',
         slug: 'new-proj',
+        identifier: 'NEWPROJ',
         isPublic: false,
         issueTypesEnabled: true,
         modulesEnabled: true,
@@ -188,6 +189,7 @@ describe('ProjectRepository', () => {
       const result = await ProjectRepository.create({
         name: 'Duplicate',
         slug: 'dup-slug',
+        identifier: 'DUPLIC',
         isPublic: false,
         issueTypesEnabled: true,
         modulesEnabled: true,
@@ -206,6 +208,7 @@ describe('ProjectRepository', () => {
       const result = await ProjectRepository.create({
         name: 'New Project',
         slug: 'seeded-states-proj',
+        identifier: 'STATES',
         isPublic: false,
         issueTypesEnabled: true,
         modulesEnabled: true,
@@ -234,6 +237,7 @@ describe('ProjectRepository', () => {
       const result = await ProjectRepository.create({
         name: 'New Project',
         slug: 'seeded-labels-proj',
+        identifier: 'LABELS',
         isPublic: false,
         issueTypesEnabled: true,
         modulesEnabled: true,
@@ -258,6 +262,7 @@ describe('ProjectRepository', () => {
       const result = await ProjectRepository.create({
         name: 'New Project',
         slug: 'seeded-estimate-proj',
+        identifier: 'ESTPROJ',
         isPublic: false,
         issueTypesEnabled: true,
         modulesEnabled: true,
@@ -437,6 +442,7 @@ describe('ProjectRepository', () => {
       const result = await ProjectRepository.create({
         name: 'X',
         slug: 'x',
+        identifier: 'X',
         isPublic: false,
         issueTypesEnabled: true,
         modulesEnabled: true,

@@ -144,7 +144,7 @@ export const ProjectRepository = {
   async create(data: {
     name: string
     slug: string
-    identifier?: string
+    identifier: string
     description?: string
     emoji?: string
     coverImage?: string
@@ -212,7 +212,7 @@ export const ProjectRepository = {
     data: {
       name?: string
       slug?: string
-      identifier?: string | null
+      identifier?: string
       description?: string | null
       emoji?: string | null
       coverImage?: string | null
