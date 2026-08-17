@@ -2,6 +2,7 @@ import { createId } from '@paralleldrive/cuid2'
 import { describe, expect, it } from 'vitest'
 import { seedIssue } from '@/src/__tests__/factories/issue.factory'
 import { seedIssueType } from '@/src/__tests__/factories/issue-type.factory'
+import { seedProject } from '@/src/__tests__/factories/project.factory'
 import { seedState } from '@/src/__tests__/factories/state.factory'
 import {
   addMember,
@@ -12,21 +13,6 @@ import {
   postJson,
 } from '@/src/__tests__/helpers/e2e'
 import { ProjectRepository } from '@/src/repositories/project.repository'
-
-async function seedProject(workspaceId: string, leadId: string) {
-  const result = await ProjectRepository.create({
-    name: 'E2E Project',
-    slug: `proj-${createId().slice(0, 8)}`,
-    isPublic: false,
-    issueTypesEnabled: true,
-    modulesEnabled: true,
-    cyclesEnabled: true,
-    leadId,
-    workspaceId,
-  })
-  if (!result.ok) throw new Error('failed to seed project')
-  return result.value
-}
 
 async function seedIssueFor(projectId: string, authorId: string) {
   const state = await seedState(projectId)

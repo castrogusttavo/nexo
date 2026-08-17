@@ -19,6 +19,7 @@ async function seedProject(
     data: {
       name: 'E2E Project',
       slug: opts?.slug ?? `proj-${createId().slice(0, 8)}`,
+      identifier: createId().slice(0, 6).toUpperCase(),
       workspaceId,
       leadId,
       isPublic: opts?.isPublic ?? false,

@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest'
+import { seedProject } from '@/src/__tests__/factories/project.factory'
 import {
   authenticatedOwner,
   getJson,
@@ -6,21 +7,6 @@ import {
 } from '@/src/__tests__/helpers/e2e'
 import { CycleRepository } from '@/src/repositories/cycle.repository'
 import { ProjectRepository } from '@/src/repositories/project.repository'
-
-async function seedProject(workspaceId: string, leadId: string) {
-  const result = await ProjectRepository.create({
-    name: 'E2E Project',
-    slug: `proj-${Math.random().toString(36).slice(2, 10)}`,
-    isPublic: false,
-    issueTypesEnabled: true,
-    modulesEnabled: true,
-    cyclesEnabled: true,
-    leadId,
-    workspaceId,
-  })
-  if (!result.ok) throw new Error('failed to seed project')
-  return result.value
-}
 
 async function seedCycle(projectId: string, leadId: string) {
   const result = await CycleRepository.create({

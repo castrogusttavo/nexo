@@ -1,5 +1,6 @@
 import { createId } from '@paralleldrive/cuid2'
 import { describe, expect, it } from 'vitest'
+import { seedProject } from '@/src/__tests__/factories/project.factory'
 import { seedState } from '@/src/__tests__/factories/state.factory'
 import {
   authenticatedOwner,
@@ -7,17 +8,6 @@ import {
   postJson,
 } from '@/src/__tests__/helpers/e2e'
 import { prisma } from '@/src/lib/prisma'
-
-async function seedProject(workspaceId: string, leadId: string) {
-  return prisma.project.create({
-    data: {
-      name: 'E2E Project',
-      slug: `proj-${createId().slice(0, 8)}`,
-      workspaceId,
-      leadId,
-    },
-  })
-}
 
 describe('GET /api/workspaces/[id]/projects/[slug]/states', () => {
   it('should return 401 when unauthenticated', async () => {

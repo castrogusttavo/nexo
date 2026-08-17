@@ -1,5 +1,6 @@
 import { createId } from '@paralleldrive/cuid2'
 import { describe, expect, it } from 'vitest'
+import { seedProject } from '@/src/__tests__/factories/project.factory'
 import {
   addMember,
   authenticatedOwner,
@@ -7,21 +8,6 @@ import {
   patchJson,
 } from '@/src/__tests__/helpers/e2e'
 import { ProjectRepository } from '@/src/repositories/project.repository'
-
-async function seedProject(workspaceId: string, leadId: string) {
-  const result = await ProjectRepository.create({
-    name: 'E2E Project',
-    slug: `proj-${createId().slice(0, 8)}`,
-    isPublic: false,
-    issueTypesEnabled: true,
-    modulesEnabled: true,
-    cyclesEnabled: true,
-    leadId,
-    workspaceId,
-  })
-  if (!result.ok) throw new Error('failed to seed project')
-  return result.value
-}
 
 describe('GET /api/workspaces/[id]/projects/[slug]/estimate', () => {
   it('should return 401 when unauthenticated', async () => {

@@ -1,5 +1,6 @@
 import { createId } from '@paralleldrive/cuid2'
 import { describe, expect, it } from 'vitest'
+import { seedProject } from '@/src/__tests__/factories/project.factory'
 import { seedState } from '@/src/__tests__/factories/state.factory'
 import {
   addMember,
@@ -8,17 +9,6 @@ import {
   patchJson,
 } from '@/src/__tests__/helpers/e2e'
 import { prisma } from '@/src/lib/prisma'
-
-async function seedProject(workspaceId: string, leadId: string) {
-  return prisma.project.create({
-    data: {
-      name: 'E2E Project',
-      slug: `proj-${createId().slice(0, 8)}`,
-      workspaceId,
-      leadId,
-    },
-  })
-}
 
 describe('PATCH /api/workspaces/[id]/projects/[slug]/states/[stateId]', () => {
   it('should return 403 when non-lead MEMBER tries to update', async () => {
