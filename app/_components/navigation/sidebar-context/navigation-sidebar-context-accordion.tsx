@@ -27,7 +27,7 @@ export function NavGroupAccordion({
   return (
     <Accordion defaultValue={defaultOpen ? [label] : []}>
       <AccordionItem value={label} className='border-b-0'>
-        <AccordionTrigger className='h-9 py-0 px-2.5 items-center hover:no-underline hover:bg-accent rounded-md font-medium text-muted-foreground text-sm'>
+        <AccordionTrigger className='h-9 py-0 px-2.5 items-center hover:no-underline hover:bg-accent rounded-md font-medium text-muted-foreground text-sm w-full'>
           <div className='flex items-center gap-2 flex-1 min-w-0'>
             {icon && <NexoIcon icon={icon} size={16} strokeWidth={2} />}
             <span className='truncate text-xs'>{label}</span>

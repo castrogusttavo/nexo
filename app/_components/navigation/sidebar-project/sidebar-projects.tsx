@@ -79,7 +79,7 @@ function ProjectAccordion({
         <AccordionTrigger
           className='h-9 py-0 px-2.5 items-center hover:no-underline hover:bg-accent rounded-md font-normal text-sm'
           render={
-            <Button variant='ghost' size='sm'>
+            <Button variant='ghost' size='sm' className='w-full'>
               <div className='flex items-center gap-2 flex-1 min-w-0'>
                 <span className='truncate text-sm font-medium'>
                   {project.emoji ? `${project.emoji} ` : ''}
