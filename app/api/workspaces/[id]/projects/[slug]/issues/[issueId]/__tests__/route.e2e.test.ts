@@ -1,4 +1,3 @@
-import { createId } from '@paralleldrive/cuid2'
 import { describe, expect, it } from 'vitest'
 import { seedProject } from '@/src/__tests__/factories/project.factory'
 import { seedState } from '@/src/__tests__/factories/state.factory'
@@ -8,7 +7,6 @@ import {
   patchJson,
   postJson,
 } from '@/src/__tests__/helpers/e2e'
-import { ProjectRepository } from '@/src/repositories/project.repository'
 
 describe('PATCH /api/workspaces/[id]/projects/[slug]/issues/[issueId]', () => {
   it('should allow a project member to rename an issue', async () => {

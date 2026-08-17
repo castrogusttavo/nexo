@@ -1,4 +1,3 @@
-import { createId } from '@paralleldrive/cuid2'
 import { describe, expect, it } from 'vitest'
 import { seedIssue } from '@/src/__tests__/factories/issue.factory'
 import { seedIssueType } from '@/src/__tests__/factories/issue-type.factory'

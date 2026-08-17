@@ -1,4 +1,3 @@
-import { createId } from '@paralleldrive/cuid2'
 import { describe, expect, it } from 'vitest'
 import { seedLabel } from '@/src/__tests__/factories/label.factory'
 import { seedProject } from '@/src/__tests__/factories/project.factory'
@@ -8,7 +7,6 @@ import {
   getJson,
   postJson,
 } from '@/src/__tests__/helpers/e2e'
-import { prisma } from '@/src/lib/prisma'
 
 describe('GET /api/workspaces/[id]/projects/[slug]/labels', () => {
   it('should return 401 when unauthenticated', async () => {

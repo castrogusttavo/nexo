@@ -1,4 +1,3 @@
-import { createId } from '@paralleldrive/cuid2'
 import { describe, expect, it } from 'vitest'
 import { seedIssue } from '@/src/__tests__/factories/issue.factory'
 import { seedIssueType } from '@/src/__tests__/factories/issue-type.factory'
@@ -10,7 +9,6 @@ import {
   deleteJson,
   postJson,
 } from '@/src/__tests__/helpers/e2e'
-import { ProjectRepository } from '@/src/repositories/project.repository'
 
 async function seedIssueFor(projectId: string, authorId: string) {
   const state = await seedState(projectId)

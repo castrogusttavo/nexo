@@ -1,4 +1,3 @@
-import { createId } from '@paralleldrive/cuid2'
 import { describe, expect, it } from 'vitest'
 import { seedProject } from '@/src/__tests__/factories/project.factory'
 import {
@@ -6,7 +5,6 @@ import {
   getJson,
   patchJson,
 } from '@/src/__tests__/helpers/e2e'
-import { ProjectRepository } from '@/src/repositories/project.repository'
 
 describe('PATCH /api/workspaces/[id]/projects/[slug]/issue-types/reorder', () => {
   it('should persist the new order, including the seeded system types', async () => {

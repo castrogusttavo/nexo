@@ -2,7 +2,6 @@ import { describe, expect, it } from 'vitest'
 import { seedProject } from '@/src/__tests__/factories/project.factory'
 import { authenticatedOwner, deleteJson } from '@/src/__tests__/helpers/e2e'
 import { CycleRepository } from '@/src/repositories/cycle.repository'
-import { ProjectRepository } from '@/src/repositories/project.repository'
 
 async function seedCycle(projectId: string, leadId: string) {
   const result = await CycleRepository.create({

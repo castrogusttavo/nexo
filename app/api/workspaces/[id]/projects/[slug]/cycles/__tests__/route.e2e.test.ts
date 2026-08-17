@@ -6,7 +6,6 @@ import {
   getJson,
   postJson,
 } from '@/src/__tests__/helpers/e2e'
-import { ProjectRepository } from '@/src/repositories/project.repository'
 
 describe('GET /api/workspaces/[id]/projects/[slug]/cycles', () => {
   it('should return 401 when unauthenticated', async () => {

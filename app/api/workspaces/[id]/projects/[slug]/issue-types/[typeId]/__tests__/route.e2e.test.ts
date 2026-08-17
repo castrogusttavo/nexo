@@ -1,4 +1,3 @@
-import { createId } from '@paralleldrive/cuid2'
 import { describe, expect, it } from 'vitest'
 import { seedProject } from '@/src/__tests__/factories/project.factory'
 import {
@@ -9,7 +8,6 @@ import {
   patchJson,
   postJson,
 } from '@/src/__tests__/helpers/e2e'
-import { ProjectRepository } from '@/src/repositories/project.repository'
 
 async function systemType(workspaceId: string, slug: string, cookie: string) {
   const res = await getJson(

@@ -1,4 +1,3 @@
-import { createId } from '@paralleldrive/cuid2'
 import { describe, expect, it } from 'vitest'
 import { seedProject } from '@/src/__tests__/factories/project.factory'
 import {
@@ -9,7 +8,6 @@ import {
   patchJson,
   postJson,
 } from '@/src/__tests__/helpers/e2e'
-import { ProjectRepository } from '@/src/repositories/project.repository'
 
 describe('POST /api/workspaces/[id]/projects/[slug]/estimate/values', () => {
   it('should return 403 when non-lead MEMBER tries to create', async () => {

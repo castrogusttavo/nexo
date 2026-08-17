@@ -6,7 +6,6 @@ import {
   patchJson,
 } from '@/src/__tests__/helpers/e2e'
 import { ModuleRepository } from '@/src/repositories/module.repository'
-import { ProjectRepository } from '@/src/repositories/project.repository'
 
 async function seedModule(projectId: string, leadId: string) {
   const result = await ModuleRepository.create({
