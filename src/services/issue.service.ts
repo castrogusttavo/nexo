@@ -120,6 +120,12 @@ function assertDateOrder(
   return ok(undefined)
 }
 
+function parseIssueNumber(identifier: string): number | null {
+  const match = identifier.match(/-(\d+)$/)
+  if (!match) return null
+  return Number(match[1])
+}
+
 export const IssueService = {
   async list(
     actorId: string,
@@ -140,7 +146,67 @@ export const IssueService = {
     const result = await IssueRepository.listByProject(project.id)
     if (!result.ok) return result
 
-    return ok(result.value.map(toIssueDTO))
+    return ok(
+      result.value.map((issue) =>
+        toIssueDTO(issue, {
+          labelIds: issue.labels.map((l) => l.labelId),
+          assigneeIds: issue.assignees.map((a) => a.userId),
+        }),
+      ),
+    )
+  },
+
+  async getById(
+    actorId: string,
+    workspaceId: string,
+    projectSlug: string,
+    issueId: string,
+  ): Promise<Result<IssueDTO>> {
+    const resolved = await resolveProject(actorId, workspaceId, projectSlug)
+    if (!resolved.ok) return err(resolved.error)
+
+    const { membership, project } = resolved
+    const isLead = project.leadId === actorId
+    const isMember = project.members.some((m) => m.userId === actorId)
+
+    if (!project.isPublic && !membership.isPrivileged && !isLead && !isMember) {
+      return err(projectForbidden())
+    }
+
+    const issueResult = await IssueRepository.findById(issueId)
+    if (!issueResult.ok) return issueResult
+    if (issueResult.value.projectId !== project.id) return err(issueNotFound())
+
+    return ok(toIssueDTO(issueResult.value))
+  },
+
+  async getByIdentifier(
+    actorId: string,
+    workspaceId: string,
+    projectSlug: string,
+    identifier: string,
+  ): Promise<Result<IssueDTO>> {
+    const number = parseIssueNumber(identifier)
+    if (number === null) return err(issueNotFound())
+
+    const resolved = await resolveProject(actorId, workspaceId, projectSlug)
+    if (!resolved.ok) return err(resolved.error)
+
+    const { membership, project } = resolved
+    const isLead = project.leadId === actorId
+    const isMember = project.members.some((m) => m.userId === actorId)
+
+    if (!project.isPublic && !membership.isPrivileged && !isLead && !isMember) {
+      return err(projectForbidden())
+    }
+
+    const issueResult = await IssueRepository.findByProjectAndNumber(
+      project.id,
+      number,
+    )
+    if (!issueResult.ok) return issueResult
+
+    return ok(toIssueDTO(issueResult.value))
   },
 
   async listChildren(
@@ -167,7 +233,7 @@ export const IssueService = {
     const result = await IssueRepository.listChildren(issueId)
     if (!result.ok) return result
 
-    return ok(result.value.map(toIssueDTO))
+    return ok(result.value.map((issue) => toIssueDTO(issue)))
   },
 
   async create(

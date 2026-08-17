@@ -4,6 +4,15 @@ import { prisma } from '../lib/prisma'
 import { err, ok, type Result } from '../lib/result'
 import { dbError } from './db-error'
 
+const issueWithGroupsInclude = {
+  labels: { select: { labelId: true } },
+  assignees: { select: { userId: true } },
+} satisfies Prisma.IssueInclude
+
+export type IssueWithGroups = Prisma.IssueGetPayload<{
+  include: typeof issueWithGroupsInclude
+}>
+
 export const IssueRepository = {
   async findById(id: string): Promise<Result<Issue>> {
     try {
@@ -15,11 +24,12 @@ export const IssueRepository = {
     }
   },
 
-  async listByProject(projectId: string): Promise<Result<Issue[]>> {
+  async listByProject(projectId: string): Promise<Result<IssueWithGroups[]>> {
     try {
       const issues = await prisma.issue.findMany({
         where: { projectId, deletedAt: null },
         orderBy: { number: 'asc' },
+        include: issueWithGroupsInclude,
       })
       return ok(issues)
     } catch (error) {
@@ -36,6 +46,22 @@ export const IssueRepository = {
       return ok(children)
     } catch (error) {
       return err(dbError('Failed to list issue children', error))
+    }
+  },
+
+  async findByProjectAndNumber(
+    projectId: string,
+    number: number,
+  ): Promise<Result<Issue>> {
+    try {
+      const issue = await prisma.issue.findFirst({
+        where: { projectId, number, deletedAt: null },
+      })
+
+      if (!issue) return err(issueNotFound())
+      return ok(issue)
+    } catch (error) {
+      return err(dbError('Failed to find issue by project and number', error))
     }
   },
 

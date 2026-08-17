@@ -77,7 +77,9 @@ describe('IssueService', () => {
       mockedProject.findByWorkspaceAndSlug.mockResolvedValue(
         ok(projectWith({ isPublic: true })),
       )
-      mockedIssue.listByProject.mockResolvedValue(ok([createFakeIssue()]))
+      mockedIssue.listByProject.mockResolvedValue(
+        ok([{ ...createFakeIssue(), labels: [], assignees: [] }]),
+      )
 
       const result = await IssueService.list('actor', 'ws1', 'proj-slug')
 

@@ -18,6 +18,8 @@ export interface IssueDTO {
   typeId: string
   cycleId: string | null
   moduleId: string | null
+  labelIds: string[]
+  assigneeIds: string[]
   estimateValueId: string | null
   authorId: string
   projectId: string

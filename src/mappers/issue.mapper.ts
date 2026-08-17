@@ -18,7 +18,10 @@ import type { IssueLabelWithLabel } from '../repositories/issue-label.repository
 import { withTimestamps } from './_shared'
 import { toLabelDTO } from './label.mapper'
 
-export function toIssueDTO(issue: Issue): IssueDTO {
+export function toIssueDTO(
+  issue: Issue,
+  groups?: { labelIds: string[]; assigneeIds: string[] },
+): IssueDTO {
   return {
     id: issue.id,
     number: issue.number,
@@ -34,6 +37,8 @@ export function toIssueDTO(issue: Issue): IssueDTO {
     typeId: issue.typeId,
     cycleId: issue.cycleId ?? null,
     moduleId: issue.moduleId ?? null,
+    labelIds: groups?.labelIds ?? [],
+    assigneeIds: groups?.assigneeIds ?? [],
     estimateValueId: issue.estimateValueId ?? null,
     authorId: issue.authorId,
     projectId: issue.projectId,
