@@ -6,6 +6,7 @@ import {
   PencilEdit01Icon,
 } from '@hugeicons-pro/core-stroke-rounded'
 import { useMemo, useState } from 'react'
+import { issueStatesIcon } from '@/app/_components/issue/issue-icons'
 import { NexoIcon } from '@/components/icon/icon'
 import { H3 } from '@/components/typography/heading/h3'
 import { Muted } from '@/components/typography/text/muted'
@@ -30,7 +31,6 @@ import { Card, CardContent } from '@/components/ui/card'
 import { Skeleton } from '@/components/ui/skeleton'
 import { notify } from '@/lib/notify'
 import { colorToText, STATE_GROUP_DEFAULT_COLOR } from '@/lib/state-colors'
-import { STATE_GROUP } from '@/lib/state-icons'
 import { cn } from '@/lib/utils'
 import {
   useDeleteState,
@@ -61,7 +61,7 @@ export function ProjectStatesSettings({
 
   const grouped = useMemo(() => {
     const map = new Map<StateGroupDTO, StateDTO[]>()
-    for (const group of STATE_GROUP) map.set(group.value, [])
+    for (const group of issueStatesIcon) map.set(group.state, [])
     for (const state of states ?? []) map.get(state.group)?.push(state)
     for (const list of map.values()) list.sort((a, b) => a.order - b.order)
     return map
@@ -99,8 +99,8 @@ export function ProjectStatesSettings({
       </Muted>
       {isLoading ? (
         <div className='mt-6 space-y-4'>
-          {STATE_GROUP.map((group) => (
-            <Card key={group.value} className='p-3 rounded-lg'>
+          {issueStatesIcon.map((group) => (
+            <Card key={group.state} className='p-3 rounded-lg'>
               <CardContent className='p-0 h-fit space-y-2'>
                 <div className='flex items-center gap-1.5'>
                   <Skeleton className='size-4 rounded-full' />
@@ -113,15 +113,15 @@ export function ProjectStatesSettings({
         </div>
       ) : (
         <div className='mt-6 space-y-4'>
-          {STATE_GROUP.map((group) => {
-            const groupStates = grouped.get(group.value) ?? []
-            const formOpen = isFormOpenForGroup(group.value)
+          {issueStatesIcon.map((group) => {
+            const groupStates = grouped.get(group.state) ?? []
+            const formOpen = isFormOpenForGroup(group.state)
 
             return (
-              <Card key={group.value} className='p-3 rounded-lg'>
+              <Card key={group.state} className='p-3 rounded-lg'>
                 <CardContent className='p-0 h-fit'>
-                  <Accordion defaultValue={[group.value]}>
-                    <AccordionItem value={group.value}>
+                  <Accordion defaultValue={[group.state]}>
+                    <AccordionItem value={group.state}>
                       <AccordionTrigger className='p-0 flex items-center gap-1.5 hover:no-underline!'>
                         <div className='w-full flex items-center justify-between'>
                           <div className='flex items-center gap-1.5'>
@@ -130,7 +130,7 @@ export function ProjectStatesSettings({
                               strokeWidth={group.strokeWidth}
                               className={cn(
                                 colorToText(
-                                  STATE_GROUP_DEFAULT_COLOR[group.value],
+                                  STATE_GROUP_DEFAULT_COLOR[group.state],
                                 ),
                               )}
                             />
@@ -144,7 +144,7 @@ export function ProjectStatesSettings({
                               e.stopPropagation()
                               setFormTarget({
                                 mode: 'create',
-                                group: group.value,
+                                group: group.state,
                               })
                             }}
                           >
@@ -158,7 +158,7 @@ export function ProjectStatesSettings({
                             key={
                               formTarget.mode === 'edit'
                                 ? formTarget.state.id
-                                : `create-${group.value}`
+                                : `create-${group.state}`
                             }
                             workspaceId={workspaceId}
                             projectSlug={projectSlug}

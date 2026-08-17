@@ -3,10 +3,10 @@
 import { NexoIcon } from '@/components/icon/icon'
 import { Button } from '@/components/ui/button'
 import { colorToText } from '@/lib/state-colors'
-import { STATE_GROUP_ICON_MAP } from '@/lib/state-icons'
 import { cn } from '@/lib/utils'
 import { useStates } from '@/src/hooks/use-state'
 import { Combobox } from '../../ui/combobox'
+import { issueStateIconMap } from '../issue-icons'
 
 interface StatePickerProps {
   workspaceId: string
@@ -35,12 +35,12 @@ export function StatePicker({
       emptyMessage='Nenhum resultado.'
       contentClassName='w-56'
       trigger={
-        <Button variant='outline' size='sm' className='h-8'>
+        <Button variant='outline' size='xs'>
           {selected ? (
             <>
               <NexoIcon
-                icon={STATE_GROUP_ICON_MAP[selected.group].icon}
-                strokeWidth={STATE_GROUP_ICON_MAP[selected.group].strokeWidth}
+                icon={issueStateIconMap[selected.group].icon}
+                strokeWidth={issueStateIconMap[selected.group].strokeWidth}
                 className={cn(colorToText(selected.color))}
               />
               {selected.name}
@@ -53,8 +53,8 @@ export function StatePicker({
       renderItem={(state) => (
         <div className='flex items-center gap-1.5'>
           <NexoIcon
-            icon={STATE_GROUP_ICON_MAP[state.group].icon}
-            strokeWidth={STATE_GROUP_ICON_MAP[state.group].strokeWidth}
+            icon={issueStateIconMap[state.group].icon}
+            strokeWidth={issueStateIconMap[state.group].strokeWidth}
             className={cn(colorToText(state.color))}
           />
           {state.name}

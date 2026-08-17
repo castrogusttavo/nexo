@@ -13,6 +13,7 @@ import {
 } from '@/src/hooks/use-issue-relation'
 import type { IssueRelationTypeDTO } from '@/types/issue'
 import { Combobox } from '../../ui/combobox'
+import { issueRelationsIcon } from '../issue-icons'
 
 const RELATION_TYPE_OPTIONS: Array<{
   value: IssueRelationTypeDTO
@@ -103,7 +104,8 @@ export function RelationsPicker({
             key={relation.id}
             className='flex items-center justify-between gap-2 text-sm'
           >
-            <span>
+            <span className='flex items-center gap-1.5'>
+              <NexoIcon icon={issueRelationsIcon} strokeWidth={2} />
               {typeLabel}{' '}
               {target ? `#${target.number} ${target.title}` : relation.targetId}
             </span>

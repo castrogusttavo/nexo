@@ -11,17 +11,18 @@ import {
   useIssueDependencies,
   useRemoveIssueDependency,
 } from '@/src/hooks/use-issue-dependency'
-import type { IssueDependencyTypeDTO } from '@/types/issue'
 import { Combobox } from '../../ui/combobox'
+import {
+  ISSUE_DEPENDENCY_DISPLAY_TO_DB,
+  ISSUE_DEPENDENCY_OUTBOUND_TYPES,
+  type IssueDependencyDisplayType,
+  issueDependenciesIcon,
+  resolveDependencyDisplayType,
+} from '../issue-icons'
 
-const DEPENDENCY_TYPE_OPTIONS: Array<{
-  value: IssueDependencyTypeDTO
-  label: string
-}> = [
-  { value: 'BLOCKS', label: 'Bloqueia' },
-  { value: 'STARTS_BEFORE', label: 'Inicia antes de' },
-  { value: 'FINISHES_BEFORE', label: 'Termina antes de' },
-]
+const DEPENDENCY_TYPE_OPTIONS = issueDependenciesIcon.filter((option) =>
+  ISSUE_DEPENDENCY_OUTBOUND_TYPES.includes(option.type),
+)
 
 interface DependenciesPickerProps {
   workspaceId: string
@@ -52,7 +53,7 @@ export function DependenciesPicker({
   )
 
   const [pendingType, setPendingType] = useState<
-    IssueDependencyTypeDTO | undefined
+    IssueDependencyDisplayType | undefined
   >(undefined)
   const [pendingTargetId, setPendingTargetId] = useState<string | undefined>(
     undefined,
@@ -72,7 +73,7 @@ export function DependenciesPicker({
     notify.mutate(
       createDependency.mutateAsync({
         targetId: pendingTargetId,
-        type: pendingType,
+        type: ISSUE_DEPENDENCY_DISPLAY_TO_DB[pendingType],
       }),
       {
         loading: 'Adicionando dependência...',
@@ -96,16 +97,23 @@ export function DependenciesPicker({
     <div className='flex flex-col gap-2'>
       {(dependencies ?? []).map((dependency) => {
         const target = issuesById.get(dependency.targetId)
-        const typeLabel = DEPENDENCY_TYPE_OPTIONS.find(
-          (t) => t.value === dependency.type,
-        )?.label
+        const displayType = resolveDependencyDisplayType(dependency, issueId)
+        const typeOption = issueDependenciesIcon.find(
+          (option) => option.type === displayType,
+        )
         return (
           <div
             key={dependency.id}
             className='flex items-center justify-between gap-2 text-sm'
           >
-            <span>
-              {typeLabel}{' '}
+            <span className='flex items-center gap-1.5'>
+              {typeOption && (
+                <NexoIcon
+                  icon={typeOption.icon}
+                  strokeWidth={typeOption.strokeWidth}
+                />
+              )}
+              {typeOption?.label}{' '}
               {target
                 ? `#${target.number} ${target.title}`
                 : dependency.targetId}
@@ -124,19 +132,40 @@ export function DependenciesPicker({
       <div className='flex items-center gap-2'>
         <Combobox
           options={DEPENDENCY_TYPE_OPTIONS}
-          getValue={(option) => option.value}
+          getValue={(option) => option.type}
           getSearchText={(option) => option.label}
           value={pendingType}
-          onChange={(type) => setPendingType(type as IssueDependencyTypeDTO)}
+          onChange={(type) =>
+            setPendingType(type as IssueDependencyDisplayType)
+          }
           emptyMessage='Nenhum resultado.'
           contentClassName='w-48'
           trigger={
             <Button variant='outline' size='sm' className='h-8'>
-              {DEPENDENCY_TYPE_OPTIONS.find((t) => t.value === pendingType)
-                ?.label ?? 'Tipo'}
+              {(() => {
+                const selected = DEPENDENCY_TYPE_OPTIONS.find(
+                  (t) => t.type === pendingType,
+                )
+                return selected ? (
+                  <>
+                    <NexoIcon
+                      icon={selected.icon}
+                      strokeWidth={selected.strokeWidth}
+                    />
+                    {selected.label}
+                  </>
+                ) : (
+                  'Tipo'
+                )
+              })()}
             </Button>
           }
-          renderItem={(option) => option.label}
+          renderItem={(option) => (
+            <div className='flex items-center gap-1.5'>
+              <NexoIcon icon={option.icon} strokeWidth={option.strokeWidth} />
+              {option.label}
+            </div>
+          )}
         />
         <Combobox
           options={issueOptions}
