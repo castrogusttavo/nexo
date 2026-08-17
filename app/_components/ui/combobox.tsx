@@ -71,7 +71,7 @@ export function Combobox<T>(
       props.onChange(Array.from(next))
       return
     }
-    props.onChange(itemValue)
+    props.onChange(itemValue === props.value ? '' : itemValue)
     setOpen(false)
   }
 

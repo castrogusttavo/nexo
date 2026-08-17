@@ -5,6 +5,7 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from '@/components/ui/popover'
+import { getDueDateColorClass } from '@/lib/issue-due-date'
 
 interface DateRangePickerProps {
   startDate: string | null
@@ -33,7 +34,11 @@ export function DateRangePicker({
     <Popover>
       <PopoverTrigger
         render={
-          <Button variant='outline' size='sm' className='h-8'>
+          <Button
+            variant='outline'
+            size='xs'
+            className={getDueDateColorClass(dueDate)}
+          >
             {label}
           </Button>
         }

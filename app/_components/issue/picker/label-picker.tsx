@@ -1,10 +1,13 @@
 'use client'
 
+import { CheckIcon } from '@hugeicons-pro/core-stroke-rounded'
+import { NexoIcon } from '@/components/icon/icon'
 import { Button } from '@/components/ui/button'
-import { colorToDot } from '@/lib/state-colors'
-import { cn } from '@/lib/utils'
+import { Checkbox } from '@/components/ui/checkbox'
+import { colorToText } from '@/lib/state-colors'
 import { useLabels } from '@/src/hooks/use-label'
 import { Combobox } from '../../ui/combobox'
+import { issueLabelIcon as Tag01Icon } from '../issue-icons'
 
 interface LabelPickerProps {
   workspaceId: string
@@ -34,20 +37,44 @@ export function LabelPicker({
       emptyMessage='Nenhum resultado.'
       contentClassName='w-56'
       trigger={
-        <Button variant='outline' size='sm' className='h-8'>
-          {selected.length === 0
-            ? 'Etiquetas'
-            : selected.length === 1
-              ? selected[0].name
-              : `Etiquetas (${selected.length})`}
+        <Button variant='outline' size='xs'>
+          {selected.length === 0 ? (
+            <>
+              <NexoIcon icon={Tag01Icon} strokeWidth={2} />
+              Etiqueta
+            </>
+          ) : selected.length === 1 ? (
+            <>
+              <NexoIcon
+                icon={Tag01Icon}
+                strokeWidth={2}
+                className={colorToText(selected[0].color)}
+              />
+              {selected[0].name}
+            </>
+          ) : (
+            <>
+              <NexoIcon
+                icon={Tag01Icon}
+                strokeWidth={2}
+                className={colorToText(selected[0].color)}
+              />
+              {selected.length} Etiquetas
+            </>
+          )}
         </Button>
       }
-      renderItem={(label) => (
-        <div className='flex items-center gap-1.5'>
-          <span
-            className={cn('size-2 rounded-full', colorToDot(label.color))}
-          />
-          {label.name}
+      renderItem={(label, isSelected) => (
+        <div className='w-full flex items-center justify-between'>
+          <div className='flex items-center gap-1.5'>
+            <NexoIcon
+              icon={Tag01Icon}
+              strokeWidth={2}
+              className={colorToText(label.color)}
+            />
+            {label.name}
+          </div>
+          {isSelected && <NexoIcon icon={CheckIcon} strokeWidth={2} />}
         </div>
       )}
     />
