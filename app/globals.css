@@ -252,3 +252,7 @@
 .blog-content p > img {
   @apply relative flex items-center justify-center rounded p-6 md:p-8 lg:p-10 bg-muted;
 }
+
+body {
+  position: relative;
+}
