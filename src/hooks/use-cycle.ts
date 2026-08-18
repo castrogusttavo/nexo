@@ -144,7 +144,7 @@ export function useAddCycleMember(
   })
 }
 
-export function useRemoveCyclemember(
+export function useRemoveCycleMember(
   workspaceId: string,
   projectSlug: string,
   cycleId: string,
@@ -163,5 +163,23 @@ export function useRemoveCyclemember(
         queryKey: cyclesMembersKey(workspaceId, projectSlug, cycleId),
       })
     },
+  })
+}
+
+export function useCycle(
+  workspaceId: string,
+  projectSlug: string,
+  cycleId: string | undefined,
+) {
+  return useQuery({
+    queryKey: ['cycles', workspaceId, projectSlug, cycleId],
+    queryFn: () =>
+      apiFetch<CycleDTO>(
+        `/api/workspaces/${workspaceId}/projects/${projectSlug}/cycles/${cycleId}`,
+        undefined,
+        'Erro ao buscar ciclo',
+      ),
+    enabled: !!workspaceId && !!projectSlug && !!cycleId,
+    staleTime: 2 * 60 * 1000,
   })
 }
