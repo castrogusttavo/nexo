@@ -177,7 +177,13 @@ export function IssueCardList({
         </ContextMenuTrigger>
         <ContextMenuContent>bla bla bla</ContextMenuContent>
       </ContextMenu>
-      <IssueDetailsPanel open={detailsOpen} onOpenChange={setDetailsOpen} />
+      <IssueDetailsPanel
+        open={detailsOpen}
+        onOpenChange={setDetailsOpen}
+        issue={issue}
+        workspaceId={workspaceId}
+        projectSlug={projectSlug}
+      />
     </>
   )
 }
