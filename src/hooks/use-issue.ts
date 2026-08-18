@@ -125,3 +125,25 @@ export function useIssueChildren(
     staleTime: 2 * 60 * 1000,
   })
 }
+
+export function useIssueByIdentifier(
+  workspaceId: string,
+  projectSlug: string,
+  identifier: string | undefined,
+) {
+  return useQuery({
+    queryKey: [
+      ...issuesKey(workspaceId, projectSlug),
+      'by-identifier',
+      identifier,
+    ],
+    queryFn: () =>
+      apiFetch<IssueDTO>(
+        `/api/workspaces/${workspaceId}/projects/${projectSlug}/issues/by-identifier/${identifier}`,
+        undefined,
+        'Erro ao buscar issue',
+      ),
+    enabled: !!workspaceId && !!projectSlug && !!identifier,
+    staleTime: 2 * 60 * 1000,
+  })
+}
