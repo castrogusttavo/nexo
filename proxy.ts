@@ -28,9 +28,11 @@ function buildCspHeader(nonce: string): string {
     default-src 'self';
     script-src 'self' 'nonce-${nonce}' 'strict-dynamic'${NODE_ENV === 'development' ? " 'unsafe-eval'" : ''};
     style-src 'self' 'unsafe-inline';
-    img-src 'self' blob: data: https:;
+    img-src 'self' blob: data: https:${NODE_ENV === 'development' ? ' http://localhost:9000' : ''};
+    media-src 'self' blob: https:${NODE_ENV === 'development' ? ' http://localhost:9000' : ''};
     font-src 'self';
     connect-src 'self' https://*.axiom.co https://va.vercel-scripts.com https://cdn.jsdelivr.net${NODE_ENV === 'development' ? ' ws://localhost:4444' : ''};
+    frame-src https://www.figma.com https://www.loom.com https://www.youtube.com https://docs.google.com;
     frame-ancestors 'none';
     form-action 'self';
     base-uri 'self';
