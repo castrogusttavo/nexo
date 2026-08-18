@@ -106,3 +106,20 @@ export async function deleteObject(input: {
     new DeleteObjectCommand({ Bucket: input.bucket, Key: input.key }),
   )
 }
+
+export async function getObjectBuffer(input: {
+  bucket: string
+  key: string
+}): Promise<{ body: Buffer; contentType: string | undefined } | null> {
+  const s3 = getS3Client()
+  try {
+    const response = await s3.send(
+      new GetObjectCommand({ Bucket: input.bucket, Key: input.key }),
+    )
+    if (!response.Body) return null
+    const bytes = await response.Body?.transformToByteArray()
+    return { body: Buffer.from(bytes), contentType: response.ContentType }
+  } catch {
+    return null
+  }
+}
