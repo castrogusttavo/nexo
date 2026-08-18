@@ -1,3 +1,4 @@
+import { GeistMono } from 'geist/font/mono'
 import { GeistSans } from 'geist/font/sans'
 import type { Metadata } from 'next'
 import './globals.css'
@@ -27,7 +28,11 @@ export default function RootLayout({
   return (
     <html
       lang='en'
-      className={cn('scroll-smooth dark', GeistSans.variable)}
+      className={cn(
+        'scroll-smooth dark',
+        GeistSans.variable,
+        GeistMono.variable,
+      )}
       suppressHydrationWarning
     >
       <head>
