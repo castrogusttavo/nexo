@@ -2,6 +2,7 @@
 @import "tw-animate-css";
 @import "shadcn/tailwind.css";
 @plugin "@tailwindcss/typography";
+@import "./typeset.css";
 
 @custom-variant dark (&:is(.dark *));
 
@@ -224,22 +225,36 @@
   mask-position: center;
 }
 
+/* Table sizing/scroll — typeset.css owns the visual look (row separators,
+   cell padding); tiptap's Table extension wraps the <table> in its own
+   .tableWrapper div (not typeset's .typeset-scroll), so bridge it here. */
+.tiptap .tableWrapper {
+  overflow-x: auto;
+  padding-bottom: 0.5rem;
+}
+
 .tiptap table {
-  border-collapse: collapse;
   width: 100%;
-  margin: 1rem 0;
+  min-width: 32rem;
 }
 
-.tiptap table td,
-.tiptap table th {
-  border: 1px solid var(--border);
-  padding: 0.5rem;
-  min-width: 80px;
-}
-
-.tiptap table th {
-  font-weight: 600;
+.tiptap thead th {
   background-color: var(--muted);
+}
+
+/* tiptap's TaskList renders <ul data-type="taskList">, not the
+   ul.contains-task-list markup typeset.css targets — same intent
+   (no bullet marker), different selector. */
+.tiptap ul[data-type="taskList"] {
+  list-style-type: none;
+  padding-inline-start: 0.25rem;
+}
+
+/* KaTeX output (span/div with dangerouslySetInnerHTML) isn't a native
+   <math> element, so typeset's math styling never matches it. */
+.tiptap [data-block-equation] {
+  margin-block-start: var(--typeset-flow);
+  overflow-x: auto;
 }
 
 .blog-content ul,
@@ -255,4 +270,33 @@
 
 body {
   position: relative;
+}
+
+.ProseMirror {
+  outline: none;
+}
+
+.tiptap ul[data-type="taskList"] li {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.tiptap ul[data-type="taskList"] li > label {
+  display: flex;
+  align-items: center;
+  user-select: none;
+}
+
+.tiptap ul[data-type="taskList"] li > div  {
+  flex: 1;
+}
+
+.typeset-docs {
+  --typeset-font-body: var(--font-geist);
+  --typeset-font-heading: var(--font-geist);
+  --typeset-font-mono: var(--font-geist-mono);
+  --typeset-size: 15px;
+  --typeset-leading: 1.75;
+  --typeset-flow: 1.25em;
 }
