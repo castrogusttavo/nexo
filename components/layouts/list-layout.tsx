@@ -14,6 +14,7 @@ import { apiFetchJson } from "@/src/hooks/_fetch";
 import { useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
 import { Input } from "../ui/input";
+import { EMPTY_ISSUE_DESCRIPTION } from "@/lib/editor-value";
 
 export type IconType = Parameters<typeof NexoIcon>[0]['icon']
 
@@ -71,7 +72,7 @@ export function ListLayout({ workspaceId, projectSlug, createDefaults, sectionId
 
     const created = await createIssue.mutateAsync({
       title: title.trim(),
-      description: { type: 'doc', content: [] },
+      description: EMPTY_ISSUE_DESCRIPTION,
       stateId: createDefaults.stateId,
       priority: createDefaults.priority,
       cycleId: createDefaults.cycleId,

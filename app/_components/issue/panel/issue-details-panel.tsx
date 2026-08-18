@@ -37,13 +37,10 @@ export function IssueDetailsPanel({
           <H4>{issue.title}</H4>
           <IssueRichEditor
             key={issue.id}
-            workspaceId={workspaceId}
-            projectSlug={projectSlug}
             content={issue.description}
             onChange={(description) =>
               updateIssue.mutate({ issueId: issue.id, data: { description } })
             }
-            className='prose prose-sm dark:prose-invert max-w-none'
           />
         </div>
       </DrawerContent>

@@ -4,7 +4,8 @@ import type {
   IssueRelation,
   IssueSubscriber,
 } from '@prisma/client'
-import type { JSONContent } from '@tiptap/react'
+import type { Value } from 'platejs'
+import { EMPTY_ISSUE_DESCRIPTION } from '@/lib/editor-value'
 import type {
   IssueAssigneeDTO,
   IssueDependencyDTO,
@@ -26,10 +27,9 @@ export function toIssueDTO(
     id: issue.id,
     number: issue.number,
     title: issue.title,
-    description: (issue.description as JSONContent) ?? {
-      type: 'doc',
-      content: [],
-    },
+    description: Array.isArray(issue.description)
+      ? (issue.description as Value)
+      : EMPTY_ISSUE_DESCRIPTION,
     priority: issue.priority,
     startDate: issue.startDate?.toISOString() ?? null,
     dueDate: issue.dueDate?.toISOString() ?? null,

@@ -6,7 +6,7 @@ const issueTitle = z
   .max(255, 'Título deve ter no máximo 255 caracteres')
 
 const IssueContentSchema = z
-  .record(z.string(), z.unknown())
+  .array(z.record(z.string(), z.unknown()))
   .refine(
     (value) => JSON.stringify(value).length <= 100_000,
     'Descrição excede o tamanho permitido',

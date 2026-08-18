@@ -1,4 +1,4 @@
-import type { JSONContent } from '@tiptap/react'
+import type { Value } from 'platejs'
 import type { LabelDTO } from './label'
 import { IssueTypeDTO } from './issue-type'
 
@@ -10,7 +10,7 @@ export interface IssueDTO {
   id: string
   number: number
   title: string
-  description: JSONContent
+  description: Value
   priority: IssuePriorityDTO
   startDate: string | null
   dueDate: string | null
