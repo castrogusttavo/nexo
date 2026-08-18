@@ -118,7 +118,7 @@ describe('IssueService', () => {
 
       const result = await IssueService.create('actor', 'ws1', 'proj-slug', {
         title: 'Bug',
-        description: { type: 'doc', content: [] },
+        description: [],
         stateId: 'state-1',
         priority: 'NONE',
       })
@@ -139,7 +139,7 @@ describe('IssueService', () => {
 
       const result = await IssueService.create('actor', 'ws1', 'proj-slug', {
         title: 'Bug',
-        description: { type: 'doc', content: [] },
+        description: [],
         stateId: 'state-1',
         priority: 'NONE',
       })
@@ -161,7 +161,7 @@ describe('IssueService', () => {
 
       const result = await IssueService.create('actor', 'ws1', 'proj-slug', {
         title: 'Bug',
-        description: { type: 'doc', content: [] },
+        description: [],
         stateId: 'state-1',
         priority: 'NONE',
       })
@@ -185,7 +185,7 @@ describe('IssueService', () => {
 
       const result = await IssueService.create('actor', 'ws1', 'proj-slug', {
         title: 'Bug',
-        description: { type: 'doc', content: [] },
+        description: [],
         stateId: 'state-1',
         priority: 'NONE',
         typeId: 'type-2',
@@ -209,7 +209,7 @@ describe('IssueService', () => {
 
       const result = await IssueService.create('actor', 'ws1', 'proj-slug', {
         title: 'Bug',
-        description: { type: 'doc', content: [] },
+        description: [],
         stateId: 'state-1',
         priority: 'NONE',
       })
@@ -231,7 +231,7 @@ describe('IssueService', () => {
 
       const result = await IssueService.create('actor', 'ws1', 'proj-slug', {
         title: 'Bug',
-        description: { type: 'doc', content: [] },
+        description: [],
         stateId: 'state-1',
         priority: 'NONE',
         startDate: '2025-03-05T10:00:00.000Z',
@@ -259,7 +259,7 @@ describe('IssueService', () => {
 
       const result = await IssueService.create('actor', 'ws1', 'proj-slug', {
         title: 'Bug',
-        description: { type: 'doc', content: [] },
+        description: [],
         stateId: 'state-1',
         priority: 'NONE',
         cycleId: 'cycle-1',
@@ -289,7 +289,7 @@ describe('IssueService', () => {
 
       const result = await IssueService.create('actor', 'ws1', 'proj-slug', {
         title: 'Bug',
-        description: { type: 'doc', content: [] },
+        description: [],
         stateId: 'state-1',
         priority: 'NONE',
         estimateValueId: 'value-1',

@@ -1,4 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
+import type { Value } from 'platejs'
 import type { IssueDTO, IssuePriorityDTO } from '@/types/issue'
 import { apiFetch, apiFetchJson, apiSend } from './_fetch'
 
@@ -28,7 +29,7 @@ export function useCreateIssue(workspaceId: string, projectSlug: string) {
   return useMutation({
     mutationFn: (data: {
       title: string
-      description: Record<string, unknown>
+      description: Value
       stateId: string
       priority?: IssuePriorityDTO
       startDate?: string
@@ -64,7 +65,7 @@ export function useUpdateIssue(workspaceId: string, projectSlug: string) {
       issueId: string
       data: {
         title?: string
-        description?: Record<string, unknown>
+        description?: Value
         stateId?: string
         priority?: IssuePriorityDTO
         startDate?: string | null
