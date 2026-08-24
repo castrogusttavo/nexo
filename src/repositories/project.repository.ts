@@ -19,6 +19,26 @@ import { DEFAULT_ISSUE_TYPE } from './issue-type.repository'
 import { DEFAULT_LABELS } from './label.repository'
 import { DEFAULT_STATES } from './state.repository'
 
+// @prisma/adapter-pg (driver adapters) doesn't populate the classic
+// error.meta.target on P2002 — the actual column list moved to
+// error.meta.driverAdapterError.cause.constraint.fields. Without this,
+// every unique-constraint conflict here silently fell through to the
+// "slug" branch, including real identifier collisions, and the
+// identifier-retry loop in ProjectService.create() never triggered
+// because it only retries on PROJECT_IDENTIFIER_CONFLICT.
+function uniqueConstraintFields(error: unknown): string[] | undefined {
+  const meta = (error as { meta?: Record<string, unknown> } | undefined)?.meta
+  if (!meta) return undefined
+
+  const target = meta.target
+  if (Array.isArray(target)) return target as string[]
+
+  const driverAdapterError = meta.driverAdapterError as
+    | { cause?: { constraint?: { fields?: string[] } } }
+    | undefined
+  return driverAdapterError?.cause?.constraint?.fields
+}
+
 export type ProjectWithDetails = Project & {
   members: Pick<ProjectMember, 'userId'>[]
   favourites: Pick<ProjectFavorite, 'id'>[]
@@ -197,7 +217,7 @@ export const ProjectRepository = {
       return ok(project)
     } catch (error) {
       if (error instanceof Error && 'code' in error && error.code === 'P2002') {
-        const target = (error as { meta?: { target?: string[] } }).meta?.target
+        const target = uniqueConstraintFields(error)
         if (target?.includes('identifier'))
           return err(projectIdentifierConflict())
         return err(projectSlugConflict())
@@ -229,7 +249,7 @@ export const ProjectRepository = {
       return ok(project)
     } catch (error) {
       if (error instanceof Error && 'code' in error && error.code === 'P2002') {
-        const target = (error as { meta?: { target?: string[] } }).meta?.target
+        const target = uniqueConstraintFields(error)
         if (target?.includes('identifier'))
           return err(projectIdentifierConflict())
         return err(projectSlugConflict())
