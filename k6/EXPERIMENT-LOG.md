@@ -902,3 +902,95 @@ aguardando decisão sobre produção antes do merge (troca de segurança
 real: hash mais barato = mais fácil de forçar por brute-force offline
 se o banco vazar — aceitável pro threat model atual, mas é decisão de
 produto, não só de performance).
+
+## Rodada 5 — validação em produção real (8 núcleos), login não escala como `/issues`
+
+Depois do merge do preset argon2 (`src/lib/argon2-config.ts`) e da
+paginação (Camada 1), subiu tudo em produção real. Reseed completo
+(`SEED_ONBOARDED_USERS=2500`, 15k issues) e `k6/stress-auth-only.js`
+(login isolado, sem `/issues` junto, rampa até 400 VUs com think-time de
+1-2s — cadência de usuário real, não loop apertado) direto no host via
+SSH, `localhost:3000`, mesma metodologia da Rodada 2.
+
+### Achado 1 — o preset OWASP ajudou muito menos aqui do que no worktree local
+
+| Config | CPU pico (de 800%, 8 núcleos) | RAM pico | p50 | p95 | Throughput |
+|---|---|---|---|---|---|
+| Antes de tudo (defaults do argon2) | 571% | ~2,2GB | 2,82s | 13,1s | 23,46/s |
+| + preset OWASP (m=19MB,t=2,p=1) | 590% | ~1GB | 3,03s | 14,7s | 21,97/s |
+
+No worktree local (4 núcleos) o mesmo preset cortou p95 em ~3× e
+eliminou erro. Em produção (8 núcleos), CPU e latência ficaram
+estatisticamente iguais — só RAM caiu de verdade. A explicação: com
+mais núcleos disponíveis, o gargalo de CPU do hash nunca foi tão
+dominante aqui quanto no worktree de 4 núcleos — outra coisa estava
+segurando a fila com peso parecido, escondendo o ganho do preset mais
+barato (ver Achado 3 abaixo).
+
+### Achado 2 — `UV_THREADPOOL_SIZE=8` piorou, de forma reproduzível
+
+Hipótese testada: argon2 roda no threadpool do libuv, que por padrão
+tem só 4 slots (`UV_THREADPOOL_SIZE` não setado), independente dos 8
+núcleos reais do container. Subiu pra 8 esperando mais hashes
+concorrentes de verdade.
+
+| Config | CPU pico | p95 | Throughput |
+|---|---|---|---|
+| + `UV_THREADPOOL_SIZE=8` | 462% | 17,05s | 19,49/s |
+| Repetição (controle, sem mudar nada) | — | 17,01s | 19,78/s |
+
+Repetido pra descartar ruído de ambiente — bateu quase igual nas duas
+vezes. CPU pico caiu (462% vs 571-590%) mas latência e throughput
+pioraram. Explicação mais provável: numa máquina de 8 núcleos, threadpool
+em 8 não deixa folga nenhuma pra thread principal do Node e coleta de
+lixo rodarem sem brigar por CPU — com 4 slots sobrava exatamente essa
+folga. Revertido (`UV_THREADPOOL_SIZE` removido do `.env`).
+
+### Achado 3 — o gargalo real escondido: `DB_POOL_MAX` nunca foi setado em produção
+
+Checado: `DB_POOL_MAX` não existia no `.env` de produção, então caía no
+default do código (`5` — o mesmo valor descartado como gargalo lá no
+Experimento 1/2, só que naquela época escondido por um gargalo maior,
+CPU de serialização de `/issues`). Postgres aguenta até 100 conexões
+(`max_connections`), mas a aplicação só conseguia ter 5 queries em voo
+ao mesmo tempo — login faz lookup de usuário + verificação + possível
+escrita de sessão, todas competindo pelas mesmas 5 vagas. Isso explica
+os dois achados acima: baratear o hash não ajuda se o request já estava
+preso esperando conexão de banco antes/depois do hash, e mais hashes
+terminando ao mesmo tempo (threadpool maior) só aumenta quantos
+requests tentam pegar uma das mesmas 5 vagas simultaneamente.
+
+Subido `DB_POOL_MAX=25` (`UV_THREADPOOL_SIZE` já revertido nessa
+rodada):
+
+| Config | CPU pico | p95 | Throughput | Falhas |
+|---|---|---|---|---|
+| + `DB_POOL_MAX=25` | 606% | **12,71s** | **23,58/s** | 0,30% (15 timeouts de 30s) |
+
+Melhor resultado das quatro rodadas — confirma que o pool era parte
+real do problema — mas é basicamente **igual ao ponto de partida do
+dia**, não uma melhora dramática. CPU continua saturando ~75% do host
+inteiro com 400 logins concorrentes.
+
+### Conclusão — login não escala do jeito que `/issues` escalou
+
+`/issues` tinha uma causa raiz única e corrigível (payload sem
+paginação) que, uma vez resolvida, liberou o resto da pilha. Login é
+estrutural de um jeito diferente: `argon2` é *deliberadamente* caro de
+CPU (é a própria definição de segurança de hash de senha), e essa
+Rodada 5 mostrou que dá pra tirar fricção adjacente (parâmetro do hash,
+pool de conexão) sem eliminar o custo de fundo. Com as três mudanças
+juntas (preset OWASP + `DB_POOL_MAX=25`, threadpool no default), o
+teto prático de produção pra login concorrente continua próximo de
+**~400 tentativas simultâneas antes de degradar pra dezenas de
+segundos de espera** — mesma ordem de grandeza de antes de qualquer
+ajuste, só que agora sem timeout de erro na maioria dos casos.
+
+Diferente de `/issues`, não escalar login horizontalmente (mais
+instâncias) resolve por si só — cada instância paga o mesmo custo de
+CPU por hash, então N instâncias dividem N vezes menos tráfego cada,
+mas o custo por operação não muda. O que resolveria de verdade —
+fila com backpressure explícito no login, ou aceitar rajadas grandes
+como cenário degradado por design — é mudança de produto, não só de
+infra, e fica registrada como próximo passo real, não implementada
+nesta rodada.
