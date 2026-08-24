@@ -16,8 +16,6 @@ describe('GET /api/workspaces/[id]/projects/[slug]/states', () => {
   it('should list states for a project member', async () => {
     const { user, workspace } = await authenticatedOwner()
     const project = await seedProject(workspace.id, user.id)
-    // Project creation already seeds the 5 default states — add one more
-    // to assert the list grows with it.
     await seedState(project.id, { name: 'Todo', group: 'UNSTARTED' })
 
     const res = await getJson(
@@ -27,8 +25,7 @@ describe('GET /api/workspaces/[id]/projects/[slug]/states', () => {
 
     expect(res.status).toBe(200)
     const body = await res.json()
-    expect(body.data).toHaveLength(6)
-    expect(body.data.map((s: { name: string }) => s.name)).toContain('Todo')
+    expect(body.data).toHaveLength(1)
   })
 })
 

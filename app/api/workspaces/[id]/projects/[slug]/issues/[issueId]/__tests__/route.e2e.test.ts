@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { seedProject } from '@/src/__tests__/factories/project.factory'
+import { seedProjectWithDefaults as seedProject } from '@/src/__tests__/factories/project.factory'
 import { seedState } from '@/src/__tests__/factories/state.factory'
 import {
   authenticatedOwner,
@@ -18,7 +18,7 @@ describe('PATCH /api/workspaces/[id]/projects/[slug]/issues/[issueId]', () => {
       `/api/workspaces/${workspace.id}/projects/${project.slug}/issues`,
       {
         title: 'Bug',
-        description: { type: 'doc', content: [] },
+        description: [{ type: 'p', children: [{ text: '' }] }],
         stateId: state.id,
         priority: 'NONE',
       },
@@ -48,7 +48,7 @@ describe('DELETE /api/workspaces/[id]/projects/[slug]/issues/[issueId]', () => {
       `/api/workspaces/${workspace.id}/projects/${project.slug}/issues`,
       {
         title: 'Bug',
-        description: { type: 'doc', content: [] },
+        description: [{ type: 'p', children: [{ text: '' }] }],
         stateId: state.id,
         priority: 'NONE',
       },
