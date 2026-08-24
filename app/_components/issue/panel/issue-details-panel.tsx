@@ -33,7 +33,7 @@ export function IssueDetailsPanel({
       swipeDirection={isMobile ? 'down' : 'right'}
     >
       <DrawerContent className='w-full max-w-2xl'>
-        <div className='flex flex-col gap-4 p-4'>
+        <div className='flex min-h-0 flex-1 flex-col gap-4 p-4 no-scrollbar'>
           <H4>{issue.title}</H4>
           <IssueRichEditor
             key={issue.id}
@@ -41,6 +41,7 @@ export function IssueDetailsPanel({
             onChange={(description) =>
               updateIssue.mutate({ issueId: issue.id, data: { description } })
             }
+            className='min-h-0 flex-1 no-scrollbar'
           />
         </div>
       </DrawerContent>

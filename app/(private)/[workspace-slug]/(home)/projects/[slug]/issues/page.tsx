@@ -8,8 +8,10 @@ import {
 import HeaderInternalNavigation from '@/app/_components/header/header-internal-navigation'
 import { IssueListView } from '@/app/_components/issue/issue-list-view'
 import { IssueProjectSwitcher } from '@/app/_components/issue/issue-project-switcher'
+import { IssueModal } from '@/app/_components/issue/modal/issue-modal'
 import { NexoIcon } from '@/components/icon/icon'
 import { Badge } from '@/components/ui/badge'
+import { Button } from '@/components/ui/button'
 import { getProjectContext } from '@/src/lib/project-context'
 import { IssueService } from '@/src/services/issue.service'
 import { IssuesFilters } from './filters'
@@ -66,6 +68,16 @@ export default async function ProjectIssuesPage({
         <div className='flex items-center gap-2'>
           <IssueLayoutToggle />
           <IssuesFilters />
+          <IssueModal
+            trigger={
+              <Button size='sm' className='h-8'>
+                Adicionar issue
+              </Button>
+            }
+            workspaceId={context.workspaceId}
+            workspaceSlug={workspaceSlug}
+            projectSlug={context.project.slug}
+          />
         </div>
       </HeaderInternalNavigation>
       <div>

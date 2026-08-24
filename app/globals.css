@@ -4,6 +4,9 @@
 @plugin "@tailwindcss/typography";
 @import "./typeset.css";
 
+@plugin "tailwind-scrollbar-hide";
+@import "./typeset.css";
+
 @custom-variant dark (&:is(.dark *));
 
 :root {
@@ -53,6 +56,7 @@
   --color-branding-950: oklch(0.265 0.0588 261.94);
   --app: oklch(83.11% 0.0021 230.81);
   --brand: oklch(0.623 0.214 259.815);
+  --highlight: oklch(0.852 0.199 91.936);
 }
 
 .dark {
@@ -101,6 +105,7 @@
   --color-branding-950: oklch(0.265 0.0588 261.94);
   --app: oklch(16.89% .0021 230.81);
   --brand: oklch(0.707 0.165 254.624);
+  --highlight: oklch(0.852 0.199 91.936);
 }
 
 @theme inline {
@@ -156,6 +161,7 @@
   --radius-2xl: calc(var(--radius) + 8px);
   --radius-3xl: calc(var(--radius) + 12px);
   --radius-4xl: calc(var(--radius) + 16px);
+  --color-highlight: var(--highlight);
 }
 
 @layer base {
