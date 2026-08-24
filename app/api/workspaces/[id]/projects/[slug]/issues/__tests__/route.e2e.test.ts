@@ -22,7 +22,7 @@ describe('GET /api/workspaces/[id]/projects/[slug]/issues', () => {
       `/api/workspaces/${workspace.id}/projects/${project.slug}/issues`,
       {
         title: 'Bug',
-        description: { type: 'doc', content: [] },
+        description: [{ type: 'p', children: [{ text: '' }] }],
         stateId: state.id,
         priority: 'NONE',
       },
@@ -68,7 +68,7 @@ describe('POST /api/workspaces/[id]/projects/[slug]/issues', () => {
       `/api/workspaces/${workspace.id}/projects/${project.slug}/issues`,
       {
         title: 'Bug',
-        description: { type: 'doc', content: [] },
+        description: [{ type: 'p', children: [{ text: '' }] }],
         stateId: state.id,
         priority: 'NONE',
       },

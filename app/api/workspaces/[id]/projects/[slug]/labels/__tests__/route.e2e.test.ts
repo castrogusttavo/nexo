@@ -17,7 +17,9 @@ describe('GET /api/workspaces/[id]/projects/[slug]/labels', () => {
   it('should list labels for a project member', async () => {
     const { user, workspace } = await authenticatedOwner()
     const project = await seedProject(workspace.id, user.id)
-    await seedLabel(project.id, { name: 'Design' })
+    // Project creation already seeds the default labels (Design, Code) —
+    // add one more, distinctly named, to assert the list grows with it.
+    await seedLabel(project.id, { name: 'Marketing' })
 
     const res = await getJson(
       `/api/workspaces/${workspace.id}/projects/${project.slug}/labels`,
@@ -26,7 +28,10 @@ describe('GET /api/workspaces/[id]/projects/[slug]/labels', () => {
 
     expect(res.status).toBe(200)
     const body = await res.json()
-    expect(body.data).toHaveLength(1)
+    expect(body.data).toHaveLength(3)
+    expect(body.data.map((l: { name: string }) => l.name)).toContain(
+      'Marketing',
+    )
   })
 })
 
