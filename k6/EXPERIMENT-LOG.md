@@ -828,3 +828,77 @@ Compose; Camada 5: 2 bugs de entrypoint + 1 porta ocupada; verificação
 final: 1 rate limiter atrás de proxy) só apareceram ao efetivamente
 rodar cada camada, não ao ler o código. Nenhum desses bugs sobreviveu
 sem ser corrigido antes do número final ser aceito no log.
+
+## Rodada 4 — argon2 sob concorrência (worktree `perf/argon2-tuning`)
+
+Com a Rodada 3 fechada, o teste composto (`flows.js`, login+home+issues+
+onboarding) contra a pilha completa parou de escalar limpo por volta de
+2000 VUs — timeouts de 60s aparecendo, mas só quando login e `/issues`
+competem pelo mesmo CPU ao mesmo tempo. `k6/stress-auth-only.js` (login
+isolado, sem `/issues` junto) isolou a causa: verificação de senha via
+argon2 rodando com os defaults da lib (`memoryCost: 65536` = 64MB,
+`parallelism: 4` — cada verificação já tenta usar 4 threads sozinha).
+
+No servidor de produção real (8 cores — mesma máquina da Rodada 2):
+pico de 571% CPU (de 800% disponíveis) com "só" 400 VUs de login
+concorrente sustentado a 440-570%, Postgres irrelevante (0-5,6% o tempo
+todo). Login nunca deu erro nesse teste — só degradou (p50 2,82s, p95
+13,1s): é o CPU do processo Node sendo saturado pela verificação
+argon2, não um limite de conexão ou de banco.
+
+### Correção — preset OWASP em vez dos defaults da lib
+
+Defaults do `argon2` (`memoryCost: 65536`, `parallelism: 4`) foram
+desenhados pra um hash isolado rodando rápido numa máquina dedicada,
+não pra um SaaS multiusuário verificando dezenas de logins em paralelo.
+Trocado pelo preset argon2id recomendado no topo do OWASP Password
+Storage Cheat Sheet: `memoryCost: 19456` (~19MB), `timeCost: 2`,
+`parallelism: 1`. Extraído pra `src/lib/argon2-config.ts` (única fonte
+da verdade, importado por `src/lib/auth.ts` e por
+`scripts/seed-load-test.ts` — antes o seed chamava `hash()` sem opções,
+gerando hashes com os defaults da lib mesmo depois da mudança em
+`auth.ts`, o que teria mascarado qualquer teste feito contra os
+usuários seedados).
+
+Importante: `verify()` do pacote `argon2` lê os parâmetros do próprio
+hash armazenado (formato PHC, `$argon2id$v=19$m=...,t=...,p=...$...`),
+não da config atual do código — só afeta hash geração de hashes novos.
+Isso também abriu um atalho pro teste: pra comparar antes/depois basta
+re-hashear a senha dos usuários de teste com cada preset via SQL
+direto, sem rebuildar a imagem entre uma rodada e outra.
+
+### Verificação — A/B controlado, mesma máquina, mesma instância
+
+Sem acesso a uma segunda máquina de 8 cores pra reproduzir os números
+de produção 1:1, a comparação foi feita local (worktree, 4 núcleos),
+isolando 1 das 4 instâncias do nginx (batendo direto no IP do
+container, sem passar pelo LB) pra eliminar a variável de
+horizontal-scaling da equação — só o parâmetro do argon2 muda entre as
+duas rodadas, mesmo hardware, mesmo `stress-auth-only.js` (rampa até
+400 VUs).
+
+| Métrica | Antes (defaults: m=64MB,t=3,p=4) | Depois (OWASP: m=19MB,t=2,p=1) |
+|---|---|---|
+| Iterações completas (~3m20s) | 2.672 | 7.151 (2,7×) |
+| Erros | 0,33% (9/2.672 — timeout de 30s) | **0%** |
+| p50 | 6,51s | 1,53s (4,25× mais rápido) |
+| p95 | 25,06s | 7,96s (3,15× mais rápido) |
+| max | 30s (bateu no timeout) | 8,4s |
+| CPU pico (1 instância, 4 núcleos = 400%) | 371,7% (93%) | 317,1% (79%) |
+| CPU sustentado (último quarto do teste) | 337,2% | 230,1% (-32%) |
+
+Confirma a hipótese: no hardware mais fraco daqui (4 núcleos, sem
+horizontal scaling), os defaults chegam a gerar erro real (timeout),
+coisa que a Rodada 2 não viu nem a 8 núcleos — mostra que o problema
+escala pior que linear com menos CPU disponível. Preset novo elimina o
+erro, corta a latência em ~4× no p50 e ~3× no p95, e ainda sobra CPU
+(79% vs 93% no pico).
+
+p95 de 7,96s a 400 VUs sustentados ainda não é bom o suficiente pra
+login em produção — é o resultado esperado (parallelism 1 sacrifica
+velocidade de hash por menos contenção agregada, a troca é deliberada),
+mas não fecha o problema sozinho. Mudança commitada no worktree,
+aguardando decisão sobre produção antes do merge (troca de segurança
+real: hash mais barato = mais fácil de forçar por brute-force offline
+se o banco vazar — aceitável pro threat model atual, mas é decisão de
+produto, não só de performance).

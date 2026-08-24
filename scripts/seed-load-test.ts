@@ -8,6 +8,7 @@ import type {
   Role,
   State,
 } from '@prisma/client'
+import { ARGON2_OPTIONS } from '@/src/lib/argon2-config'
 import { prisma } from '@/src/lib/prisma'
 import { DEFAULT_STATES } from '@/src/repositories/state.repository'
 
@@ -305,7 +306,7 @@ async function main() {
   await cleanup()
 
   console.log('Gerando hash de senha (argon2)...')
-  const passwordHash = await hash(LOAD_TEST_PASSWORD)
+  const passwordHash = await hash(LOAD_TEST_PASSWORD, ARGON2_OPTIONS)
 
   console.log(`Criando ${ONBOARDED_USER_COUNT} usuários onboarded + ${FRESH_USER_COUNT} usuários novos...`)
   const { onboarded } = await seedUsers(passwordHash)

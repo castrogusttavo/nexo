@@ -14,6 +14,7 @@ import {
   GOOGLE_CLIENT_SECRET,
 } from '@/lib/env/server'
 import { PRIVACY_VERSION, TERMS_VERSION } from '@/lib/legal/versions'
+import { ARGON2_OPTIONS } from '@/src/lib/argon2-config'
 import { sendResetPasswordEmail } from '@/src/lib/mail/user/send-reset-password'
 import { sendVerify2faAccessOtp } from '@/src/lib/mail/user/send-verify-2fa-access-otp'
 import { sendVerifyEmailWithOtp } from '@/src/lib/mail/user/send-verify-email-with-otp'
@@ -47,7 +48,9 @@ export const auth = betterAuth({
     enabled: true,
     requireEmailVerification: true,
     password: {
-      hash: async (password) => hash(password),
+      // Só afeta hashes novos — verify() lê os parâmetros do próprio hash
+      // armazenado, então hashes antigos continuam válidos.
+      hash: async (password) => hash(password, ARGON2_OPTIONS),
       verify: async ({ hash: hashed, password }) => verify(hashed, password),
     },
     // A redefinição de senha costuma ocorrer após comprometimento da conta;
