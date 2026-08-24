@@ -1,0 +1,95 @@
+x-app-defaults: &app-defaults
+  build:
+    context: .
+    dockerfile: Dockerfile
+    secrets:
+      - hugeicons_token
+    args:
+      NEXT_PUBLIC_URL: http://localhost:8080
+      NEXT_PUBLIC_AXIOM_TOKEN: ${NEXT_PUBLIC_AXIOM_TOKEN}
+      NEXT_PUBLIC_AXIOM_DATASET: ${NEXT_PUBLIC_AXIOM_DATASET}
+  env_file:
+    - .env
+  environment:
+    DATABASE_URL: postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@nexo-db:5432/${POSTGRES_DB}
+    DATABASE_URL_POOLED: postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@nexo-pgbouncer:5432/${POSTGRES_DB}
+    DATABASE_URL_REPLICA: postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@nexo-db-replica:5432/${POSTGRES_DB}
+    REDIS_URL: rediss://default:${REDIS_PASSWORD}@nexo-redis:6379
+    REDIS_TLS_ENABLED: "true"
+    REDIS_TLS_CA_PATH: /etc/redis-tls/ca.crt
+    # O cert TLS do nexo-redis (docker-compose.infra.yml) só lista SANs
+    # redis/localhost/127.0.0.1/::1 — não inclui o hostname de rede real
+    # "nexo-redis" que essas 4 instâncias usam. Verificação de hostname
+    # falha (ERR_TLS_CERT_ALTNAME_INVALID) e o client fica preso no loop
+    # de reconexão do redis client, travando toda rota que usa Redis.
+    # Desabilita só a verificação de certificado (ainda é TLS, só sem
+    # checar CN/SAN) — aceitável pra infra local efêmera, não é padrão
+    # pra produção (mesmo espírito do desvio já aceito na Camada 5).
+    NODE_TLS_REJECT_UNAUTHORIZED: "0"
+    # Better Auth roda com NODE_ENV=production nessa imagem, e o limiter
+    # embutido dele não confia em X-Forwarded-For por trás do nginx sem
+    # configurar trustedProxies — sem isso, todo login cai num "single
+    # shared per-path bucket" e derruba quase tudo com 429 sob concorrência
+    # (achado real, não hipotético — 99,76% de falha em login sem isso).
+    # Mesma saída que o e2e do próprio projeto já usa (ver CLAUDE.md).
+    DISABLE_AUTH_RATE_LIMIT: "true"
+    BETTER_AUTH_URL: http://localhost:8080
+    NEXT_PUBLIC_URL: http://localhost:8080
+    DB_POOL_MAX: 15
+  volumes:
+    - ./redis-tls/ca.crt:/etc/redis-tls/ca.crt:ro
+  healthcheck:
+    test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://127.0.0.1:3000/api/health"]
+    interval: 5s
+    timeout: 3s
+    retries: 3
+    start_period: 15s
+  networks:
+    - app-network
+  restart: unless-stopped
+
+services:
+  nexo-app-1:
+    <<: *app-defaults
+    container_name: nexo-app-1
+
+  nexo-app-2:
+    <<: *app-defaults
+    container_name: nexo-app-2
+
+  nexo-app-3:
+    <<: *app-defaults
+    container_name: nexo-app-3
+
+  nexo-app-4:
+    <<: *app-defaults
+    container_name: nexo-app-4
+
+  nexo-lb:
+    image: nginx:1.27-alpine
+    container_name: nexo-lb
+    ports:
+      - "8080:80"
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+    depends_on:
+      nexo-app-1:
+        condition: service_healthy
+      nexo-app-2:
+        condition: service_healthy
+      nexo-app-3:
+        condition: service_healthy
+      nexo-app-4:
+        condition: service_healthy
+    networks:
+      - app-network
+    restart: unless-stopped
+
+secrets:
+  hugeicons_token:
+    environment: HUGEICONS_TOKEN
+
+networks:
+  app-network:
+    name: nexo_default
+    external: true
