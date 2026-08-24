@@ -33,6 +33,9 @@ vi.mock('@/src/repositories/module.repository')
 vi.mock('@/src/repositories/estimate.repository')
 vi.mock('@/src/repositories/estimate-value.repository')
 vi.mock('../activity.service')
+// create/update/delete call IssueListCache.invalidate() — without this,
+// a unit test (no Redis available) hangs on a real connection attempt.
+vi.mock('@/src/cache/issue-list.cache')
 
 const mockedMembership = vi.mocked(MembershipRepository)
 const mockedProject = vi.mocked(ProjectRepository)

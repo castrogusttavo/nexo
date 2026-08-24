@@ -13,6 +13,7 @@ import type {
   IssueVoteType,
   Prisma,
 } from '@prisma/client'
+import { EMPTY_ISSUE_DESCRIPTION } from '@/lib/editor-value'
 import { prisma } from '@/src/lib/prisma'
 
 export function createFakeIssue(overrides?: Partial<Issue>): Issue {
@@ -21,7 +22,7 @@ export function createFakeIssue(overrides?: Partial<Issue>): Issue {
     id: createId(),
     number: 1,
     title: 'Fix login bug',
-    description: { type: 'doc', content: [] },
+    description: EMPTY_ISSUE_DESCRIPTION as Prisma.JsonValue,
     priority: 'NONE',
     startDate: null,
     dueDate: null,
