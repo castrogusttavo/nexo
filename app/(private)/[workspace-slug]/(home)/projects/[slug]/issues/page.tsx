@@ -8,7 +8,6 @@ import {
 import HeaderInternalNavigation from '@/app/_components/header/header-internal-navigation'
 import { IssueListView } from '@/app/_components/issue/issue-list-view'
 import { IssueProjectSwitcher } from '@/app/_components/issue/issue-project-switcher'
-import { CreateIssueModal } from '@/app/_components/issue/modal/create-issue-modal'
 import { NexoIcon } from '@/components/icon/icon'
 import { Badge } from '@/components/ui/badge'
 import { getProjectContext } from '@/src/lib/project-context'
@@ -33,12 +32,13 @@ export default async function ProjectIssuesPage({
   const context = await getProjectContext(workspaceSlug, slug)
   if (!context) notFound()
 
-  const issuesResult = await IssueService.list(
+  const countResult = await IssueService.count(
     context.userId,
     context.workspaceId,
     context.project.slug,
   )
-  const issueCount = issuesResult.ok ? issuesResult.value.length : 0
+
+  const issueCount = countResult.ok ? countResult.value : 0
 
   return (
     <div className='w-full h-full overflow-y-scroll no-scrollbar'>
@@ -66,7 +66,6 @@ export default async function ProjectIssuesPage({
         <div className='flex items-center gap-2'>
           <IssueLayoutToggle />
           <IssuesFilters />
-          <CreateIssueModal />
         </div>
       </HeaderInternalNavigation>
       <div>

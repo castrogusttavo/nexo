@@ -1,3 +1,4 @@
+import path from "node:path";
 import type { NextConfig } from "next";
 
 const securityHeaders = [
@@ -47,6 +48,12 @@ const nextConfig: NextConfig = {
     ],
   },
   cacheComponents: true,
+  // Sem isso o Turbopack sobe até achar o package-lock.json solto em
+  // /home/castrogusttavo e trata o $HOME inteiro como raiz do workspace,
+  // quebrando a resolução de módulos do React Server Components manifest.
+  turbopack: {
+    root: path.join(__dirname),
+  },
   experimental: {
     webpackMemoryOptimizations: true
   },

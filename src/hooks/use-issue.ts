@@ -1,26 +1,54 @@
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
+'use client'
+
+import {
+  useInfiniteQuery,
+  useMutation,
+  useQuery,
+  useQueryClient,
+} from '@tanstack/react-query'
 import type { Value } from 'platejs'
+import { useEffect, useMemo } from 'react'
 import type { IssueDTO, IssuePriorityDTO } from '@/types/issue'
 import { apiFetch, apiFetchJson, apiSend } from './_fetch'
 
 const ISSUES_KEY = ['issues']
+const ISSUES_PAGE_LIMIT = 1000
 
 export function issuesKey(workspaceId: string, projectSlug: string) {
   return [ISSUES_KEY, workspaceId, projectSlug] as const
 }
 
+type IssuesPage = { items: IssueDTO[]; nextCursor: number | null }
+
 export function useIssues(workspaceId: string, projectSlug: string) {
-  return useQuery({
+  const query = useInfiniteQuery({
     queryKey: issuesKey(workspaceId, projectSlug),
-    queryFn: () =>
-      apiFetch<IssueDTO[]>(
-        `/api/workspaces/${workspaceId}/projects/${projectSlug}/issues`,
+    queryFn: ({ pageParam }) =>
+      apiFetch<IssuesPage>(
+        `/api/workspaces/${workspaceId}/projects/${projectSlug}/issues?limit=${ISSUES_PAGE_LIMIT}${
+          pageParam ? `&cursor=${pageParam}` : ''
+        }`,
         undefined,
         'Erro ao buscar issues',
       ),
+    initialPageParam: undefined as number | undefined,
+    getNextPageParam: (lastPage) => lastPage.nextCursor ?? undefined,
     enabled: !!workspaceId && !!projectSlug,
     staleTime: 2 * 60 * 1000,
   })
+
+  const { hasNextPage, isFetchingNextPage, fetchNextPage } = query
+
+  useEffect(() => {
+    if (hasNextPage && !isFetchingNextPage) fetchNextPage()
+  }, [hasNextPage, isFetchingNextPage, fetchNextPage])
+
+  const data = useMemo(
+    () => query.data?.pages.flatMap((page) => page.items),
+    [query.data],
+  )
+
+  return { ...query, data }
 }
 
 export function useCreateIssue(workspaceId: string, projectSlug: string) {

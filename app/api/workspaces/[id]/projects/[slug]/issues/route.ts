@@ -3,7 +3,10 @@ import { withAxiom } from '@/lib/axiom/server'
 import { getAuthSession } from '@/src/lib/auth-session'
 import { requireConsent } from '@/src/lib/consent'
 import { apiLimiter, consume } from '@/src/lib/rate-limit'
-import { CreateIssueSchema } from '@/src/schemas/issue.schema'
+import {
+  CreateIssueSchema,
+  ListIssuesQuerySchema,
+} from '@/src/schemas/issue.schema'
 import { IssueService } from '@/src/services/issue.service'
 import {
   handleError,
@@ -13,7 +16,7 @@ import {
 
 type Params = { params: Promise<{ id: string; slug: string }> }
 
-export const GET = withAxiom(async (_request: NextRequest, ctx: Params) => {
+export const GET = withAxiom(async (request: NextRequest, ctx: Params) => {
   const auth = await getAuthSession()
   if (!auth.ok) return handleError(auth.error)
 
@@ -22,7 +25,25 @@ export const GET = withAxiom(async (_request: NextRequest, ctx: Params) => {
 
   const { id, slug } = await ctx.params
 
-  const result = await IssueService.list(auth.value.user.id, id, slug)
+  const parsed = ListIssuesQuerySchema.safeParse(
+    Object.fromEntries(request.nextUrl.searchParams),
+  )
+  if (!parsed.success) {
+    return standardError(
+      'VALIDATION_ERROR',
+      'Dados inválidos',
+      parsed.error.issues,
+    )
+  }
+
+  const pagination = parsed.data.limit ? parsed.data : undefined
+
+  const result = await IssueService.list(
+    auth.value.user.id,
+    id,
+    slug,
+    pagination,
+  )
   if (!result.ok) return handleError(result.error)
 
   return successResponse(result.value)

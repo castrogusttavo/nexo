@@ -1,6 +1,7 @@
 import type { Issue, IssuePriority, Prisma } from '@prisma/client'
 import { issueNotFound } from '../errors'
 import { prisma } from '../lib/prisma'
+import { getPrismaReplica } from '../lib/prisma-replica'
 import { err, ok, type Result } from '../lib/result'
 import { dbError } from './db-error'
 
@@ -26,7 +27,7 @@ export const IssueRepository = {
 
   async listByProject(projectId: string): Promise<Result<IssueWithGroups[]>> {
     try {
-      const issues = await prisma.issue.findMany({
+      const issues = await getPrismaReplica().issue.findMany({
         where: { projectId, deletedAt: null },
         orderBy: { number: 'asc' },
         include: issueWithGroupsInclude,
@@ -62,6 +63,42 @@ export const IssueRepository = {
       return ok(issue)
     } catch (error) {
       return err(dbError('Failed to find issue by project and number', error))
+    }
+  },
+
+  async listByProjectPage(
+    projectId: string,
+    { cursor, take }: { cursor?: number; take: number },
+  ): Promise<Result<{ items: IssueWithGroups[]; hasNextPage: boolean }>> {
+    try {
+      const issues = await getPrismaReplica().issue.findMany({
+        where: {
+          projectId,
+          deletedAt: null,
+          ...(cursor !== undefined && { number: { gt: cursor } }),
+        },
+        orderBy: { number: 'asc' },
+        take: take + 1,
+        include: issueWithGroupsInclude,
+      })
+
+      const hasNextPage = issues.length > take
+      const items = hasNextPage ? issues.slice(0, take) : issues
+
+      return ok({ items, hasNextPage })
+    } catch (error) {
+      return err(dbError('Failed to list issues page', error))
+    }
+  },
+
+  async countByProject(projectId: string): Promise<Result<number>> {
+    try {
+      const count = await getPrismaReplica().issue.count({
+        where: { projectId, deletedAt: null },
+      })
+      return ok(count)
+    } catch (error) {
+      return err(dbError('Failed to count issues', error))
     }
   },
 
