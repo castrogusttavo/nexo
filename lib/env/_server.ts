@@ -5,6 +5,8 @@ const serverEnv = {
   POSTGRES_PASSWORD: process.env.POSTGRES_PASSWORD,
   POSTGRES_DB: process.env.POSTGRES_DB,
   DATABASE_URL: process.env.DATABASE_URL,
+  DATABASE_URL_POOLED: process.env.DATABASE_URL_POOLED,
+  DATABASE_URL_REPLICA: process.env.DATABASE_URL_REPLICA,
   REDIS_URL: process.env.REDIS_URL,
   REDIS_PASSWORD: process.env.REDIS_PASSWORD,
   REDIS_TLS_ENABLED: process.env.REDIS_TLS_ENABLED,
@@ -33,6 +35,8 @@ const serverEnvSchema = z.object({
   POSTGRES_PASSWORD: z.string().min(8).max(128),
   POSTGRES_DB: z.string().min(1).max(63),
   DATABASE_URL: z.url().startsWith('postgresql://'),
+  DATABASE_URL_POOLED: z.url().startsWith('postgresql://').optional(),
+  DATABASE_URL_REPLICA: z.url().startsWith('postgresql://').optional(),
   REDIS_URL: z
     .url()
     .refine((v) => v.startsWith('redis://') || v.startsWith('rediss://'), {
@@ -84,6 +88,8 @@ export const {
   POSTGRES_PASSWORD,
   POSTGRES_DB,
   DATABASE_URL,
+  DATABASE_URL_POOLED,
+  DATABASE_URL_REPLICA,
   REDIS_URL,
   REDIS_PASSWORD,
   REDIS_TLS_ENABLED,
