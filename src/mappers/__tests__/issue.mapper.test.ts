@@ -2,6 +2,10 @@ import { describe, expect, it } from 'vitest'
 import { createFakeIssue } from '@/src/__tests__/factories/issue.factory'
 import { toIssueDTO } from '../issue.mapper'
 
+const PLATE_DESCRIPTION = [
+  { type: 'p', children: [{ text: 'Steps to reproduce' }] },
+]
+
 describe('toIssueDTO', () => {
   it('should map all fields correctly', () => {
     const now = new Date('2025-03-01T10:00:00.000Z')
@@ -9,7 +13,7 @@ describe('toIssueDTO', () => {
       id: 'issue-1',
       number: 3,
       title: 'Fix login bug',
-      description: { type: 'doc', content: [] },
+      description: PLATE_DESCRIPTION,
       priority: 'HIGH',
       startDate: null,
       dueDate: null,
@@ -29,7 +33,7 @@ describe('toIssueDTO', () => {
       id: 'issue-1',
       number: 3,
       title: 'Fix login bug',
-      description: { type: 'doc', content: [] },
+      description: PLATE_DESCRIPTION,
       priority: 'HIGH',
       startDate: null,
       dueDate: null,
@@ -37,6 +41,8 @@ describe('toIssueDTO', () => {
       typeId: 'type-1',
       cycleId: 'cycle-1',
       moduleId: 'module-1',
+      labelIds: [],
+      assigneeIds: [],
       estimateValueId: 'value-1',
       authorId: 'user-1',
       projectId: 'proj-1',
