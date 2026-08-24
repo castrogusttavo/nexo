@@ -56,12 +56,46 @@ export function createFakeProjectDTO(
   }
 }
 
-// Passa pelo mesmo ProjectRepository.create() usado em produção — sem isso,
-// o projeto de teste ficava sem EstimateSettings, states, labels e os
-// issue types de sistema (Task/Epic com isSystem: true) que a criação real
-// sempre seeda, e qualquer rota que depende deles (estimate, issue-types,
-// criação de issue sem typeId explícito) quebrava só em teste.
 export async function seedProject(
+  workspaceId: string,
+  leadId: string,
+  overrides?: Partial<
+    Pick<
+      Project,
+      | 'name'
+      | 'slug'
+      | 'identifier'
+      | 'description'
+      | 'emoji'
+      | 'coverImage'
+      | 'isPublic'
+      | 'archivedAt'
+    >
+  >,
+) {
+  const slug = `proj-${createId().slice(0, 8)}`
+  return prisma.project.create({
+    data: {
+      name: 'Seed Project',
+      slug,
+      identifier: createId().slice(0, 6).toUpperCase(),
+      workspaceId,
+      leadId,
+      ...overrides,
+    },
+  })
+}
+
+// A criação real (ProjectRepository.create()) sempre seeda EstimateSettings,
+// states, labels e os issue types de sistema (Task/Epic, isSystem: true)
+// numa transação. seedProject() acima fica de propósito sem isso — é usado
+// por ~40 specs de repositório que montam suas próprias fixtures precisas e
+// colidiriam com esses defaults (constraint única em EstimateSettings.
+// projectId, contagens de states/labels/types, etc.). Use esta variante só
+// quando o teste precisa que os defaults de produção existam de verdade
+// (rotas de estimate, listagem de issue-types, criação de issue sem typeId
+// explícito, ...).
+export async function seedProjectWithDefaults(
   workspaceId: string,
   leadId: string,
   overrides?: Partial<
@@ -97,7 +131,7 @@ export async function seedProject(
   })
 
   if (!result.ok) {
-    throw new Error(`seedProject failed: ${result.error.code}`)
+    throw new Error(`seedProjectWithDefaults failed: ${result.error.code}`)
   }
 
   if (overrides?.archivedAt !== undefined) {

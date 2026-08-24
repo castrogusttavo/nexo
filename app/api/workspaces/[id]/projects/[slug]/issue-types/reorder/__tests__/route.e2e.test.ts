@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { seedProject } from '@/src/__tests__/factories/project.factory'
+import { seedProjectWithDefaults as seedProject } from '@/src/__tests__/factories/project.factory'
 import {
   authenticatedOwner,
   getJson,
