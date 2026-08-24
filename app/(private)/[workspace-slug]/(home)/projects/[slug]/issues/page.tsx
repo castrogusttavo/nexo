@@ -34,12 +34,13 @@ export default async function ProjectIssuesPage({
   const context = await getProjectContext(workspaceSlug, slug)
   if (!context) notFound()
 
-  const issuesResult = await IssueService.list(
+  const countResult = await IssueService.count(
     context.userId,
     context.workspaceId,
     context.project.slug,
   )
-  const issueCount = issuesResult.ok ? issuesResult.value.length : 0
+
+  const issueCount = countResult.ok ? countResult.value : 0
 
   return (
     <div className='w-full h-full overflow-y-scroll no-scrollbar'>

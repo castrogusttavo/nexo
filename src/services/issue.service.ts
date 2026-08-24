@@ -1,6 +1,7 @@
 import type { Prisma } from '@prisma/client'
 import { auditMutation } from '@/lib/axiom/audit'
 import type { IssueDTO } from '@/types/issue'
+import { IssueListCache } from '../cache/issue-list.cache'
 import {
   cycleNotFound,
   estimateValueNotFound,
@@ -131,7 +132,10 @@ export const IssueService = {
     actorId: string,
     workspaceId: string,
     projectSlug: string,
-  ): Promise<Result<IssueDTO[]>> {
+    pagination?: { cursor?: number; limit?: number },
+  ): Promise<
+    Result<IssueDTO[] | { items: IssueDTO[]; nextCursor: number | null }>
+  > {
     const resolved = await resolveProject(actorId, workspaceId, projectSlug)
     if (!resolved.ok) return err(resolved.error)
 
@@ -143,17 +147,51 @@ export const IssueService = {
       return err(projectForbidden())
     }
 
-    const result = await IssueRepository.listByProject(project.id)
+    if (!pagination?.limit) {
+      const result = await IssueRepository.listByProject(project.id)
+      if (!result.ok) return result
+
+      return ok(
+        result.value.map((issue) =>
+          toIssueDTO(issue, {
+            labelIds: issue.labels.map((l) => l.labelId),
+            assigneeIds: issue.assignees.map((a) => a.userId),
+          }),
+        ),
+      )
+    }
+
+    const { version, page: cached } = await IssueListCache.get(project.id, {
+      cursor: pagination.cursor,
+      limit: pagination.limit,
+    })
+    if (cached) return ok(cached)
+
+    const result = await IssueRepository.listByProjectPage(project.id, {
+      cursor: pagination.cursor,
+      take: pagination.limit,
+    })
     if (!result.ok) return result
 
-    return ok(
-      result.value.map((issue) =>
-        toIssueDTO(issue, {
-          labelIds: issue.labels.map((l) => l.labelId),
-          assigneeIds: issue.assignees.map((a) => a.userId),
-        }),
-      ),
+    const items = result.value.items.map((issue) =>
+      toIssueDTO(issue, {
+        labelIds: issue.labels.map((l) => l.labelId),
+        assigneeIds: issue.assignees.map((a) => a.userId),
+      }),
     )
+    const nextCursor = result.value.hasNextPage
+      ? (items.at(-1)?.number ?? null)
+      : null
+
+    const page = { items, nextCursor }
+    await IssueListCache.set(
+      project.id,
+      version,
+      { cursor: pagination.cursor, limit: pagination.limit },
+      page,
+    )
+
+    return ok(page)
   },
 
   async getById(
@@ -236,6 +274,25 @@ export const IssueService = {
     return ok(result.value.map((issue) => toIssueDTO(issue)))
   },
 
+  async count(
+    actorId: string,
+    workspaceId: string,
+    projectSlug: string,
+  ): Promise<Result<number>> {
+    const resolved = await resolveProject(actorId, workspaceId, projectSlug)
+    if (!resolved.ok) return err(resolved.error)
+
+    const { membership, project } = resolved
+    const isLead = project.leadId === actorId
+    const isMember = project.members.some((m) => m.userId === actorId)
+
+    if (!project.isPublic && !membership.isPrivileged && !isLead && !isMember) {
+      return err(projectForbidden())
+    }
+
+    return IssueRepository.countByProject(project.id)
+  },
+
   async create(
     actorId: string,
     workspaceId: string,
@@ -306,6 +363,8 @@ export const IssueService = {
       })
       return result
     }
+
+    await IssueListCache.invalidate(project.id)
 
     auditMutation({
       entity: 'issue',
@@ -388,6 +447,8 @@ export const IssueService = {
     })
     if (!result.ok) return result
 
+    await IssueListCache.invalidate(project.id)
+
     recordFieldChanges(
       'ISSUE',
       issueId,
@@ -452,6 +513,8 @@ export const IssueService = {
 
     const result = await IssueRepository.delete(issueId)
     if (!result.ok) return result
+
+    await IssueListCache.invalidate(project.id)
 
     auditMutation({
       entity: 'issue',

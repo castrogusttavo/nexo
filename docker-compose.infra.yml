@@ -3,19 +3,54 @@ services:
     image: postgres:17-alpine
     container_name: nexo-db
     restart: unless-stopped
+    # wal_level=replica e max_wal_senders>0 (precisam pra streaming
+    # replication) já são o default do postgres:17-alpine sem nenhum
+    # override — confirmado com `SHOW wal_level` no container já rodando.
+    # REPLICATOR_PASSWORD + o mount abaixo só têm efeito num init novo
+    # (volume vazio); num nexo-db que já tem dado, o equivalente
+    # (CREATE ROLE + linha em pg_hba.conf + pg_reload_conf()) precisa ser
+    # aplicado manualmente uma vez — não requer restart.
     environment:
       POSTGRES_USER: ${POSTGRES_USER}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
       POSTGRES_DB: ${POSTGRES_DB}
+      REPLICATOR_PASSWORD: ${REPLICATOR_PASSWORD}
     ports:
       - "5432:5432"
     volumes:
       - pgdata:/var/lib/postgresql/data
+      - ./docker/postgres-init:/docker-entrypoint-initdb.d:ro
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}"]
       interval: 5s
       timeout: 5s
       retries: 5
+    networks:
+      - app-network
+
+  nexo-db-replica:
+    # Réplica de leitura em streaming replication — clona o nexo-db via
+    # pg_basebackup no primeiro start (entrypoint-replica.sh). Volume
+    # próprio, não compartilha dado com o nexo-db.
+    image: postgres:17-alpine
+    container_name: nexo-db-replica
+    restart: unless-stopped
+    entrypoint: ["/entrypoint-replica.sh"]
+    environment:
+      PRIMARY_HOST: nexo-db
+      REPLICATOR_PASSWORD: ${REPLICATOR_PASSWORD}
+      PGDATA: /var/lib/postgresql/data
+    ports:
+      - "5434:5432"
+    volumes:
+      - pgdata-replica:/var/lib/postgresql/data
+      - ./docker/postgres-replica/entrypoint-replica.sh:/entrypoint-replica.sh:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+      start_period: 30s
     networks:
       - app-network
 
@@ -89,8 +124,39 @@ services:
     networks:
       - app-network
 
+  nexo-pgbouncer:
+    # Pooling de transação na frente do nexo-db — não substitui o Postgres,
+    # só reduz conexões reais nele. Serviço aditivo: não muda config nem
+    # dados do nexo-db existente, só se junta na mesma rede.
+    #
+    # bitnami/pgbouncer não tem mais tag pública puxável (mesma migração
+    # pra "Secure Images" já documentada no nexo-redis acima, só que sem
+    # fallback por digest pra esse aqui) — usando edoburu/pgbouncer em vez
+    # disso, imagem mantida ativamente, tags reais no Docker Hub.
+    image: edoburu/pgbouncer:v1.25.2-p0
+    container_name: nexo-pgbouncer
+    restart: unless-stopped
+    environment:
+      DB_HOST: nexo-db
+      DB_PORT: 5432
+      DB_USER: ${POSTGRES_USER}
+      DB_PASSWORD: ${POSTGRES_PASSWORD}
+      DB_NAME: ${POSTGRES_DB}
+      POOL_MODE: transaction
+      MAX_CLIENT_CONN: 200
+      DEFAULT_POOL_SIZE: 20
+      AUTH_TYPE: scram-sha-256
+    ports:
+      - "6432:5432"
+    depends_on:
+      nexo-db:
+        condition: service_healthy
+    networks:
+      - app-network
+
 volumes:
   pgdata:
+  pgdata-replica:
   redis-master-data:
   rabbitmqdata:
   miniodata:

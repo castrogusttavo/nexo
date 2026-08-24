@@ -48,3 +48,10 @@ export const UpdateIssueSchema = CreateIssueSchema.partial().extend({
 })
 
 export type UpdateIssueDTO = z.infer<typeof UpdateIssueSchema>
+
+export const ListIssuesQuerySchema = z.object({
+  cursor: z.coerce.number().int().positive().optional(),
+  limit: z.coerce.number().int().positive().max(1000).optional(),
+})
+
+export type ListIssuesQueryDTO = z.infer<typeof ListIssuesQuerySchema>

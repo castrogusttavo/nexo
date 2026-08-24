@@ -56,6 +56,12 @@ storybook-static
 # lighthouse CI
 .lighthouseci/
 
+# load test seed manifest (local credentials, regenerate with pnpm seed:load-test)
+scripts/.load-test-manifest.json
+
+# k6 run outputs (raw JSON exports for building graphs)
+k6/results/
+
 # AI Agents & Skills
 .agents*
 .claude
