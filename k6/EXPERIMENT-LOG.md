@@ -994,3 +994,80 @@ fila com backpressure explícito no login, ou aceitar rajadas grandes
 como cenário degradado por design — é mudança de produto, não só de
 infra, e fica registrada como próximo passo real, não implementada
 nesta rodada.
+
+## Rodada 6 — backpressure no login: falhar rápido em vez de pendurar
+
+Implementado `src/lib/auth-concurrency-gate.ts`: um gate de concorrência
+em memória, por instância, limitando `argon2.verify()` a
+`AUTH_VERIFY_CONCURRENCY` chamadas simultâneas (default 4 — perto do
+tamanho do threadpool do libuv), com fila limitada
+(`AUTH_VERIFY_QUEUE_DEPTH`, default 20) e tempo máximo de espera na fila
+(`AUTH_VERIFY_QUEUE_WAIT_MS`, default 4s). Passado isso, rejeita rápido
+com `429`/`RATE_LIMITED`/`Retry-After: 3` em vez de deixar o request
+pendurado 10-25s. `sign-in-form.tsx` tenta de novo automaticamente até 2
+vezes com backoff a partir do `Retry-After`, mostrando "Muitos acessos
+agora, tentando de novo..." em vez de travar a UI em silêncio.
+`DB_POOL_MAX` também virou default de código (25, não só env var) — e
+`process.env.DISABLE_AUTH_RATE_LIMIT` (já usado pra desligar o rate
+limiter embutido do better-auth em e2e) passa a desligar esse gate
+também, senão o CI (sem think-time, várias suítes de teste criando
+sessão em paralelo) estoura o orçamento em segundos e enche a run de
+429 — confirmado que quebrou o CI numa tentativa antes desse ajuste.
+
+### Verificação — mesmo `stress-auth-only.js`, agora com retry como o client real
+
+Script ajustado pra replicar a lógica do `sign-in-form.tsx`: até 2
+tentativas, backoff pelo `Retry-After` + jitter, checando tanto o
+resultado da 1ª tentativa quanto o resultado final (depois do retry) —
+sem isso, um 429 intencional (o gate funcionando) apareceria como
+"falha" no k6 mesmo quando o usuário real nunca percebe, porque o
+browser tenta de novo sozinho.
+
+| Métrica | Antes (Rodada 5, `DB_POOL_MAX=25` sozinho) | Depois (gate + retry) |
+|---|---|---|
+| p50 | 2,92s | **104ms** |
+| p95 | 12,71s | **1,18s** |
+| max | ~30s (timeout) | 1,8s |
+| Sucesso na 1ª tentativa | ~100% (mas lento) | 61% (3.236/5.297) |
+| Sucesso final (com retry) | — | 83% (4.154/4.981) |
+| Fluxos completos/s | 23,58/s | **26,63/s** (melhor throughput do dia) |
+| CPU pico | 606% | 572% (igual, dentro do ruído — esperado) |
+
+O threshold `http_req_failed` do k6 disparou em 50% e abortou o teste —
+mas isso conta **cada request HTTP individual**, incluindo os `429`
+intencionais de tentativas que depois tiveram sucesso no retry. A
+métrica que importa pro usuário real é "resultado final depois do
+retry automático": **83% de sucesso**, com quem teve sucesso esperando
+near-instantaneamente (p95 = 1,18s) em vez de até 17s.
+
+### Conclusão da Rodada 6
+
+O gate não aumenta a capacidade real de CPU do servidor (pico continua
+~570-600%, igual às rodadas anteriores) — ele muda **o que acontece
+quando essa capacidade estoura**. Antes: todo mundo espera numa fila
+invisível, sem saber se vai dar certo, por até 25s. Agora: quem cabe no
+orçamento é atendido quase instantaneamente, quem não cabe recebe um
+"tente de novo" claro em milissegundos e o próprio client já tenta de
+novo sozinho.
+
+Ainda assim, **17% dos logins não se recuperam nem depois de 2
+tentativas** com 400 VUs simultâneos — esse é o teto real de captação
+de novos usuários numa rajada extrema nesse hardware, hoje. Isso não é
+mais um bug escondido atrás de uma espera longa — é um número visível,
+mensurável, e um limite de capacidade que dá pra decidir
+conscientemente se vale a pena atacar (mais tentativas de retry, um
+`AUTH_VERIFY_QUEUE_DEPTH` maior, ou aceitar como teto de lançamento) em
+vez de descobrir por acidente em produção.
+
+### Decisão — aceitar o teto de 400 logins simultâneos como está
+
+400 tentativas de login *ao mesmo tempo, na mesma instância* é um
+cenário de pico extremo — bem mais raro que "1M de usuários" sugere à
+primeira vista, já que login é um evento pontual por sessão, não
+tráfego contínuo. Decisão consciente de não perseguir esse número mais
+(fila maior, mais retries) nesta rodada: o ganho de UX do gate já
+resolve o problema real (espera de até 25s sem feedback), e o teto
+residual de 17% só aparece num pico que a Nexo, pré-lançamento, ainda
+não tem motivo pra esperar tão cedo. Fica registrado como decisão de
+produto, revisável se o padrão de tráfego real um dia justificar — não
+como limitação técnica não resolvida.

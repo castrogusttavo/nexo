@@ -8,11 +8,19 @@ import { SharedArray } from 'k6/data'
 // é outra coisa". Cada VU faz login repetidamente (não uma vez só), pra
 // achar o teto de verificações argon2 concorrentes que o processo aguenta.
 //
+// Rodada 6: com o gate de concorrência (src/lib/auth-concurrency-gate.ts),
+// um login além da capacidade recebe 429+Retry-After rápido em vez de
+// ficar pendurado 10-25s — igual o client real (sign-in-form.tsx) faz,
+// este script replica a mesma lógica de retry (até 2 tentativas, backoff
+// pelo Retry-After + jitter) pra medir a experiência real do usuário, não
+// só a taxa de sucesso na primeira tentativa.
+//
 //   BASE_URL=http://localhost:3000 k6 run k6/stress-auth-only.js
 // ---------------------------------------------------------------------------
 const BASE_URL = __ENV.BASE_URL || 'http://localhost:3000'
 const ORIGIN = __ENV.ORIGIN || BASE_URL
 const PASSWORD = 'LoadTest@12345678'
+const MAX_RETRIES = 2
 
 const manifest = JSON.parse(open('../scripts/.load-test-manifest.json'))
 
@@ -65,9 +73,8 @@ function uniqueIp() {
   return `${octet()}.${octet()}.${octet()}.${octet()}`
 }
 
-export function authFlow() {
-  const email = pick(onboardedUsers)
-  const res = http.post(
+function attemptLogin(email) {
+  return http.post(
     `${BASE_URL}/api/auth/sign-in/email`,
     JSON.stringify({ email, password: PASSWORD }),
     {
@@ -80,7 +87,21 @@ export function authFlow() {
       timeout: '30s',
     },
   )
-  check(res, { 'auth_only: 200': (r) => r.status === 200 })
+}
+
+export function authFlow() {
+  const email = pick(onboardedUsers)
+  let res = attemptLogin(email)
+  check(res, { 'auth_only (1a tentativa): 200': (r) => r.status === 200 })
+
+  let attempt = 0
+  while (res.status === 429 && attempt < MAX_RETRIES) {
+    const retryAfter = Number(res.headers['Retry-After'] || 3)
+    sleep(retryAfter + Math.random() * 0.5)
+    res = attemptLogin(email)
+    attempt++
+  }
+  check(res, { 'auth_only (final, com retry): 200': (r) => r.status === 200 })
 
   // Cadência real de login (não fica logando em loop apertado) — ainda
   // assim gera pressão real de argon2 concorrente com muitas VUs.
