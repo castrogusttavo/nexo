@@ -15,6 +15,12 @@ import { authClient } from '@/src/lib/auth-client'
 
 type Step = 'form' | 'otp' | 'backup'
 
+const MAX_RETRIES = 2
+
+function sleep(ms: number) {
+  return new Promise((resolve) => setTimeout(resolve, ms))
+}
+
 export function SignInForm({ redirectTo = '/' }: { redirectTo?: string }) {
   const { push } = useRouter()
   const [step, setStep] = useState<Step>('form')
@@ -27,6 +33,7 @@ export function SignInForm({ redirectTo = '/' }: { redirectTo?: string }) {
   }>({})
   const [isPending, setIsPending] = useState(false)
   const [isVerifying, setIsVerifying] = useState(false)
+  const [isRetrying, setIsRetrying] = useState(false)
   const [backupCode, setBackupCode] = useState('')
 
   const signUpHref =
@@ -54,10 +61,34 @@ export function SignInForm({ redirectTo = '/' }: { redirectTo?: string }) {
       return
     }
 
-    const { data, error: signInError } = await authClient.signIn.email({
+    let result = await authClient.signIn.email({
       email: submittedEmail,
       password,
     })
+
+    for (
+      let attempt = 0;
+      result.error &&
+      'status' in result.error &&
+      result.error.status === 429 &&
+      attempt < MAX_RETRIES;
+      attempt++
+    ) {
+      setIsRetrying(true)
+      const retryAfterSeconds =
+        'retryAfterSeconds' in result.error &&
+        typeof result.error.retryAfterSeconds === 'number'
+          ? result.error.retryAfterSeconds
+          : 3
+      await sleep(retryAfterSeconds * 1000 + Math.random() * 500)
+      result = await authClient.signIn.email({
+        email: submittedEmail,
+        password,
+      })
+    }
+    setIsRetrying(false)
+
+    const { data, error: signInError } = result
 
     if (signInError) {
       setError(signInError.message ?? 'E-mail ou senha inválidos')
@@ -200,7 +231,11 @@ export function SignInForm({ redirectTo = '/' }: { redirectTo?: string }) {
               </Field>
 
               <Button type='submit' className='w-full' disabled={isPending}>
-                {isPending ? 'Entrando...' : 'Continuar'}
+                {isRetrying
+                  ? 'Muitos acessos agora, tentando de novo...'
+                  : isPending
+                    ? 'Entrando...'
+                    : 'Continuar'}
               </Button>
 
               <div className='flex items-center justify-center'>

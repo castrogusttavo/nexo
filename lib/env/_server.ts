@@ -28,6 +28,10 @@ const serverEnv = {
   STATUS_COLLECTOR_SECRET: process.env.STATUS_COLLECTOR_SECRET,
   ACCOUNT_DELETION_GRACE_OVERRIDE_MS:
     process.env.ACCOUNT_DELETION_GRACE_OVERRIDE_MS,
+  DB_POOL_MAX: process.env.DB_POOL_MAX,
+  AUTH_VERIFY_CONCURRENCY: process.env.AUTH_VERIFY_CONCURRENCY,
+  AUTH_VERIFY_QUEUE_DEPTH: process.env.AUTH_VERIFY_QUEUE_DEPTH,
+  AUTH_VERIFY_QUEUE_WAIT_MS: process.env.AUTH_VERIFY_QUEUE_WAIT_MS,
 }
 
 const serverEnvSchema = z.object({
@@ -76,6 +80,34 @@ const serverEnvSchema = z.object({
     .refine((v) => v === undefined || (Number.isFinite(v) && v >= 0), {
       message: 'ACCOUNT_DELETION_GRACE_OVERRIDE_MS must be a non-negative number',
     }),
+  DB_POOL_MAX: z
+    .string()
+    .optional()
+    .transform((v) => (v ? Number(v) : 25))
+    .refine((v) => Number.isFinite(v) && v > 0, {
+      message: 'DB_POOL_MAX must be a positive number'
+    }),
+  AUTH_VERIFY_CONCURRENCY: z
+    .string()
+    .optional()
+    .transform((v) => (v ? Number(v) : 4))
+    .refine((v) => Number.isFinite(v) && v > 0, {
+      message: 'AUTH_VERIFY_CONCURRENCY must be a positive number'
+    }),
+  AUTH_VERIFY_QUEUE_DEPTH: z
+    .string()
+    .optional()
+    .transform((v) => (v ? Number(v) : 20))
+    .refine((v) => Number.isFinite(v) && v > 0, {
+      message: 'AUTH_VERIFY_QUEUE_DEPTH must be a positive number'
+    }),
+  AUTH_VERIFY_QUEUE_WAIT_MS: z
+    .string()
+    .optional()
+    .transform((v) => (v ? Number(v) : 4000))
+    .refine((v) => Number.isFinite(v) && v > 0, {
+      message: 'AUTH_VERIFY_QUEUE_WAIT_MS must be a positive number'
+    }),
 })
 
 const validatedServerEnv =
@@ -110,4 +142,8 @@ export const {
   ABACATE_PAY_WEBHOOK_SECRET,
   STATUS_COLLECTOR_SECRET,
   ACCOUNT_DELETION_GRACE_OVERRIDE_MS,
+  AUTH_VERIFY_CONCURRENCY,
+  AUTH_VERIFY_QUEUE_DEPTH,
+  AUTH_VERIFY_QUEUE_WAIT_MS,
+  DB_POOL_MAX
 } = validatedServerEnv

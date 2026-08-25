@@ -1,6 +1,10 @@
 import { PrismaPg } from '@prisma/adapter-pg'
 import { PrismaClient } from '@prisma/client'
-import { DATABASE_URL, DATABASE_URL_POOLED } from '@/lib/env/_server'
+import {
+  DATABASE_URL,
+  DATABASE_URL_POOLED,
+  DB_POOL_MAX,
+} from '@/lib/env/_server'
 
 const globalForPrisma = globalThis as unknown as { prisma?: PrismaClient }
 
@@ -13,7 +17,6 @@ const globalForPrisma = globalThis as unknown as { prisma?: PrismaClient }
 // no código (não só no .env) pra sobreviver a qualquer deploy que
 // regenere o .env a partir de secrets/production.enc.env, que nunca
 // teve essa chave.
-const DB_POOL_MAX = Number(process.env.DB_POOL_MAX ?? 25)
 
 // PgBouncer (pooling de transação) é opcional — sem DATABASE_URL_POOLED,
 // runtime continua batendo direto no Postgres, comportamento idêntico ao

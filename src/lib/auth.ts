@@ -20,6 +20,7 @@ import { sendVerify2faAccessOtp } from '@/src/lib/mail/user/send-verify-2fa-acce
 import { sendVerifyEmailWithOtp } from '@/src/lib/mail/user/send-verify-email-with-otp'
 import { sendWelcomeEmail } from '@/src/lib/mail/user/send-welcome'
 import { AccountLifecycleService } from '@/src/services/account-lifecycle.service'
+import { acquireVerifySlot } from './auth-concurrency-gate'
 import { prisma } from './prisma'
 import { generateUniqueUsername } from './username'
 
@@ -51,7 +52,14 @@ export const auth = betterAuth({
       // Só afeta hashes novos — verify() lê os parâmetros do próprio hash
       // armazenado, então hashes antigos continuam válidos.
       hash: async (password) => hash(password, ARGON2_OPTIONS),
-      verify: async ({ hash: hashed, password }) => verify(hashed, password),
+      verify: async ({ hash: hashed, password }) => {
+        const release = await acquireVerifySlot()
+        try {
+          return await verify(hashed, password)
+        } finally {
+          release()
+        }
+      },
     },
     // A redefinição de senha costuma ocorrer após comprometimento da conta;
     // derrubar as demais sessões expulsa um eventual atacante.
