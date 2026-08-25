@@ -80,4 +80,9 @@ const defaultGate = createVerifyGate({
   maxQueueWaitMs: AUTH_VERIFY_QUEUE_WAIT_MS,
 })
 
-export const acquireVerifySlot = defaultGate.acquireVerifySlot
+function noRelease() {}
+
+export const acquireVerifySlot =
+  process.env.DISABLE_AUTH_RATE_LIMIT === 'true'
+    ? async () => noRelease
+    : defaultGate.acquireVerifySlot
