@@ -98,4 +98,23 @@ describe('WikiPageRepository', () => {
       expect(page.updatedById).toBe(user.id)
     })
   })
+
+  describe('updateYjsState()', () => {
+    it('should persist the yjs snapshot and updatedById', async () => {
+      const workspace = await seedWorkspace()
+      const user = await seedUser()
+      const seeded = await seedWikiPage(workspace.id, user.id)
+
+      const result = await WikiPageRepository.updateYjsState(seeded.id, {
+        yjsState: new Uint8Array([1, 2, 3]),
+        updatedById: user.id,
+      })
+
+      const page = expectOk(result)
+      expect(page.updatedById).toBe(user.id)
+      expect(Buffer.from(page.yjsState as Uint8Array)).toEqual(
+        Buffer.from([1, 2, 3]),
+      )
+    })
+  })
 })
