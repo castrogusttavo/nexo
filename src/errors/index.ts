@@ -80,4 +80,6 @@ export {
   unauthorized,
   usernameConflict,
   validationError,
+  wikiPageForbidden,
+  wikiPageNotFound,
 } from './app-error'

@@ -303,3 +303,10 @@ export const issueUpdateNotFound = (): AppError =>
 export const issueUpdateForbidden = (
   message = 'Você só pode editar ou excluir os seus próprios updates',
 ): AppError => appError('ISSUE_UPDATE_FORBIDDEN', message)
+
+export const wikiPageNotFound = (): AppError =>
+  appError('WIKI_PAGE_NOT_FOUND', 'Wiki page not found')
+
+export const wikiPageForbidden = (
+  message = 'Sem acesso a esta página da wiki',
+): AppError => appError('WIKI_PAGE_FORBIDDEN', message)
