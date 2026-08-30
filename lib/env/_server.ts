@@ -32,6 +32,7 @@ const serverEnv = {
   AUTH_VERIFY_CONCURRENCY: process.env.AUTH_VERIFY_CONCURRENCY,
   AUTH_VERIFY_QUEUE_DEPTH: process.env.AUTH_VERIFY_QUEUE_DEPTH,
   AUTH_VERIFY_QUEUE_WAIT_MS: process.env.AUTH_VERIFY_QUEUE_WAIT_MS,
+  REALTIME_PORT: process.env.REALTIME_PORT
 }
 
 const serverEnvSchema = z.object({
@@ -108,6 +109,13 @@ const serverEnvSchema = z.object({
     .refine((v) => Number.isFinite(v) && v > 0, {
       message: 'AUTH_VERIFY_QUEUE_WAIT_MS must be a positive number'
     }),
+  REALTIME_PORT: z
+    .string()
+    .optional()
+    .transform((v) => (v ? Number(v) : 1234))
+    .refine((v) => Number.isFinite(v) && v > 0, {
+      message: 'REALTIME_PORT must be a positive number'
+    })
 })
 
 const validatedServerEnv =
@@ -145,5 +153,6 @@ export const {
   AUTH_VERIFY_CONCURRENCY,
   AUTH_VERIFY_QUEUE_DEPTH,
   AUTH_VERIFY_QUEUE_WAIT_MS,
-  DB_POOL_MAX
+  DB_POOL_MAX,
+  REALTIME_PORT
 } = validatedServerEnv
