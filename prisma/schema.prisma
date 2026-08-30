@@ -50,6 +50,8 @@ model User {
   comments           Comment[]
   activities         Activity[]
   issueUpdates       IssueUpdate[]
+  createdWikiPages   WikiPage[]            @relation("WikiPageAuthor")
+  updatedWikiPages   WikiPage[]            @relation("WikiPageEditor")
 
   @@index([deletionScheduledAt])
   @@map("users")
@@ -219,6 +221,7 @@ model Workspace {
   projects      Project[]
 
   invitations WorkspaceInvitation[]
+  wikiPages   WikiPage[]
 
   @@map("workspaces")
 }
@@ -1033,4 +1036,27 @@ enum IssueUpdateStatus {
   ON_TRACK
   AT_RISK
   OFF_TRACK
+}
+
+model WikiPage {
+  id          String    @id @default(cuid())
+  workspaceId String    @map("workspace_id")
+  parentId    String?   @map("parent_id")
+  title       String
+  icon        String?
+  coverImage  String?   @map("cover_image")
+  content     Json
+  yjsState    Bytes?    @map("yjs_state")
+  position    Int       @default(0)
+  createdById String    @map("created_by_id")
+  updatedById String?   @map("updated_by_id")
+  archivedAt  DateTime? @map("archived_at")
+  createdAt   DateTime  @default(now()) @map("created_at")
+  updatedAt   DateTime  @updatedAt @map("updated_at")
+
+  workspace Workspace  @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  parent    WikiPage?  @relation("WikiPageTree", fields: [parentId], references: [id], onDelete: Cascade)
+  children  WikiPage[] @relation("WikiPageTree")
+  createdBy User       @relation("WikiPageAuthor", fields: [createdById], references: [id])
+  updatedBy User?      @relation("WikiPageEditor", fields: [updatedById], references: [id])
 }
