@@ -30,6 +30,23 @@ services:
     networks:
       - app-network
 
+  nexo-realtime:
+    image: docker.io/castrogusttavo/nexoso:latest
+    container_name: nexo-realtime
+    restart: unless-stopped
+    command: ["node", "dist/realtime.cjs"]
+    ports:
+      - "1234:1234"
+    env_file:
+      - .env
+    volumes:
+      - ./redis-tls/ca.crt:/etc/redis-tls/ca.crt:ro
+    dns:
+      - 8.8.8.8
+      - 8.8.4.4
+    networks:
+      - app-network
+
 networks:
   app-network:
     external: true

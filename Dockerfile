@@ -32,6 +32,9 @@ ENV NEXT_PUBLIC_AXIOM_TOKEN=$NEXT_PUBLIC_AXIOM_TOKEN
 ARG NEXT_PUBLIC_AXIOM_DATASET
 ENV NEXT_PUBLIC_AXIOM_DATASET=$NEXT_PUBLIC_AXIOM_DATASET
 
+ARG NEXT_PUBLIC_REALTIME_URL
+ENV NEXT_PUBLIC_REALTIME_URL=$NEXT_PUBLIC_REALTIME_URL
+
 ENV DATABASE_URL="postgresql://dummy:dummy@localhost:5432/dummy"
 # `next build` imports every route module to collect its metadata, which
 # evaluates app/jobs/[[...workbench]]/route.ts's top-level `workbench({...})`
@@ -45,7 +48,8 @@ RUN --mount=type=cache,target=/app/.next/cache \
     corepack enable pnpm && \
     pnpm prisma:generate && \
     pnpm build && \
-    pnpm worker:build
+    pnpm worker:build && \
+    pnpm realtime:build
 
 FROM base AS runner
 WORKDIR /app

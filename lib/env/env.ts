@@ -6,6 +6,7 @@ const publicEnv = {
   NEXT_PUBLIC_AXIOM_DATASET: process.env.NEXT_PUBLIC_AXIOM_DATASET,
   NEXT_PUBLIC_URL: process.env.NEXT_PUBLIC_URL,
   NEXT_PUBLIC_GA_ID: process.env.NEXT_PUBLIC_GA_ID,
+  NEXT_PUBLIC_REALTIME_URL: process.env.NEXT_PUBLIC_REALTIME_URL,
 }
 
 const publicEnvSchema = z.object({
@@ -14,6 +15,7 @@ const publicEnvSchema = z.object({
   NEXT_PUBLIC_AXIOM_DATASET: z.string().min(1).max(128),
   NEXT_PUBLIC_URL: z.url().startsWith('http'),
   NEXT_PUBLIC_GA_ID: z.string().startsWith('G-').optional(),
+  NEXT_PUBLIC_REALTIME_URL: z.url().startsWith('ws')
 })
 
 const validatedPublicEnv =
@@ -27,4 +29,5 @@ export const {
   NEXT_PUBLIC_AXIOM_DATASET,
   NEXT_PUBLIC_URL,
   NEXT_PUBLIC_GA_ID,
+  NEXT_PUBLIC_REALTIME_URL,
 } = validatedPublicEnv
