@@ -5,6 +5,7 @@ import { Plate, usePlateEditor } from "platejs/react"
 import { BasicNodesKit } from "./plugins/basic-nodes-kit"
 import { ListKit } from "./plugins/list-kit"
 import { CodeBlockKit } from "./plugins/code-block-kit"
+import { BlockMenuKit } from "./plugins/block-menu-kit"
 import { FixedToolbarKit } from "./plugins/fixed-toolbar-kit"
 import { FloatingToolbarKit } from "./plugins/floating-toolbar-kit"
 import { CursorOverlayKit } from "./plugins/cursor-overlay-kit"
@@ -45,6 +46,7 @@ export function WikiPageRichEditor({
       ...ListKit,
       ...CodeBlockKit,
       ...CursorOverlayKit,
+      ...BlockMenuKit,
       ...FixedToolbarKit,
       ...FloatingToolbarKit,
       ...createYjsKit({
