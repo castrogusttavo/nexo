@@ -26,6 +26,7 @@ type AuditEntity =
   | 'issue_type'
   | 'issue'
   | 'comment'
+  | 'wiki_page'
 
 type AuditAction =
   | 'create'
@@ -48,6 +49,7 @@ type AuditAction =
   | 'onboarding_profile_saved'
   | 'onboarding_step_reverted'
   | 'accept'
+  | 'move'
 
 type AuditOutcome = 'success' | 'failure'
 
