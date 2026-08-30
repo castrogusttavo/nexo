@@ -1,6 +1,8 @@
 'use client'
 
-import { Bold, Code2, Italic, Strikethrough, Underline } from 'lucide-react'
+import { Baseline, Bold, Code2, Italic, PaintBucket, Strikethrough, Underline } from 'lucide-react'
+import { FontColorToolbarButton } from './font-color-toolbar-button'
+import { FontSizeToolbarButton } from './font-size-toolbar-button'
 import { RedoToolbarButton, UndoToolbarButton } from './history-toolbar-button'
 import { BulletedListToolbarButton, NumberedListToolbarButton, TodoListToolbarButton } from './list-toolbar-button'
 import { MarkToolbarButton } from './mark-toolbar-button'
@@ -20,6 +22,10 @@ export function FixedToolbarButtons() {
       </ToolbarGroup>
 
       <ToolbarGroup>
+        <FontSizeToolbarButton />
+      </ToolbarGroup>
+
+      <ToolbarGroup>
         <MarkToolbarButton nodeType='bold' tooltip='Negrito' command='cmd+B'>
           <Bold />
         </MarkToolbarButton>
@@ -35,6 +41,12 @@ export function FixedToolbarButtons() {
         <MarkToolbarButton nodeType='code' tooltip='Código' command='cmd+E'>
           <Code2 />
         </MarkToolbarButton>
+        <FontColorToolbarButton nodeType='color' tooltip='Cor do texto'>
+          <Baseline />
+        </FontColorToolbarButton>
+        <FontColorToolbarButton nodeType='backgroundColor' tooltip='Cor de fundo'>
+          <PaintBucket />
+        </FontColorToolbarButton>
       </ToolbarGroup>
 
       <ToolbarGroup>

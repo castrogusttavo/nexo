@@ -1,6 +1,7 @@
 'use client'
 
-import { Bold, Code2, Italic, Strikethrough, Underline } from 'lucide-react'
+import { Baseline, Bold, Code2, Italic, PaintBucket, Strikethrough, Underline } from 'lucide-react'
+import { FontColorToolbarButton } from './font-color-toolbar-button'
 import { MarkToolbarButton } from './mark-toolbar-button'
 import { ToolbarGroup } from './toolbar'
 import { TurnIntoToolbarButton } from './turn-into-toolbar-button'
@@ -27,6 +28,12 @@ export function FloatingToolbarButtons() {
         <MarkToolbarButton nodeType='code' tooltip='Código'>
           <Code2 />
         </MarkToolbarButton>
+        <FontColorToolbarButton nodeType='color' tooltip='Cor do texto'>
+          <Baseline />
+        </FontColorToolbarButton>
+        <FontColorToolbarButton nodeType='backgroundColor' tooltip='Cor de fundo'>
+          <PaintBucket />
+        </FontColorToolbarButton>
       </ToolbarGroup>
     </>
   )
