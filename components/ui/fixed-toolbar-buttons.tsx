@@ -1,9 +1,12 @@
 'use client'
 
 import { Baseline, Bold, Code2, Italic, PaintBucket, Strikethrough, Underline } from 'lucide-react'
+import { AlignToolbarButton } from './align-toolbar-button'
 import { FontColorToolbarButton } from './font-color-toolbar-button'
 import { FontSizeToolbarButton } from './font-size-toolbar-button'
 import { RedoToolbarButton, UndoToolbarButton } from './history-toolbar-button'
+import { IndentToolbarButton, OutdentToolbarButton } from './indent-toolbar-button'
+import { LineHeightToolbarButton } from './line-height-toolbar-button'
 import { BulletedListToolbarButton, NumberedListToolbarButton, TodoListToolbarButton } from './list-toolbar-button'
 import { MarkToolbarButton } from './mark-toolbar-button'
 import { ToolbarGroup } from './toolbar'
@@ -50,9 +53,16 @@ export function FixedToolbarButtons() {
       </ToolbarGroup>
 
       <ToolbarGroup>
+        <AlignToolbarButton />
         <NumberedListToolbarButton />
         <BulletedListToolbarButton />
         <TodoListToolbarButton />
+      </ToolbarGroup>
+
+      <ToolbarGroup>
+        <LineHeightToolbarButton />
+        <OutdentToolbarButton />
+        <IndentToolbarButton />
       </ToolbarGroup>
     </div>
   )
