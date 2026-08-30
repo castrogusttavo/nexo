@@ -1,9 +1,57 @@
+import { readFileSync } from 'node:fs'
 import { logger } from '@/lib/axiom/logger'
-import { REALTIME_PORT } from '@/lib/env/_server'
+import {
+  REALTIME_PORT,
+  REDIS_TLS_CA_PATH,
+  REDIS_TLS_ENABLED,
+  REDIS_URL
+} from '@/lib/env/_server'
 import { Server } from '@hocuspocus/server'
+import { Redis } from '@hocuspocus/extension-redis'
+import { WikiPageRepository } from '@/src/repositories/wiki-page.repository'
+import { auth } from '@/src/lib/auth'
+import { assertMember } from '@/src/services/_authz'
+
+const redisUrl = new URL(REDIS_URL)
 
 const server = new Server({
-  port: REALTIME_PORT
+  port: REALTIME_PORT,
+
+  extensions: [
+    new Redis({
+      host: redisUrl.hostname,
+      port: Number(redisUrl.port) || 6379,
+      options: {
+        password: redisUrl.password || undefined,
+        ...(REDIS_TLS_ENABLED && {
+          tls: REDIS_TLS_CA_PATH
+            ? { ca: readFileSync(REDIS_TLS_CA_PATH) }
+            : {}
+        })
+      }
+    })
+  ],
+
+  async onAuthenticate({ documentName, requestHeaders }) {
+    const cookie = requestHeaders.cookie
+    if (!cookie) throw new Error('Missing session cookie')
+
+    const session = await auth.api.getSession({
+      headers: new Headers({ cookie })
+    })
+    if (!session) throw new Error('Not authenticated')
+
+    const page = await WikiPageRepository.findById(documentName)
+    if (!page.ok) throw new Error('Wiki page not found')
+
+    const membership = await assertMember(
+      session.user.id,
+      page.value.workspaceId
+    )
+    if (!membership.ok) throw new Error('Forbidden')
+
+    return { userId: session.user.id }
+  }
 })
 
 server.listen()
