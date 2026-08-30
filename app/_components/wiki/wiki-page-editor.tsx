@@ -11,10 +11,17 @@ const AUTOSAVE_DELAY_MS = 800 // ms
 
 interface WikiPageEditorProps {
   workspaceId: string
+  userId: string
+  userName: string
   page: WikiPageDTO
 }
 
-export function WikiPageEditor({ workspaceId, page }: WikiPageEditorProps) {
+export function WikiPageEditor({
+  workspaceId,
+  userId,
+  userName,
+  page,
+}: WikiPageEditorProps) {
   const updateWikiPage = useUpdateWikiPage(workspaceId, page.id)
   const [title, setTitle] = useState(page.title)
   const contentRef = useRef<Value>(page.content)
@@ -52,6 +59,9 @@ export function WikiPageEditor({ workspaceId, page }: WikiPageEditorProps) {
       />
       <WikiPageRichEditor
         key={page.id}
+        documentName={page.id}
+        userId={userId}
+        userName={userName}
         content={page.content}
         onChange={scheduleContentSave}
         className='min-h-0 flex-1 no-scrollbar'

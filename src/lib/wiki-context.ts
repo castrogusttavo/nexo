@@ -6,6 +6,7 @@ import { getAuthSession } from './auth-session'
 
 export interface WikiContext {
   userId: string
+  userName: string
   workspaceId: string
   workspaceSlug: string
 }
@@ -23,6 +24,7 @@ export const getWikiContext = cache(
 
     return {
       userId: session.value.user.id,
+      userName: session.value.user.name,
       workspaceId: membership.value.workspaceId,
       workspaceSlug,
     }

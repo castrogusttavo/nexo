@@ -19,6 +19,11 @@ export default async function WikiDetailPage({
   if (!context) notFound()
 
   return (
-    <WikiPageEditor workspaceId={context.workspaceId} page={context.page} />
+    <WikiPageEditor
+      workspaceId={context.workspaceId}
+      userId={context.userId}
+      userName={context.userName}
+      page={context.page}
+    />
   )
 }
