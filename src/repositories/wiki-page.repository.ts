@@ -106,4 +106,23 @@ export const WikiPageRepository = {
       return err(dbError('Failed to archive wiki page', error))
     }
   },
+
+  async updateYjsState(
+    id: string,
+    data: { yjsState: Uint8Array; updatedById: string },
+  ): Promise<Result<WikiPage>> {
+    try {
+      const wikiPage = await prisma.wikiPage.update({
+        where: { id },
+        // `Y.encodeStateAsUpdate()` types its result as
+        // `Uint8Array<ArrayBufferLike>`, but Prisma's Bytes field wants
+        // `Uint8Array<ArrayBuffer>` — copy into a plain ArrayBuffer-backed
+        // array to satisfy it.
+        data: { ...data, yjsState: new Uint8Array(data.yjsState) },
+      })
+      return ok(wikiPage)
+    } catch (error) {
+      return err(dbError('Failed to persist wiki page yjs state', error))
+    }
+  },
 }

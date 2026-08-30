@@ -11,6 +11,7 @@ import { Redis } from '@hocuspocus/extension-redis'
 import { WikiPageRepository } from '@/src/repositories/wiki-page.repository'
 import { auth } from '@/src/lib/auth'
 import { assertMember } from '@/src/services/_authz'
+import * as Y from 'yjs'
 
 const redisUrl = new URL(REDIS_URL)
 
@@ -51,6 +52,22 @@ const server = new Server({
     if (!membership.ok) throw new Error('Forbidden')
 
     return { userId: session.user.id }
+  },
+
+  async onLoadDocument({ documentName, document }) {
+    const page = await WikiPageRepository.findById(documentName)
+    if (page.ok && page.value.yjsState) {
+      Y.applyUpdate(document, page.value.yjsState)
+    }
+    return document
+  },
+
+  async onStoreDocument({ documentName, document, context }) {
+    const update = Y.encodeStateAsUpdate(document)
+    await WikiPageRepository.updateYjsState(documentName, {
+      yjsState: update,
+      updatedById: (context as { userId: string }).userId
+    })
   }
 })
 
