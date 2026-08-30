@@ -15,6 +15,7 @@ import { Heading01Icon, Heading02Icon, Heading03Icon, QuoteDownIcon, TextBoldIco
 import { BulletedListToolbarButton, NumberedListToolbarButton, TodoListToolbarButton } from "../ui/list-toolbar-button"
 import { MarkToolbarButton } from "../ui/mark-toolbar-button"
 import { Editor, EditorContainer } from "../ui/editor"
+import { CursorOverlay } from "../ui/cursor-overlay"
 
 // Cor determinística por usuário — mesmo userId, mesmo cursor remoto sempre.
 function colorFromUserId(userId: string): string {
@@ -104,6 +105,7 @@ export function WikiPageRichEditor({
         </FixedToolbar>
         <EditorContainer className='min-h-0 flex-1 no-scrollbar'>
           <Editor placeholder='Digite algo...' />
+          <CursorOverlay />
         </EditorContainer>
       </div>
     </Plate>
