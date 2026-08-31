@@ -8,7 +8,7 @@ import { FontSizeToolbarButton } from './font-size-toolbar-button'
 import { RedoToolbarButton, UndoToolbarButton } from './history-toolbar-button'
 import { IndentToolbarButton, OutdentToolbarButton } from './indent-toolbar-button'
 import { LineHeightToolbarButton } from './line-height-toolbar-button'
-import { BulletedListToolbarButton, NumberedListToolbarButton, TodoListToolbarButton } from './list-toolbar-button'
+import { BulletedListToolbarButton, NumberedListToolbarButton, TodoListToolbarButton, ToggleToolbarButton } from './list-toolbar-button'
 import { MarkToolbarButton } from './mark-toolbar-button'
 import { ToolbarGroup } from './toolbar'
 import { TurnIntoToolbarButton } from './turn-into-toolbar-button'
@@ -67,6 +67,7 @@ export function FixedToolbarButtons() {
         <NumberedListToolbarButton />
         <BulletedListToolbarButton />
         <TodoListToolbarButton />
+        <ToggleToolbarButton />
       </ToolbarGroup>
 
       <ToolbarGroup>

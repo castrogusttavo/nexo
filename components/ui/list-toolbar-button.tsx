@@ -7,8 +7,10 @@ import {
   useIndentTodoToolBarButton,
   useIndentTodoToolBarButtonState,
 } from '@platejs/list/react';
-import { List, ListOrdered, ListTodoIcon } from 'lucide-react';
+import { ChevronRightIcon, List, ListOrdered, ListTodoIcon } from 'lucide-react';
+import { KEYS } from 'platejs';
 import { useEditorRef, useEditorSelector } from 'platejs/react';
+import { getBlockType, setBlockType } from '@/components/editor/transforms';
 
 import {
   DropdownMenu,
@@ -203,6 +205,27 @@ export function TodoListToolbarButton(
   return (
     <ToolbarButton {...props} {...buttonProps} tooltip="Todo">
       <ListTodoIcon />
+    </ToolbarButton>
+  );
+}
+
+export function ToggleToolbarButton(
+  props: React.ComponentProps<typeof ToolbarButton>
+) {
+  const editor = useEditorRef();
+  const pressed = useEditorSelector((editor) => {
+    const [entry] = editor.api.blocks({ mode: 'lowest' });
+    return entry ? getBlockType(entry[0]) === KEYS.toggle : false;
+  }, []);
+
+  return (
+    <ToolbarButton
+      {...props}
+      pressed={pressed}
+      tooltip="Lista alternável"
+      onClick={() => setBlockType(editor, pressed ? KEYS.p : KEYS.toggle)}
+    >
+      <ChevronRightIcon />
     </ToolbarButton>
   );
 }
