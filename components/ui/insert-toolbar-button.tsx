@@ -20,6 +20,7 @@ import {
   QuoteIcon,
   RadicalIcon,
   SquareIcon,
+  TableIcon,
   TableOfContentsIcon,
 } from "lucide-react"
 import { KEYS } from "platejs"
@@ -54,6 +55,7 @@ const groups: Group[] = [
       { icon: <Heading5Icon />, label: 'Título 5', value: KEYS.h5 },
       { icon: <Heading6Icon />, label: 'Título 6', value: KEYS.h6 },
       { icon: <FileCodeIcon />, label: 'Código', value: KEYS.codeBlock },
+      { icon: <TableIcon />, label: 'Tabela', value: KEYS.table },
       { icon: <QuoteIcon />, label: 'Citação', value: KEYS.blockquote },
       { icon: <MinusIcon />, label: 'Divisor', value: KEYS.hr },
     ]

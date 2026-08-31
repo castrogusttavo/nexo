@@ -5,6 +5,7 @@ import { insertDate } from "@platejs/date"
 import { insertColumnGroup, toggleColumnGroup } from "@platejs/layout"
 import { triggerFloatingLink } from "@platejs/link/react"
 import { insertEquation, insertInlineEquation } from "@platejs/math"
+import { TablePlugin } from "@platejs/table/react"
 import { insertToc } from "@platejs/toc"
 import { KEYS, NodeEntry, Path, PathApi, TElement } from "platejs"
 import { PlateEditor } from "platejs/react"
@@ -39,7 +40,9 @@ const insertBlockMap: Record<
     insertColumnGroup(editor, { columns: 3, select: true }),
   [KEYS.codeBlock]: (editor) => insertCodeBlock(editor, { select: true }),
   [KEYS.toc]: (editor) => insertToc(editor, { select: true }),
-  [KEYS.equation]: (editor) => insertEquation(editor, { select: true })
+  [KEYS.equation]: (editor) => insertEquation(editor, { select: true }),
+  [KEYS.table]: (editor) =>
+    editor.getTransforms(TablePlugin).insert.table({}, { select: true })
 }
 
 const insertInlineMap: Record<
