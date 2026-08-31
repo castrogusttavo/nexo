@@ -1,6 +1,7 @@
 'use client'
 
 import { insertCodeBlock, toggleCodeBlock } from "@platejs/code-block"
+import { insertDate } from "@platejs/date"
 import { insertColumnGroup, toggleColumnGroup } from "@platejs/layout"
 import { triggerFloatingLink } from "@platejs/link/react"
 import { insertToc } from "@platejs/toc"
@@ -43,6 +44,7 @@ const insertInlineMap: Record<
   string,
   (editor: PlateEditor, type: string) => void
 > = {
+  [KEYS.date]: (editor) => insertDate(editor, { select: true }),
   [KEYS.link]: (editor) => triggerFloatingLink(editor, { focused: true })
 }
 

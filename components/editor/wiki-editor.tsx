@@ -25,6 +25,7 @@ import { TocKit } from "./plugins/toc-kit"
 import { MediaKit } from "./plugins/media-kit"
 import { DndKit } from "./plugins/dnd-kit"
 import { LinkKit } from "./plugins/link-kit"
+import { DateKit } from "./plugins/date-kit"
 import { WikiMediaProvider } from "@/src/hooks/use-wiki-media"
 
 // Cor determinística por usuário — mesmo userId, mesmo cursor remoto sempre.
@@ -67,6 +68,7 @@ export function WikiPageRichEditor({
       ...TocKit,
       ...MediaKit,
       ...LinkKit,
+      ...DateKit,
       ...AlignKit,
       ...FontKit,
       ...LineHeightKit,

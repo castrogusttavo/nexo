@@ -1,6 +1,7 @@
 'use client'
 
 import {
+  CalendarIcon,
   ChevronRightIcon,
   Columns3Icon,
   FileCodeIcon,
@@ -79,6 +80,7 @@ const groups: Group[] = [
     insert: 'inline',
     items: [
       { icon: <LinkIcon />, label: 'Link', value: KEYS.link },
+      { icon: <CalendarIcon />, label: 'Data', value: KEYS.date },
     ]
   }
 ]
