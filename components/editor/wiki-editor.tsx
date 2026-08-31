@@ -19,6 +19,7 @@ import { useMounted } from "@/components/hooks/use-mounted"
 import { cn } from "@/lib/utils"
 import { Editor, EditorContainer } from "../ui/editor"
 import { CursorOverlay } from "../ui/cursor-overlay"
+import { ColumnKit } from "./plugins/column-kit"
 
 // Cor determinística por usuário — mesmo userId, mesmo cursor remoto sempre.
 function colorFromUserId(userId: string): string {
@@ -53,6 +54,7 @@ export function WikiPageRichEditor({
       ...BasicNodesKit,
       ...ListKit,
       ...CodeBlockKit,
+      ...ColumnKit,
       ...AlignKit,
       ...FontKit,
       ...LineHeightKit,
