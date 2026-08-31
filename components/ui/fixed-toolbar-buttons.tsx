@@ -11,6 +11,7 @@ import { BulletedListToolbarButton, NumberedListToolbarButton, TodoListToolbarBu
 import { MarkToolbarButton } from './mark-toolbar-button'
 import { ToolbarGroup } from './toolbar'
 import { TurnIntoToolbarButton } from './turn-into-toolbar-button'
+import { InsertToolbarButton } from './insert-toolbar-button'
 
 export function FixedToolbarButtons() {
   return (
@@ -18,6 +19,10 @@ export function FixedToolbarButtons() {
       <ToolbarGroup>
         <UndoToolbarButton />
         <RedoToolbarButton />
+      </ToolbarGroup>
+
+      <ToolbarGroup>
+        <InsertToolbarButton />
       </ToolbarGroup>
 
       <ToolbarGroup>

@@ -1,6 +1,8 @@
 'use client'
 
 import {
+  ChevronRightIcon,
+  Columns3Icon,
   FileCodeIcon,
   Heading1Icon,
   Heading2Icon,
@@ -31,9 +33,11 @@ export const turnIntoItems = [
   { icon: <Heading6Icon /> , keywords: ['título', 'h6'], label: 'Título 6', value: KEYS.h6 },
   { icon: <ListIcon /> , keywords: ['lista', 'ul', '-'], label: 'Lista com marcadores', value: KEYS.ul },
   { icon: <ListOrderedIcon /> , keywords: ['lista', 'ol', '1'], label: 'Lista numera', value: KEYS.ol },
-  { icon: <SquareIcon /> , keywords: ['lista', 'checkbox', '[]'], label: 'Lista de tarefas', value: KEYS.listTodo },
+  { icon: <SquareIcon />, keywords: ['lista', 'checkbox', '[]'], label: 'Lista de tarefas', value: KEYS.listTodo },
+  { icon: <ChevronRightIcon />, keywords: ['colapsavel', 'expensivel'], label: 'Lista alternável', value: KEYS.toggle },
   { icon: <FileCodeIcon /> , keywords: ['```'], label: 'Código', value: KEYS.codeBlock },
   { icon: <QuoteIcon /> , keywords: ['citacao', '>'], label: 'Citação', value: KEYS.blockquote },
+  { icon: <Columns3Icon /> , keywords: ['colunas'], label: '3 colunas', value: 'action_three_columns' },
 ]
 
 export function TurnIntoToolbarButton(
