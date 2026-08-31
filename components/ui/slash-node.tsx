@@ -12,6 +12,7 @@ import {
   Heading3Icon,
   ListIcon,
   ListOrdered,
+  PenToolIcon,
   PilcrowIcon,
   Quote,
   RadicalIcon,
@@ -72,6 +73,7 @@ const groups: Group[] = [
       { icon: <TableOfContentsIcon />, keywords: ['sumario'], label: 'Sumário', value: KEYS.toc },
       { icon: <Columns3Icon />, label: '3 colunas', value: 'action_three_columns' },
       { focusEditor: false, icon: <RadicalIcon />, label: 'Equação', value: KEYS.equation },
+      { icon: <PenToolIcon />, keywords: ['desenho'], label: 'Excalidraw', value: KEYS.excalidraw },
       { icon: <Code2 />, keywords: ['diagrama', 'mermaid', 'flowchart'], label: 'Diagrama (mermaid)', value: KEYS.codeDrawing },
     ].map((item) => ({
       ...item,

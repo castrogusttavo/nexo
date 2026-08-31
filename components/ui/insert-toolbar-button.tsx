@@ -16,6 +16,7 @@ import {
   ListIcon,
   ListOrderedIcon,
   MinusIcon,
+  PenToolIcon,
   PilcrowIcon,
   PlusIcon,
   QuoteIcon,
@@ -78,6 +79,7 @@ const groups: Group[] = [
       { icon: <TableOfContentsIcon />, label: 'Sumário', value: KEYS.toc },
       { icon: <Columns3Icon />, label: '3 colunas', value: 'action_three_columns' },
       { icon: <RadicalIcon />, label: 'Equação', value: KEYS.equation },
+      { icon: <PenToolIcon />, label: 'Excalidraw', value: KEYS.excalidraw },
       { icon: <Code2 />, label: 'Diagrama (mermaid)', value: KEYS.codeDrawing },
     ]
   },
