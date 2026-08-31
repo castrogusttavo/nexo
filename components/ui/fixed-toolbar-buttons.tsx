@@ -15,6 +15,7 @@ import { TurnIntoToolbarButton } from './turn-into-toolbar-button'
 import { InsertToolbarButton } from './insert-toolbar-button'
 import { MediaToolbarButton } from './media-toolbar-button'
 import { LinkToolbarButton } from './link-toolbar-button'
+import { EmojiToolbarButton } from './emoji-toolbar-button'
 
 export function FixedToolbarButtons() {
   return (
@@ -69,6 +70,7 @@ export function FixedToolbarButtons() {
 
       <ToolbarGroup>
         <LinkToolbarButton />
+        <EmojiToolbarButton />
       </ToolbarGroup>
 
       <ToolbarGroup>
