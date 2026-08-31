@@ -72,6 +72,7 @@ const groups: Group[] = [
       { icon: <TableOfContentsIcon />, keywords: ['sumario'], label: 'Sumário', value: KEYS.toc },
       { icon: <Columns3Icon />, label: '3 colunas', value: 'action_three_columns' },
       { focusEditor: false, icon: <RadicalIcon />, label: 'Equação', value: KEYS.equation },
+      { icon: <Code2 />, keywords: ['diagrama', 'mermaid', 'flowchart'], label: 'Diagrama (mermaid)', value: KEYS.codeDrawing },
     ].map((item) => ({
       ...item,
       onSelect: (editor: PlateEditor, value: string) => {

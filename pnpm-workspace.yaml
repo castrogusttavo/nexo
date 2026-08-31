@@ -7,6 +7,13 @@ trustPolicyExclude:
   - 'semver@6.3.1'
   # esbuild 0.28.0 kept only for the react-email preview (see overrides below).
   - 'esbuild@0.28.0'
+  # mermaid's own dependency tree (pulled in by @platejs/code-drawing and
+  # @excalidraw/excalidraw for Fase 6 do wiki) lost trusted-publisher
+  # evidence across three unrelated transitive deps at once. Excepted after
+  # explicit approval; revisit if a newer trusted version lands.
+  - 'cytoscape@3.34.1'
+  - 'langium@3.3.1'
+  - 'mermaid@10.9.3'
 blockExoticSubdeps: true
 
 overrides:

@@ -1,6 +1,7 @@
 'use client'
 
 import { insertCodeBlock, toggleCodeBlock } from "@platejs/code-block"
+import { insertCodeDrawing } from "@platejs/code-drawing"
 import { insertDate } from "@platejs/date"
 import { insertColumnGroup, toggleColumnGroup } from "@platejs/layout"
 import { triggerFloatingLink } from "@platejs/link/react"
@@ -42,7 +43,8 @@ const insertBlockMap: Record<
   [KEYS.toc]: (editor) => insertToc(editor, { select: true }),
   [KEYS.equation]: (editor) => insertEquation(editor, { select: true }),
   [KEYS.table]: (editor) =>
-    editor.getTransforms(TablePlugin).insert.table({}, { select: true })
+    editor.getTransforms(TablePlugin).insert.table({}, { select: true }),
+  [KEYS.codeDrawing]: (editor) => insertCodeDrawing(editor, {}, { select: true })
 }
 
 const insertInlineMap: Record<
