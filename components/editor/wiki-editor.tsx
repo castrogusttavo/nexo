@@ -28,7 +28,8 @@ import { LinkKit } from "./plugins/link-kit"
 import { DateKit } from "./plugins/date-kit"
 import { MathKit } from "./plugins/math-kit"
 import { EmojiKit } from "./plugins/emoji-kit"
-import { WikiMediaProvider } from "@/src/hooks/use-wiki-media"
+import { MentionKit } from "./plugins/mention-kit"
+import { WikiEditorProvider } from "@/src/hooks/use-wiki-editor-context"
 
 // Cor determinística por usuário — mesmo userId, mesmo cursor remoto sempre.
 function colorFromUserId(userId: string): string {
@@ -73,6 +74,7 @@ export function WikiPageRichEditor({
       ...DateKit,
       ...MathKit,
       ...EmojiKit,
+      ...MentionKit,
       ...AlignKit,
       ...FontKit,
       ...LineHeightKit,
@@ -126,7 +128,7 @@ export function WikiPageRichEditor({
   }, [editor, documentName, mounted])
 
   return (
-    <WikiMediaProvider workspaceId={workspaceId}>
+    <WikiEditorProvider workspaceId={workspaceId}>
       <Plate
         editor={editor}
         onChange={({ value }) => {
@@ -156,6 +158,6 @@ export function WikiPageRichEditor({
           </EditorContainer>
         </div>
       </Plate>
-    </WikiMediaProvider>
+    </WikiEditorProvider>
   )
 }

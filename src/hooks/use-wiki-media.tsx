@@ -1,34 +1,7 @@
 import * as React from 'react'
 import { toast } from 'sonner'
 import { ApiError } from './_fetch'
-
-interface WikiMediaContextValue {
-  workspaceId: string
-}
-
-const WikiMediaContext = React.createContext<WikiMediaContextValue | null>(null)
-
-export function WikiMediaProvider({
-  workspaceId,
-  children,
-}: React.PropsWithChildren<{ workspaceId: string }>) {
-  const value = React.useMemo(() => ({ workspaceId }), [workspaceId])
-  return (
-    <WikiMediaContext.Provider value={value}>
-      {children}
-    </WikiMediaContext.Provider>
-  )
-}
-
-function useWikiMediaContext(): WikiMediaContextValue {
-  const ctx = React.useContext(WikiMediaContext)
-  if (!ctx) {
-    throw new Error(
-      'useUploadWikiMedia deve ser usado dentro de WikiMediaProvider',
-    )
-  }
-  return ctx
-}
+import { useWikiEditorContext } from './use-wiki-editor-context'
 
 export interface UploadedWikiMedia {
   key: string
@@ -82,7 +55,7 @@ function uploadWikiMediaXhr(
 }
 
 export function useUploadWikiMedia() {
-  const { workspaceId } = useWikiMediaContext()
+  const { workspaceId } = useWikiEditorContext()
   const [isUploading, setIsUploading] = React.useState(false)
   const [uploadingFile, setUploadingFile] = React.useState<File>()
   const [progress, setProgress] = React.useState(0)
