@@ -29,6 +29,7 @@ import { DateKit } from "./plugins/date-kit"
 import { MathKit } from "./plugins/math-kit"
 import { EmojiKit } from "./plugins/emoji-kit"
 import { MentionKit } from "./plugins/mention-kit"
+import { SlashKit } from "./plugins/slash-kit"
 import { WikiEditorProvider } from "@/src/hooks/use-wiki-editor-context"
 
 // Cor determinística por usuário — mesmo userId, mesmo cursor remoto sempre.
@@ -75,6 +76,7 @@ export function WikiPageRichEditor({
       ...MathKit,
       ...EmojiKit,
       ...MentionKit,
+      ...SlashKit,
       ...AlignKit,
       ...FontKit,
       ...LineHeightKit,
