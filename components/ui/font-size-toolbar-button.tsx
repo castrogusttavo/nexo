@@ -62,6 +62,7 @@ export function FontSizeToolbarButton() {
 
       <Popover open={isFocused} modal={false}>
         <PopoverTrigger
+          nativeButton={false}
           render={
             <input
               className={cn(
