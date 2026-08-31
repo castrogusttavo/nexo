@@ -51,7 +51,21 @@ const server = new Server({
     )
     if (!membership.ok) throw new Error('Forbidden')
 
+    logger.info('realtime.authenticate.success', {
+      component: 'Realtime',
+      documentName,
+      userId: session.user.id
+    })
+
     return { userId: session.user.id }
+  },
+
+  async onConnect({ documentName }) {
+    logger.info('realtime.connect', { component: 'Realtime', documentName })
+  },
+
+  async onDisconnect({ documentName }) {
+    logger.info('realtime.disconnect', { component: 'Realtime', documentName })
   },
 
   async onLoadDocument({ documentName, document }) {
