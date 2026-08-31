@@ -1,6 +1,7 @@
 'use client'
 
 import { Baseline, Bold, Code2, Italic, PaintBucket, Strikethrough, Underline } from 'lucide-react'
+import { KEYS } from 'platejs'
 import { AlignToolbarButton } from './align-toolbar-button'
 import { FontColorToolbarButton } from './font-color-toolbar-button'
 import { FontSizeToolbarButton } from './font-size-toolbar-button'
@@ -12,6 +13,7 @@ import { MarkToolbarButton } from './mark-toolbar-button'
 import { ToolbarGroup } from './toolbar'
 import { TurnIntoToolbarButton } from './turn-into-toolbar-button'
 import { InsertToolbarButton } from './insert-toolbar-button'
+import { MediaToolbarButton } from './media-toolbar-button'
 
 export function FixedToolbarButtons() {
   return (
@@ -62,6 +64,13 @@ export function FixedToolbarButtons() {
         <NumberedListToolbarButton />
         <BulletedListToolbarButton />
         <TodoListToolbarButton />
+      </ToolbarGroup>
+
+      <ToolbarGroup>
+        <MediaToolbarButton nodeType={KEYS.img} />
+        <MediaToolbarButton nodeType={KEYS.video} />
+        <MediaToolbarButton nodeType={KEYS.audio} />
+        <MediaToolbarButton nodeType={KEYS.file} />
       </ToolbarGroup>
 
       <ToolbarGroup>

@@ -22,6 +22,8 @@ import { CursorOverlay } from "../ui/cursor-overlay"
 import { ColumnKit } from "./plugins/column-kit"
 import { ToggleKit } from "./plugins/toggle-kit"
 import { TocKit } from "./plugins/toc-kit"
+import { MediaKit } from "./plugins/media-kit"
+import { WikiMediaProvider } from "@/src/hooks/use-wiki-media"
 
 // Cor determinística por usuário — mesmo userId, mesmo cursor remoto sempre.
 function colorFromUserId(userId: string): string {
@@ -34,6 +36,7 @@ function colorFromUserId(userId: string): string {
 
 interface WikiPageRichEditorProps {
   documentName: string
+  workspaceId: string
   userId: string
   userName: string
   content: Value
@@ -43,6 +46,7 @@ interface WikiPageRichEditorProps {
 
 export function WikiPageRichEditor({
   documentName,
+  workspaceId,
   userId,
   userName,
   content,
@@ -59,6 +63,7 @@ export function WikiPageRichEditor({
       ...ColumnKit,
       ...ToggleKit,
       ...TocKit,
+      ...MediaKit,
       ...AlignKit,
       ...FontKit,
       ...LineHeightKit,
@@ -111,34 +116,36 @@ export function WikiPageRichEditor({
   }, [editor, documentName, mounted])
 
   return (
-    <Plate
-      editor={editor}
-      onChange={({ value }) => {
-        // Ctrl+A -> Del pode zerar editor.children antes da normalização
-        // do Slate rodar (a inicialização via Yjs desliga a normalização
-        // padrão, ver yjs.init()). Um documento vazio quebra a renderização
-        // — nunca deixa isso se propagar pro autosave nem pro resto da árvore.
-        if (value.length === 0) {
-          editor.tf.insertNodes(editor.api.create.block({ type: KEYS.p }), {
-            at: [0],
-          })
-          return
-        }
-        onChange(value)
-      }}
-    >
-      <div className={cn('flex h-full flex-col no-scrollbar', className)}>
-        {/* Força remontar a área editável assim que o Yjs sincroniza — o
-            editor.tf.init() chamado internamente pelo yjs.init() nem sempre
-            propaga o novo editor.children pra essa árvore sozinho. */}
-        <EditorContainer
-          key={isSynced ? 'synced' : 'pending'}
-          className='min-h-0 flex-1 no-scrollbar'
-        >
-          <Editor placeholder='Digite algo...' />
-          <CursorOverlay />
-        </EditorContainer>
-      </div>
-    </Plate>
+    <WikiMediaProvider workspaceId={workspaceId}>
+      <Plate
+        editor={editor}
+        onChange={({ value }) => {
+          // Ctrl+A -> Del pode zerar editor.children antes da normalização
+          // do Slate rodar (a inicialização via Yjs desliga a normalização
+          // padrão, ver yjs.init()). Um documento vazio quebra a renderização
+          // — nunca deixa isso se propagar pro autosave nem pro resto da árvore.
+          if (value.length === 0) {
+            editor.tf.insertNodes(editor.api.create.block({ type: KEYS.p }), {
+              at: [0],
+            })
+            return
+          }
+          onChange(value)
+        }}
+      >
+        <div className={cn('flex h-full flex-col no-scrollbar', className)}>
+          {/* Força remontar a área editável assim que o Yjs sincroniza — o
+              editor.tf.init() chamado internamente pelo yjs.init() nem sempre
+              propaga o novo editor.children pra essa árvore sozinho. */}
+          <EditorContainer
+            key={isSynced ? 'synced' : 'pending'}
+            className='min-h-0 flex-1 no-scrollbar'
+          >
+            <Editor placeholder='Digite algo...' />
+            <CursorOverlay />
+          </EditorContainer>
+        </div>
+      </Plate>
+    </WikiMediaProvider>
   )
 }

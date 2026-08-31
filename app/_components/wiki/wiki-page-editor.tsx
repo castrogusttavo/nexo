@@ -60,6 +60,7 @@ export function WikiPageEditor({
       <WikiPageRichEditor
         key={page.id}
         documentName={page.id}
+        workspaceId={workspaceId}
         userId={userId}
         userName={userName}
         content={page.content}
