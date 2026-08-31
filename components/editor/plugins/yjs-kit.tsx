@@ -7,10 +7,12 @@ export function createYjsKit({
   documentName,
   userName,
   userColor,
+  onSyncChange,
 }: {
   documentName: string
   userName: string
   userColor: string
+  onSyncChange?: (isSynced: boolean) => void
   }) {
   return [
     YjsPlugin.configure({
@@ -21,7 +23,20 @@ export function createYjsKit({
             type: 'hocuspocus',
             options: { name: documentName, url: NEXT_PUBLIC_REALTIME_URL }
           }
-        ]
+        ],
+        onConnect: ({ type }) => {
+          console.log('[yjs] connected', type)
+        },
+        onDisconnect: ({ type }) => {
+          console.log('[yjs] disconnected', type)
+        },
+        onError: ({ type, error }) => {
+          console.error('[yjs] error', type, error)
+        },
+        onSyncChange: ({ type, isSynced }) => {
+          console.log('[yjs] sync change', type, isSynced)
+          if (isSynced) onSyncChange?.(isSynced)
+        }
       }
     })
   ]
