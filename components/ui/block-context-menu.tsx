@@ -47,12 +47,10 @@ export function BlockContextMenu({ children }: { children: React.ReactNode }) {
       onOpenChange={(open) => {
         if (!open) {
           api.blockMenu.hide()
-          editor.getApi(BlockSelectionPlugin).blockSelection.focus()
         }
       }}
     >
       <ContextMenuTrigger
-        render={<div className='w-full' />}
         onContextMenu={(event: React.MouseEvent<HTMLElement>) => {
           const dataset = (event.target as HTMLElement).dataset
           const disabled = dataset?.slateEditor === 'true' || readOnly || dataset?.plateOpenContextMenu === 'false'
@@ -61,11 +59,12 @@ export function BlockContextMenu({ children }: { children: React.ReactNode }) {
             api.blockMenu.show(BLOCK_CONTEXT_MENU_ID, { x: event.clientX, y: event.clientY })
           }, 0)
         }}
+        render={<div className='w-full' />}
       >
         {children}
       </ContextMenuTrigger>
       {isOpen && (
-        <ContextMenuContent className='w-64'>
+      <ContextMenuContent className='w-64'>
           <ContextMenuGroup>
             <ContextMenuItem
               onClick={() => {
