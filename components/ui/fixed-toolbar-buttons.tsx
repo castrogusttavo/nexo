@@ -14,6 +14,7 @@ import { ToolbarGroup } from './toolbar'
 import { TurnIntoToolbarButton } from './turn-into-toolbar-button'
 import { InsertToolbarButton } from './insert-toolbar-button'
 import { MediaToolbarButton } from './media-toolbar-button'
+import { LinkToolbarButton } from './link-toolbar-button'
 
 export function FixedToolbarButtons() {
   return (
@@ -64,6 +65,10 @@ export function FixedToolbarButtons() {
         <NumberedListToolbarButton />
         <BulletedListToolbarButton />
         <TodoListToolbarButton />
+      </ToolbarGroup>
+
+      <ToolbarGroup>
+        <LinkToolbarButton />
       </ToolbarGroup>
 
       <ToolbarGroup>

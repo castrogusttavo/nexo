@@ -1,12 +1,31 @@
 'use client'
 
-import { PilcrowIcon, Heading1Icon, Heading2Icon, Heading3Icon, Heading4Icon, Heading5Icon, Heading6Icon, FileCodeIcon, QuoteIcon, MinusIcon, ListIcon, ListOrderedIcon, SquareIcon, ChevronRightIcon, TableOfContentsIcon, Columns3Icon, PlusIcon } from "lucide-react"
+import {
+  ChevronRightIcon,
+  Columns3Icon,
+  FileCodeIcon,
+  Heading1Icon,
+  Heading2Icon,
+  Heading3Icon,
+  Heading4Icon,
+  Heading5Icon,
+  Heading6Icon,
+  LinkIcon,
+  ListIcon,
+  ListOrderedIcon,
+  MinusIcon,
+  PilcrowIcon,
+  PlusIcon,
+  QuoteIcon,
+  SquareIcon,
+  TableOfContentsIcon,
+} from "lucide-react"
 import { KEYS } from "platejs"
 import { useEditorRef } from "platejs/react"
 import React from "react"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "./dropdown-menu"
 import { ToolbarButton, ToolbarMenuGroup } from "./toolbar"
-import { insertBlock } from "../editor/transforms"
+import { insertBlock, insertInlineElement } from "../editor/transforms"
 
 type Item = {
   icon: React.ReactNode
@@ -16,12 +35,14 @@ type Item = {
 
 type Group = {
   group: string
+  insert: 'block' | 'inline'
   items: Item[]
 }
 
 const groups: Group[] = [
   {
     group: 'Blocos básicos',
+    insert: 'block',
     items: [
       { icon: <PilcrowIcon />, label: 'Texto', value: KEYS.p },
       { icon: <Heading1Icon />, label: 'Título 1', value: KEYS.h1 },
@@ -37,6 +58,7 @@ const groups: Group[] = [
   },
   {
     group: 'Listas',
+    insert: 'block',
     items: [
       { icon: <ListIcon />, label: 'Lista com marcadores', value: KEYS.ul },
       { icon: <ListOrderedIcon />, label: 'Lista numerada', value: KEYS.ol },
@@ -46,9 +68,17 @@ const groups: Group[] = [
   },
   {
     group: 'Blocos avançados',
+    insert: 'block',
     items: [
       { icon: <TableOfContentsIcon />, label: 'Sumário', value: KEYS.toc },
       { icon: <Columns3Icon />, label: '3 colunas', value: 'action_three_columns' },
+    ]
+  },
+  {
+    group: 'Inline',
+    insert: 'inline',
+    items: [
+      { icon: <LinkIcon />, label: 'Link', value: KEYS.link },
     ]
   }
 ]
@@ -67,14 +97,18 @@ export function InsertToolbarButton(
         </ToolbarButton>
       } />
       <DropdownMenuContent>
-        {groups.map(({ group, items }) => (
+        {groups.map(({ group, insert, items }) => (
           <ToolbarMenuGroup key={group} label={group}>
             {items.map(({ icon, label, value }) => (
               <DropdownMenuItem
                 key={value}
                 className='min-w-45'
                 onClick={() => {
-                  insertBlock(editor, value)
+                  if (insert === 'inline') {
+                    insertInlineElement(editor, value)
+                  } else {
+                    insertBlock(editor, value)
+                  }
                   editor.tf.focus()
                 }}
               >
