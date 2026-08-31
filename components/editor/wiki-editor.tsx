@@ -21,6 +21,7 @@ import { Editor, EditorContainer } from "../ui/editor"
 import { CursorOverlay } from "../ui/cursor-overlay"
 import { ColumnKit } from "./plugins/column-kit"
 import { ToggleKit } from "./plugins/toggle-kit"
+import { TocKit } from "./plugins/toc-kit"
 
 // Cor determinística por usuário — mesmo userId, mesmo cursor remoto sempre.
 function colorFromUserId(userId: string): string {
@@ -57,6 +58,7 @@ export function WikiPageRichEditor({
       ...CodeBlockKit,
       ...ColumnKit,
       ...ToggleKit,
+      ...TocKit,
       ...AlignKit,
       ...FontKit,
       ...LineHeightKit,
