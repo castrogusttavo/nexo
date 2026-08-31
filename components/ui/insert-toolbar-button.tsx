@@ -18,6 +18,7 @@ import {
   PilcrowIcon,
   PlusIcon,
   QuoteIcon,
+  RadicalIcon,
   SquareIcon,
   TableOfContentsIcon,
 } from "lucide-react"
@@ -73,6 +74,7 @@ const groups: Group[] = [
     items: [
       { icon: <TableOfContentsIcon />, label: 'Sumário', value: KEYS.toc },
       { icon: <Columns3Icon />, label: '3 colunas', value: 'action_three_columns' },
+      { icon: <RadicalIcon />, label: 'Equação', value: KEYS.equation },
     ]
   },
   {
@@ -81,6 +83,7 @@ const groups: Group[] = [
     items: [
       { icon: <LinkIcon />, label: 'Link', value: KEYS.link },
       { icon: <CalendarIcon />, label: 'Data', value: KEYS.date },
+      { icon: <RadicalIcon />, label: 'Equação inline', value: KEYS.inlineEquation },
     ]
   }
 ]

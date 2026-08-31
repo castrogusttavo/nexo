@@ -26,6 +26,7 @@ import { MediaKit } from "./plugins/media-kit"
 import { DndKit } from "./plugins/dnd-kit"
 import { LinkKit } from "./plugins/link-kit"
 import { DateKit } from "./plugins/date-kit"
+import { MathKit } from "./plugins/math-kit"
 import { WikiMediaProvider } from "@/src/hooks/use-wiki-media"
 
 // Cor determinística por usuário — mesmo userId, mesmo cursor remoto sempre.
@@ -69,6 +70,7 @@ export function WikiPageRichEditor({
       ...MediaKit,
       ...LinkKit,
       ...DateKit,
+      ...MathKit,
       ...AlignKit,
       ...FontKit,
       ...LineHeightKit,
