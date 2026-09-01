@@ -26,32 +26,34 @@ model User {
   preference          UserPreference?
   notificationSetting NotificationSetting?
 
-  memberships        Membership[]
-  sessions           Session[]
-  accounts           Account[]
-  twoFactors         TwoFactor[]
-  shortLinks         ShortLink[]
-  stickyNotes        StickyNote[]
-  consentEvents      ConsentEvent[]
-  projectsLed        Project[]             @relation("ProjectLead")
-  projectMemberships ProjectMember[]
-  projectFavourites  ProjectFavorite[]
-  sentInvitations    WorkspaceInvitation[] @relation("SentInvitations")
-  modulesLed         Module[]              @relation("ModuleLead")
-  moduleMemberships  ModuleMember[]
-  moduleFavourites   ModuleFavorite[]
-  cyclesLed          Cycle[]               @relation("CycleLead")
-  cycleMemberships   CycleMember[]
-  issuesAuthored     Issue[]               @relation("IssueAuthor")
-  issueAssignments   IssueAssignee[]       @relation("IssueAssignee")
-  issueSubscriptions IssueSubscriber[]     @relation("IssueSubscriber")
-  attachments        Attachment[]
-  votes              IssueVote[]
-  comments           Comment[]
-  activities         Activity[]
-  issueUpdates       IssueUpdate[]
-  createdWikiPages   WikiPage[]            @relation("WikiPageAuthor")
-  updatedWikiPages   WikiPage[]            @relation("WikiPageEditor")
+  memberships          Membership[]
+  sessions             Session[]
+  accounts             Account[]
+  twoFactors           TwoFactor[]
+  shortLinks           ShortLink[]
+  stickyNotes          StickyNote[]
+  consentEvents        ConsentEvent[]
+  projectsLed          Project[]             @relation("ProjectLead")
+  projectMemberships   ProjectMember[]
+  projectFavourites    ProjectFavorite[]
+  sentInvitations      WorkspaceInvitation[] @relation("SentInvitations")
+  modulesLed           Module[]              @relation("ModuleLead")
+  moduleMemberships    ModuleMember[]
+  moduleFavourites     ModuleFavorite[]
+  cyclesLed            Cycle[]               @relation("CycleLead")
+  cycleMemberships     CycleMember[]
+  issuesAuthored       Issue[]               @relation("IssueAuthor")
+  issueAssignments     IssueAssignee[]       @relation("IssueAssignee")
+  issueSubscriptions   IssueSubscriber[]     @relation("IssueSubscriber")
+  attachments          Attachment[]
+  votes                IssueVote[]
+  comments             Comment[]
+  activities           Activity[]
+  issueUpdates         IssueUpdate[]
+  createdWikiPages     WikiPage[]            @relation("WikiPageAuthor")
+  updatedWikiPages     WikiPage[]            @relation("WikiPageEditor")
+  wikiComments         WikiComment[]         @relation("WikiCommentAuthor")
+  resolvedWikiComments WikiComment[]         @relation("WikiCommentResolver")
 
   @@index([deletionScheduledAt])
   @@map("users")
@@ -1054,9 +1056,37 @@ model WikiPage {
   createdAt   DateTime  @default(now()) @map("created_at")
   updatedAt   DateTime  @updatedAt @map("updated_at")
 
-  workspace Workspace  @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
-  parent    WikiPage?  @relation("WikiPageTree", fields: [parentId], references: [id], onDelete: Cascade)
-  children  WikiPage[] @relation("WikiPageTree")
-  createdBy User       @relation("WikiPageAuthor", fields: [createdById], references: [id])
-  updatedBy User?      @relation("WikiPageEditor", fields: [updatedById], references: [id])
+  workspace Workspace     @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  parent    WikiPage?     @relation("WikiPageTree", fields: [parentId], references: [id], onDelete: Cascade)
+  children  WikiPage[]    @relation("WikiPageTree")
+  createdBy User          @relation("WikiPageAuthor", fields: [createdById], references: [id])
+  updatedBy User?         @relation("WikiPageEditor", fields: [updatedById], references: [id])
+  comments  WikiComment[]
+}
+
+model WikiComment {
+  id           String    @id @default(cuid())
+  wikiPageId   String    @map("wiki_page_id")
+  authorId     String    @map("author_id")
+  parentId     String?   @map("parent_id")
+  // Discussion id shared by the root comment and all its replies — matches
+  // the Plate `comment_<markId>` mark applied to the referenced text range.
+  markId       String    @map("mark_id")
+  content      Json
+  // Only meaningful on the root comment (parentId null); replies inherit the
+  // thread's resolved state instead of carrying their own.
+  resolved     Boolean   @default(false)
+  resolvedAt   DateTime? @map("resolved_at")
+  resolvedById String?   @map("resolved_by_id")
+  createdAt    DateTime  @default(now()) @map("created_at")
+  updatedAt    DateTime  @updatedAt @map("updated_at")
+
+  wikiPage   WikiPage      @relation(fields: [wikiPageId], references: [id], onDelete: Cascade)
+  author     User          @relation("WikiCommentAuthor", fields: [authorId], references: [id])
+  resolvedBy User?         @relation("WikiCommentResolver", fields: [resolvedById], references: [id])
+  parent     WikiComment?  @relation("WikiCommentThread", fields: [parentId], references: [id], onDelete: Cascade)
+  replies    WikiComment[] @relation("WikiCommentThread")
+
+  @@index([wikiPageId, markId])
+  @@map("wiki_comments")
 }
