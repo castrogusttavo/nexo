@@ -35,6 +35,7 @@ import { CodeDrawingKit } from "./plugins/code-drawing-kit"
 import { ExcalidrawKit } from "./plugins/excalidraw-kit"
 import { FootnoteKit } from "./plugins/footnote-kit"
 import { MarkdownKit } from "./plugins/markdown-kit"
+import { DocxKit } from "./plugins/docx-kit"
 import { WikiEditorProvider } from "@/src/hooks/use-wiki-editor-context"
 
 // Cor determinística por usuário — mesmo userId, mesmo cursor remoto sempre.
@@ -87,6 +88,7 @@ export function WikiPageRichEditor({
       ...ExcalidrawKit,
       ...FootnoteKit,
       ...MarkdownKit,
+      ...DocxKit,
       ...AlignKit,
       ...FontKit,
       ...LineHeightKit,
