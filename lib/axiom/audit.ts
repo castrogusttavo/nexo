@@ -27,6 +27,7 @@ type AuditEntity =
   | 'issue'
   | 'comment'
   | 'wiki_page'
+  | 'wiki_comment'
 
 type AuditAction =
   | 'create'
@@ -50,6 +51,8 @@ type AuditAction =
   | 'onboarding_step_reverted'
   | 'accept'
   | 'move'
+  | 'resolve'
+  | 'unresolve'
 
 type AuditOutcome = 'success' | 'failure'
 
