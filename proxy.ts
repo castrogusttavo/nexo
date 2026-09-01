@@ -31,7 +31,7 @@ function buildCspHeader(nonce: string): string {
     img-src 'self' blob: data: https:${NODE_ENV === 'development' ? ' http://localhost:9000' : ''};
     media-src 'self' blob: https:${NODE_ENV === 'development' ? ' http://localhost:9000' : ''};
     font-src 'self';
-    connect-src 'self' https://*.axiom.co https://va.vercel-scripts.com https://cdn.jsdelivr.net ${NEXT_PUBLIC_REALTIME_URL}${NODE_ENV === 'development' ? ' ws://localhost:4444' : ''};
+    connect-src 'self' blob: data: https://*.axiom.co https://va.vercel-scripts.com https://cdn.jsdelivr.net ${NEXT_PUBLIC_REALTIME_URL}${NODE_ENV === 'development' ? ' ws://localhost:4444' : ''};
     frame-src https://www.figma.com https://www.loom.com https://www.youtube.com https://docs.google.com;
     frame-ancestors 'none';
     form-action 'self';
