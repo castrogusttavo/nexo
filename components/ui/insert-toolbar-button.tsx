@@ -22,6 +22,7 @@ import {
   QuoteIcon,
   RadicalIcon,
   SquareIcon,
+  SuperscriptIcon,
   TableIcon,
   TableOfContentsIcon,
 } from "lucide-react"
@@ -90,6 +91,7 @@ const groups: Group[] = [
       { icon: <LinkIcon />, label: 'Link', value: KEYS.link },
       { icon: <CalendarIcon />, label: 'Data', value: KEYS.date },
       { icon: <RadicalIcon />, label: 'Equação inline', value: KEYS.inlineEquation },
+      { icon: <SuperscriptIcon />, label: 'Nota de rodapé', value: 'action_footnote' },
     ]
   }
 ]

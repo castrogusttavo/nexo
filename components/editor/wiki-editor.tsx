@@ -33,6 +33,7 @@ import { SlashKit } from "./plugins/slash-kit"
 import { TableKit } from "./plugins/table-kit"
 import { CodeDrawingKit } from "./plugins/code-drawing-kit"
 import { ExcalidrawKit } from "./plugins/excalidraw-kit"
+import { FootnoteKit } from "./plugins/footnote-kit"
 import { WikiEditorProvider } from "@/src/hooks/use-wiki-editor-context"
 
 // Cor determinística por usuário — mesmo userId, mesmo cursor remoto sempre.
@@ -83,6 +84,7 @@ export function WikiPageRichEditor({
       ...TableKit,
       ...CodeDrawingKit,
       ...ExcalidrawKit,
+      ...FootnoteKit,
       ...AlignKit,
       ...FontKit,
       ...LineHeightKit,

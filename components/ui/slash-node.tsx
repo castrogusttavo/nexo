@@ -17,6 +17,7 @@ import {
   Quote,
   RadicalIcon,
   Square,
+  SuperscriptIcon,
   Table,
   TableOfContentsIcon,
 } from 'lucide-react'
@@ -87,6 +88,7 @@ const groups: Group[] = [
     items: [
       { focusEditor: true, icon: <CalendarIcon />, keywords: ['data'], label: 'Data', value: KEYS.date },
       { focusEditor: false, icon: <RadicalIcon />, label: 'Equação inline', value: KEYS.inlineEquation },
+      { focusEditor: true, icon: <SuperscriptIcon />, keywords: ['citacao', 'nota'], label: 'Nota de rodapé', value: 'action_footnote' },
     ].map((item) => ({
       ...item,
       onSelect: (editor: PlateEditor, value: string) => {
