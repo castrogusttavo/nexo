@@ -18,6 +18,8 @@ import { LinkToolbarButton } from './link-toolbar-button'
 import { TableToolbarButton } from './table-toolbar-button'
 import { EmojiToolbarButton } from './emoji-toolbar-button'
 import { ExtraToolbarButton } from './extra-toolbar-button'
+import { ExportToolbarButton } from './export-toolbar-button'
+import { ImportToolbarButton } from './import-toolbar-button'
 
 export function FixedToolbarButtons() {
   return (
@@ -25,6 +27,11 @@ export function FixedToolbarButtons() {
       <ToolbarGroup>
         <UndoToolbarButton />
         <RedoToolbarButton />
+      </ToolbarGroup>
+
+      <ToolbarGroup>
+        <ExportToolbarButton />
+        <ImportToolbarButton />
       </ToolbarGroup>
 
       <ToolbarGroup>
