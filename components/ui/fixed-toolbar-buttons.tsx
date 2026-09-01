@@ -17,6 +17,7 @@ import { MediaToolbarButton } from './media-toolbar-button'
 import { LinkToolbarButton } from './link-toolbar-button'
 import { TableToolbarButton } from './table-toolbar-button'
 import { EmojiToolbarButton } from './emoji-toolbar-button'
+import { ExtraToolbarButton } from './extra-toolbar-button'
 
 export function FixedToolbarButtons() {
   return (
@@ -87,6 +88,10 @@ export function FixedToolbarButtons() {
         <LineHeightToolbarButton />
         <OutdentToolbarButton />
         <IndentToolbarButton />
+      </ToolbarGroup>
+
+      <ToolbarGroup>
+        <ExtraToolbarButton />
       </ToolbarGroup>
     </div>
   )
