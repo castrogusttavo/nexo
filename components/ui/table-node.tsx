@@ -100,6 +100,7 @@ export const TableElement = withHOC(
     )
 
     const isSelectingTable = useBlockSelected(props.element.id as string)
+    const anchorRef = React.useRef<HTMLDivElement>(null)
 
     const content = (
       <PlateElement
@@ -107,7 +108,7 @@ export const TableElement = withHOC(
         className={cn('overflow-x-auto py-5', hasControls && '-ml-2 *:data-[slot=block-selection]:left-2')}
         style={{ paddingLeft: marginLeft }}
       >
-        <div className='group/table relative w-fit' style={tableVariableStyle}>
+        <div ref={anchorRef} className='group/table relative w-fit' style={tableVariableStyle}>
           <table
             ref={tableRef}
             className={cn(
