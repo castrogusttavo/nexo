@@ -3,12 +3,18 @@
 import * as React from 'react'
 import { Popover as PopoverPrimitive } from '@base-ui/react/popover'
 import { CommentPlugin } from '@platejs/comment/react'
+import { YjsPlugin } from '@platejs/yjs/react'
+import { useQueryClient } from '@tanstack/react-query'
 import { useEditorRef, usePluginOption } from 'platejs/react'
 import { discussionPlugin } from '@/components/editor/plugins/discussion-plugin'
+import { wikiCommentsKey } from '@/src/hooks/use-wiki-comment'
+import { useWikiEditorContext } from '@/src/hooks/use-wiki-editor-context'
 import { DiscussionThread } from './discussion-thread'
 
 export function DiscussionOverlay() {
   const editor = useEditorRef()
+  const { workspaceId, wikiPageId } = useWikiEditorContext()
+  const queryClient = useQueryClient()
   const activeId = usePluginOption(discussionPlugin, 'activeId')
   const [anchor, setAnchor] = React.useState<HTMLElement | null>(null)
   const anchorRef = React.useRef<HTMLElement | null>(null)
@@ -27,6 +33,38 @@ export function DiscussionOverlay() {
       .comment.node({ id: activeId, at: [] })
     setAnchor(entry ? (editor.api.toDOMNode(entry[0]) ?? null) : null)
   }, [activeId, editor])
+
+  // Broadcast: mutations elsewhere in this tree bump their own awareness
+  // state's `wikiCommentsRev` field (see discussion-thread.tsx). Reusing the
+  // same Yjs/Hocuspocus connection as the document avoids standing up a
+  // separate realtime channel just for comments. Awareness also carries
+  // cursor position for every keystroke, so this only reacts when a peer's
+  // wikiCommentsRev actually moved forward, not on every awareness tick.
+  const lastRevByClientRef = React.useRef<Map<number, number>>(new Map())
+
+  React.useEffect(() => {
+    const awareness = editor.getOption(YjsPlugin, 'awareness')
+    if (!awareness) return
+
+    function handleChange() {
+      let changed = false
+      awareness.getStates().forEach((state, clientId) => {
+        const rev = state.wikiCommentsRev as number | undefined
+        if (rev && rev !== lastRevByClientRef.current.get(clientId)) {
+          lastRevByClientRef.current.set(clientId, rev)
+          changed = true
+        }
+      })
+      if (changed) {
+        queryClient.invalidateQueries({
+          queryKey: wikiCommentsKey(workspaceId, wikiPageId),
+        })
+      }
+    }
+
+    awareness.on('change', handleChange)
+    return () => awareness.off('change', handleChange)
+  }, [editor, queryClient, workspaceId, wikiPageId])
 
   const open = !!activeId && !!anchor
 

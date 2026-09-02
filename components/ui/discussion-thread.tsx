@@ -2,6 +2,7 @@
 
 import * as React from 'react'
 import { CommentPlugin } from '@platejs/comment/react'
+import { YjsPlugin } from '@platejs/yjs/react'
 import { formatDistanceToNow } from 'date-fns/formatDistanceToNow'
 import { ptBR } from 'date-fns/locale/pt-BR'
 import { CheckIcon, MoreHorizontalIcon, PencilIcon, SendIcon, TrashIcon, XIcon } from 'lucide-react'
@@ -61,12 +62,26 @@ export function DiscussionThread({ markId }: { markId: string }) {
     editor.setOption(discussionPlugin, 'activeId', null)
   }
 
+  // Broadcast to other collaborators viewing this page: bump this client's
+  // own awareness state, reusing the same Hocuspocus connection the document
+  // already holds open. See discussion-overlay.tsx for the listening side.
+  function broadcastCommentsChanged() {
+    editor
+      .getOption(YjsPlugin, 'awareness')
+      ?.setLocalStateField('wikiCommentsRev', Date.now())
+  }
+
   function handleSubmit() {
     const text = reply.trim()
     if (!text) return
     createComment.mutate(
       { markId, content: textToValue(text), parentId: root?.id },
-      { onSuccess: () => setReply('') },
+      {
+        onSuccess: () => {
+          setReply('')
+          broadcastCommentsChanged()
+        },
+      },
     )
   }
 
@@ -75,6 +90,7 @@ export function DiscussionThread({ markId }: { markId: string }) {
     deleteComment.mutate(comment.id, {
       onSuccess: () => {
         if (isLastInThread) removeMark()
+        broadcastCommentsChanged()
       },
     })
   }
@@ -154,7 +170,12 @@ export function DiscussionThread({ markId }: { markId: string }) {
                       if (!text) return
                       updateComment.mutate(
                         { commentId: comment.id, content: textToValue(text) },
-                        { onSuccess: () => setEditingId(null) },
+                        {
+                          onSuccess: () => {
+                            setEditingId(null)
+                            broadcastCommentsChanged()
+                          },
+                        },
                       )
                     }}
                   >
@@ -202,10 +223,10 @@ export function DiscussionThread({ markId }: { markId: string }) {
               size='sm'
               className='h-7 text-xs'
               onClick={() =>
-                resolveComment.mutate({
-                  commentId: root.id,
-                  resolved: !root.resolved,
-                })
+                resolveComment.mutate(
+                  { commentId: root.id, resolved: !root.resolved },
+                  { onSuccess: broadcastCommentsChanged },
+                )
               }
             >
               <CheckIcon className='size-3.5' />
