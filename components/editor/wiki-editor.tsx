@@ -36,6 +36,8 @@ import { ExcalidrawKit } from "./plugins/excalidraw-kit"
 import { FootnoteKit } from "./plugins/footnote-kit"
 import { MarkdownKit } from "./plugins/markdown-kit"
 import { DocxKit } from "./plugins/docx-kit"
+import { CommentKit } from "./plugins/comment-kit"
+import { DiscussionKit } from "./plugins/discussion-kit"
 import { WikiEditorProvider } from "@/src/hooks/use-wiki-editor-context"
 
 // Cor determinística por usuário — mesmo userId, mesmo cursor remoto sempre.
@@ -89,6 +91,8 @@ export function WikiPageRichEditor({
       ...FootnoteKit,
       ...MarkdownKit,
       ...DocxKit,
+      ...CommentKit,
+      ...DiscussionKit,
       ...AlignKit,
       ...FontKit,
       ...LineHeightKit,
@@ -142,7 +146,12 @@ export function WikiPageRichEditor({
   }, [editor, documentName, mounted])
 
   return (
-    <WikiEditorProvider workspaceId={workspaceId}>
+    <WikiEditorProvider
+      workspaceId={workspaceId}
+      wikiPageId={documentName}
+      userId={userId}
+      userName={userName}
+    >
       <Plate
         editor={editor}
         onChange={({ value }) => {

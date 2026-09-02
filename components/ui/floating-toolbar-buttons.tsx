@@ -1,6 +1,7 @@
 'use client'
 
 import { Baseline, Bold, Code2, Italic, PaintBucket, Strikethrough, Underline } from 'lucide-react'
+import { CommentToolbarButton } from './comment-toolbar-button'
 import { FontColorToolbarButton } from './font-color-toolbar-button'
 import { MarkToolbarButton } from './mark-toolbar-button'
 import { ToolbarGroup } from './toolbar'
@@ -34,6 +35,9 @@ export function FloatingToolbarButtons() {
         <FontColorToolbarButton nodeType='backgroundColor' tooltip='Cor de fundo'>
           <PaintBucket />
         </FontColorToolbarButton>
+      </ToolbarGroup>
+      <ToolbarGroup>
+        <CommentToolbarButton />
       </ToolbarGroup>
     </>
   )

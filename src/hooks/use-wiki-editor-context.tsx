@@ -2,6 +2,9 @@ import * as React from 'react'
 
 interface WikiEditorContextValue {
   workspaceId: string
+  wikiPageId: string
+  userId: string
+  userName: string
 }
 
 const WikiEditorContext = React.createContext<WikiEditorContextValue | null>(
@@ -10,9 +13,15 @@ const WikiEditorContext = React.createContext<WikiEditorContextValue | null>(
 
 export function WikiEditorProvider({
   workspaceId,
+  wikiPageId,
+  userId,
+  userName,
   children,
-}: React.PropsWithChildren<{ workspaceId: string }>) {
-  const value = React.useMemo(() => ({ workspaceId }), [workspaceId])
+}: React.PropsWithChildren<WikiEditorContextValue>) {
+  const value = React.useMemo(
+    () => ({ workspaceId, wikiPageId, userId, userName }),
+    [workspaceId, wikiPageId, userId, userName],
+  )
   return (
     <WikiEditorContext.Provider value={value}>
       {children}
