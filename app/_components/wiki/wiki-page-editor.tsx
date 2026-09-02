@@ -7,7 +7,12 @@ import { Input } from '@/components/ui/input'
 import { useUpdateWikiPage } from '@/src/hooks/use-wiki-page'
 import type { WikiPageDTO } from '@/types/wiki-page'
 
-const AUTOSAVE_DELAY_MS = 800 // ms
+// O conteúdo real já está sincronizado em tempo real via Yjs/Hocuspocus —
+// este autosave só mantém WikiPage.content (o snapshot plano em JSON, usado
+// por listagem/busca fora do doc Yjs) atualizado. Como nada depende dele pra
+// não perder digitação, um debounce maior aqui só reduz a frequência de
+// escrita sem risco real de perda de dado.
+const AUTOSAVE_DELAY_MS = 1500 // ms
 
 interface WikiPageEditorProps {
   workspaceId: string
