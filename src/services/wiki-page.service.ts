@@ -112,6 +112,15 @@ export const WikiPageService = {
       updatedById: actorId,
     })
 
+    // The editor autosaves `content` on every debounced keystroke batch —
+    // auditing every one of those would flood the trail with noise for an
+    // event nobody reviews. Metadata edits (title/icon/coverImage) are rare,
+    // deliberate actions and stay audited; failures are always audited
+    // regardless of which fields changed, since those are worth knowing
+    // about even for a pure content autosave.
+    const isContentOnlyUpdate =
+      Object.keys(dto).length === 1 && 'content' in dto
+
     if (!result.ok) {
       auditMutation({
         entity: 'wiki_page',
@@ -125,13 +134,15 @@ export const WikiPageService = {
       return result
     }
 
-    auditMutation({
-      entity: 'wiki_page',
-      action: 'update',
-      actorId,
-      targetId: wikiPageId,
-      meta: { fields: Object.keys(dto) },
-    })
+    if (!isContentOnlyUpdate) {
+      auditMutation({
+        entity: 'wiki_page',
+        action: 'update',
+        actorId,
+        targetId: wikiPageId,
+        meta: { fields: Object.keys(dto) },
+      })
+    }
 
     return ok(toWikiPageDTO(result.value))
   },

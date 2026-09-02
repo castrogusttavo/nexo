@@ -35,21 +35,51 @@ const server = new Server({
 
   async onAuthenticate({ documentName, requestHeaders }) {
     const cookie = requestHeaders.cookie
-    if (!cookie) throw new Error('Missing session cookie')
+    if (!cookie) {
+      logger.warn('realtime.authenticate.failed', {
+        component: 'Realtime',
+        documentName,
+        reason: 'missing_cookie'
+      })
+      throw new Error('Missing session cookie')
+    }
 
     const session = await auth.api.getSession({
       headers: new Headers({ cookie })
     })
-    if (!session) throw new Error('Not authenticated')
+    if (!session) {
+      logger.warn('realtime.authenticate.failed', {
+        component: 'Realtime',
+        documentName,
+        reason: 'no_session'
+      })
+      throw new Error('Not authenticated')
+    }
 
     const page = await WikiPageRepository.findById(documentName)
-    if (!page.ok) throw new Error('Wiki page not found')
+    if (!page.ok) {
+      logger.warn('realtime.authenticate.failed', {
+        component: 'Realtime',
+        documentName,
+        userId: session.user.id,
+        reason: 'page_not_found'
+      })
+      throw new Error('Wiki page not found')
+    }
 
     const membership = await assertMember(
       session.user.id,
       page.value.workspaceId
     )
-    if (!membership.ok) throw new Error('Forbidden')
+    if (!membership.ok) {
+      logger.warn('realtime.authenticate.failed', {
+        component: 'Realtime',
+        documentName,
+        userId: session.user.id,
+        reason: 'forbidden'
+      })
+      throw new Error('Forbidden')
+    }
 
     logger.info('realtime.authenticate.success', {
       component: 'Realtime',
@@ -70,7 +100,15 @@ const server = new Server({
 
   async onLoadDocument({ documentName, document }) {
     const page = await WikiPageRepository.findById(documentName)
-    if (page.ok && page.value.yjsState) {
+    if (!page.ok) {
+      logger.error('realtime.load_document.failed', {
+        component: 'Realtime',
+        documentName,
+        reason: page.error.code
+      })
+      return document
+    }
+    if (page.value.yjsState) {
       Y.applyUpdate(document, page.value.yjsState)
     }
     return document
@@ -78,10 +116,17 @@ const server = new Server({
 
   async onStoreDocument({ documentName, document, context }) {
     const update = Y.encodeStateAsUpdate(document)
-    await WikiPageRepository.updateYjsState(documentName, {
+    const result = await WikiPageRepository.updateYjsState(documentName, {
       yjsState: update,
       updatedById: (context as { userId: string }).userId
     })
+    if (!result.ok) {
+      logger.error('realtime.store_document.failed', {
+        component: 'Realtime',
+        documentName,
+        reason: result.error.code
+      })
+    }
   }
 })
 
