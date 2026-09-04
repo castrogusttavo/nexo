@@ -5,6 +5,7 @@ RUN apk add --no-cache libc6-compat
 WORKDIR /app
 
 COPY package.json pnpm-lock.yaml* pnpm-workspace.yaml ./
+COPY patches ./patches
 
 RUN --mount=type=secret,id=hugeicons_token \
     --mount=type=cache,target=/root/.local/share/pnpm/store,sharing=locked \
