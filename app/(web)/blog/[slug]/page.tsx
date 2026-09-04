@@ -2,8 +2,10 @@ import type { Metadata } from 'next'
 import Image from 'next/image'
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
+import { JsonLd } from '@/components/seo/json-ld'
 import { Muted } from '@/components/typography/text/muted'
 import { Button } from '@/components/ui/button'
+import { NEXT_PUBLIC_URL } from '@/lib/env/env'
 import { BLOG_POST_TAG_LABELS } from '@/src/lib/blog/blog-labels'
 import { formatPostDate } from '@/src/lib/blog/format-ṕost-date'
 import { getPostBySlug } from '@/src/lib/blog/post'
@@ -49,8 +51,54 @@ export default async function BlogPostPage({ params }: Props) {
   const post = await getPostBySlug(slug)
   if (!post) notFound()
 
+  const postUrl = `${NEXT_PUBLIC_URL}/blog/${post.slug}`
+  const postImage = post.cover
+    ? new URL(post.cover, NEXT_PUBLIC_URL).toString()
+    : `${NEXT_PUBLIC_URL}/opengraph-image`
+
+  const blogPostingSchema = {
+    '@context': 'https://schema.org',
+    '@type': 'BlogPosting',
+    headline: post.title,
+    description: post.excerpt,
+    image: [postImage],
+    datePublished: post.date,
+    author: { '@type': 'Person', name: 'Gusttavo Castro' },
+    publisher: {
+      '@type': 'Organization',
+      name: 'Nexo',
+      logo: {
+        '@type': 'ImageObject',
+        url: `${NEXT_PUBLIC_URL}/brand/logo.png`,
+      },
+    },
+    mainEntityOfPage: { '@type': 'WebPage', '@id': postUrl },
+  }
+
+  const breadcrumbSchema = {
+    '@context': 'https://schema.org',
+    '@type': 'BreadcrumbList',
+    itemListElement: [
+      {
+        '@type': 'ListItem',
+        position: 1,
+        name: 'Início',
+        item: NEXT_PUBLIC_URL,
+      },
+      {
+        '@type': 'ListItem',
+        position: 2,
+        name: 'Blog',
+        item: `${NEXT_PUBLIC_URL}/blog`,
+      },
+      { '@type': 'ListItem', position: 3, name: post.title, item: postUrl },
+    ],
+  }
+
   return (
     <main className='mx-auto w-full flex flex-col px-4 py-3 sm:px-8 xl:max-w-336 xl:px-11 2xl:max-w-384 gap-10'>
+      <JsonLd data={blogPostingSchema} />
+      <JsonLd data={breadcrumbSchema} />
       <div className='w-full flex flex-col gap-10 xl:max-w-[80%] mx-auto py-16'>
         <div className='w-full flex flex-col gap-4 pb-2'>
           <Muted className='text-priary'>
@@ -70,7 +118,7 @@ export default async function BlogPostPage({ params }: Props) {
 
           <Image
             src={post.cover || ''}
-            alt={post.slug}
+            alt={post.title}
             width={1080}
             height={720}
             className='rounded-4xl w-full object-cover'
