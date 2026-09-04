@@ -14,8 +14,9 @@ import { WebFooter } from './(web)/_components/footer'
 import { NexoAiShowcase } from './(web)/_components/nexo-ai-showcase'
 
 export const metadata: Metadata = {
-  title: 'Nexo',
-  description: 'AI-native project management.',
+  title: 'Nexo — gestão de projetos nativa em IA para o seu time',
+  description:
+    'Nexo une projetos, documentação e IA num só workspace, para o seu time planejar, executar e manter o contexto sem trocar de ferramenta.',
 }
 
 export default async function Page() {

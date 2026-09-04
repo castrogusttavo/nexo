@@ -3,8 +3,9 @@ import type { ReactNode } from 'react'
 import { WebHeader } from './_components/header/web-header'
 
 export const metadata: Metadata = {
-  title: 'AI-native project management | Nexo',
-  description: '',
+  title: 'Nexo — gestão de projetos nativa em IA',
+  description:
+    'Planos, blog e vagas do Nexo, a plataforma de gestão de projetos nativa em IA.',
 }
 
 export default function WebLayout({ children }: { children: ReactNode }) {
