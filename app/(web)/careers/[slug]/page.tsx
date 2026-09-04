@@ -3,14 +3,46 @@ import type { Metadata } from 'next'
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
 import { NexoIcon } from '@/components/icon/icon'
+import { JsonLd } from '@/components/seo/json-ld'
 import { Muted } from '@/components/typography/text/muted'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
+import { NEXT_PUBLIC_URL } from '@/lib/env/env'
 import {
   CAREER_EMPLOYMENT_TYPE_LABELS,
   CAREER_LOCATION_TYPE_LABELS,
 } from '@/src/lib/career-labels'
 import { CareerJobService } from '@/src/services/career-job.service'
+import type { CareerJobDTO } from '@/types/career-job'
 import { CareerApplicationForm } from './career-application-form'
+
+// Mapeia pro enum schema.org/employmentType — nomes diferentes do enum do
+// Prisma (INTERNSHIP -> INTERN, CONTRACT -> CONTRACTOR).
+const JOB_POSTING_EMPLOYMENT_TYPE: Record<
+  CareerJobDTO['employmentType'],
+  string
+> = {
+  FULL_TIME: 'FULL_TIME',
+  PART_TIME: 'PART_TIME',
+  INTERNSHIP: 'INTERN',
+  CONTRACT: 'CONTRACTOR',
+  TEMPORARY: 'TEMPORARY',
+}
+
+function buildJobPostingDescription(job: CareerJobDTO): string {
+  const responsibilities = job.content.responsibilities
+    .map((item) => `<li>${item}</li>`)
+    .join('')
+  const requirements = job.content.requirements
+    .map((item) => `<li>${item}</li>`)
+    .join('')
+
+  return [
+    `<p>${job.summary}</p>`,
+    `<p>${job.content.about}</p>`,
+    `<p>O que você vai fazer:</p><ul>${responsibilities}</ul>`,
+    `<p>O que buscamos:</p><ul>${requirements}</ul>`,
+  ].join('')
+}
 
 interface Props {
   params: Promise<{ slug: string }>
@@ -50,9 +82,66 @@ export default async function CareerJobPage({ params }: Props) {
   if (!result.ok) notFound()
 
   const job = result.value
+  const jobUrl = `${NEXT_PUBLIC_URL}/careers/${job.slug}`
+
+  const jobPostingSchema = {
+    '@context': 'https://schema.org',
+    '@type': 'JobPosting',
+    title: job.title,
+    description: buildJobPostingDescription(job),
+    datePosted: job.createdAt,
+    ...(job.status === 'CLOSED' && { validThrough: job.updatedAt }),
+    employmentType: JOB_POSTING_EMPLOYMENT_TYPE[job.employmentType],
+    hiringOrganization: {
+      '@type': 'Organization',
+      name: 'Nexo',
+      sameAs: NEXT_PUBLIC_URL,
+      logo: `${NEXT_PUBLIC_URL}/brand/logo.png`,
+    },
+    ...(job.locationType === 'REMOTE'
+      ? {
+          jobLocationType: 'TELECOMMUTE',
+          applicantLocationRequirements: {
+            '@type': 'Country',
+            name: 'Brazil',
+          },
+        }
+      : {
+          jobLocation: {
+            '@type': 'Place',
+            address: {
+              '@type': 'PostalAddress',
+              addressLocality: job.location ?? undefined,
+              addressCountry: 'BR',
+            },
+          },
+        }),
+  }
+
+  const breadcrumbSchema = {
+    '@context': 'https://schema.org',
+    '@type': 'BreadcrumbList',
+    itemListElement: [
+      {
+        '@type': 'ListItem',
+        position: 1,
+        name: 'Início',
+        item: NEXT_PUBLIC_URL,
+      },
+      {
+        '@type': 'ListItem',
+        position: 2,
+        name: 'Carreiras',
+        item: `${NEXT_PUBLIC_URL}/careers`,
+      },
+      { '@type': 'ListItem', position: 3, name: job.title, item: jobUrl },
+    ],
+  }
 
   return (
     <main className='mx-auto max-w-3xl px-6 py-20 space-y-6'>
+      <JsonLd data={jobPostingSchema} />
+      <JsonLd data={breadcrumbSchema} />
       <div className='flex items-center justify-between'>
         <div className='flex items-center gap-1.5'>
           <Link href='/careers'>
