@@ -33,13 +33,13 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
       description: post.excerpt,
       publishedTime: post.date,
       authors: ['Gusttavo Castro'],
-      images: post.cover ? [post.cover] : undefined,
+      images: [post.cover ?? '/opengraph-image'],
     },
     twitter: {
       card: 'summary_large_image',
       title,
       description: post.excerpt,
-      images: post.cover ? [post.cover] : undefined,
+      images: [post.cover ?? '/twitter-image'],
     },
   }
 }

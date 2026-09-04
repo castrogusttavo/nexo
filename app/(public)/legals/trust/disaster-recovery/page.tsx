@@ -12,11 +12,13 @@ export const metadata: Metadata = {
     url: '/legals/trust/disaster-recovery',
     title: TITLE,
     description: DESCRIPTION,
+    images: ['/opengraph-image'],
   },
   twitter: {
     card: 'summary_large_image',
     title: TITLE,
     description: DESCRIPTION,
+    images: ['/twitter-image'],
   },
 }
 

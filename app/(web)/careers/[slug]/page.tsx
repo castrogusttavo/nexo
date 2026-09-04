@@ -33,8 +33,14 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
       url: `/careers/${slug}`,
       title,
       description: summary,
+      images: ['/opengraph-image'],
     },
-    twitter: { card: 'summary_large_image', title, description: summary },
+    twitter: {
+      card: 'summary_large_image',
+      title,
+      description: summary,
+      images: ['/twitter-image'],
+    },
   }
 }
 

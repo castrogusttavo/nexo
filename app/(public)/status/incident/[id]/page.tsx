@@ -32,8 +32,14 @@ export async function generateMetadata({
       url: `/status/incident/${id}`,
       title,
       description,
+      images: ['/opengraph-image'],
     },
-    twitter: { card: 'summary_large_image', title, description },
+    twitter: {
+      card: 'summary_large_image',
+      title,
+      description,
+      images: ['/twitter-image'],
+    },
   }
 }
 

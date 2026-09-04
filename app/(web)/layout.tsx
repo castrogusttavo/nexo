@@ -9,11 +9,17 @@ const DESCRIPTION =
 export const metadata: Metadata = {
   title: TITLE,
   description: DESCRIPTION,
-  openGraph: { type: 'website', title: TITLE, description: DESCRIPTION },
+  openGraph: {
+    type: 'website',
+    title: TITLE,
+    description: DESCRIPTION,
+    images: ['/opengraph-image'],
+  },
   twitter: {
     card: 'summary_large_image',
     title: TITLE,
     description: DESCRIPTION,
+    images: ['/twitter-image'],
   },
 }
 
