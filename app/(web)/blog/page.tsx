@@ -3,10 +3,24 @@ import { getAllPostsMeta } from '@/src/lib/blog/post'
 import { BlogFeatured } from './blog-featured'
 import { BlogList } from './blog-list'
 
+const TITLE = 'Blog | Nexo'
+const DESCRIPTION = 'Novidades, bastidores e aprendizados do Nexo.'
+
 export const metadata: Metadata = {
-  title: 'Blog | Nexo',
-  description: 'Novidades, bastidores e aprendizados do Nexo.',
+  title: TITLE,
+  description: DESCRIPTION,
   alternates: { canonical: '/blog' },
+  openGraph: {
+    type: 'website',
+    url: '/blog',
+    title: TITLE,
+    description: DESCRIPTION,
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: TITLE,
+    description: DESCRIPTION,
+  },
 }
 
 export default async function BlogPage() {

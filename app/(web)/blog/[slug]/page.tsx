@@ -20,10 +20,27 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const post = await getPostBySlug(slug)
   if (!post) return { title: 'Post não encontrado | Nexo' }
 
+  const title = `${post.title} | Blog Nexo`
+
   return {
-    title: `${post.title} | Blog Nexo`,
+    title,
     description: post.excerpt,
     alternates: { canonical: `/blog/${post.slug}` },
+    openGraph: {
+      type: 'article',
+      url: `/blog/${post.slug}`,
+      title,
+      description: post.excerpt,
+      publishedTime: post.date,
+      authors: ['Gusttavo Castro'],
+      images: post.cover ? [post.cover] : undefined,
+    },
+    twitter: {
+      card: 'summary_large_image',
+      title,
+      description: post.excerpt,
+      images: post.cover ? [post.cover] : undefined,
+    },
   }
 }
 
