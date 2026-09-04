@@ -13,6 +13,7 @@ export const metadata: Metadata = {
   title: 'Histórico de incidentes | Nexo',
   description:
     'Histórico de incidentes e disponibilidade dos serviços do Nexo.',
+  alternates: { canonical: '/status/history' },
 }
 
 const MONTH_FORMAT: Intl.DateTimeFormatOptions = {

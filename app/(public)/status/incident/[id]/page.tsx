@@ -12,9 +12,19 @@ import { StatusService } from '@/src/services/status/status.service'
 import { STATUS_META } from '@/src/services/status/status-map'
 import type { IncidentUpdateDTO } from '@/types/status'
 
-export const metadata: Metadata = {
-  title: 'Incidente | Nexo',
-  description: 'Detalhes e atualizações do incidente.',
+interface IncidentMetadataProps {
+  params: Promise<{ id: string }>
+}
+
+export async function generateMetadata({
+  params,
+}: IncidentMetadataProps): Promise<Metadata> {
+  const { id } = await params
+  return {
+    title: 'Incidente | Nexo',
+    description: 'Detalhes e atualizações do incidente.',
+    alternates: { canonical: `/status/incident/${id}` },
+  }
 }
 
 const EVENT_LABEL: Record<IncidentUpdateDTO['event'], string> = {

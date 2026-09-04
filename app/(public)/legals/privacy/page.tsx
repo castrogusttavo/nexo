@@ -8,6 +8,7 @@ import { PRIVACY_VERSION } from '@/lib/legal/versions'
 export const metadata: Metadata = {
   title: 'Política de Privacidade | Nexo',
   description: 'Como o Nexo coleta, usa e protege seus dados.',
+  alternates: { canonical: '/legals/privacy' },
 }
 
 const SECTIONS = [

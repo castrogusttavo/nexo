@@ -3,6 +3,7 @@ import type { Metadata } from 'next'
 export const metadata: Metadata = {
   title: 'Gerenciamento de Fornecedores | Nexo',
   description: 'Como o Nexo avalia e gerencia fornecedores terceiros.',
+  alternates: { canonical: '/legals/trust/vendor-management' },
 }
 
 export default function VendorManagementPage() {

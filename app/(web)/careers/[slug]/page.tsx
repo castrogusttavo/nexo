@@ -23,6 +23,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   return {
     title: `${result.value.title} | Carreiras Nexo`,
     description: result.value.summary,
+    alternates: { canonical: `/careers/${slug}` },
   }
 }
 

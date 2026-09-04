@@ -17,6 +17,7 @@ export const metadata: Metadata = {
   title: 'Nexo — gestão de projetos nativa em IA para o seu time',
   description:
     'Nexo une projetos, documentação e IA num só workspace, para o seu time planejar, executar e manter o contexto sem trocar de ferramenta.',
+  alternates: { canonical: '/' },
 }
 
 export default async function Page() {

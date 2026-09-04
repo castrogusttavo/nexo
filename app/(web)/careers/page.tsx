@@ -7,6 +7,7 @@ import { CareersList } from './careers-list'
 export const metadata: Metadata = {
   title: 'Carreiras | Nexo',
   description: 'Vagas abertas no Nexo.',
+  alternates: { canonical: '/careers' },
 }
 
 export default async function CareersPage() {

@@ -7,6 +7,7 @@ import { TalkToSalesForm } from './talk-to-sales-form'
 export const metadata: Metadata = {
   title: 'Falar com vendas | Nexo',
   description: 'Converse com nosso time sobre o plano Enterprise do Nexo.',
+  alternates: { canonical: '/talk-to-sales' },
 }
 
 export default function TalkToSalesPage() {

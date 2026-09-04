@@ -8,6 +8,7 @@ import { TERMS_VERSION } from '@/lib/legal/versions'
 export const metadata: Metadata = {
   title: 'Termos de Serviço | Nexo',
   description: 'Os termos que regem o uso do Nexo.',
+  alternates: { canonical: '/legals/terms' },
 }
 
 const SECTIONS = [

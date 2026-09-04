@@ -24,6 +24,7 @@ import { HistoryBars } from './_components/history-bars'
 export const metadata: Metadata = {
   title: 'Status | Nexo',
   description: 'Status em tempo real dos serviços do Nexo.',
+  alternates: { canonical: '/status' },
 }
 
 export default async function StatusPage() {

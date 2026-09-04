@@ -3,6 +3,7 @@ import type { Metadata } from 'next'
 export const metadata: Metadata = {
   title: 'Recuperação de Desastres | Nexo',
   description: 'Planos de recuperação e continuidade do Nexo.',
+  alternates: { canonical: '/legals/trust/disaster-recovery' },
 }
 
 export default function DisasterRecoveryPage() {
