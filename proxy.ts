@@ -13,7 +13,7 @@ const PUBLIC_ROUTES = [
   '/api/payment/webhook', '/docs', '/legals',
   '/status', '/pricing', '/talk-to-sales',
   '/marketplace', '/invite', '/api/talk-to-sales',
-  '/careers', '/api/careers', '/api/health'
+  '/careers', '/api/careers', '/api/health', '/blog'
 ]
 
 // style-src keeps 'unsafe-inline' as a deliberate trade-off, not an
