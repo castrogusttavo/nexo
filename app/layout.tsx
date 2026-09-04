@@ -4,6 +4,7 @@ import type { Metadata } from 'next'
 import './globals.css'
 import { NuqsAdapter } from 'nuqs/adapters/next/app'
 import { Suspense } from 'react'
+import { JsonLd } from '@/components/seo/json-ld'
 import { Toaster } from '@/components/ui/sonner'
 import { TooltipProvider } from '@/components/ui/tooltip'
 import { NEXT_PUBLIC_URL } from '@/lib/env/env'
@@ -40,6 +41,17 @@ export const metadata: Metadata = {
 
 const THEME_INIT_SCRIPT = `(function(){try{var m=document.cookie.match(/(?:^|; )nexo\\.theme=([^;]+)/);var t=m?decodeURIComponent(m[1]):'SYSTEM';var dark=t==='DARK'||(t==='SYSTEM'&&matchMedia('(prefers-color-scheme: dark)').matches);document.documentElement.classList.toggle('dark',dark)}catch(e){}})()`
 
+// sameAs fica de fora de propósito: os links de redes sociais no footer
+// ainda são placeholders (linkedin.com genérico, "#"). Adicionar aqui
+// quando existirem perfis reais.
+const ORGANIZATION_SCHEMA = {
+  '@context': 'https://schema.org',
+  '@type': 'Organization',
+  name: 'Nexo',
+  url: NEXT_PUBLIC_URL,
+  logo: `${NEXT_PUBLIC_URL}/brand/logo.png`,
+}
+
 export default function RootLayout({
   children,
 }: Readonly<{
@@ -57,6 +69,7 @@ export default function RootLayout({
     >
       <head>
         <script dangerouslySetInnerHTML={{ __html: THEME_INIT_SCRIPT }} />
+        <JsonLd data={ORGANIZATION_SCHEMA} />
       </head>
       <body className='root antialiased bg-background text-primary h-screen'>
         <Suspense>
