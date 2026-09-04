@@ -57,6 +57,7 @@
   --app: oklch(83.11% 0.0021 230.81);
   --brand: oklch(0.623 0.214 259.815);
   --highlight: oklch(0.852 0.199 91.936);
+  --surface-highlight: oklch(98.5% 0 0);
 }
 
 .dark {
@@ -106,6 +107,7 @@
   --app: oklch(16.89% .0021 230.81);
   --brand: oklch(0.707 0.165 254.624);
   --highlight: oklch(0.852 0.199 91.936);
+  --surface-highlight: oklch(16.9% 0.002 286.2);
 }
 
 @theme inline {
@@ -163,6 +165,7 @@
   --radius-4xl: calc(var(--radius) + 16px);
   --color-highlight: var(--highlight);
   --color-brand: var(--brand);
+  --color-surface-highlight: var(--surface-highlight);
 }
 
 @layer base {

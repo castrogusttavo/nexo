@@ -40,6 +40,10 @@ const nextConfig: NextConfig = {
         hostname: 'nexo.coodee.dev'
       },
       {
+        protocol: 'https',
+        hostname: 'plane.so'
+      },
+      {
         protocol: 'http',
         hostname: 'localhost',
         port: '9000',

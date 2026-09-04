@@ -11,7 +11,7 @@ export const metadata: Metadata = {
 
 export default function TalkToSalesPage() {
   return (
-    <main className='relative h-screen flex overflow-hidden'>
+    <main className='relative h-full flex overflow-hidden'>
       <div className='pointer-events-none absolute inset-y-0 left-0 z-0 w-1/2'>
         <Image
           src='/gradient.png'
@@ -25,7 +25,7 @@ export default function TalkToSalesPage() {
           className='object-cover object-center'
         />
       </div>
-      <div className='relative z-10 h-screen flex w-full mx-46 py-11'>
+      <div className='relative z-10 h-full flex w-full mx-46 py-11'>
         <div className='flex-1 flex items-center justify-center p-10'>
           <div className='w-full max-w-xl bg-card rounded-2xl border border-border p-10 flex flex-col gap-16'>
             <div className='flex flex-col gap-3'>
