@@ -5,7 +5,10 @@ import {
 } from '@hugeicons-pro/core-stroke-rounded'
 import Link from 'next/link'
 import { NexoIcon } from '@/components/icon/icon'
+import { JsonLd } from '@/components/seo/json-ld'
 import { Button } from '@/components/ui/button'
+import { NEXT_PUBLIC_URL } from '@/lib/env/env'
+import { PAID_PLAN_PRICES } from '@/src/config/plan-prices'
 import { CardCertifications } from '../_components/card-certifications'
 import { Faq } from '../_components/faq'
 import { BillingToggle } from '../_components/pricing/pricing-billing-toggle'
@@ -15,9 +18,43 @@ import { PricingTableDetailsPlan } from '../_components/pricing/table/pricing-ta
 import { SubTitle } from '../_components/text/sub-title'
 import { Title } from '../_components/text/title'
 
+// Preços em centavos (fonte: src/config/plan-prices.ts) convertidos pra
+// unidade decimal (schema.org price espera string sem símbolo de moeda).
+const PRODUCT_SCHEMA = {
+  '@context': 'https://schema.org',
+  '@type': 'SoftwareApplication',
+  name: 'Nexo',
+  applicationCategory: 'BusinessApplication',
+  operatingSystem: 'Web',
+  offers: [
+    {
+      '@type': 'Offer',
+      name: 'Free',
+      price: '0',
+      priceCurrency: 'BRL',
+      url: `${NEXT_PUBLIC_URL}/pricing`,
+    },
+    {
+      '@type': 'Offer',
+      name: 'Pro',
+      price: (PAID_PLAN_PRICES.PRO.monthly / 100).toFixed(2),
+      priceCurrency: 'BRL',
+      url: `${NEXT_PUBLIC_URL}/pricing`,
+    },
+    {
+      '@type': 'Offer',
+      name: 'Business',
+      price: (PAID_PLAN_PRICES.BUSINESS.monthly / 100).toFixed(2),
+      priceCurrency: 'BRL',
+      url: `${NEXT_PUBLIC_URL}/pricing`,
+    },
+  ],
+}
+
 export default function PricingPage() {
   return (
     <main className='mx-auto w-full flex flex-col items-center px-4 py-3 sm:px-8 xl:max-w-336 xl:px-11 2xl:max-w-384'>
+      <JsonLd data={PRODUCT_SCHEMA} />
       <div className='border-border lg:border-x mx-auto w-full flex flex-col items-center gap-4 py-20'>
         <Title>
           Comece grátis, <br />
