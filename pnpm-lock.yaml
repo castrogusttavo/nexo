@@ -27,6 +27,11 @@ overrides:
   hono: '>=4.12.34'
   react-email>esbuild: 0.28.0
 
+patchedDependencies:
+  gray-matter@4.0.3:
+    hash: 6867093d18e007f9f610b1c4c6871b64734503b546ffcd3bc7a3675dd11f2188
+    path: patches/gray-matter@4.0.3.patch
+
 importers:
 
   .:
@@ -276,7 +281,7 @@ importers:
         version: 1.7.2(next@16.2.12(@babel/core@7.29.7)(@opentelemetry/api@1.9.1)(@types/node@25.9.4)(react-dom@19.2.5(react@19.2.5))(react@19.2.5))
       gray-matter:
         specifier: ^4.0.3
-        version: 4.0.3
+        version: 4.0.3(patch_hash=6867093d18e007f9f610b1c4c6871b64734503b546ffcd3bc7a3675dd11f2188)
       greatstorage:
         specifier: ^0.5.0
         version: 0.5.0
@@ -15563,7 +15568,7 @@ snapshots:
 
   graphql@16.14.2: {}
 
-  gray-matter@4.0.3:
+  gray-matter@4.0.3(patch_hash=6867093d18e007f9f610b1c4c6871b64734503b546ffcd3bc7a3675dd11f2188):
     dependencies:
       js-yaml: 4.3.1
       kind-of: 6.0.3
