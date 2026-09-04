@@ -1,3 +1,4 @@
+import type { Metadata } from 'next'
 import Image from 'next/image'
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
@@ -12,6 +13,18 @@ import { TableOfContents } from './table-of-contents'
 
 interface Props {
   params: Promise<{ slug: string }>
+}
+
+export async function generateMetadata({ params }: Props): Promise<Metadata> {
+  const { slug } = await params
+  const post = await getPostBySlug(slug)
+  if (!post) return { title: 'Post não encontrado | Nexo' }
+
+  return {
+    title: `${post.title} | Blog Nexo`,
+    description: post.excerpt,
+    alternates: { canonical: `/blog/${post.slug}` },
+  }
 }
 
 export default async function BlogPostPage({ params }: Props) {

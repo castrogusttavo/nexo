@@ -5,7 +5,8 @@ import { BlogList } from './blog-list'
 
 export const metadata: Metadata = {
   title: 'Blog | Nexo',
-  description: 'Novidades, bastidores e apredizados do Nexo.',
+  description: 'Novidades, bastidores e aprendizados do Nexo.',
+  alternates: { canonical: '/blog' },
 }
 
 export default async function BlogPage() {
