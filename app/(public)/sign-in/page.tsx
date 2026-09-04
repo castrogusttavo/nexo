@@ -8,6 +8,7 @@ import { SignInForm } from './sign-in-form'
 export const metadata: Metadata = {
   title: 'Entrar | Nexo',
   description: 'Acesse sua conta no Nexo.',
+  robots: { index: false, follow: false },
 }
 
 export default async function SignInPage({

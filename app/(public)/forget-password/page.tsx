@@ -7,6 +7,7 @@ import { ForgetPasswordForm } from './forget-password-form'
 export const metadata: Metadata = {
   title: 'Redefinir senha | Nexo',
   description: 'Receba um link para redefinir a senha da sua conta no Nexo.',
+  robots: { index: false, follow: false },
 }
 
 export default async function ForgetPasswordPage() {

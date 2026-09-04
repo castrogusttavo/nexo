@@ -1,6 +1,13 @@
+import type { Metadata } from 'next'
 import { redirect } from 'next/navigation'
 import { getAuthSession } from '@/src/lib/auth-session'
 import { AcceptInvitation } from './accept-invitation'
+
+export const metadata: Metadata = {
+  title: 'Aceitar convite | Nexo',
+  description: 'Aceite seu convite para um workspace no Nexo.',
+  robots: { index: false, follow: false },
+}
 
 type Props = { searchParams: Promise<{ token?: string }> }
 

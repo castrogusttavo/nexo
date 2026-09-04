@@ -4,6 +4,7 @@ import { ResetPasswordForm } from './reset-password-form'
 export const metadata: Metadata = {
   title: 'Nova senha | Nexo',
   description: 'Defina uma nova senha para sua conta no Nexo.',
+  robots: { index: false, follow: false },
 }
 
 export default async function ResetPasswordPage({

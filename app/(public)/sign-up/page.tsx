@@ -9,6 +9,7 @@ export const metadata: Metadata = {
   title: 'Criar conta | Nexo',
   description:
     'Crie sua conta no Nexo e comece a trabalhar em todas as dimensões.',
+  robots: { index: false, follow: false },
 }
 
 export default async function SignUpPage({
