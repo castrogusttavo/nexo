@@ -9,7 +9,10 @@ const DESCRIPTION = 'Novidades, bastidores e aprendizados do Nexo.'
 export const metadata: Metadata = {
   title: TITLE,
   description: DESCRIPTION,
-  alternates: { canonical: '/blog' },
+  alternates: {
+    canonical: '/blog',
+    types: { 'application/rss+xml': '/blog/feed.xml' },
+  },
   openGraph: {
     type: 'website',
     url: '/blog',
