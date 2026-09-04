@@ -21,7 +21,6 @@ export default function OpengraphImage() {
         backgroundColor: '#0b0b0c',
       }}
     >
-      {/* biome-ignore lint/performance/noImgElement: gerado via next/og (Satori), fora do pipeline de next/image */}
       <img src={logoSrc} width={420} height={160} alt='Nexo' />
     </div>,
     { ...size },
