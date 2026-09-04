@@ -5,6 +5,7 @@ import {
   ArrowRight01Icon,
   CheckIcon,
 } from '@hugeicons-pro/core-stroke-rounded'
+import { sendGAEvent } from '@next/third-parties/google'
 import Link from 'next/link'
 import { useQueryState } from 'nuqs'
 import { NexoIcon } from '@/components/icon/icon'
@@ -41,6 +42,10 @@ export function PricingCardPlan({ plan }: PricingCardPlanProps) {
   const previous = previousPlan(plan)
   const discount = price ? yearlyDiscount(price) : 0
 
+  function trackClick() {
+    sendGAEvent('event', 'pricing_plan_click', { plan, billing })
+  }
+
   return (
     <div className='border border-border w-full'>
       <div className='flex flex-col gap-6 border-b border-border p-6'>
@@ -72,7 +77,11 @@ export function PricingCardPlan({ plan }: PricingCardPlanProps) {
                 nativeButton={false}
                 size='sm'
                 className='w-full'
-                render={<Link href='/talk-to-sales'>Falar com vendas</Link>}
+                render={
+                  <Link href='/talk-to-sales' onClick={trackClick}>
+                    Falar com vendas
+                  </Link>
+                }
               />
             ) : plan === 'FREE' ? (
               <Button
@@ -80,7 +89,11 @@ export function PricingCardPlan({ plan }: PricingCardPlanProps) {
                 size='sm'
                 variant='outline'
                 className='w-full'
-                render={<Link href='/sign-up'>Comece grátis</Link>}
+                render={
+                  <Link href='/sign-up' onClick={trackClick}>
+                    Comece grátis
+                  </Link>
+                }
               />
             ) : (
               <Button
@@ -88,7 +101,7 @@ export function PricingCardPlan({ plan }: PricingCardPlanProps) {
                 size='sm'
                 className='w-full'
                 render={
-                  <Link href={upgradeUrl(plan, billing)}>
+                  <Link href={upgradeUrl(plan, billing)} onClick={trackClick}>
                     Obter {formatPlanName(plan)} por este preço
                   </Link>
                 }

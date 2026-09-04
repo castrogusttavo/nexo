@@ -1,5 +1,6 @@
 'use client'
 
+import { sendGAEvent } from '@next/third-parties/google'
 import { useState } from 'react'
 import { Button } from '@/components/ui/button'
 import { Field, FieldError, FieldLabel } from '@/components/ui/field'
@@ -58,6 +59,7 @@ export function TalkToSalesForm() {
         body: JSON.stringify(payload),
       })
       if (res.ok) {
+        sendGAEvent('event', 'talk_to_sales_submit', { team_size: teamSize })
         setFields(EMPTY)
         setTeamSize('')
         setStatus('sent')

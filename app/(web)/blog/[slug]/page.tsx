@@ -10,6 +10,7 @@ import { BLOG_POST_TAG_LABELS } from '@/src/lib/blog/blog-labels'
 import { formatPostDate } from '@/src/lib/blog/format-ṕost-date'
 import { getPostBySlug } from '@/src/lib/blog/post'
 import { BlogContent } from './blog-content'
+import { BlogPostViewTracker } from './blog-post-view-tracker'
 import { CopyMarkdownButton } from './copy-markdown-button'
 import { TableOfContents } from './table-of-contents'
 
@@ -99,6 +100,7 @@ export default async function BlogPostPage({ params }: Props) {
     <main className='mx-auto w-full flex flex-col px-4 py-3 sm:px-8 xl:max-w-336 xl:px-11 2xl:max-w-384 gap-10'>
       <JsonLd data={blogPostingSchema} />
       <JsonLd data={breadcrumbSchema} />
+      <BlogPostViewTracker slug={post.slug} title={post.title} />
       <div className='w-full flex flex-col gap-10 xl:max-w-[80%] mx-auto py-16'>
         <div className='w-full flex flex-col gap-4 pb-2'>
           <Muted className='text-priary'>
