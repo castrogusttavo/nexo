@@ -9,11 +9,25 @@ import { StatusService } from '@/src/services/status/status.service'
 import { STATUS_META } from '@/src/services/status/status-map'
 import type { IncidentSummaryDTO } from '@/types/status'
 
+const TITLE = 'Histórico de incidentes | Nexo'
+const DESCRIPTION =
+  'Histórico de incidentes e disponibilidade dos serviços do Nexo.'
+
 export const metadata: Metadata = {
-  title: 'Histórico de incidentes | Nexo',
-  description:
-    'Histórico de incidentes e disponibilidade dos serviços do Nexo.',
+  title: TITLE,
+  description: DESCRIPTION,
   alternates: { canonical: '/status/history' },
+  openGraph: {
+    type: 'website',
+    url: '/status/history',
+    title: TITLE,
+    description: DESCRIPTION,
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: TITLE,
+    description: DESCRIPTION,
+  },
 }
 
 const MONTH_FORMAT: Intl.DateTimeFormatOptions = {

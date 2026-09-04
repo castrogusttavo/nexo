@@ -5,10 +5,24 @@ import { Muted } from '@/components/typography/text/muted'
 import { P } from '@/components/typography/text/p'
 import { TERMS_VERSION } from '@/lib/legal/versions'
 
+const TITLE = 'Termos de Serviço | Nexo'
+const DESCRIPTION = 'Os termos que regem o uso do Nexo.'
+
 export const metadata: Metadata = {
-  title: 'Termos de Serviço | Nexo',
-  description: 'Os termos que regem o uso do Nexo.',
+  title: TITLE,
+  description: DESCRIPTION,
   alternates: { canonical: '/legals/terms' },
+  openGraph: {
+    type: 'website',
+    url: '/legals/terms',
+    title: TITLE,
+    description: DESCRIPTION,
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: TITLE,
+    description: DESCRIPTION,
+  },
 }
 
 const SECTIONS = [

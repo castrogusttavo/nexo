@@ -1,9 +1,23 @@
 import type { Metadata } from 'next'
 
+const TITLE = 'Retenção de Dados | Nexo'
+const DESCRIPTION = 'Por quanto tempo o Nexo retém seus dados.'
+
 export const metadata: Metadata = {
-  title: 'Retenção de Dados | Nexo',
-  description: 'Por quanto tempo o Nexo retém seus dados.',
+  title: TITLE,
+  description: DESCRIPTION,
   alternates: { canonical: '/legals/trust/data-retention' },
+  openGraph: {
+    type: 'website',
+    url: '/legals/trust/data-retention',
+    title: TITLE,
+    description: DESCRIPTION,
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: TITLE,
+    description: DESCRIPTION,
+  },
 }
 
 export default function DataRentetionPage() {

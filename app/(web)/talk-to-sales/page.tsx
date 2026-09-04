@@ -4,10 +4,24 @@ import Link from 'next/link'
 import { Muted } from '@/components/typography/text/muted'
 import { TalkToSalesForm } from './talk-to-sales-form'
 
+const TITLE = 'Falar com vendas | Nexo'
+const DESCRIPTION = 'Converse com nosso time sobre o plano Enterprise do Nexo.'
+
 export const metadata: Metadata = {
-  title: 'Falar com vendas | Nexo',
-  description: 'Converse com nosso time sobre o plano Enterprise do Nexo.',
+  title: TITLE,
+  description: DESCRIPTION,
   alternates: { canonical: '/talk-to-sales' },
+  openGraph: {
+    type: 'website',
+    url: '/talk-to-sales',
+    title: TITLE,
+    description: DESCRIPTION,
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: TITLE,
+    description: DESCRIPTION,
+  },
 }
 
 export default function TalkToSalesPage() {

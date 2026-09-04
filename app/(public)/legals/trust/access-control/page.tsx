@@ -1,9 +1,23 @@
 import type { Metadata } from 'next'
 
+const TITLE = 'Controle de Acesso | Nexo'
+const DESCRIPTION = 'Políticas de controle de acesso aos dados do Nexo.'
+
 export const metadata: Metadata = {
-  title: 'Controle de Acesso | Nexo',
-  description: 'Políticas de controle de acesso aos dados do Nexo.',
+  title: TITLE,
+  description: DESCRIPTION,
   alternates: { canonical: '/legals/trust/access-control' },
+  openGraph: {
+    type: 'website',
+    url: '/legals/trust/access-control',
+    title: TITLE,
+    description: DESCRIPTION,
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: TITLE,
+    description: DESCRIPTION,
+  },
 }
 
 export default function AccessControlPage() {

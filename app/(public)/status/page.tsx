@@ -21,10 +21,24 @@ import { StatusService } from '@/src/services/status/status.service'
 import { STATUS_META } from '@/src/services/status/status-map'
 import { HistoryBars } from './_components/history-bars'
 
+const TITLE = 'Status | Nexo'
+const DESCRIPTION = 'Status em tempo real dos serviços do Nexo.'
+
 export const metadata: Metadata = {
-  title: 'Status | Nexo',
-  description: 'Status em tempo real dos serviços do Nexo.',
+  title: TITLE,
+  description: DESCRIPTION,
   alternates: { canonical: '/status' },
+  openGraph: {
+    type: 'website',
+    url: '/status',
+    title: TITLE,
+    description: DESCRIPTION,
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: TITLE,
+    description: DESCRIPTION,
+  },
 }
 
 export default async function StatusPage() {

@@ -20,10 +20,20 @@ export async function generateMetadata({
   params,
 }: IncidentMetadataProps): Promise<Metadata> {
   const { id } = await params
+  const title = 'Incidente | Nexo'
+  const description = 'Detalhes e atualizações do incidente.'
+
   return {
-    title: 'Incidente | Nexo',
-    description: 'Detalhes e atualizações do incidente.',
+    title,
+    description,
     alternates: { canonical: `/status/incident/${id}` },
+    openGraph: {
+      type: 'website',
+      url: `/status/incident/${id}`,
+      title,
+      description,
+    },
+    twitter: { card: 'summary_large_image', title, description },
   }
 }
 

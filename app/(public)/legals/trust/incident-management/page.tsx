@@ -1,9 +1,23 @@
 import type { Metadata } from 'next'
 
+const TITLE = 'Gerenciamento de Incidentes | Nexo'
+const DESCRIPTION = 'Como o Nexo detecta, responde e comunica incidentes.'
+
 export const metadata: Metadata = {
-  title: 'Gerenciamento de Incidentes | Nexo',
-  description: 'Como o Nexo detecta, responde e comunica incidentes.',
+  title: TITLE,
+  description: DESCRIPTION,
   alternates: { canonical: '/legals/trust/incident-management' },
+  openGraph: {
+    type: 'website',
+    url: '/legals/trust/incident-management',
+    title: TITLE,
+    description: DESCRIPTION,
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: TITLE,
+    description: DESCRIPTION,
+  },
 }
 
 export default function IncidentManagementPage() {

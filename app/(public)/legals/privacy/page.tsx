@@ -5,10 +5,24 @@ import { Muted } from '@/components/typography/text/muted'
 import { P } from '@/components/typography/text/p'
 import { PRIVACY_VERSION } from '@/lib/legal/versions'
 
+const TITLE = 'Política de Privacidade | Nexo'
+const DESCRIPTION = 'Como o Nexo coleta, usa e protege seus dados.'
+
 export const metadata: Metadata = {
-  title: 'Política de Privacidade | Nexo',
-  description: 'Como o Nexo coleta, usa e protege seus dados.',
+  title: TITLE,
+  description: DESCRIPTION,
   alternates: { canonical: '/legals/privacy' },
+  openGraph: {
+    type: 'website',
+    url: '/legals/privacy',
+    title: TITLE,
+    description: DESCRIPTION,
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: TITLE,
+    description: DESCRIPTION,
+  },
 }
 
 const SECTIONS = [

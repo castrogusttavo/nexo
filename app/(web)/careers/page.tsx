@@ -4,10 +4,24 @@ import { SubTitle } from '../_components/text/sub-title'
 import { Title } from '../_components/text/title'
 import { CareersList } from './careers-list'
 
+const TITLE = 'Carreiras | Nexo'
+const DESCRIPTION = 'Vagas abertas no Nexo.'
+
 export const metadata: Metadata = {
-  title: 'Carreiras | Nexo',
-  description: 'Vagas abertas no Nexo.',
+  title: TITLE,
+  description: DESCRIPTION,
   alternates: { canonical: '/careers' },
+  openGraph: {
+    type: 'website',
+    url: '/careers',
+    title: TITLE,
+    description: DESCRIPTION,
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: TITLE,
+    description: DESCRIPTION,
+  },
 }
 
 export default async function CareersPage() {

@@ -1,9 +1,23 @@
 import type { Metadata } from 'next'
 
+const TITLE = 'Segurança | Nexo'
+const DESCRIPTION = 'Práticas de segurança adotadas pelo Nexo.'
+
 export const metadata: Metadata = {
-  title: 'Segurança | Nexo',
-  description: 'Práticas de segurança adotadas pelo Nexo.',
+  title: TITLE,
+  description: DESCRIPTION,
   alternates: { canonical: '/legals/security' },
+  openGraph: {
+    type: 'website',
+    url: '/legals/security',
+    title: TITLE,
+    description: DESCRIPTION,
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: TITLE,
+    description: DESCRIPTION,
+  },
 }
 
 export default function SecurityPage() {

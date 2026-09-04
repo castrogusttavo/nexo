@@ -20,10 +20,21 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { slug } = await params
   const result = await CareerJobService.getBySlug(slug)
   if (!result.ok) return { title: 'Vaga não encontrada | Nexo' }
+
+  const title = `${result.value.title} | Carreiras Nexo`
+  const { summary } = result.value
+
   return {
-    title: `${result.value.title} | Carreiras Nexo`,
-    description: result.value.summary,
+    title,
+    description: summary,
     alternates: { canonical: `/careers/${slug}` },
+    openGraph: {
+      type: 'website',
+      url: `/careers/${slug}`,
+      title,
+      description: summary,
+    },
+    twitter: { card: 'summary_large_image', title, description: summary },
   }
 }
 
