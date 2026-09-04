@@ -2,10 +2,19 @@ import type { Metadata } from 'next'
 import type { ReactNode } from 'react'
 import { WebHeader } from './_components/header/web-header'
 
+const TITLE = 'Nexo — gestão de projetos nativa em IA'
+const DESCRIPTION =
+  'Planos, blog e vagas do Nexo, a plataforma de gestão de projetos nativa em IA.'
+
 export const metadata: Metadata = {
-  title: 'Nexo — gestão de projetos nativa em IA',
-  description:
-    'Planos, blog e vagas do Nexo, a plataforma de gestão de projetos nativa em IA.',
+  title: TITLE,
+  description: DESCRIPTION,
+  openGraph: { type: 'website', title: TITLE, description: DESCRIPTION },
+  twitter: {
+    card: 'summary_large_image',
+    title: TITLE,
+    description: DESCRIPTION,
+  },
 }
 
 export default function WebLayout({ children }: { children: ReactNode }) {

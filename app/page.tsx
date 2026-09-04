@@ -13,11 +13,25 @@ import { MembershipService } from '@/src/services/membership.service'
 import { WebFooter } from './(web)/_components/footer'
 import { NexoAiShowcase } from './(web)/_components/nexo-ai-showcase'
 
+const TITLE = 'Nexo — gestão de projetos nativa em IA para o seu time'
+const DESCRIPTION =
+  'Nexo une projetos, documentação e IA num só workspace, para o seu time planejar, executar e manter o contexto sem trocar de ferramenta.'
+
 export const metadata: Metadata = {
-  title: 'Nexo — gestão de projetos nativa em IA para o seu time',
-  description:
-    'Nexo une projetos, documentação e IA num só workspace, para o seu time planejar, executar e manter o contexto sem trocar de ferramenta.',
+  title: TITLE,
+  description: DESCRIPTION,
   alternates: { canonical: '/' },
+  openGraph: {
+    type: 'website',
+    url: '/',
+    title: TITLE,
+    description: DESCRIPTION,
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: TITLE,
+    description: DESCRIPTION,
+  },
 }
 
 export default async function Page() {

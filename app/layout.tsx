@@ -13,11 +13,27 @@ import { CookieConsentBanner } from './_components/user/cookie-consent/banner'
 import { ConsentedTrackers } from './_components/user/cookie-consent/consented-trackers'
 import { CookieConsentInit } from './_components/user/cookie-consent/init'
 
+const TITLE = 'Nexo — gestão de projetos nativa em IA'
+const DESCRIPTION =
+  'Nexo reúne projetos, documentação e fluxos de trabalho com IA em um único workspace, para times e agentes planejarem, executarem e ficarem alinhados.'
+
 export const metadata: Metadata = {
   metadataBase: new URL(NEXT_PUBLIC_URL),
-  title: 'Nexo — gestão de projetos nativa em IA',
-  description:
-    'Nexo reúne projetos, documentação e fluxos de trabalho com IA em um único workspace, para times e agentes planejarem, executarem e ficarem alinhados.',
+  title: TITLE,
+  description: DESCRIPTION,
+  openGraph: {
+    type: 'website',
+    locale: 'pt_BR',
+    siteName: 'Nexo',
+    url: NEXT_PUBLIC_URL,
+    title: TITLE,
+    description: DESCRIPTION,
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: TITLE,
+    description: DESCRIPTION,
+  },
 }
 
 const THEME_INIT_SCRIPT = `(function(){try{var m=document.cookie.match(/(?:^|; )nexo\\.theme=([^;]+)/);var t=m?decodeURIComponent(m[1]):'SYSTEM';var dark=t==='DARK'||(t==='SYSTEM'&&matchMedia('(prefers-color-scheme: dark)').matches);document.documentElement.classList.toggle('dark',dark)}catch(e){}})()`
