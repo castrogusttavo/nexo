@@ -7,8 +7,8 @@ on:
     branches: [main]
 
 env:
-  REGISTRY: docker.io
-  IMAGE_NAME: ${{ vars.DOCKERHUB_USERNAME }}/nexoso
+  REGISTRY: ghcr.io
+  IMAGE_NAME: castrogusttavo/nexo
 
 jobs:
   migrate:
@@ -46,6 +46,7 @@ jobs:
     runs-on: self-hosted
     permissions:
       contents: read
+      packages: write
     environment:
       name: production
       url: https://nexo.coodee.dev
@@ -57,27 +58,11 @@ jobs:
         uses: docker/setup-buildx-action@8d2750c68a42422c14e847fe6c8ac0403b4cbd6f # v3
 
       - name: Log in to Container Registry
-        # Moved ahead of the build: registry-backed buildx cache needs to
-        # push/pull against ${{ env.IMAGE_NAME }}:buildcache, so auth has to
-        # exist before that step runs. continue-on-error because this whole
-        # job used to route around registry flakiness (see the deploy step
-        # below) — if login fails, the build just proceeds cache-cold
-        # instead of failing outright, and the later best-effort push
-        # reuses this same session if it succeeded.
-        continue-on-error: true
-        env:
-          DOCKERHUB_TOKEN: ${{ secrets.DOCKERHUB_TOKEN }}
-        run: |
-          for attempt in 1 2; do
-            if echo "$DOCKERHUB_TOKEN" | docker login "${{ env.REGISTRY }}" -u "${{ vars.DOCKERHUB_USERNAME }}" --password-stdin; then
-              echo "Logged in to ${{ env.REGISTRY }} on attempt $attempt"
-              exit 0
-            fi
-            echo "::warning::Login attempt $attempt failed, retrying in $((attempt * 5))s..."
-            sleep $((attempt * 5))
-          done
-          echo "::warning::Failed to log in to ${{ env.REGISTRY }} after 2 attempts — build will proceed without registry cache"
-          exit 1
+        uses: docker/login-action@c94ce9fb468520275223c153574b00df6fe4bcc9 # v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Extract metadata
         id: meta
@@ -96,16 +81,8 @@ jobs:
           load: true
           tags: ${{ env.IMAGE_NAME }}:scan
           labels: ${{ steps.meta.outputs.labels }}
-          # Registry-backed cache instead of local disk: the local
-          # .buildx-cache dir was competing for I/O with every other
-          # container on this host (postgres/redis/minio/rabbitmq across
-          # nexo and steel) and was the actual cause of multi-hour hangs,
-          # not CPU or memory. ignore-error=true on cache-to means a failed
-          # cache push degrades to a slower, cache-cold build instead of
-          # failing the job — same tolerance the rest of this pipeline
-          # already has for this registry's historical flakiness.
           cache-from: type=registry,ref=${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:buildcache
-          cache-to: type=registry,ref=${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:buildcache,mode=max,ignore-error=true
+          cache-to: type=registry,ref=${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:buildcache,mode=max
           build-args: |
             NEXT_PUBLIC_URL=https://nexo.coodee.dev
             NEXT_PUBLIC_AXIOM_TOKEN=${{ secrets.NEXT_PUBLIC_AXIOM_TOKEN }}
@@ -125,6 +102,14 @@ jobs:
           ignore-unfixed: true
           exit-code: '1'
 
+      - name: Push scanned image
+        run: |
+          while IFS= read -r tag; do
+            [ -z "$tag" ] && continue
+            docker tag "${{ env.IMAGE_NAME }}:scan" "$tag"
+            docker push "$tag"
+          done <<< "${{ steps.meta.outputs.tags }}"
+
       - name: Decrypt production secrets
         run: |
           sops --decrypt secrets/production.enc.env > /var/www/nexo/.env
@@ -132,42 +117,12 @@ jobs:
           SOPS_AGE_KEY: ${{ secrets.SOPS_AGE_KEY }}
 
       - name: Deploy to server
-        # Deploys straight from the image just built and scanned on this same
-        # host — no registry round-trip. Registry connectivity from this
-        # runner has been unreliable for days (identical "context deadline
-        # exceeded" against ghcr.io AND Docker Hub; DNS, proxy env, memory/
-        # load and the containerd snapshotter were all tested and ruled out
-        # as the cause). Since build and deploy already happen on the same
-        # machine, pushing the image out and pulling it straight back in was
-        # pure overhead — and exactly the overhead that kept failing.
-        #
-        # The SHA tag below stays on disk (docker image prune -f only removes
-        # untagged images) as a manual rollback point:
-        #   docker tag <IMAGE_NAME>:<old-sha> <REGISTRY>/<IMAGE_NAME>:latest
-        #   cd /var/www/nexo && docker compose up -d
         run: |
-          docker tag "${{ env.IMAGE_NAME }}:scan" "${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest"
-          docker tag "${{ env.IMAGE_NAME }}:scan" "${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ github.event.workflow_run.head_sha }}"
           cp docker-compose.yml /var/www/nexo/docker-compose.yml
           cd /var/www/nexo/
+          docker compose pull
           docker compose up -d
           docker image prune -f
-
-      - name: Push image to registry (best effort)
-        # Reuses the login from before the build step — same job, same
-        # docker config on this runner. If that login failed, this is a
-        # no-op failure too; continue-on-error keeps it from blocking.
-        continue-on-error: true
-        run: |
-          while IFS= read -r tag; do
-            [ -z "$tag" ] && continue
-            docker tag "${{ env.IMAGE_NAME }}:scan" "$tag"
-            docker push "$tag" || echo "::warning::Failed to push $tag"
-          done <<< "${{ steps.meta.outputs.tags }}"
-
-      - name: Log out of Container Registry
-        if: always()
-        run: docker logout "${{ env.REGISTRY }}" || true
 
   release:
     name: Tag & Release
