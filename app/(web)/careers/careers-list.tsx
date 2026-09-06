@@ -1,8 +1,10 @@
 'use client'
 
+import { ArrowUpRight03Icon } from '@hugeicons-pro/core-stroke-rounded'
 import Link from 'next/link'
 import { useQueryStates } from 'nuqs'
 import { useMemo } from 'react'
+import { NexoIcon } from '@/components/icon/icon'
 import { Muted } from '@/components/typography/text/muted'
 import { Button } from '@/components/ui/button'
 import {
@@ -23,11 +25,12 @@ import {
   careerLocationParser,
   careerLocationTypeParser,
 } from '@/src/lib/career-params'
-import {
+import type {
   CAREER_EMPLOYMENT_TYPES,
   CAREER_LOCATION_TYPES,
 } from '@/src/schemas/career-job.schema'
 import type { CareerJobDTO } from '@/types/career-job'
+import { Title } from '../_components/text/title'
 
 const ALL = 'all'
 const UNSPECIFIED_DEPARTMENT = 'Outras vagas'
@@ -105,133 +108,7 @@ export function CareersList({ jobs }: CareersListProps) {
   return (
     <div className='w-full max-w-180 flex flex-col gap-8 mx-auto items-center'>
       <div className='w-full space-y-3'>
-        <div className='w-full flex items-center justify-between'>
-          <Muted>Filtros:</Muted>
-          {hasActiveFilters && (
-            <Button
-              variant='ghost'
-              size='sm'
-              onClick={() =>
-                setFilters({
-                  department: null,
-                  location: null,
-                  locationType: null,
-                  employmentType: null,
-                })
-              }
-            >
-              Limpar filtros
-            </Button>
-          )}
-        </div>
-        <div className='w-full flex flex-wrap gap-3 justify-between'>
-          <Select
-            value={department}
-            onValueChange={(value) => {
-              if (!value) return
-              setFilters({ department: value === ALL ? null : value })
-            }}
-          >
-            <SelectTrigger className='w-auto min-w-40'>
-              <SelectValue placeholder='Departamento' />
-            </SelectTrigger>
-            <SelectContent
-              className='w-full'
-              alignItemWithTrigger={false}
-              align='start'
-            >
-              <SelectGroup>
-                <SelectItem value={ALL}>Todos os departamentos</SelectItem>
-                {departments.map((dept) => (
-                  <SelectItem key={dept} value={dept}>
-                    {dept}
-                  </SelectItem>
-                ))}
-              </SelectGroup>
-            </SelectContent>
-          </Select>
-          <Select<EmploymentTypeFilter>
-            value={employmentType}
-            onValueChange={(value) => {
-              if (!value) return
-              setFilters({ employmentType: value === ALL ? null : value })
-            }}
-          >
-            <SelectTrigger className='w-auto min-w-40'>
-              <SelectValue placeholder='Tipo de emprego' />
-            </SelectTrigger>
-            <SelectContent
-              className='w-full'
-              alignItemWithTrigger={false}
-              align='start'
-            >
-              <SelectGroup>
-                <SelectItem value={ALL}>Todos os tipos</SelectItem>
-                {CAREER_EMPLOYMENT_TYPES.map((type) => (
-                  <SelectItem
-                    key={type}
-                    value={CAREER_EMPLOYMENT_TYPE_LABELS[type]}
-                  >
-                    {CAREER_EMPLOYMENT_TYPE_LABELS[type]}
-                  </SelectItem>
-                ))}
-              </SelectGroup>
-            </SelectContent>
-          </Select>
-          <Select
-            value={location}
-            onValueChange={(value) => {
-              if (!value) return
-              setFilters({ location: value === ALL ? null : value })
-            }}
-          >
-            <SelectTrigger className='w-auto min-w-40'>
-              <SelectValue placeholder='Localização' />
-            </SelectTrigger>
-            <SelectContent
-              className='w-full'
-              alignItemWithTrigger={false}
-              align='start'
-            >
-              <SelectGroup>
-                <SelectItem value={ALL}>Todas as localizações</SelectItem>
-                {locations.map((loc) => (
-                  <SelectItem key={loc} value={loc}>
-                    {loc}
-                  </SelectItem>
-                ))}
-              </SelectGroup>
-            </SelectContent>
-          </Select>
-          <Select<LocationTypeFilter>
-            value={locationType}
-            onValueChange={(value) => {
-              if (!value) return
-              setFilters({ locationType: value === ALL ? null : value })
-            }}
-          >
-            <SelectTrigger className='w-auto min-w-40'>
-              <SelectValue placeholder='Tipo de localização' />
-            </SelectTrigger>
-            <SelectContent
-              className='w-full'
-              alignItemWithTrigger={false}
-              align='start'
-            >
-              <SelectGroup>
-                <SelectItem value={ALL}>Todas as localizações</SelectItem>
-                {CAREER_LOCATION_TYPES.map((type) => (
-                  <SelectItem
-                    key={type}
-                    value={CAREER_LOCATION_TYPE_LABELS[type]}
-                  >
-                    {CAREER_LOCATION_TYPE_LABELS[type]}
-                  </SelectItem>
-                ))}
-              </SelectGroup>
-            </SelectContent>
-          </Select>
-        </div>
+        <Title>Vagas abertas</Title>
       </div>
 
       {filtered.length === 0 && (
@@ -239,34 +116,44 @@ export function CareersList({ jobs }: CareersListProps) {
       )}
 
       {grouped.map(([groupName, jobInDepartment]) => (
-        <div key={groupName} className='w-full flex flex-col gap-4'>
-          <h2 className='text-lg font-medium text-muted-foreground'>
-            {groupName}
-          </h2>
+        <div key={groupName} className='w-full flex flex-col gap-2.5'>
+          <Muted className='text-base'>{groupName}</Muted>
           <div className='flex flex-col gap-4'>
             {jobInDepartment.map((job) => (
               <Link
                 key={job.id}
                 href={`/careers/${job.slug}`}
-                className='rounded-xl px-4 py-6 hover:bg-accent transition-colors'
+                className='group/job w-full rounded-lg p-4 hover:bg-accent transition-colors flex items-center justify-between'
               >
-                <div className='flex items-center justify-between'>
-                  <h3 className='text-base font-medium text-branding-500'>
+                <div className='flex items-center justify-between gap-2.5'>
+                  <h3 className='font-medium text-lg md:whitespace-pre-line'>
                     {job.title}
                   </h3>
+                  <span className='text-sm text-muted-foreground text-start space-y-2'>
+                    {CAREER_LOCATION_TYPE_LABELS[job.locationType]}
+                  </span>
                   {job.status === 'CLOSED' && (
                     <span className='text-xs rounded-full bg-muted px-2 py-1 text-muted-foreground'>
                       Encerrada
                     </span>
                   )}
                 </div>
-                <div className='mt-1 flex flex-wrap gap-2 text-sm text-muted-foreground'>
-                  <span>{groupName}</span>
-                  {job.location && <span>{job.location}</span>}
-                  <span>
-                    · {CAREER_EMPLOYMENT_TYPE_LABELS[job.employmentType]}
+                <div className='mt-1 flex items-center flex-wrap gap-2'>
+                  <span className='text-sm text-muted-foreground text-start space-y-2'>
+                    {CAREER_EMPLOYMENT_TYPE_LABELS[job.employmentType]}
                   </span>
-                  <span>· {CAREER_LOCATION_TYPE_LABELS[job.locationType]}</span>
+                  <Button
+                    variant='ghost'
+                    size='sm'
+                    className='group-hover/job:underline'
+                  >
+                    Candidatar-se{' '}
+                    <NexoIcon
+                      icon={ArrowUpRight03Icon}
+                      strokeWidth={2}
+                      className='transition-transform duration-300 group-hover/job:-translate-y-0.5'
+                    />
+                  </Button>
                 </div>
               </Link>
             ))}

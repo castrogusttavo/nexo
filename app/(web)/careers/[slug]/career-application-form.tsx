@@ -25,6 +25,7 @@ export function CareerApplicationForm({ slug }: Props) {
   )
   const [consent, setConsent] = useState(false)
   const [message, setMessage] = useState('')
+  const [submitAttempted, setSubmitAttempted] = useState(false)
 
   const sending = status === 'sending'
 
@@ -32,6 +33,8 @@ export function CareerApplicationForm({ slug }: Props) {
     e: React.SyntheticEvent<HTMLFormElement, SubmitEvent>,
   ) {
     e.preventDefault()
+    setSubmitAttempted(true)
+    if (!consent) return
     setStatus('sending')
 
     const form = new FormData(e.currentTarget)
@@ -217,9 +220,11 @@ export function CareerApplicationForm({ slug }: Props) {
           a LGPD.
         </FieldLabel>
       </Field>
-      {!consent && <FieldError>Necessário para enviar</FieldError>}
+      {submitAttempted && !consent && (
+        <FieldError>Necessário para enviar</FieldError>
+      )}
 
-      <Button type='submit' disabled={sending || !consent}>
+      <Button type='submit' disabled={sending}>
         {sending ? 'Enviando...' : 'Enviar candidatura'}
       </Button>
     </form>
