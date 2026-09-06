@@ -32,7 +32,7 @@ export function WebHeader() {
   return (
     <header
       className={cn(
-        'mx-auto grid w-full grid-cols-[1fr_auto_1fr] items-center px-4 py-3 sm:px-8 xl:px-11 sticky top-0 bg-background z-50 border-2 border-t-0 border-border transition-[max-width,border-radius,border-color] duration-300 ease-out',
+        'mx-auto grid h-[72px] w-full grid-cols-[1fr_auto_1fr] items-center px-4 sm:px-8 xl:px-11 sticky top-0 bg-background z-50 border-2 border-t-0 border-border transition-[max-width,border-radius,border-color] duration-300 ease-out',
         scrolled
           ? 'xl:max-w-336 2xl:max-w-384 rounded-b-2xl'
           : 'max-w-full rounded-none border-x-transparent',
