@@ -12,6 +12,8 @@ import { NexoIcon } from '@/components/icon/icon'
 import { Muted } from '@/components/typography/text/muted'
 import { Button } from '@/components/ui/button'
 
+const CERTS = ['gdpr', 'iso', 'soc2'] as const
+
 export function WebFooter() {
   return (
     <>
@@ -33,7 +35,7 @@ export function WebFooter() {
         </div>
       </div>
       <footer className='w-full bg-surface-highlight space-y-10 py-16'>
-        <div className='w-full mx-auto px-4 py-3 sm:px-8 xl:max-w-336 xl:px-11 2xl:max-w-384'>
+        <div className='w-full mx-auto px-4 py-3 sm:px-8 xl:max-w-336 xl:px-11 2xl:max-w-384 flex items-center justify-between'>
           <Link href='/' className='justify-self-start'>
             <Image
               src='/brand/logo.svg'
@@ -42,6 +44,27 @@ export function WebFooter() {
               height={45}
             />
           </Link>
+          <div className='flex gap-2.5'>
+            {CERTS.map((cert: 'gdpr' | 'iso' | 'soc2') => (
+              <div key={cert} className='flex items-center justify-center'>
+                <span
+                  role='img'
+                  aria-label={cert.toUpperCase()}
+                  className='size-16 bg-muted-foreground transition-colors hover:bg-primary'
+                  style={{
+                    maskImage: `url(/certification/${cert}.svg)`,
+                    WebkitMaskImage: `url(/certification/${cert}.svg)`,
+                    maskSize: 'contain',
+                    WebkitMaskSize: 'contain',
+                    maskRepeat: 'no-repeat',
+                    WebkitMaskRepeat: 'no-repeat',
+                    maskPosition: 'center',
+                    WebkitMaskPosition: 'center',
+                  }}
+                />
+              </div>
+            ))}
+          </div>
         </div>
         <div className='w-full mx-auto px-4 py-3 sm:px-8 xl:max-w-336 xl:px-11 2xl:max-w-384'>
           <div className='grid w-full grid-cols-2 gap-8 lg:grid-cols-3 xl:grid-cols-6'>
