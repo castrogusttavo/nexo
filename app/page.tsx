@@ -740,7 +740,7 @@ export default async function Page() {
                   src='/home/api.svg'
                   alt=''
                   aria-hidden
-                  className='absolute top-0 right-0 size-[110px]'
+                  className='absolute top-0 right-0 size-27.5'
                 />
                 <h4 className='md:whitespace-pre-line font-medium text-xl leading-[1.3] tracking-[-.03em]'>
                   APIs, Webhooks e SDKs
@@ -756,7 +756,7 @@ export default async function Page() {
                   src='/home/ai.svg'
                   alt=''
                   aria-hidden
-                  className='absolute top-0 right-0 size-[110px]'
+                  className='absolute top-0 right-0 size-27.5'
                 />
                 <h4 className='md:whitespace-pre-line font-medium text-xl leading-[1.3] tracking-[-.03em]'>
                   MCP Server
