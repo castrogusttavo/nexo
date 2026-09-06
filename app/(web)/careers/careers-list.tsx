@@ -8,14 +8,6 @@ import { NexoIcon } from '@/components/icon/icon'
 import { Muted } from '@/components/typography/text/muted'
 import { Button } from '@/components/ui/button'
 import {
-  Select,
-  SelectContent,
-  SelectGroup,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select'
-import {
   CAREER_EMPLOYMENT_TYPE_LABELS,
   CAREER_LOCATION_TYPE_LABELS,
 } from '@/src/lib/career-labels'
@@ -25,48 +17,23 @@ import {
   careerLocationParser,
   careerLocationTypeParser,
 } from '@/src/lib/career-params'
-import type {
-  CAREER_EMPLOYMENT_TYPES,
-  CAREER_LOCATION_TYPES,
-} from '@/src/schemas/career-job.schema'
 import type { CareerJobDTO } from '@/types/career-job'
 import { Title } from '../_components/text/title'
 
-const ALL = 'all'
 const UNSPECIFIED_DEPARTMENT = 'Outras vagas'
-
-type EmploymentTypeFilter =
-  | (typeof CAREER_EMPLOYMENT_TYPES)[number]
-  | typeof ALL
-type LocationTypeFilter = (typeof CAREER_LOCATION_TYPES)[number] | typeof ALL
 
 interface CareersListProps {
   jobs: CareerJobDTO[]
 }
 
-function uniqueSorted(values: string[]) {
-  return [...new Set(values)].sort((a, b) => a.localeCompare(b, 'pt-BR'))
-}
-
 export function CareersList({ jobs }: CareersListProps) {
-  const [{ department, location, locationType, employmentType }, setFilters] =
+  const [{ department, location, locationType, employmentType }] =
     useQueryStates({
       department: careerDepartmentParser,
       location: careerLocationParser,
       locationType: careerLocationTypeParser,
       employmentType: careerEmploymentTypeParser,
     })
-
-  const departments = useMemo(
-    () =>
-      uniqueSorted(jobs.map((job) => job.department).filter((v) => v !== null)),
-    [jobs],
-  )
-  const locations = useMemo(
-    () =>
-      uniqueSorted(jobs.map((job) => job.location).filter((v) => v !== null)),
-    [jobs],
-  )
 
   const filtered = useMemo(
     () =>
@@ -96,10 +63,6 @@ export function CareersList({ jobs }: CareersListProps) {
       return a.localeCompare(b, 'pt-BR')
     })
   }, [filtered])
-
-  const hasActiveFilters = Boolean(
-    department || location || locationType || employmentType,
-  )
 
   if (jobs.length === 0) {
     return <Muted>Nenhuma vaga aberta no momento.</Muted>
