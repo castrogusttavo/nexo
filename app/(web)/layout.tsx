@@ -25,9 +25,9 @@ export const metadata: Metadata = {
 
 export default function WebLayout({ children }: { children: ReactNode }) {
   return (
-    <div className='w-full h-dvh flex flex-col'>
+    <div className='w-full'>
       <WebHeader />
-      <div className='flex-1 min-h-0'>{children}</div>
+      {children}
     </div>
   )
 }

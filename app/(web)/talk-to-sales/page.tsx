@@ -28,7 +28,7 @@ export const metadata: Metadata = {
 
 export default function TalkToSalesPage() {
   return (
-    <main className='relative h-full flex overflow-hidden'>
+    <main className='relative h-[calc(100dvh-72px)] flex overflow-hidden'>
       <div className='pointer-events-none absolute inset-y-0 left-0 z-0 w-1/2'>
         <Image
           src='/gradient.png'
