@@ -10,10 +10,7 @@ export function SubTitle({
 }) {
   return (
     <div
-      className={cn(
-        'text-muted-foreground font-normal text-base max-w-150 text-center',
-        className,
-      )}
+      className={cn('text-muted-foreground font-normal text-base', className)}
     >
       {children}
     </div>

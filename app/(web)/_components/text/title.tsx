@@ -10,9 +10,5 @@ export function Title({
   className?: string
   as?: 'h1' | 'h2' | 'h3'
 }) {
-  return (
-    <Tag className={cn('font-normal text-6xl text-center', className)}>
-      {children}
-    </Tag>
-  )
+  return <Tag className={cn('font-normal text-5xl', className)}>{children}</Tag>
 }
