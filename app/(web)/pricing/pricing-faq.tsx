@@ -1,3 +1,6 @@
+'use client'
+
+import { useState } from 'react'
 import { JsonLd } from '@/components/seo/json-ld'
 import {
   Accordion,
@@ -5,11 +8,12 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from '@/components/ui/accordion'
-import { Title } from './text/title'
+import { SubTitle } from '../_components/text/sub-title'
+import { Title } from '../_components/text/title'
 
 // Fonte única: o Accordion e o schema FAQPage abaixo renderizam a partir
 // deste array, pra nunca ficarem dessincronizados.
-const FAQ_ITEMS = [
+const PRICING_FAQ_ITEMS = [
   {
     question: 'O que é o Nexo?',
     answer:
@@ -42,31 +46,46 @@ const FAQ_ITEMS = [
   },
 ]
 
-const FAQ_SCHEMA = {
+const PRICING_FAQ_SCHEMA = {
   '@context': 'https://schema.org',
   '@type': 'FAQPage',
-  mainEntity: FAQ_ITEMS.map(({ question, answer }) => ({
+  mainEntity: PRICING_FAQ_ITEMS.map(({ question, answer }) => ({
     '@type': 'Question',
     name: question,
     acceptedAnswer: { '@type': 'Answer', text: answer },
   })),
 }
 
-export function Faq() {
+export function PricingFaq() {
+  const [value, setValue] = useState<string[]>(['item-1'])
+
   return (
-    <div className='py-16 flex flex-col gap-6 w-full pb-20'>
-      <JsonLd data={FAQ_SCHEMA} />
-      <Title as='h2' className='text-4xl font-medium'>
-        O que podemos responder por você hoje?
-      </Title>
-      <Accordion className='max-w-5xl mx-auto flex flex-col'>
-        {FAQ_ITEMS.map(({ question, answer }, index) => (
+    <div className='flex items-start justify-between gap-6 w-full mx-auto px-4 sm:px-8 xl:px-11 xl:max-w-336 2xl:max-w-384 py-16 md:py-24'>
+      <JsonLd data={PRICING_FAQ_SCHEMA} />
+      <div className='space-y-6'>
+        <Title as='h2' className='text-4xl font-medium'>
+          O que podemos responder por você hoje?
+        </Title>
+        <SubTitle>
+          Qualquer coisa que não foi respondida aqui, manda pra
+          suporte@nexo.coodee.dev, e alguém do nosso time responde.
+        </SubTitle>
+      </div>
+      <Accordion
+        className='max-w-5xl mx-auto flex flex-col'
+        value={value}
+        onValueChange={(newValue) => {
+          if (newValue.length === 0) return
+          setValue(newValue)
+        }}
+      >
+        {PRICING_FAQ_ITEMS.map(({ question, answer }, index) => (
           <AccordionItem
             key={question}
             value={`item-${index + 1}`}
             className='data-open:bg-card p-4'
           >
-            <AccordionTrigger className='text-base hover:no-underline data-open:bg-card'>
+            <AccordionTrigger className='w-full text-base hover:no-underline data-open:bg-card pt-0'>
               {question}
             </AccordionTrigger>
             <AccordionContent>{answer}</AccordionContent>

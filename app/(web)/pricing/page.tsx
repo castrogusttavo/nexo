@@ -10,13 +10,14 @@ import { Button } from '@/components/ui/button'
 import { NEXT_PUBLIC_URL } from '@/lib/env/env'
 import { PAID_PLAN_PRICES } from '@/src/config/plan-prices'
 import { CardCertifications } from '../_components/card-certifications'
-import { Faq } from '../_components/faq'
+import { WebFooter } from '../_components/footer'
 import { BillingToggle } from '../_components/pricing/pricing-billing-toggle'
 import { PricingCalculator } from '../_components/pricing/pricing-calculator'
 import { PricingCardPlan } from '../_components/pricing/pricing-card-plan'
 import { PricingTableDetailsPlan } from '../_components/pricing/table/pricing-table-details-plan'
 import { SubTitle } from '../_components/text/sub-title'
 import { Title } from '../_components/text/title'
+import { PricingFaq } from './pricing-faq'
 
 // Preços em centavos (fonte: src/config/plan-prices.ts) convertidos pra
 // unidade decimal (schema.org price espera string sem símbolo de moeda).
@@ -146,7 +147,8 @@ export default function PricingPage() {
       </div>
       <PricingTableDetailsPlan />
       <CardCertifications />
-      <Faq />
+      <PricingFaq />
+      <WebFooter />
     </main>
   )
 }
