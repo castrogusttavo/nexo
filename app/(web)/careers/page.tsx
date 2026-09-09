@@ -62,12 +62,12 @@ export default async function CareersPage() {
             </div>
           </div>
           <div className='space-y-4 max-w-188'>
-            <SubTitle className='text-muted-foreground md:whitespace-pre-line text-lg'>
+            <SubTitle className='text-neutral-200 md:whitespace-pre-line text-lg'>
               O Nexo é a infraestrutura de trabalho do seu time, rodada por
               pessoas e, agora, também por agentes de IA. Na próxima década, os
               times vão reconstruir como planejam, decidem e entregam.
             </SubTitle>
-            <SubTitle className='text-muted-foreground md:whitespace-pre-line text-lg'>
+            <SubTitle className='text-neutral-200 md:whitespace-pre-line text-lg'>
               Estamos construindo a camada por baixo de tudo isso — e
               contratando pra formar esse time técnico desde o zero.
             </SubTitle>
