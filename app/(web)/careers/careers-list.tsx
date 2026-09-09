@@ -1,12 +1,16 @@
 'use client'
 
-import { ArrowUpRight03Icon } from '@hugeicons-pro/core-stroke-rounded'
+import {
+  ArrowUpRight03Icon,
+  Briefcase02Icon,
+} from '@hugeicons-pro/core-stroke-rounded'
 import Link from 'next/link'
 import { useQueryStates } from 'nuqs'
 import { useMemo } from 'react'
 import { NexoIcon } from '@/components/icon/icon'
 import { Muted } from '@/components/typography/text/muted'
 import { Button } from '@/components/ui/button'
+import { IconStack } from '@/components/ui/icon-stack'
 import {
   CAREER_EMPLOYMENT_TYPE_LABELS,
   CAREER_LOCATION_TYPE_LABELS,
@@ -65,7 +69,16 @@ export function CareersList({ jobs }: CareersListProps) {
   }, [filtered])
 
   if (jobs.length === 0) {
-    return <Muted>Nenhuma vaga aberta no momento.</Muted>
+    return (
+      <div className='w-full flex flex-col gap-2.5 items-center justify-center'>
+        <IconStack aria-hidden='true' className='h-28 w-24'>
+          <NexoIcon icon={Briefcase02Icon} className='size-6' />
+        </IconStack>
+        <h3 className='font-normal text-lg md:whitespace-pre-line'>
+          Sem vagas no momento.
+        </h3>
+      </div>
+    )
   }
 
   return (
