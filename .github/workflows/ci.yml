@@ -179,6 +179,9 @@ jobs:
       # (status collector, payment webhook) accept the requests the e2e tests send.
       STATUS_COLLECTOR_SECRET: ci-status-collector-secret
       ABACATE_PAY_WEBHOOK_SECRET: ci-abacate-webhook-secret
+      # Same reasoning: the /admin/careers e2e suite signs up a user with this
+      # exact address to exercise the authorized path of the platform-admin allowlist.
+      PLATFORM_ADMIN_EMAILS: e2e-admin@example.com
       # `next start` runs in production mode, where better-auth's built-in rate
       # limiter is on and would 429 the suite's repeated sign-ups. The app keeps
       # its own auth rate limiting; disable only better-auth's here.
