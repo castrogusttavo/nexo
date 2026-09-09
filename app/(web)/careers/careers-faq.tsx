@@ -73,9 +73,9 @@ export function CareersFaq() {
           <AccordionItem
             key={question}
             value={`item-${index + 1}`}
-            className='data-open:bg-card p-4'
+            className='p-4'
           >
-            <AccordionTrigger className='w-full text-base hover:no-underline data-open:bg-card pt-0'>
+            <AccordionTrigger className='w-full text-base hover:no-underline pt-0'>
               {question}
             </AccordionTrigger>
             <AccordionContent>{answer}</AccordionContent>
