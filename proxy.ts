@@ -16,7 +16,7 @@ const PUBLIC_ROUTES = [
   '/careers', '/api/careers', '/api/health', '/blog',
   '/robots.txt', '/sitemap.xml', '/opengraph-image',
   '/twitter-image', '/icon', '/apple-icon', '/manifest.webmanifest',
-  '/llms.txt', '/work-trials'
+  '/llms.txt', '/work-trials',
 ]
 
 // style-src keeps 'unsafe-inline' as a deliberate trade-off, not an

@@ -281,7 +281,7 @@ export function SignUpForm({ redirectTo = '/' }: { redirectTo?: string }) {
                   >
                     Li e aceito os{' '}
                     <Link
-                      href='/legals/terms'
+                      href='/legals/terms-and-conditions'
                       className='text-primary hover:underline'
                       target='_blank'
                       rel='noopener noreferrer'
@@ -310,7 +310,7 @@ export function SignUpForm({ redirectTo = '/' }: { redirectTo?: string }) {
                   >
                     Li e aceito a{' '}
                     <Link
-                      href='/legals/privacy'
+                      href='/legals/privacy-policy'
                       className='text-primary hover:underline'
                       target='_blank'
                       rel='noopener noreferrer'

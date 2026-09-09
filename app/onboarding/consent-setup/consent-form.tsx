@@ -36,7 +36,7 @@ export function ConsentForm() {
           >
             Li e aceito os{' '}
             <Link
-              href='/legals/terms'
+              href='/legals/terms-and-conditions'
               target='_blank'
               rel='noopener noreferrer'
               className='text-primary hover:underline'
@@ -60,7 +60,7 @@ export function ConsentForm() {
           >
             Li e aceito os{' '}
             <Link
-              href='/legals/privacy'
+              href='/legals/privacy-policy'
               target='_blank'
               rel='noopener noreferrer'
               className='text-primary hover:underline'

@@ -19,8 +19,8 @@ export function GET() {
 
 ## Legal
 
-- [Política de Privacidade](${NEXT_PUBLIC_URL}/legals/privacy)
-- [Termos de Serviço](${NEXT_PUBLIC_URL}/legals/terms)
+- [Política de Privacidade](${NEXT_PUBLIC_URL}/legals/privacy-policy)
+- [Termos de Serviço](${NEXT_PUBLIC_URL}/legals/terms-and-conditions)
 - [Segurança](${NEXT_PUBLIC_URL}/legals/security)
 `
 

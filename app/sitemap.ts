@@ -26,8 +26,12 @@ const STATIC_ROUTES: StaticRoute[] = [
   { path: '/docs', priority: 0.5, changeFrequency: 'weekly' },
   { path: '/status', priority: 0.3, changeFrequency: 'daily' },
   { path: '/status/history', priority: 0.2, changeFrequency: 'weekly' },
-  { path: '/legals/privacy', priority: 0.2, changeFrequency: 'yearly' },
-  { path: '/legals/terms', priority: 0.2, changeFrequency: 'yearly' },
+  { path: '/legals/privacy-policy', priority: 0.2, changeFrequency: 'yearly' },
+  {
+    path: '/legals/terms-and-conditions',
+    priority: 0.2,
+    changeFrequency: 'yearly',
+  },
   { path: '/legals/security', priority: 0.2, changeFrequency: 'yearly' },
   {
     path: '/legals/trust/access-control',
