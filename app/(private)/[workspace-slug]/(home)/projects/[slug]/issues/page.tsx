@@ -6,6 +6,9 @@ import {
   HeaderBreadcrumbList,
 } from '@/app/_components/header/breadcrumb-page'
 import HeaderInternalNavigation from '@/app/_components/header/header-internal-navigation'
+import { IssueCalendarView } from '@/app/_components/issue/issue-calendar-view'
+import { IssueGanttView } from '@/app/_components/issue/issue-gantt-view'
+import { IssueKanbanView } from '@/app/_components/issue/issue-kanban-view'
 import { IssueListView } from '@/app/_components/issue/issue-list-view'
 import { IssueProjectSwitcher } from '@/app/_components/issue/issue-project-switcher'
 import { IssueModal } from '@/app/_components/issue/modal/issue-modal'
@@ -81,14 +84,36 @@ export default async function ProjectIssuesPage({
         </div>
       </HeaderInternalNavigation>
       <div>
-        {!layout || layout === 'list' ? (
+        {(!layout || layout === 'list') && (
           <IssueListView
             workspaceId={context.workspaceId}
             workspaceSlug={workspaceSlug}
             projectSlug={context.project.slug}
             projectIdentifier={context.project.identifier}
           />
-        ) : (
+        )}
+        {layout === 'kanban' && (
+          <IssueKanbanView
+            workspaceId={context.workspaceId}
+            projectSlug={context.project.slug}
+            projectIdentifier={context.project.identifier}
+          />
+        )}
+        {layout === 'calendar' && (
+          <IssueCalendarView
+            workspaceId={context.workspaceId}
+            projectSlug={context.project.slug}
+            projectIdentifier={context.project.identifier}
+          />
+        )}
+        {layout === 'timeline' && (
+          <IssueGanttView
+            workspaceId={context.workspaceId}
+            projectSlug={context.project.slug}
+            projectIdentifier={context.project.identifier}
+          />
+        )}
+        {layout === 'table' && (
           <div className='p-6 text-muted-foreground text-sm'>
             Layout em breve.
           </div>
