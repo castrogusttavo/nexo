@@ -107,6 +107,7 @@ export default defineConfig({
         'src/lib/result.ts',
         'utils/**',
         'lib/abacatepay.ts',
+        'app/api/**/route.ts',
       ],
       exclude: [
         'node_modules/**',

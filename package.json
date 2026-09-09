@@ -24,6 +24,7 @@
     "test:all": "vitest --run",
     "test:ci": "vitest --run --coverage",
     "test:coverage": "vitest --run --coverage --project unit --project integration",
+    "test:coverage:e2e": "vitest --run --coverage --project unit --project integration --project e2e",
     "prisma:generate": "prisma generate",
     "prisma:migrate:dev": "prisma migrate dev",
     "prisma:studio": "prisma studio",
