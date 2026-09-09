@@ -14,26 +14,32 @@ import { Button } from '@/components/ui/button'
 
 const CERTS = ['gdpr', 'iso', 'soc2'] as const
 
-export function WebFooter() {
+interface WebFooterProps {
+  showBanner?: boolean
+}
+
+export function WebFooter({ showBanner = true }: WebFooterProps = {}) {
   return (
-    <>
-      <div className="w-full py-20 bg-cover bg-center bg-no-repeat bg-[url('/home/bg-home.png')]">
-        <div className='mx-auto w-full px-4 sm:px-8 xl:px-11 xl:max-w-336 2xl:max-w-384 flex flex-col space-y-10 items-center text-center'>
-          <h2 className='text-5xl font-normal md:whitespace-pre-line font-mono leading-[1.3] tracking-[-.03em] text-white'>
-            A nova geração da gestão de projetos <br /> começa aqui
-          </h2>
-          <div className='flex flex-wrap w-full items-center gap-4 justify-center'>
-            <Link href='/sign-up'>
-              <Button size='lg'>Comece grátis</Button>
-            </Link>
-            <Link href='/talk-to-sales'>
-              <Button variant='secondary' size='lg' className='border-border'>
-                Fale com um especialista em migração
-              </Button>
-            </Link>
+    <div className='w-full'>
+      {showBanner && (
+        <div className="w-full py-20 bg-cover bg-center bg-no-repeat bg-[url('/home/bg-home.png')]">
+          <div className='mx-auto w-full px-4 sm:px-8 xl:px-11 xl:max-w-336 2xl:max-w-384 flex flex-col space-y-10 items-center text-center'>
+            <h2 className='text-5xl font-normal md:whitespace-pre-line font-mono leading-[1.3] tracking-[-.03em] text-white'>
+              A nova geração da gestão de projetos <br /> começa aqui
+            </h2>
+            <div className='flex flex-wrap w-full items-center gap-4 justify-center'>
+              <Link href='/sign-up'>
+                <Button size='lg'>Comece grátis</Button>
+              </Link>
+              <Link href='/talk-to-sales'>
+                <Button variant='secondary' size='lg' className='border-border'>
+                  Fale com um especialista em migração
+                </Button>
+              </Link>
+            </div>
           </div>
         </div>
-      </div>
+      )}
       <footer className='w-full bg-surface-highlight space-y-10 py-16'>
         <div className='w-full mx-auto px-4 py-3 sm:px-8 xl:max-w-336 xl:px-11 2xl:max-w-384 flex items-center justify-between'>
           <Link href='/' className='justify-self-start'>
@@ -563,7 +569,7 @@ export function WebFooter() {
                 <ul className='mt-1 space-y-2 text-sm'>
                   <li>
                     <Link
-                      href='/legals/terms'
+                      href='/legals/terms-and-conditions'
                       className='md:whitespace-pre-line text-primary text-xs font-medium hover:underline'
                     >
                       Termos
@@ -571,7 +577,7 @@ export function WebFooter() {
                   </li>
                   <li>
                     <Link
-                      href='/legals/privacy'
+                      href='/legals/privacy-policy'
                       className='md:whitespace-pre-line text-primary text-xs font-medium hover:underline'
                     >
                       Privacidade
@@ -587,7 +593,7 @@ export function WebFooter() {
                   </li>
                   <li>
                     <Link
-                      href='/legal'
+                      href='/legals'
                       className='md:whitespace-pre-line text-primary text-xs font-medium hover:underline'
                     >
                       Jurídico
@@ -719,6 +725,6 @@ export function WebFooter() {
           </div>
         </div>
       </footer>
-    </>
+    </div>
   )
 }
