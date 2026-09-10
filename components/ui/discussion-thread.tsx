@@ -23,9 +23,9 @@ import {
 } from '@/src/hooks/use-wiki-comment'
 import type { WikiCommentDTO } from '@/types/wiki-comment'
 
-// O corpo do comentário é texto puro, embrulhado no shape de Value que a API
-// espera — o composer não é um editor Plate aninhado, é uma simplificação
-// deliberada (sem negrito/menção/etc dentro do comentário).
+// The comment body is plain text, wrapped in the Value shape the API
+// expects — the composer isn't a nested Plate editor, it's a deliberate
+// simplification (no bold/mention/etc inside the comment).
 function textToValue(text: string): Value {
   return [{ type: 'p', children: [{ text }] }]
 }

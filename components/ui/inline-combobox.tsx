@@ -69,9 +69,9 @@ const InlineCombobox = ({
   const hasValueProp = valueProp !== undefined
   const value = hasValueProp ? valueProp : valueState
 
-  // A criação do elemento inline (mention/emoji/slash) pode ser vista por
-  // todos via Yjs — só quem criou deve receber o autofocus, senão o cursor
-  // remoto rouba o foco de quem estiver digitando na própria máquina.
+  // Creating the inline element (mention/emoji/slash) can be seen by
+  // everyone via Yjs — only whoever created it should get the autofocus,
+  // otherwise the remote cursor steals focus from whoever is typing locally.
   const isCreator = React.useMemo(() => {
     const elementUserId = (element as { userId?: string }).userId
     const currentUserId = editor.meta.userId
