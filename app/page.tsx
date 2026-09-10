@@ -54,7 +54,7 @@ export default async function Page() {
           <div className='py-16 flex flex-col gap-4 md:gap-8 items-start text-left md:items-center md:text-center xl:max-w-336 2xl:max-w-384'>
             <div className='space-y-4'>
               <div className='uppercase text-cyan-500 text-sm md:whitespace-pre-line mb-4'>
-                pronto para cloud, self-hosted ou air-gapped
+                100% em nuvem, pronto pra usar hoje
               </div>
               <h1 className='md:whitespace-pre-line font-mono font-normal text-5xl leading-[1.3] tracking-[-.03em]'>
                 Gestão de projetos e conhecimento <br />
@@ -484,77 +484,6 @@ export default async function Page() {
           </div>
         </section>
         <section className='flex flex-col items-center text-center bg-surface-highlight'>
-          <div className='w-full mx-auto py-20 gap-12 xl:max-w-336 xl:px-11 2xl:max-w-384 space-y-11'>
-            <div className='flex flex-col items-start gap-6'>
-              <div className='grid grid-cols-1 md:grid-cols-2 gap-2 space-y-3 items-start'>
-                <h2 className='md:whitespace-pre-line font-mono font-normal text-4xl leading-[1.3] tracking-[-.03em] text-start'>
-                  Auto-hospede o Nexo, <br />
-                  no local ou em ambiente isolado
-                </h2>
-                <p className='text-muted-foreground md:whitespace-pre-line text-lg text-start'>
-                  A única plataforma moderna de gestão de projetos feita para
-                  ambientes onde você controla cada camada. <br />
-                  Você mesmo instala e gerencia tudo — a licença é combinada
-                  direto com o nosso time de vendas.
-                </p>
-              </div>
-              <div className='flex gap-4 items-center flex-wrap justify-start'>
-                <Link href='/talk-to-sales'>
-                  <Button size='lg'>Auto-hospede o Nexo</Button>
-                </Link>
-                <Link href='/talk-to-sales'>
-                  <Button variant='outline' size='lg'>
-                    Falar com um humano{' '}
-                    <NexoIcon icon={ArrowRight02Icon} strokeWidth={2} />
-                  </Button>
-                </Link>
-              </div>
-            </div>
-            <div>
-              <Image
-                src='/home/bg-home.png'
-                alt='Visão geral das integrações do Nexo'
-                width={5024}
-                height={2752}
-                sizes='100vw'
-                className='w-full h-auto object-cover object-center rounded-t-4xl relative hidden overflow-hidden md:block mt-auto'
-              />
-            </div>
-            <div className='grid grid-cols-1 gap-6 md:grid-cols-3'>
-              <div className='space-y-1.5 text-start'>
-                <div className='font-medium text-base md:whitespace-pre-line'>
-                  Prime CLI
-                </div>
-                <p className='text-sm text-muted-foreground'>
-                  Instale, configure, atualize, faça backup e monitore sua
-                  instância com comandos únicos. Suporte a múltiplas instâncias,
-                  domínio próprio e escalonamento de serviços já incluídos.
-                </p>
-              </div>
-              <div className='space-y-1.5 text-start'>
-                <div className='font-medium text-base md:whitespace-pre-line'>
-                  Docker e Kubernetes
-                </div>
-                <p className='text-sm text-muted-foreground'>
-                  Implante com Docker para uma configuração rápida ou Kubernetes
-                  com Helm charts para escala de produção. Use seu próprio
-                  Postgres, Redis e armazenamento compatível com S3.
-                </p>
-              </div>
-              <div className='space-y-1.5 text-start'>
-                <div className='font-medium text-base md:whitespace-pre-line'>
-                  God Mode
-                </div>
-                <p className='text-sm text-muted-foreground'>
-                  Um painel de administração pra toda a sua instância. Configure
-                  SMTP, métodos de autenticação, SSO, segurança do workspace e
-                  preferências de telemetria em uma única tela.
-                </p>
-              </div>
-            </div>
-          </div>
-        </section>
-        <section className='flex flex-col items-center text-center bg-surface-highlight'>
           <div className='w-full mx-auto py-20 xl:max-w-336 xl:px-11 2xl:max-w-384'>
             <div className='grid grid-cols-1 md:grid-cols-2 gap-12 items-center'>
               <div className='space-y-6 text-start'>
@@ -563,17 +492,16 @@ export default async function Page() {
                     Mobile
                   </div>
                   <h2 className='md:whitespace-pre-line font-mono font-normal text-4xl leading-[1.3] tracking-[-.03em]'>
-                    Seu workspace inteiro na palma da mão, na nuvem ou
-                    self-hosted
+                    Seu workspace inteiro na palma da mão
                   </h2>
                 </div>
-                <div className='flex gap-4 items-center flex-wrap justify-start'>
-                  <Link href='#'>
-                    <Button size='lg'>Baixar para Android</Button>
-                  </Link>
-                  <Link href='#'>
-                    <Button size='lg'>Baixar para iOS</Button>
-                  </Link>
+                <div className='flex flex-col gap-2 items-start'>
+                  <div className='flex gap-4 items-center flex-wrap justify-start'>
+                    <Link href='/sign-up'>
+                      <Button size='lg'>Comece grátis</Button>
+                    </Link>
+                  </div>
+                  <Muted>Apps nativos para Android e iOS em breve.</Muted>
                 </div>
               </div>
               <Image
@@ -590,11 +518,11 @@ export default async function Page() {
         <section className='flex flex-col items-center text-center mx-auto w-full py-20 gap-12 xl:max-w-336 xl:px-11 2xl:max-w-384'>
           <div className='grid grid-cols-1 md:grid-cols-2 gap-2 space-y-3 items-start'>
             <h2 className='md:whitespace-pre-line font-mono font-normal text-4xl leading-[1.3] tracking-[-.03em] text-start'>
-              Segurança, conformidade e controle de nível enterprise
+              Segurança e conformidade que dá pra verificar
             </h2>
             <p className='text-muted-foreground md:whitespace-pre-line text-lg text-start'>
               O Nexo segue os padrões de segurança e conformidade que o time de
-              InfoSec da sua empresa exige, na nuvem ou self-hosted.
+              InfoSec da sua empresa exige.
             </p>
           </div>
           <div className='grid grid-cols-1 md:grid-cols-3 gap-6'>
