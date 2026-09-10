@@ -100,7 +100,7 @@ export function proxy(request: NextRequest, event: NextFetchEvent) {
         { status: 401 },
       )
     }
-    // Preserva o destino (path + query) para voltar após o login.
+    // Preserves the destination (path + query) to return to after login.
     const redirectTo = encodeURIComponent(pathname + request.nextUrl.search)
     return NextResponse.redirect(
       new URL(`/sign-in?redirect=${redirectTo}`, request.url),
