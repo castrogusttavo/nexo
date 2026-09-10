@@ -2,10 +2,10 @@ import http from 'k6/http'
 import { check } from 'k6'
 import { SharedArray } from 'k6/data'
 
-// Teste focado só na faixa 200-500 VUs (onde o teto apareceu no
-// stress-issues-ceiling.js), com degraus mais longos, pra separar
-// "satura recurso de verdade" de "artefato de rodar o k6 na mesma
-// máquina que a pilha inteira".
+// Test focused only on the 200-500 VU range (where the ceiling showed up
+// in stress-issues-ceiling.js), with longer steps, to separate "actually
+// saturating a resource" from "artifact of running k6 on the same
+// machine as the whole stack".
 const BASE_URL = __ENV.BASE_URL || 'http://localhost:8080'
 const ORIGIN = __ENV.ORIGIN || BASE_URL
 const LIMIT = __ENV.LIMIT ?? '1000'

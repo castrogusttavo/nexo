@@ -3,21 +3,21 @@ import { check } from 'k6'
 import { SharedArray } from 'k6/data'
 
 // ---------------------------------------------------------------------------
-// Stress test focado só em GET /issues (a rota real que o TanStack Query
-// chama — ver k6/flows.js). Sobe VUs em degraus até achar o ponto de
-// ruptura real (erro, não só lentidão). Aborta cedo se a taxa de falha
-// passar de 50%, pra não gastar tempo depois de já ter achado o limite.
+// Stress test focused only on GET /issues (the real route TanStack Query
+// calls — see k6/flows.js). Ramps VUs in steps until it finds the real
+// breaking point (error, not just slowness). Aborts early if the failure
+// rate passes 50%, to avoid wasting time after the limit is already found.
 //
 //   BASE_URL=http://localhost:3000 k6 run k6/stress-issues.js
 // ---------------------------------------------------------------------------
 const BASE_URL = __ENV.BASE_URL || 'http://localhost:3000'
-// better-auth valida Origin contra trustedOrigins (src/lib/auth.ts:44,
-// travado em BETTER_AUTH_URL). Em produção isso é o domínio real, não o
-// host que a gente efetivamente conecta (localhost:3000 pra bypassar
-// nginx) — sem isso o login cai com 403 antes de qualquer rate limit.
+// better-auth validates Origin against trustedOrigins (src/lib/auth.ts:44,
+// pinned to BETTER_AUTH_URL). In production this is the real domain, not
+// the host we actually connect to (localhost:3000 to bypass nginx) —
+// without this, login fails with 403 before any rate limit kicks in.
 const ORIGIN = __ENV.ORIGIN || BASE_URL
-// LIMIT= (vazio) reproduz o Experimento 1 sem paginação; LIMIT=1000 (padrão)
-// testa a Camada 1 — comparação lado a lado no mesmo script.
+// LIMIT= (empty) reproduces Experiment 1 without pagination; LIMIT=1000
+// (default) tests Layer 1 — side-by-side comparison in the same script.
 const LIMIT = __ENV.LIMIT ?? '1000'
 const PASSWORD = 'LoadTest@12345678'
 
@@ -64,24 +64,24 @@ function pick(arr) {
   return arr[Math.floor(Math.random() * arr.length)]
 }
 
-// Mesma técnica do e2e helper (src/__tests__/helpers/e2e.ts): IP diferente
-// por tentativa pra não esbarrar no rate limit de login do better-auth
-// (10 tentativas/IP/15min — src/lib/auth.ts:37), que não existiria com
-// tráfego real distribuído em milhões de IPs.
+// Same technique as the e2e helper (src/__tests__/helpers/e2e.ts): a
+// different IP per attempt to avoid hitting better-auth's login rate limit
+// (10 attempts/IP/15min — src/lib/auth.ts:37), which wouldn't exist with
+// real traffic distributed across millions of IPs.
 function uniqueIp() {
   const octet = () => Math.floor(Math.random() * 200) + 10
   return `${octet()}.${octet()}.${octet()}.${octet()}`
 }
 
-// k6 roda cada VU em sua própria instância JS, então essa variável de
-// módulo funciona como estado por-VU: cada VU loga só na primeira
-// iteração e reaproveita a sessão depois — isolando a medição do custo
-// de /issues do custo de login (argon2) repetido.
+// k6 runs each VU in its own JS instance, so this module-level variable
+// works as per-VU state: each VU logs in only on the first iteration
+// and reuses the session afterward — isolating the /issues cost
+// measurement from the repeated login (argon2) cost.
 //
-// O cookie jar automático do k6 NÃO sobrevive entre iterações aqui
-// (testado e confirmado — zera a cada nova iteração, mesmo dentro do
-// mesmo VU). Por isso o cookie é extraído manualmente do Set-Cookie do
-// login e reenviado explícito no header em cada request.
+// k6's automatic cookie jar does NOT survive across iterations here
+// (tested and confirmed — it resets on every new iteration, even within
+// the same VU). That's why the cookie is manually extracted from the
+// login's Set-Cookie and explicitly resent in the header on each request.
 let cookieHeader = null
 
 function authenticate(email) {

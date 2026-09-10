@@ -3,11 +3,11 @@ import { check } from 'k6'
 import { SharedArray } from 'k6/data'
 
 // ---------------------------------------------------------------------------
-// Rodada 3 — achar o teto real da pilha com as 5 camadas (nginx LB + 4
-// instâncias + paginação + cache + PgBouncer + réplica), não só confirmar
-// que 200 VUs passam. Sobe muito além do que stress-issues.js testa,
-// segurando cada degrau por mais tempo pra separar "pico transitório
-// absorvido pelo cache" de "teto real sustentado".
+// Round 3 — find the stack's real ceiling with all 5 layers (nginx LB + 4
+// instances + pagination + cache + PgBouncer + replica), not just confirm
+// that 200 VUs pass. Ramps way past what stress-issues.js tests, holding
+// each step longer to separate "transient spike absorbed by the cache"
+// from "real sustained ceiling".
 //
 //   BASE_URL=http://localhost:8080 k6 run k6/stress-issues-ceiling.js
 // ---------------------------------------------------------------------------

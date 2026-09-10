@@ -3,17 +3,18 @@ import { check, sleep } from 'k6'
 import { SharedArray } from 'k6/data'
 
 // ---------------------------------------------------------------------------
-// Isola só o login (POST /api/auth/sign-in/email) — sem /issues junto —
-// pra separar "argon2 é caro" de "o gargalo composto de login+/issues juntos
-// é outra coisa". Cada VU faz login repetidamente (não uma vez só), pra
-// achar o teto de verificações argon2 concorrentes que o processo aguenta.
+// Isolates just the login (POST /api/auth/sign-in/email) — without /issues
+// alongside — to separate "argon2 is expensive" from "the compound login+
+// /issues bottleneck is something else". Each VU logs in repeatedly (not
+// just once), to find the ceiling of concurrent argon2 verifications the
+// process can handle.
 //
-// Rodada 6: com o gate de concorrência (src/lib/auth-concurrency-gate.ts),
-// um login além da capacidade recebe 429+Retry-After rápido em vez de
-// ficar pendurado 10-25s — igual o client real (sign-in-form.tsx) faz,
-// este script replica a mesma lógica de retry (até 2 tentativas, backoff
-// pelo Retry-After + jitter) pra medir a experiência real do usuário, não
-// só a taxa de sucesso na primeira tentativa.
+// Round 6: with the concurrency gate (src/lib/auth-concurrency-gate.ts),
+// a login beyond capacity gets a fast 429+Retry-After instead of hanging
+// for 10-25s — just like the real client (sign-in-form.tsx) does, this
+// script replicates the same retry logic (up to 2 attempts, backoff from
+// Retry-After + jitter) to measure the real user experience, not just
+// the first-attempt success rate.
 //
 //   BASE_URL=http://localhost:3000 k6 run k6/stress-auth-only.js
 // ---------------------------------------------------------------------------
@@ -103,7 +104,7 @@ export function authFlow() {
   }
   check(res, { 'auth_only (final, com retry): 200': (r) => r.status === 200 })
 
-  // Cadência real de login (não fica logando em loop apertado) — ainda
-  // assim gera pressão real de argon2 concorrente com muitas VUs.
+  // Real login cadence (not hammering in a tight loop) — still generates
+  // real concurrent argon2 pressure with many VUs.
   sleep(1 + Math.random())
 }

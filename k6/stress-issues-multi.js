@@ -2,10 +2,10 @@ import http from 'k6/http'
 import { check } from 'k6'
 import { SharedArray } from 'k6/data'
 
-// Mesma coisa que stress-issues.js, mas distribui os VUs entre N
-// instâncias do servidor (uma por porta) — simula ter um load balancer
-// na frente de várias réplicas. Ports vêm de PORTS (csv), default 4
-// instâncias locais (uma por core).
+// Same as stress-issues.js, but distributes VUs across N server
+// instances (one per port) — simulates having a load balancer in front
+// of several replicas. Ports come from PORTS (csv), default 4 local
+// instances (one per core).
 const HOST = __ENV.HOST || 'http://localhost'
 const PORTS = (__ENV.PORTS || '3000,3001,3002,3003').split(',').map((p) => p.trim())
 const PASSWORD = 'LoadTest@12345678'

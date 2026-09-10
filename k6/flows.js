@@ -30,10 +30,10 @@ const freshUsers = new SharedArray('fresh', () =>
   ),
 )
 
-// Cada fase (rampa + sustentação + rampa) roda em sequência, não em paralelo —
-// assim cada fluxo tem seu bloco isolado de métricas, sem se misturar no
-// resultado. Pra simular tráfego misto de verdade, tire os `startTime` e deixe
-// tudo com `startTime: '0s'`.
+// Each phase (ramp + hold + ramp) runs sequentially, not in parallel —
+// so each flow has its own isolated block of metrics, without mixing in the
+// result. To simulate real mixed traffic, remove the `startTime`s and set
+// everything to `startTime: '0s'`.
 const PHASE_S = RAMP_S * 2 + HOLD_S
 const stages = (target) => [
   { duration: `${RAMP_S}s`, target },
@@ -95,19 +95,20 @@ function pick(arr) {
   return arr[Math.floor(Math.random() * arr.length)]
 }
 
-// O better-auth tem rate limit de login embutido (10 tentativas/IP/15min,
-// ativo em produção — src/lib/auth.ts:37). Em tráfego real de 1M usuários
-// isso nunca esbarraria num único IP; aqui, rodando tudo de uma máquina só,
-// esbarraria em segundos e mediria o rate limiter, não a aplicação. Mesma
-// técnica que o helper de e2e já usa (src/__tests__/helpers/e2e.ts): manda
-// um X-Forwarded-For diferente por tentativa pra simular IPs distintos.
+// better-auth has a built-in login rate limit (10 attempts/IP/15min,
+// active in production — src/lib/auth.ts:37). On real traffic from 1M
+// users this would never hit a single IP; here, running everything from
+// one machine, it would hit it in seconds and measure the rate limiter,
+// not the app. Same technique the e2e helper already uses
+// (src/__tests__/helpers/e2e.ts): send a different X-Forwarded-For per
+// attempt to simulate distinct IPs.
 function uniqueIp() {
   const octet = () => Math.floor(Math.random() * 200) + 10
   return `${octet()}.${octet()}.${octet()}.${octet()}`
 }
 
-// k6 mantém um cookie jar por VU: o Set-Cookie da resposta de login é
-// automaticamente reenviado nas próximas requisições da mesma iteração/VU.
+// k6 keeps a cookie jar per VU: the Set-Cookie from the login response is
+// automatically resent on subsequent requests in the same iteration/VU.
 function authenticate(email) {
   const res = http.post(
     `${BASE_URL}/api/auth/sign-in/email`,
@@ -150,10 +151,10 @@ export function homeFlow() {
   check(res, { 'home: 200': (r) => r.status === 200 })
 }
 
-// O endpoint que sustenta a tela de issues não é a página SSR — é a API que o
-// TanStack Query chama no client (`useIssues`). A página em si devolve só o
-// shell; os dados (sem paginação) vêm daqui. Ver ARTICLE.md / achado do dia
-// 22/08: 15k issues = ~8,6MB de JSON numa resposta só.
+// The endpoint that backs the issues screen isn't the SSR page — it's the API
+// TanStack Query calls on the client (`useIssues`). The page itself only
+// returns the shell; the data (unpaginated) comes from here. See ARTICLE.md /
+// 08/22 finding: 15k issues = ~8.6MB of JSON in a single response.
 export function issuesFlow() {
   authenticate(pick(onboardedUsers))
   const res = http.get(
@@ -163,11 +164,11 @@ export function issuesFlow() {
   check(res, { 'issues: 200': (r) => r.status === 200 })
 }
 
-// Só mede o carregamento do wizard (GET, segue os redirects até o primeiro
-// passo). Não submete os server actions que avançam o step — o protocolo de
-// Server Actions do Next exige um action id extraído do build, frágil de
-// reproduzir aqui. Cobre o custo de auth-guard + leitura de perfil, que é a
-// maior parte do custo por request de qualquer forma.
+// Only measures loading the wizard (GET, follows redirects to the first
+// step). Doesn't submit the server actions that advance the step — Next's
+// Server Actions protocol requires an action id extracted from the build,
+// fragile to reproduce here. Covers the auth-guard + profile-read cost,
+// which is most of the per-request cost anyway.
 export function onboardingFlow() {
   const idx = (__VU - 1) % freshUsers.length
   authenticate(freshUsers[idx])
