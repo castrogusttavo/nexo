@@ -4,17 +4,17 @@ export type BillingInterval = 'monthly' | 'yearly'
 export const BILLING_INTERVALS = ['monthly', 'yearly'] as const
 
 export interface PlanPrice {
-  /** Preço por mês na cobrança mensal, em centavos (BRL). */
+  /** Price per month on monthly billing, in cents (BRL). */
   monthly: number
-  /** Preço total por ano na cobrança anual, em centavos (BRL). */
+  /** Total price per year on yearly billing, in cents (BRL). */
   yearly: number
 }
 
 /**
- * Preços públicos por plano, em centavos (BRL). `null` = sem preço público
- * (Enterprise / fale com vendas). Fonte única: consumida pela pricing page e,
- * futuramente, pela validação de checkout no backend — deve bater com os
- * produtos configurados no AbacatePay.
+ * Public prices per plan, in cents (BRL). `null` = no public price
+ * (Enterprise / talk to sales). Single source of truth: consumed by the
+ * pricing page and, eventually, by checkout validation on the backend —
+ * must match the products configured in AbacatePay.
  */
 export const PAID_PLAN_PRICES: Record<'PRO' | 'BUSINESS', PlanPrice> = {
   PRO: { monthly: 4302, yearly: 38715 },

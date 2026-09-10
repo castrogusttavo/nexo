@@ -10,5 +10,5 @@ export function trialEndsAtFrom(now: Date = new Date()): Date {
 
 export const TRIAL_EXPIRY_CRON = '0 * * * *'
 
-/** Dias antes do fim do trial em que o banner de promoção passa a aparecer. */
+/** Days before trial end when the promotion banner starts showing up. */
 export const TRIAL_BANNER_DAYS = 5
