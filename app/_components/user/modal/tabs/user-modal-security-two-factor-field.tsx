@@ -84,7 +84,7 @@ export function UserModalSecurityTwoFactorField({
         )
         return
       }
-      // Os códigos antigos foram invalidados; mostra o novo conjunto uma vez.
+      // The old codes have been invalidated; show the new set once.
       setBackupCodes(data?.backupCodes ?? [])
       setTwoFactorMode('idle')
       setTwoFactorPassword('')

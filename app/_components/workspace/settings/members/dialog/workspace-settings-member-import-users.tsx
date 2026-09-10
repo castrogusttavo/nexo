@@ -48,7 +48,7 @@ export function WorkspaceSettingsMemberImportDialog({
       if (inputRef.current) inputRef.current.value = ''
       setOpen(false)
     } catch {
-      // toast já mostrou o erro
+      // toast already showed the error
     }
   }
 
