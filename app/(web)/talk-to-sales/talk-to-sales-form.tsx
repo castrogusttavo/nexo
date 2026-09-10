@@ -157,7 +157,7 @@ export function TalkToSalesForm() {
           rows={4}
           value={fields.message}
           onChange={update('message')}
-          placeholder='Detalhes sobre seu caso de uso, recursos da lista de desejos, se você prefere o Nexo self-hosted, qualquer coisa vale'
+          placeholder='Detalhes sobre seu caso de uso, recursos da lista de desejos, qualquer coisa vale'
           required
           disabled={sending}
         />

@@ -48,8 +48,8 @@ export default function TalkToSalesPage() {
             <div className='flex flex-col gap-3'>
               <h2 className='text-4xl'>Fale com um humano</h2>
               <Muted>
-                Obtenha preços, passe por uma demonstração ao vivo, planeje uma
-                migração ou uma implantação auto-hospedada e air-gapped.
+                Obtenha preços, passe por uma demonstração ao vivo ou planeje
+                uma migração pra sua equipe.
               </Muted>
             </div>
             <div>
