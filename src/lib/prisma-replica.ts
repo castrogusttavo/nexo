@@ -3,10 +3,10 @@ import { PrismaClient } from '@prisma/client'
 import { DATABASE_URL_REPLICA } from '@/lib/env/_server'
 import { prisma } from './prisma'
 
-// Singleton preguiçoso, mesmo estilo de getQueueConnection()
-// (src/lib/queue/connection.ts). Sem DATABASE_URL_REPLICA, cai de volta
-// pro client primário — leitura sem réplica configurada continua exatamente
-// como hoje.
+// Lazy singleton, same style as getQueueConnection()
+// (src/lib/queue/connection.ts). Without DATABASE_URL_REPLICA, it falls
+// back to the primary client — reads with no replica configured behave
+// exactly as they do today.
 let replica: PrismaClient | null = null
 
 export function getPrismaReplica(): PrismaClient {

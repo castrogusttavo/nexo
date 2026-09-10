@@ -1,7 +1,7 @@
 /**
- * Valida um destino de redirect vindo de query string (`?redirect=`).
- * Aceita apenas paths relativos ao próprio app — bloqueia open redirect
- * (`https://…`, `//host`, `/\host`). Retorna `null` quando inválido.
+ * Validates a redirect destination coming from a query string (`?redirect=`).
+ * Accepts only paths relative to the app itself — blocks open redirect
+ * (`https://…`, `//host`, `/\host`). Returns `null` when invalid.
  */
 export function safeRedirectPath(
   value: string | null | undefined,

@@ -1,9 +1,10 @@
-// Preset OWASP argon2id (Password Storage Cheat Sheet): m=19MiB, t=2, p=1.
-// Defaults da lib (64MB, parallelism 4) assumem um hash isolado rodando
-// rápido numa máquina dedicada — sob concorrência real isso satura a CPU
-// do servidor inteiro (ver k6/EXPERIMENT-LOG.md). Único lugar que define
-// esses parâmetros — auth.ts e scripts/seed-load-test.ts importam daqui
-// pra nunca gerar hashes com configs diferentes do que a app realmente usa.
+// OWASP argon2id preset (Password Storage Cheat Sheet): m=19MiB, t=2, p=1.
+// The lib's defaults (64MB, parallelism 4) assume a single hash running
+// fast on a dedicated machine — under real concurrency this saturates the
+// whole server's CPU (see k6/EXPERIMENT-LOG.md). The single place that
+// defines these parameters — auth.ts and scripts/seed-load-test.ts import
+// from here so hashes are never generated with configs different from
+// what the app actually uses.
 export const ARGON2_OPTIONS = {
   memoryCost: 19456,
   timeCost: 2,

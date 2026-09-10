@@ -8,20 +8,19 @@ import {
 
 const globalForPrisma = globalThis as unknown as { prisma?: PrismaClient }
 
-// Pool configurável por env pra dar pra comparar curva de escala sem
-// rebuild — ver k6/stress-issues.js (achado: 5 conexões colapsa a partir
-// de ~100 usuários simultâneos em /issues). Default subido de 5 pra 25
-// depois da Rodada 5 (k6/EXPERIMENT-LOG.md): produção nunca teve
-// DB_POOL_MAX setado no .env, então caía nesse default — gargalo real
-// escondido atrás do custo de CPU do argon2 em login concorrente. Fixado
-// no código (não só no .env) pra sobreviver a qualquer deploy que
-// regenere o .env a partir de secrets/production.enc.env, que nunca
-// teve essa chave.
+// Pool configurable via env so we can compare scaling curves without
+// a rebuild — see k6/stress-issues.js (finding: 5 connections collapses past
+// ~100 concurrent users on /issues). Default raised from 5 to 25 after
+// Round 5 (k6/EXPERIMENT-LOG.md): production never had DB_POOL_MAX set in
+// .env, so it fell back to this default — a real bottleneck hidden
+// behind argon2's CPU cost under concurrent login. Pinned in code (not
+// just in .env) to survive any deploy that regenerates .env from
+// secrets/production.enc.env, which never had this key.
 
-// PgBouncer (pooling de transação) é opcional — sem DATABASE_URL_POOLED,
-// runtime continua batendo direto no Postgres, comportamento idêntico ao
-// de hoje. Migrations nunca passam por aqui (prisma.config.ts usa
-// DATABASE_URL puro) — DDL/advisory locks não sobrevivem a modo transação.
+// PgBouncer (transaction pooling) is optional — without DATABASE_URL_POOLED,
+// the runtime keeps hitting Postgres directly, identical behavior to
+// today. Migrations never go through here (prisma.config.ts uses the
+// raw DATABASE_URL) — DDL/advisory locks don't survive transaction mode.
 const DATABASE_URL_RUNTIME = DATABASE_URL_POOLED ?? DATABASE_URL
 
 function createPrismaClient() {

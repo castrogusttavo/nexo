@@ -31,11 +31,11 @@ export const auth = betterAuth({
       generateId: () => createId(),
     },
   },
-  // O app já aplica rate limit próprio (Redis) nas rotas de auth via route.ts.
-  // O limiter embutido do better-auth (em memória, ativo só em produção) é
-  // redundante e, no e2e — que roda `next start` em modo produção — bloqueia os
-  // sign-ups da suíte inteira a partir do mesmo IP. Preserva o default em
-  // produção real e desliga apenas quando o e2e seta o flag.
+  // The app already applies its own rate limit (Redis) on auth routes via route.ts.
+  // better-auth's built-in limiter (in-memory, only active in production) is
+  // redundant and, in e2e — which runs `next start` in production mode — blocks
+  // the whole suite's sign-ups from the same IP. Preserves the default in
+  // real production and only disables it when e2e sets the flag.
   rateLimit: {
     enabled:
       process.env.DISABLE_AUTH_RATE_LIMIT === 'true'
@@ -49,8 +49,8 @@ export const auth = betterAuth({
     enabled: true,
     requireEmailVerification: true,
     password: {
-      // Só afeta hashes novos — verify() lê os parâmetros do próprio hash
-      // armazenado, então hashes antigos continuam válidos.
+      // Only affects new hashes — verify() reads the parameters from the
+      // stored hash itself, so old hashes remain valid.
       hash: async (password) => hash(password, ARGON2_OPTIONS),
       verify: async ({ hash: hashed, password }) => {
         const release = await acquireVerifySlot()
@@ -61,8 +61,8 @@ export const auth = betterAuth({
         }
       },
     },
-    // A redefinição de senha costuma ocorrer após comprometimento da conta;
-    // derrubar as demais sessões expulsa um eventual atacante.
+    // Password reset usually happens after account compromise;
+    // revoking the other sessions kicks out any attacker.
     revokeSessionsOnPasswordReset: true,
     // `url` is the full reset link better-auth builds for us: it points at
     // the API verification endpoint that validates the token and then
@@ -338,10 +338,10 @@ export const auth = betterAuth({
       },
     }),
     twoFactor({
-      // O 2º fator é OTP por e-mail (enviado ao e-mail já verificado da
-      // conta), não TOTP/authenticator — não há etapa de scan/verify no
-      // toggle. Sem isso, `twoFactor.enable()` não persiste `twoFactorEnabled`
-      // e a ativação "some" ao recarregar a sessão.
+      // The 2nd factor is email OTP (sent to the account's already-verified
+      // email), not TOTP/authenticator — there's no scan/verify step in the
+      // toggle. Without this, `twoFactor.enable()` doesn't persist `twoFactorEnabled`
+      // and the activation "disappears" when the session reloads.
       skipVerificationOnEnable: true,
       otpOptions: {
         period: 5,
