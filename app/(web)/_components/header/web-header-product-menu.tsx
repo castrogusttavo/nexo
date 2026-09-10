@@ -2,7 +2,6 @@ import {
   ArrowRight02Icon,
   Github01Icon,
   GitlabIcon,
-  ServerStack03Icon,
   SlackIcon,
 } from '@hugeicons-pro/core-solid-rounded'
 import { ArrowUpRightIcon } from '@hugeicons-pro/core-stroke-rounded'
@@ -57,16 +56,6 @@ export function WebHeaderProductMenu() {
             </ul>
           </div>
           <div className='flex flex-col gap-4'>
-            <Card className='bg-muted border border-brand-500'>
-              <CardContent className='space-y-1.5'>
-                <NexoIcon icon={ServerStack03Icon} size={20} />
-                <CardTitle>Auto-hospede o Nexo</CardTitle>
-                <CardDescription>
-                  Tudo o que existe na nuvem, implantado na sua própria
-                  infraestrutura.
-                </CardDescription>
-              </CardContent>
-            </Card>
             <Card className='bg-branding-950 border border-brand-500'>
               <CardContent className='space-y-2.5'>
                 <CardTitle>Funciona com sua stack</CardTitle>

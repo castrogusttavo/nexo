@@ -112,35 +112,6 @@ export function WebFooter({ showBanner = true }: WebFooterProps = {}) {
                   </li>
                 </ul>
               </div>
-              <div className='mb-4'>
-                <Muted className='font-medium'>Auto-hospedado</Muted>
-                <ul className='mt-1 space-y-2 text-sm'>
-                  <li>
-                    <Link
-                      href='/self-hosted/commercial'
-                      className='md:whitespace-pre-line text-primary text-xs font-medium hover:underline'
-                    >
-                      Edição comercial
-                    </Link>
-                  </li>
-                  <li>
-                    <Link
-                      href='/self-hosted/airgapped'
-                      className='md:whitespace-pre-line text-primary text-xs font-medium hover:underline'
-                    >
-                      Edição isolada
-                    </Link>
-                  </li>
-                  <li>
-                    <Link
-                      href='/self-hosted/prime-portal'
-                      className='md:whitespace-pre-line text-primary text-xs font-medium hover:underline'
-                    >
-                      Prime Portal
-                    </Link>
-                  </li>
-                </ul>
-              </div>
             </div>
             <div className='cols-span-1 flex flex-col gap-4 pb-6'>
               <div className='mb-4'>
@@ -585,7 +556,7 @@ export function WebFooter({ showBanner = true }: WebFooterProps = {}) {
                   </li>
                   <li>
                     <Link
-                      href='/legals/security'
+                      href='/security'
                       className='md:whitespace-pre-line text-primary text-xs font-medium hover:underline'
                     >
                       Segurança

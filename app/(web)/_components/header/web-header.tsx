@@ -65,10 +65,6 @@ export function WebHeader() {
             className={navigationMenuTriggerStyle()}
             render={<Link href='/pricing'>Assinatura</Link>}
           />
-          <NavigationMenuLink
-            className={navigationMenuTriggerStyle()}
-            render={<Link href='/self-hosted'>Self-host Nexo</Link>}
-          />
         </NavigationMenuList>
       </NavigationMenu>
       <div className='flex items-center gap-1.5 justify-self-end'>

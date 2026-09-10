@@ -49,25 +49,6 @@ export function WebHeaderResourcesMenu() {
           </div>
           <div className='col-span-2 flex gap-4 h-full'>
             <div className='flex-1 flex flex-col gap-1.5'>
-              <Muted>Última atualização</Muted>
-              <Link href='#' className='h-full'>
-                <Card className='bg-muted border border-brand-500 h-full'>
-                  <CardContent className='space-y-1.5 flex flex-col justify-between h-full'>
-                    <Badge>Versão 2.6.3</Badge>
-                    <div>
-                      <CardTitle className='text-branding-400'>
-                        Self-Hosted
-                      </CardTitle>
-                      <CardDescription className='line-clamp-2'>
-                        Suporte ao GovSlack, correção do endpoint de
-                        notificações e otimizações no monitoramento
-                      </CardDescription>
-                    </div>
-                  </CardContent>
-                </Card>
-              </Link>
-            </div>
-            <div className='flex-1 flex flex-col gap-1.5'>
               <Muted>Download</Muted>
               <Link href='#' className='h-full'>
                 <Card className='relative overflow-hidden bg-muted border border-brand-500 h-full'>
