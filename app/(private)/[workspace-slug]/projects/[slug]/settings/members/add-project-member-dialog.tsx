@@ -76,7 +76,7 @@ export function AddProjectMemberDialog({
       })
       handleOpenChange(false)
     } catch {
-      // toast já mostrou o erro
+      // toast already showed the error
     }
   }
 

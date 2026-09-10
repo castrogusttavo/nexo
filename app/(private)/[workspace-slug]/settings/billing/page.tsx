@@ -72,7 +72,7 @@ export default async function SettingsBillingPage({
     ? Math.max(0, Math.ceil((trialEndsAt.getTime() - now) / 86_400_000))
     : 0
 
-  // Assentos: pago = comprados; trial/plano = cap do catálogo (null = ilimitado)
+  // Seats: paid = purchased; trial/plan = catalog cap (null = unlimited)
   const purchasedSeats =
     subscription?.seats ?? limitOf(workspace.activePlan, 'seats')
   const freeSeats =

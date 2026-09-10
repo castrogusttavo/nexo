@@ -65,7 +65,7 @@ export default async function WorkspaceLayout({
     ? new Date(workspace.trialEndsAt)
     : null
 
-  // Banner só nos últimos TRIAL_BANNER_DAYS dias do trial.
+  // Banner only during the last TRIAL_BANNER_DAYS days of the trial.
   const now = Date.now()
   const trialEndingSoon =
     trialEndsAt !== null &&
