@@ -114,19 +114,12 @@ const SECTIONS: LegalSection[] = [
     ],
   },
   {
-    id: 'obrigacoes-por-implantacao',
-    title: '7. Obrigações por tipo de implantação',
+    id: 'obrigacoes-do-cliente',
+    title: '7. Obrigações do Cliente',
     blocks: [
       {
-        heading: '7.1 Nuvem',
         paragraphs: [
           'O Cliente é responsável pela segurança de suas credenciais, pelo conteúdo enviado e pela conformidade de todos os Usuários Autorizados com esta AUP.',
-        ],
-      },
-      {
-        heading: '7.2 Self-hosted e air-gapped',
-        paragraphs: [
-          'Além do disposto acima, é proibido: contornar ou compartilhar a ativação da licença; desativar a validação de licença ou a telemetria (exceto conforme documentado para ambientes air-gapped); redistribuir o software sem autorização; e deixar de aplicar correções de segurança quando isso criar risco relevante.',
         ],
       },
     ],

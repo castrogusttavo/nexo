@@ -48,7 +48,6 @@ const LEGAL_LINKS = [
     href: '/legals/business-associate-agreement',
   },
   { label: 'Termos de Uso de IA', href: '/legals/ai-terms' },
-  { label: 'Licença de Uso Final (EULA)', href: '/legals/eula' },
 ]
 
 export default function LegalsPage() {

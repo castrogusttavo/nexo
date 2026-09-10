@@ -42,7 +42,7 @@ interface LegalSection {
 }
 
 const PREAMBLE = [
-  'Este Acordo de Nível de Serviço ("SLA") se aplica ao Nexo Cloud e é incorporado aos Termos de Serviço por referência. Ele não se aplica a implantações self-hosted ou air-gapped, cuja disponibilidade depende da infraestrutura do próprio Cliente.',
+  'Este Acordo de Nível de Serviço ("SLA") se aplica ao Nexo Cloud e é incorporado aos Termos de Serviço por referência.',
 ]
 
 const SECTIONS: LegalSection[] = [
@@ -127,7 +127,7 @@ const SECTIONS: LegalSection[] = [
       {
         heading: '6.1 Canais e escopo',
         paragraphs: [
-          'O suporte cobre o Nexo Cloud e a instalação/atualização do software self-hosted. Ele não cobre a infraestrutura, a rede ou componentes de terceiros do ambiente self-hosted do Cliente, conforme a Seção 3.2(d) dos Termos.',
+          'O suporte cobre o Nexo Cloud, conforme os canais e horários descritos nesta seção.',
         ],
       },
       {

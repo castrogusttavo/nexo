@@ -43,7 +43,7 @@ interface LegalSection {
 
 const PREAMBLE = [
   'Estes Termos de Serviço ("Termos") são celebrados entre Nexo Software, Inc. ("Nexo", "nós" ou "nosso") e a pessoa física ou jurídica que acessa ou usa o Serviço ("Cliente" ou "você"). Se você estiver acessando ou usando o Serviço em nome de uma empresa ou outra entidade, você declara ter autoridade para vincular essa entidade a estes Termos, e "você" e "Cliente" passam a se referir a essa entidade.',
-  'Estes Termos regem o acesso e o uso da plataforma de gestão de trabalho do Nexo, disponível em nuvem, self-hosted e em ambientes air-gapped, incluindo nossos sites, APIs, aplicativos móveis e serviços relacionados (em conjunto, o "Serviço"). Ao acessar ou usar o Serviço, clicar em "Concordo" ou assinar um Pedido de Contratação que faça referência a estes Termos, você concorda em se vincular a eles. Se você não concordar, não utilize o Serviço.',
+  'Estes Termos regem o acesso e o uso da plataforma de gestão de trabalho do Nexo, incluindo nossos sites, APIs, aplicativos móveis e serviços relacionados (em conjunto, o "Serviço"). Ao acessar ou usar o Serviço, clicar em "Concordo" ou assinar um Pedido de Contratação que faça referência a estes Termos, você concorda em se vincular a eles. Se você não concordar, não utilize o Serviço.',
   'A "Data de Vigência" é a que ocorrer primeiro entre: (a) seu primeiro acesso ao Serviço, ou (b) a data de vigência do primeiro Pedido de Contratação que faça referência a estes Termos.',
 ]
 
@@ -64,7 +64,7 @@ const SECTIONS: LegalSection[] = [
           '"Direitos de Propriedade Intelectual" significa todas as patentes, direitos autorais, marcas, segredos de negócio, direitos morais e demais direitos de propriedade intelectual existentes ou que venham a existir, incluindo todos os pedidos, renovações e extensões correspondentes.',
           '"Leis" significa todas as leis, normas e regulamentos locais, estaduais, federais e internacionais aplicáveis, incluindo os relacionados à proteção de dados, transferência internacional de dados, controle de exportação e comunicações eletrônicas — em especial a Lei Geral de Proteção de Dados (Lei nº 13.709/2018, "LGPD") e o Código de Defesa do Consumidor (Lei nº 8.078/1990, "CDC"), quando aplicável.',
           '"Pedido de Contratação" significa o documento de contratação, escrito ou eletrônico, que faça referência a estes Termos e especifique o Serviço contratado, o prazo de assinatura, os valores e demais condições comerciais. Uma vez assinado por ambas as partes (ou, no caso de contratação online, confirmado), cada Pedido de Contratação fica sujeito a estes Termos.',
-          '"Serviço" significa a plataforma de gestão de trabalho do Nexo, incluindo o serviço em nuvem, o software self-hosted, aplicativos móveis, APIs, integrações e ferramentas e documentação relacionadas.',
+          '"Serviço" significa a plataforma de gestão de trabalho do Nexo, incluindo o serviço em nuvem, aplicativos móveis, APIs, integrações e ferramentas e documentação relacionadas.',
           '"Prazo de Assinatura" significa o período durante o qual o Cliente possui acesso pago ao Serviço, conforme especificado no Pedido de Contratação aplicável.',
           '"Dados de Uso" significa as informações técnicas, de diagnóstico e de uso sobre a utilização do Serviço pelo Cliente e pelos Usuários Autorizados, incluindo padrões de uso de funcionalidades, métricas de desempenho e logs de sistema. Dados de Uso não incluem Dados do Cliente.',
         ],
@@ -78,15 +78,14 @@ const SECTIONS: LegalSection[] = [
       {
         heading: '2.1 Visão geral',
         paragraphs: [
-          'O Nexo oferece uma plataforma de gestão de trabalho (gestão de projetos, gestão de conhecimento/wiki e IA) disponível em configurações de implantação em nuvem, self-hosted e air-gapped. O Serviço inclui a plataforma, produtos, APIs, integrações, aplicativos móveis e quaisquer ferramentas e recursos complementares oferecidos através do domínio do Nexo.',
+          'O Nexo oferece uma plataforma de gestão de trabalho (gestão de projetos, gestão de conhecimento/wiki e IA) hospedada na nuvem. O Serviço inclui a plataforma, produtos, APIs, integrações, aplicativos móveis e quaisquer ferramentas e recursos complementares oferecidos através do domínio do Nexo.',
         ],
       },
       {
         heading: '2.2 Acesso e uso',
         paragraphs: [
           '(a) Nuvem. Sujeito a estes Termos e ao pagamento das taxas aplicáveis, o Nexo concede ao Cliente um direito não exclusivo e intransferível, durante o Prazo de Assinatura, de acessar e usar o Serviço em nuvem de acordo com a Documentação e quaisquer restrições de escopo de uso do Pedido de Contratação aplicável. O Serviço em nuvem é uma assinatura hospedada — nenhum software é entregue ou instalado pelo Cliente, e nenhuma licença de software é concedida.',
-          '(b) Self-hosted e air-gapped. Para implantações self-hosted e air-gapped, o Nexo concede ao Cliente uma licença de software conforme descrito na Seção 3.2. Essa licença está sujeita a estes Termos, ao pagamento das taxas aplicáveis e a quaisquer restrições adicionais do Pedido de Contratação aplicável.',
-          '(c) Usuários Autorizados. O acesso ao Serviço, em qualquer configuração de implantação, é limitado aos Usuários Autorizados. O Cliente é responsável por garantir que todos os Usuários Autorizados cumpram estes Termos e por toda atividade realizada em sua conta.',
+          '(b) Usuários Autorizados. O acesso ao Serviço é limitado aos Usuários Autorizados. O Cliente é responsável por garantir que todos os Usuários Autorizados cumpram estes Termos e por toda atividade realizada em sua conta.',
         ],
       },
       {
@@ -131,33 +130,14 @@ const SECTIONS: LegalSection[] = [
     ],
   },
   {
-    id: 'termos-por-implantacao',
-    title: '3. Termos específicos por implantação',
+    id: 'servico-em-nuvem',
+    title: '3. Serviço em nuvem',
     blocks: [
       {
-        heading: '3.1 Serviço em nuvem',
         paragraphs: [
           '(a) O Nexo hospeda e gerencia a infraestrutura, e o Cliente acessa o Serviço via web ou aplicativos móveis.',
           '(b) O Serviço está sujeito ao Acordo de Nível de Serviço disponível em nexo.coodee.dev/legals/service-level-agreement.',
           '(c) O Nexo é responsável por manter a segurança do ambiente de hospedagem de acordo com suas práticas de segurança descritas em nexo.coodee.dev/legals/security.',
-        ],
-      },
-      {
-        heading: '3.2 Serviço self-hosted',
-        paragraphs: [
-          '(a) Mediante o pagamento das taxas aplicáveis, o Nexo concede ao Cliente uma licença limitada, não exclusiva e intransferível para instalar e operar o Serviço na própria infraestrutura do Cliente durante o Prazo de Assinatura.',
-          '(b) O Nexo fornecerá ao Cliente os meios de ativação necessários para operar o Serviço self-hosted, conforme descrito na Documentação. Esses meios de ativação estão vinculados à assinatura do Cliente e não podem ser compartilhados ou transferidos.',
-          '(c) O Cliente é exclusivamente responsável por: provisionar e manter a infraestrutura; realizar backups; aplicar atualizações e correções fornecidas pelo Nexo; e manter a segurança e a integridade do ambiente self-hosted, incluindo quaisquer Dados do Cliente nele armazenados.',
-          '(d) As obrigações de suporte do Nexo para implantações self-hosted se limitam ao próprio software e não se estendem à infraestrutura, à rede ou a componentes de terceiros do Cliente.',
-        ],
-      },
-      {
-        heading: '3.3 Implantações air-gapped',
-        paragraphs: [
-          'Para implantações air-gapped, aplicam-se os termos da Seção 3.2, com as seguintes disposições adicionais:',
-          '(a) O Cliente reconhece que implantações air-gapped não recebem atualizações em tempo real, telemetria automatizada ou funcionalidades que dependam de conectividade com a internet.',
-          '(b) A validação da licença para ambientes air-gapped é feita por processo offline, conforme descrito na Documentação.',
-          '(c) O suporte para implantações air-gapped pode exigir canais de comunicação alternativos, conforme acordado entre as partes.',
         ],
       },
     ],
@@ -389,11 +369,10 @@ const SECTIONS: LegalSection[] = [
         paragraphs: [
           'Após qualquer rescisão, expiração ou cancelamento de um Prazo de Assinatura, independentemente da causa:',
           '(a) Licença. A licença do Cliente para acessar e usar o Serviço no âmbito do Prazo de Assinatura afetado é encerrada imediatamente na data efetiva. Para cancelamentos nos termos da Seção 7.7, a data efetiva é o fim do período de cobrança ou do Prazo de Assinatura vigente, conforme aplicável.',
-          '(b) Dados do Cliente — nuvem. Para clientes do Serviço em nuvem, o Nexo manterá os Dados do Cliente disponíveis para exportação por trinta (30) dias após a data efetiva da rescisão, expiração ou cancelamento. Após esse período, o Nexo pode excluir todos os Dados do Cliente de seus sistemas, exceto na medida em que a retenção seja exigida pela legislação aplicável, sem qualquer obrigação de mantê-los ou recuperá-los. É de responsabilidade exclusiva do Cliente exportar seus Dados dentro desse prazo.',
-          '(c) Dados do Cliente — self-hosted e air-gapped. Para clientes self-hosted e air-gapped, o Cliente deve cessar o uso do Serviço, desativar a licença e desinstalar todas as cópias do software. O Cliente mantém suas próprias cópias dos Dados do Cliente armazenados em sua própria infraestrutura.',
-          '(d) Informação Confidencial. Cada parte deverá devolver ou destruir prontamente a Informação Confidencial da outra parte mediante solicitação por escrito, exceto na medida em que a retenção seja exigida por lei aplicável ou necessária para o exercício de direitos que sobrevivam a estes Termos.',
-          '(e) Taxas pendentes. Quaisquer taxas acumuladas e não pagas até a data efetiva da rescisão ou expiração tornam-se imediatamente devidas. A rescisão não exime o Cliente de obrigações de pagamento incorridas antes da data efetiva. Eventuais direitos de reembolso são regidos exclusivamente pela Seção 7.8.',
-          '(f) Ausência de responsabilidade adicional. Exceto pelas obrigações já vencidas e pelas disposições que sobrevivem nos termos da Seção 9.6, nenhuma das partes terá qualquer responsabilidade adicional perante a outra, nos termos destes Termos, após a data efetiva da rescisão ou expiração.',
+          '(b) Dados do Cliente. Para clientes do Serviço em nuvem, o Nexo manterá os Dados do Cliente disponíveis para exportação por trinta (30) dias após a data efetiva da rescisão, expiração ou cancelamento. Após esse período, o Nexo pode excluir todos os Dados do Cliente de seus sistemas, exceto na medida em que a retenção seja exigida pela legislação aplicável, sem qualquer obrigação de mantê-los ou recuperá-los. É de responsabilidade exclusiva do Cliente exportar seus Dados dentro desse prazo.',
+          '(c) Informação Confidencial. Cada parte deverá devolver ou destruir prontamente a Informação Confidencial da outra parte mediante solicitação por escrito, exceto na medida em que a retenção seja exigida por lei aplicável ou necessária para o exercício de direitos que sobrevivam a estes Termos.',
+          '(d) Taxas pendentes. Quaisquer taxas acumuladas e não pagas até a data efetiva da rescisão ou expiração tornam-se imediatamente devidas. A rescisão não exime o Cliente de obrigações de pagamento incorridas antes da data efetiva. Eventuais direitos de reembolso são regidos exclusivamente pela Seção 7.8.',
+          '(e) Ausência de responsabilidade adicional. Exceto pelas obrigações já vencidas e pelas disposições que sobrevivem nos termos da Seção 9.6, nenhuma das partes terá qualquer responsabilidade adicional perante a outra, nos termos destes Termos, após a data efetiva da rescisão ou expiração.',
         ],
       },
       {

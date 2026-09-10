@@ -52,7 +52,7 @@ const SECTIONS: LegalSection[] = [
     blocks: [
       {
         paragraphs: [
-          'O Nexo AI ajuda em tarefas como geração e resumo de conteúdo, triagem, e automação de fluxos de trabalho dentro do Serviço, disponível nas configurações de nuvem, self-hosted e air-gapped conforme a Seção 6.',
+          'O Nexo AI ajuda em tarefas como geração e resumo de conteúdo, triagem, e automação de fluxos de trabalho dentro do Serviço.',
         ],
       },
     ],
@@ -102,32 +102,8 @@ const SECTIONS: LegalSection[] = [
     ],
   },
   {
-    id: 'implantacao',
-    title: '6. Termos específicos por implantação',
-    blocks: [
-      {
-        heading: '6.1 Nuvem',
-        paragraphs: [
-          'Funcionalidades de IA processam dados através dos sub-processadores de IA listados na página de sub-processadores, conforme o DPA.',
-        ],
-      },
-      {
-        heading: '6.2 Self-hosted',
-        paragraphs: [
-          'Se você usa Funcionalidades de IA numa instância self-hosted, seus dados são enviados diretamente da sua infraestrutura pro provedor de IA que você configurar — o Nexo não atua como intermediário nem tem acesso a esses dados.',
-        ],
-      },
-      {
-        heading: '6.3 Air-gapped',
-        paragraphs: [
-          'Funcionalidades de IA que exigem conectividade externa não ficam disponíveis em ambientes air-gapped, a menos que o Cliente configure um modelo local.',
-        ],
-      },
-    ],
-  },
-  {
     id: 'limitacoes-e-uso-responsavel',
-    title: '7. Limitações e uso responsável',
+    title: '6. Limitações e uso responsável',
     blocks: [
       {
         paragraphs: [
@@ -138,7 +114,7 @@ const SECTIONS: LegalSection[] = [
   },
   {
     id: 'contato',
-    title: '8. Contato',
+    title: '7. Contato',
     blocks: [
       {
         paragraphs: [

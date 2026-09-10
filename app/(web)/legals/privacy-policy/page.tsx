@@ -42,7 +42,7 @@ interface LegalSection {
 
 const PREAMBLE = [
   'Esta Política de Privacidade explica como a Nexo Software, Inc. ("Nexo", "nós" ou "nosso") coleta, usa, compartilha e protege informações pessoais quando você interage com nossos sites, produtos e serviços.',
-  'O Nexo oferece uma plataforma de gestão de trabalho disponível em configurações de implantação em nuvem, self-hosted e air-gapped (em conjunto, o "Serviço", conforme definido em nossos Termos de Serviço). Esta Política de Privacidade cobre nossas práticas como controlador de dados — ou seja, situações em que determinamos como e por que suas informações pessoais são tratadas.',
+  'O Nexo oferece uma plataforma de gestão de trabalho hospedada na nuvem (o "Serviço", conforme definido em nossos Termos de Serviço). Esta Política de Privacidade cobre nossas práticas como controlador de dados — ou seja, situações em que determinamos como e por que suas informações pessoais são tratadas.',
   'Termos em maiúsculas não definidos aqui têm o significado atribuído em nossos Termos de Serviço.',
 ]
 
@@ -66,8 +66,8 @@ const SECTIONS: LegalSection[] = [
     blocks: [
       {
         paragraphs: [
-          'Esta Política de Privacidade se aplica a: o Nexo Cloud — o Serviço hospedado na nuvem operado pelo Nexo; nexo.coodee.dev e sites de marketing, documentação e suporte relacionados; comunicações com nossos times de suporte, comercial e de produto; e telemetria opcional de instâncias self-hosted e air-gapped (somente mediante consentimento do Cliente).',
-          'Esta Política não se aplica a: Dados do Cliente armazenados dentro do workspace de um Cliente (regidos pelo DPA); dados armazenados na instância self-hosted ou air-gapped do Cliente (o Cliente é o controlador); e serviços de terceiros integrados ao Nexo (regidos pelas próprias políticas de privacidade deles).',
+          'Esta Política de Privacidade se aplica a: o Nexo Cloud — o Serviço hospedado na nuvem operado pelo Nexo; nexo.coodee.dev e sites de marketing, documentação e suporte relacionados; e comunicações com nossos times de suporte, comercial e de produto.',
+          'Esta Política não se aplica a: Dados do Cliente armazenados dentro do workspace de um Cliente (regidos pelo DPA); e serviços de terceiros integrados ao Nexo (regidos pelas próprias políticas de privacidade deles).',
         ],
       },
     ],
@@ -91,7 +91,7 @@ const SECTIONS: LegalSection[] = [
           'Dados de dispositivo e conexão. Coletamos seu endereço IP, tipo e versão do navegador, sistema operacional, identificadores de dispositivo, resolução de tela e preferências de idioma.',
           'Dados de uso. Coletamos informações sobre como você interage com nossos sites e com o Serviço, incluindo páginas visitadas, funcionalidades usadas, cliques, URLs de origem e saída, duração da sessão e timestamps.',
           'Dados de log. Nossos servidores registram automaticamente logs de servidor, relatórios de erro e dados de diagnóstico.',
-          'Dados de cookies. Coletamos informações por meio de cookies e tecnologias semelhantes. Veja a Seção 10.',
+          'Dados de cookies. Coletamos informações por meio de cookies e tecnologias semelhantes. Veja a Seção 9.',
         ],
       },
       {
@@ -100,14 +100,6 @@ const SECTIONS: LegalSection[] = [
           'Login por terceiros. Se você entra com Google, GitHub ou outro provedor de identidade, recebemos seu nome e e-mail, conforme permitido pelas configurações do provedor.',
           'Parceiros e fornecedores. Podemos receber dados de contato comercial de parceiros de revenda, consultoria ou marketing.',
           'Dados publicamente disponíveis. Podemos coletar informações profissionais de perfis públicos (como o LinkedIn) para fins de prospecção comercial.',
-        ],
-      },
-      {
-        heading: '3.4 Instâncias self-hosted e air-gapped',
-        paragraphs: [
-          'Nenhum Dado do Cliente é coletado por padrão. Quando você roda o Nexo na sua própria infraestrutura, seus dados ficam no seu ambiente.',
-          'Podemos coletar telemetria mínima e opt-in (como a versão do Nexo, um ID de instância e métricas agregadas de uso) somente se o Cliente habilitar isso explicitamente. Nenhum Dado do Cliente, nome de projeto, conteúdo de usuário ou informação pessoal identificável da instância do Cliente é transmitido.',
-          'Se você contatar nosso suporte, podemos receber dados de diagnóstico que você compartilha voluntariamente para resolução de problemas.',
         ],
       },
     ],
@@ -139,7 +131,7 @@ const SECTIONS: LegalSection[] = [
           'Tratamos suas informações pessoais com base em uma ou mais das hipóteses legais previstas no art. 7º da LGPD (Lei nº 13.709/2018):',
           'Execução de contrato. Tratamento necessário para cumprir nosso contrato com você — por exemplo, fornecer sua conta no Nexo, processar pagamentos e prestar suporte.',
           'Legítimo interesse. Tratamento que atende a interesses legítimos do Nexo, desde que seus direitos e liberdades fundamentais não prevaleçam sobre eles — por exemplo, melhorar o Serviço, prevenir fraude e garantir a segurança da rede. Sempre que nos baseamos em legítimo interesse, fazemos um teste de balanceamento antes de tratar seus dados.',
-          'Consentimento. Tratamento baseado no seu consentimento livre e informado — por exemplo, telemetria opt-in em instâncias self-hosted e comunicações de marketing opcionais. Você pode revogar o consentimento a qualquer momento.',
+          'Consentimento. Tratamento baseado no seu consentimento livre e informado — por exemplo, comunicações de marketing opcionais. Você pode revogar o consentimento a qualquer momento.',
           'Cumprimento de obrigação legal ou regulatória. Tratamento necessário para cumprir uma exigência legal — por exemplo, guarda de registros fiscais e resposta a solicitações legais.',
         ],
       },
@@ -165,7 +157,7 @@ const SECTIONS: LegalSection[] = [
       {
         heading: '6.2 Sub-processadores de IA',
         paragraphs: [
-          'Se você usa o Nexo AI (nossas Funcionalidades de IA), seus dados podem ser processados por provedores terceiros de IA atuando como sub-processadores. Esses provedores estão listados na nossa página de sub-processadores. Veja a Seção 9 para mais detalhes.',
+          'Se você usa o Nexo AI (nossas Funcionalidades de IA), seus dados podem ser processados por provedores terceiros de IA atuando como sub-processadores. Esses provedores estão listados na nossa página de sub-processadores. Veja a Seção 8 para mais detalhes.',
         ],
       },
       {
@@ -195,41 +187,8 @@ const SECTIONS: LegalSection[] = [
     ],
   },
   {
-    id: 'privacidade-por-implantacao',
-    title: '7. Privacidade por tipo de implantação',
-    blocks: [
-      {
-        paragraphs: [
-          'Sua postura de privacidade muda dependendo do modelo de implantação que você usa.',
-        ],
-      },
-      {
-        heading: '7.1 Nexo Cloud',
-        paragraphs: [
-          'Quando você usa o Nexo Cloud, o Nexo hospeda e processa dados na nossa infraestrutura. Esta Política se aplica integralmente. O tratamento de Dados do Cliente é regido pelo DPA.',
-        ],
-      },
-      {
-        heading: '7.2 Self-hosted',
-        paragraphs: [
-          'Quando você roda o Nexo na sua própria infraestrutura, não temos acesso à sua instância nem aos dados dela. Você é o controlador de dados e é totalmente responsável por proteger e gerenciar seu ambiente.',
-          'Esta Política se aplica só às suas interações com nossos sites, canais de suporte, Documentação e qualquer telemetria opcional que você habilitar.',
-          'Telemetria opcional. Se habilitada, coletamos metadados técnicos limitados (versão do Nexo, ID da instância, contagens agregadas de uso de funcionalidades). Nenhum Dado do Cliente, nome de projeto, conteúdo de usuário ou informação pessoal identificável é transmitido.',
-          'Validação de licença. Sua instância pode contatar nossos servidores para validar a licença. Isso transmite só a chave de licença e o identificador da instância — nenhum Dado do Cliente.',
-        ],
-      },
-      {
-        heading: '7.3 Air-gapped',
-        paragraphs: [
-          'Quando você roda o Nexo num ambiente air-gapped (totalmente offline), nenhum dado é transmitido pro Nexo. Sua instância opera com zero conectividade com nossos servidores.',
-          'Esta Política se aplica só a interações fora do seu ambiente air-gapped — como visitar nosso site, contatar o suporte ou comprar uma licença. Licenças para implantações air-gapped são provisionadas offline, conforme descrito na Documentação.',
-        ],
-      },
-    ],
-  },
-  {
     id: 'transferencia-internacional',
-    title: '8. Transferência internacional de dados',
+    title: '7. Transferência internacional de dados',
     blocks: [
       {
         paragraphs: [
@@ -242,7 +201,7 @@ const SECTIONS: LegalSection[] = [
   },
   {
     id: 'funcionalidades-de-ia',
-    title: '9. Funcionalidades de IA',
+    title: '8. Funcionalidades de IA',
     blocks: [
       {
         paragraphs: [
@@ -251,14 +210,13 @@ const SECTIONS: LegalSection[] = [
           'Processamento automatizado. O Cliente permanece o único responsável por quaisquer decisões, ações ou processos automatizados implementados com base em resultados gerados por IA.',
           'Sem treinamento com seus dados. O Nexo não usa Dados do Cliente para treinar, ajustar ou melhorar modelos de IA de propósito geral — nem os nossos, nem os de provedores terceiros. Nossos acordos com sub-processadores de IA proíbem o uso dos seus dados para treinamento de modelo.',
           'Resultados de IA. Resultados gerados por IA são tratados como Dados do Cliente e recebem as mesmas proteções. Você é responsável por revisar e verificar resultados de IA antes de confiar neles.',
-          'IA self-hosted e air-gapped. Se você usa Funcionalidades de IA numa instância self-hosted, seus dados são enviados diretamente da sua infraestrutura pro provedor de IA configurado — o Nexo não atua como intermediário. Em instâncias air-gapped, Funcionalidades de IA que exigem conectividade externa não ficam disponíveis, a menos que você configure um modelo local.',
         ],
       },
     ],
   },
   {
     id: 'cookies',
-    title: '10. Cookies e tecnologias de rastreamento',
+    title: '9. Cookies e tecnologias de rastreamento',
     blocks: [
       {
         heading: '10.1 O que usamos',
@@ -287,7 +245,7 @@ const SECTIONS: LegalSection[] = [
   },
   {
     id: 'retencao',
-    title: '11. Retenção de dados',
+    title: '10. Retenção de dados',
     blocks: [
       {
         paragraphs: [
@@ -297,7 +255,6 @@ const SECTIONS: LegalSection[] = [
           'Dados de suporte. Retidos durante a vigência da sua conta ou até a resolução do chamado, mais qualquer prazo de retenção legalmente exigido.',
           'Dados de uso e analytics. Agregados e retidos para análise; logs brutos normalmente retidos por até 12 meses.',
           'Dados de marketing. Retidos até você cancelar a inscrição ou solicitar a exclusão, o que ocorrer primeiro.',
-          'Dados de telemetria (self-hosted). Retidos em forma agregada; telemetria bruta normalmente retida por até 12 meses.',
           'Quando informações pessoais deixam de ser necessárias, nós as excluímos ou anonimizamos com segurança. Para retenção e exclusão de Dados do Cliente após a rescisão, veja a Seção 9.5 dos Termos.',
         ],
       },
@@ -305,7 +262,7 @@ const SECTIONS: LegalSection[] = [
   },
   {
     id: 'seguranca',
-    title: '12. Segurança da informação',
+    title: '11. Segurança da informação',
     blocks: [
       {
         paragraphs: [
@@ -319,7 +276,7 @@ const SECTIONS: LegalSection[] = [
   },
   {
     id: 'direitos',
-    title: '13. Seus direitos como titular (LGPD art. 18)',
+    title: '12. Seus direitos como titular (LGPD art. 18)',
     blocks: [
       {
         paragraphs: [
@@ -341,7 +298,7 @@ const SECTIONS: LegalSection[] = [
   },
   {
     id: 'criancas',
-    title: '14. Crianças e adolescentes',
+    title: '13. Crianças e adolescentes',
     blocks: [
       {
         paragraphs: [
@@ -352,7 +309,7 @@ const SECTIONS: LegalSection[] = [
   },
   {
     id: 'servicos-terceiros',
-    title: '15. Serviços de terceiros',
+    title: '14. Serviços de terceiros',
     blocks: [
       {
         paragraphs: [
@@ -363,7 +320,7 @@ const SECTIONS: LegalSection[] = [
   },
   {
     id: 'alteracoes',
-    title: '16. Alterações desta política',
+    title: '15. Alterações desta política',
     blocks: [
       {
         paragraphs: [
@@ -375,7 +332,7 @@ const SECTIONS: LegalSection[] = [
   },
   {
     id: 'contato',
-    title: '17. Encarregado e contato',
+    title: '16. Encarregado e contato',
     blocks: [
       {
         paragraphs: [
