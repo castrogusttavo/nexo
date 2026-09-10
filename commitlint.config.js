@@ -5,17 +5,17 @@ module.exports = {
       2,
       'always',
       [
-        'feat',     // Nova funcionalidade
-        'fix',      // Correção de bug
-        'docs',     // Documentação
-        'style',    // Formatação, missing semi colons, etc
-        'refactor', // Refatoração de código
-        'perf',     // Melhorias de performance
-        'test',     // Adição de testes
-        'build',    // Mudanças no sistema de build
-        'ci',       // Mudanças em arquivos de CI
-        'chore',    // Outras mudanças que não modificam src ou test
-        'revert',   // Reverter um commit anterior
+        'feat',     // New feature
+        'fix',      // Bug fix
+        'docs',     // Documentation
+        'style',    // Formatting, missing semi colons, etc
+        'refactor', // Code refactor
+        'perf',     // Performance improvements
+        'test',     // Adding tests
+        'build',    // Build system changes
+        'ci',       // CI file changes
+        'chore',    // Other changes that don't modify src or test
+        'revert',   // Revert a previous commit
       ],
     ],
     'type-case': [2, 'always', 'lower-case'],

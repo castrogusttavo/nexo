@@ -52,9 +52,9 @@ const nextConfig: NextConfig = {
     ],
   },
   cacheComponents: true,
-  // Sem isso o Turbopack sobe até achar o package-lock.json solto em
-  // /home/castrogusttavo e trata o $HOME inteiro como raiz do workspace,
-  // quebrando a resolução de módulos do React Server Components manifest.
+  // Without this, Turbopack walks up until it finds the stray package-lock.json
+  // in /home/castrogusttavo and treats the whole $HOME as the workspace root,
+  // breaking React Server Components manifest module resolution.
   turbopack: {
     root: path.join(__dirname),
   },
