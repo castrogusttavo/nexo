@@ -144,8 +144,8 @@ export const WorkspaceService = {
       return err(forbidden('Apenas o OWNER pode deletar o workspace'))
     }
 
-    // Precisa ser lido antes do delete: memberships são removidas em cascata
-    // junto com o workspace.
+    // Must be read before the delete: memberships are removed in cascade
+    // along with the workspace.
     const memberIds =
       await MembershipRepository.listUserIdsByWorkspace(workspaceId)
 

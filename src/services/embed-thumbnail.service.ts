@@ -26,8 +26,8 @@ async function fetchYoutubeThumbnail(
   }
 }
 
-// Figma/Loom/Google Docs/Sheets não têm oEmbed público simples — sem
-// thumbnail cacheada, o card cai no fallback de ícone do provedor.
+// Figma/Loom/Google Docs/Sheets don't have a simple public oEmbed — without
+// a cached thumbnail, the card falls back to the provider's icon.
 const THUMBNAIL_FETCHERS: Partial<
   Record<
     EmbedProvider,
