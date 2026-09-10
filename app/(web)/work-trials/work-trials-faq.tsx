@@ -11,8 +11,8 @@ import {
 import { SubTitle } from '../_components/text/sub-title'
 import { Title } from '../_components/text/title'
 
-// Fonte única: o Accordion e o schema FAQPage abaixo renderizam a partir
-// deste array, pra nunca ficarem dessincronizados.
+// Single source of truth: the Accordion and the FAQPage schema below render
+// from this array, so they never fall out of sync.
 const WORK_TRIALS_FAQ_ITEMS = [
   {
     question: 'O trial é realmente remunerado?',

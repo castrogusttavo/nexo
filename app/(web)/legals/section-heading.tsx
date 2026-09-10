@@ -11,11 +11,11 @@ interface SectionHeadingProps {
   children: ReactNode
 }
 
-// O "#" é absolute sem "top" definido — isso faz o navegador manter a
-// posição vertical estática (a mesma que teria no fluxo normal do texto),
-// então ele alinha com a linha do título sem cálculo manual de centralização.
-// "-left-6" a partir da própria tag (não de um wrapper com padding) garante
-// que h2 e h3 formem a mesma régua vertical à esquerda.
+// The "#" is absolute with no "top" set — this makes the browser keep the
+// static vertical position (the same it would have in normal text flow),
+// so it aligns with the heading's line with no manual centering math.
+// "-left-6" from the tag itself (not from a wrapper with padding) ensures
+// h2 and h3 form the same vertical ruler on the left.
 export function SectionHeading({
   as,
   id,

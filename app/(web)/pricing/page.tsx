@@ -19,8 +19,8 @@ import { SubTitle } from '../_components/text/sub-title'
 import { Title } from '../_components/text/title'
 import { PricingFaq } from './pricing-faq'
 
-// Preços em centavos (fonte: src/config/plan-prices.ts) convertidos pra
-// unidade decimal (schema.org price espera string sem símbolo de moeda).
+// Prices in cents (source: src/config/plan-prices.ts) converted to
+// decimal units (schema.org price expects a string with no currency symbol).
 const PRODUCT_SCHEMA = {
   '@context': 'https://schema.org',
   '@type': 'SoftwareApplication',

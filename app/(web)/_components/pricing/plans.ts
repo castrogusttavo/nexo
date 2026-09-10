@@ -5,14 +5,14 @@ import {
 } from '@/src/config/plan-prices'
 import { PlanSchema, type PlanTier } from '@/src/schemas/plan.schema'
 
-/** Tier de plano — reusa o enum do backend (`src/schemas/plan.schema`). */
+/** Plan tier — reuses the backend enum (`src/schemas/plan.schema`). */
 export type PlanGrid = PlanTier
 export const PLAN_ORDER = PlanSchema.options
 
 export type { PlanPrice } from '@/src/config/plan-prices'
 export { PAID_PLAN_PRICES } from '@/src/config/plan-prices'
 
-/** Cadência de cobrança — `monthly`/`yearly` (padrão do backend), via url-state `?billing=`. */
+/** Billing cadence — `monthly`/`yearly` (backend default), via url-state `?billing=`. */
 export type Billing = BillingInterval
 
 export interface PlanFeature {
@@ -223,7 +223,7 @@ const currencyFormatterFraction = new Intl.NumberFormat('pt-BR', {
   maximumFractionDigits: 2,
 })
 
-/** Formata centavos (BRL) como moeda, escondendo os `,00` quando inteiro. */
+/** Formats cents (BRL) as currency, hiding the `,00` when it's a whole number. */
 export function formatCurrency(cents: number) {
   const value = cents / 100
   const formatter = Number.isInteger(value)
@@ -238,34 +238,34 @@ export function formatPlanName(plan: PlanGrid) {
   return plan.charAt(0) + plan.slice(1).toLowerCase()
 }
 
-/** Plano anterior na hierarquia (`null` no FREE). */
+/** Previous plan in the hierarchy (`null` for FREE). */
 export function previousPlan(plan: PlanGrid): PlanGrid | null {
   const index = PLAN_ORDER.indexOf(plan)
   return index > 0 ? PLAN_ORDER[index - 1] : null
 }
 
-/** URL de checkout/upgrade para um plano pago, com a cadência escolhida. */
+/** Checkout/upgrade URL for a paid plan, with the chosen cadence. */
 export function upgradeUrl(plan: PlanGrid, billing: Billing) {
   return `/upgrade?plan=${plan}&billing=${billing}`
 }
 
-/** Preço do plano (BRL), ou `null` se não tiver preço público (Enterprise). */
+/** Plan price (BRL), or `null` if it has no public price (Enterprise). */
 export function getPrice(plan: PlanGrid): PlanPrice | null {
   return PLAN_PRICES[plan]
 }
 
-/** Preço por mês na cobrança anual, em centavos. */
+/** Price per month on yearly billing, in cents. */
 export function yearlyPerMonth(price: PlanPrice) {
   return price.yearly / 12
 }
 
-/** Desconto do anual vs mensal (0..1); `0` para planos gratuitos. */
+/** Yearly vs monthly discount (0..1); `0` for free plans. */
 export function yearlyDiscount(price: PlanPrice) {
   if (price.monthly === 0) return 0
   return (price.monthly - yearlyPerMonth(price)) / price.monthly
 }
 
-/** Preço por mês (centavos) na cadência escolhida. */
+/** Price per month (cents) at the chosen cadence. */
 export function priceForBilling(price: PlanPrice, billing: Billing) {
   return billing === 'yearly' ? yearlyPerMonth(price) : price.monthly
 }

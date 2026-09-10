@@ -37,7 +37,7 @@ export interface NavItemData {
   icon?: IconSvgElement
 }
 
-// Produto
+// Product
 export const products: NavItemData[] = [
   {
     title: 'Gerenciamento de Projetos',
@@ -104,7 +104,7 @@ export const featureCapabilities: NavItemData[] = [
   },
 ]
 
-// Soluções
+// Solutions
 export const useCases: NavItemData[] = [
   {
     title: 'Produto',
@@ -192,7 +192,7 @@ export const scale: NavItemData[] = [
   },
 ]
 
-// Recursos
+// Resources
 export const discover: NavItemData[] = [
   {
     title: 'Blog',

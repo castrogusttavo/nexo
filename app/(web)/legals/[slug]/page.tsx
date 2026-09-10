@@ -42,9 +42,9 @@ export default async function LegalDocPage({ params }: Props) {
   const doc = await getLegalDocBySlug(slug)
   if (!doc) notFound()
 
-  // COOKIES_VERSION é gravada em ConsentEvent no cadastro (src/lib/auth.ts) —
-  // a versão exibida aqui precisa vir dessa constante, não do frontmatter,
-  // pra nunca divergir do que o consentimento realmente registrou.
+  // COOKIES_VERSION is recorded in ConsentEvent at sign-up (src/lib/auth.ts) —
+  // the version shown here must come from this constant, not the frontmatter,
+  // so it never diverges from what consent actually recorded.
   const version =
     doc.slug === 'cookie-policy' ? COOKIES_VERSION : doc.date.slice(0, 10)
 
@@ -65,8 +65,8 @@ export default async function LegalDocPage({ params }: Props) {
 
       <div
         className='legal-content prose prose-neutral dark:prose-invert max-w-none prose-headings:font-semibold prose-headings:text-primary prose-p:text-primary'
-        // html é sanitizado via rehype-sanitize em src/lib/legal/legal-doc.ts
-        // antes de chegar aqui
+        // html is sanitized via rehype-sanitize in src/lib/legal/legal-doc.ts
+        // before it gets here
         dangerouslySetInnerHTML={{ __html: doc.contentHtml }}
       />
     </main>

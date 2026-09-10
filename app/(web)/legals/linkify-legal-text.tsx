@@ -1,8 +1,8 @@
 import Link from 'next/link'
 import type { ReactNode } from 'react'
 
-// Casa e-mails e referências a nexo.coodee.dev (com ou sem "docs.", com ou
-// sem caminho) dentro do texto corrido dos documentos legais.
+// Matches emails and references to nexo.coodee.dev (with or without "docs.",
+// with or without a path) within the running text of legal documents.
 const LEGAL_REFERENCE_REGEX =
   /((?:docs\.)?nexo\.coodee\.dev(?:\/[A-Za-z0-9-/]*)?|[\w.+-]+@[\w-]+(?:\.[\w-]+)+)/g
 
@@ -23,8 +23,8 @@ export function linkifyLegalText(text: string): ReactNode {
   if (parts.length === 1) return text
 
   return parts.map((part, index) => {
-    // split() com um grupo de captura intercala texto/match/texto/match...
-    // — índices pares são texto puro, ímpares são as referências casadas.
+    // split() with a capture group interleaves text/match/text/match...
+    // — even indices are plain text, odd ones are the matched references.
     if (index % 2 === 0) return part
 
     const { href, external } = resolveHref(part)
