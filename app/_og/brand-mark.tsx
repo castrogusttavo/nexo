@@ -1,6 +1,6 @@
-// Extraído de public/brand/logo.svg: os dois paths do símbolo (sem o
-// texto "Nexo", que é um terceiro path separado no mesmo arquivo).
-// viewBox recortado exatamente na bounding box do símbolo.
+// Extracted from public/brand/logo.svg: the two paths of the symbol (without
+// the "Nexo" text, which is a third, separate path in the same file).
+// viewBox cropped exactly to the symbol's bounding box.
 export function BrandMark({ size }: { size: number }) {
   return (
     <svg

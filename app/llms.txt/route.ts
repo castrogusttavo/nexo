@@ -1,9 +1,9 @@
 import { NEXT_PUBLIC_URL } from '@/lib/env/env'
 
-// Convenção emergente (llmstxt.org): resumo do produto em markdown,
-// pensado pra ser lido por LLMs/engines de resposta. Gerado como rota
-// dinâmica (em vez de public/llms.txt estático) pra usar NEXT_PUBLIC_URL
-// e nunca hardcodar domínio errado entre ambientes.
+// Emerging convention (llmstxt.org): a markdown product summary meant
+// to be read by LLMs/answer engines. Generated as a dynamic route
+// (instead of a static public/llms.txt) to use NEXT_PUBLIC_URL and
+// never hardcode the wrong domain across environments.
 export function GET() {
   const body = `# Nexo
 

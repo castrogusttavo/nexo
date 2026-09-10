@@ -9,17 +9,16 @@ const DISALLOWED_PATHS = [
   '/upgrade',
 ]
 
-// Decisão de negócio (não só técnica): liberamos deliberadamente os
-// crawlers de IA abaixo. O conteúdo público do Nexo (blog, pricing,
-// carreiras) existe pra ser encontrado, e queremos chance de ser citado
-// por ChatGPT, Claude, Perplexity e AI Overviews — não faz sentido
-// bloquear o mesmo conteúdo que otimizamos pra SEO/AEO. Revisitar se
-// essa postura mudar.
+// Business decision (not just technical): we deliberately allow the AI
+// crawlers below. Nexo's public content (blog, pricing, careers) exists
+// to be found, and we want a shot at being cited by ChatGPT, Claude,
+// Perplexity and AI Overviews — no point blocking the same content we
+// optimize for SEO/AEO. Revisit if this stance changes.
 const AI_CRAWLER_USER_AGENTS = [
   'GPTBot', // OpenAI / ChatGPT
   'ClaudeBot', // Anthropic / Claude
   'PerplexityBot', // Perplexity
-  'Google-Extended', // Gemini / AI Overviews (Googlebot de busca é sempre liberado)
+  'Google-Extended', // Gemini / AI Overviews (search Googlebot is always allowed)
 ]
 
 export default function robots(): MetadataRoute.Robots {

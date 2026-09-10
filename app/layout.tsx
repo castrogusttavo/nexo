@@ -41,9 +41,9 @@ export const metadata: Metadata = {
 
 const THEME_INIT_SCRIPT = `(function(){try{var m=document.cookie.match(/(?:^|; )nexo\\.theme=([^;]+)/);var t=m?decodeURIComponent(m[1]):'SYSTEM';var dark=t==='DARK'||(t==='SYSTEM'&&matchMedia('(prefers-color-scheme: dark)').matches);document.documentElement.classList.toggle('dark',dark)}catch(e){}})()`
 
-// sameAs fica de fora de propósito: os links de redes sociais no footer
-// ainda são placeholders (linkedin.com genérico, "#"). Adicionar aqui
-// quando existirem perfis reais.
+// sameAs is left out on purpose: the social links in the footer are
+// still placeholders (generic linkedin.com, "#"). Add it here once
+// real profiles exist.
 const ORGANIZATION_SCHEMA = {
   '@context': 'https://schema.org',
   '@type': 'Organization',

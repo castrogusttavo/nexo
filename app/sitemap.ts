@@ -13,10 +13,10 @@ interface StaticRoute {
   changeFrequency: ChangeFrequency
 }
 
-// priority e changeFrequency são ignorados pelo Google (declarado desde
-// 2020), mas ainda pesam em outros motores (ex.: Bing) e custam zero —
-// mantidos como sinal de intenção. lastModified (abaixo, pros posts e
-// vagas) é o único campo que o Google de fato usa.
+// priority and changeFrequency are ignored by Google (declared since 2020),
+// but still carry weight on other engines (e.g. Bing) and cost nothing —
+// kept as a signal of intent. lastModified (below, for posts and job
+// postings) is the only field Google actually uses.
 const STATIC_ROUTES: StaticRoute[] = [
   { path: '/', priority: 1, changeFrequency: 'weekly' },
   { path: '/pricing', priority: 0.8, changeFrequency: 'monthly' },
