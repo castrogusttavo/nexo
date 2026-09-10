@@ -7,12 +7,12 @@ import { BaseToggleKit } from './plugins/toggle-base-kit'
 import { BaseTocKit } from './plugins/toc-base-kit'
 import { BaseFootnoteKit } from './plugins/footnote-base-kit'
 
-// Kits estáticos (SlateElement, sem estado React de edição) usados pra
-// serializar a wiki fora do editor vivo — export de HTML/PDF/imagem.
-// Cobre os tipos de bloco que já têm renderização estática própria; blocos
-// mais recentes (tabela, mídia, link, data, equação, menção, emoji,
-// mermaid, excalidraw) ainda caem no fallback padrão da Plate até
-// ganharem seus próprios *-base-kit.
+// Static kits (SlateElement, no React editing state) used to serialize
+// the wiki outside the live editor — HTML/PDF/image export.
+// Covers the block types that already have their own static rendering;
+// newer blocks (table, media, link, date, equation, mention, emoji,
+// mermaid, excalidraw) still fall back to Plate's default until they
+// get their own *-base-kit.
 export const BaseEditorKit = [
   ...BaseBasicBlocksKit,
   ...BaseBasicMarksKit,

@@ -40,7 +40,7 @@ import { CommentKit } from "./plugins/comment-kit"
 import { DiscussionKit } from "./plugins/discussion-kit"
 import { WikiEditorProvider } from "@/src/hooks/use-wiki-editor-context"
 
-// Cor determinística por usuário — mesmo userId, mesmo cursor remoto sempre.
+// Deterministic color per user — same userId, same remote cursor always.
 function colorFromUserId(userId: string): string {
   let hash = 0
   for (let i = 0; i < userId.length; i++) {
@@ -119,10 +119,10 @@ export function WikiPageRichEditor({
 
     let cancelled = false
 
-    // Abrir o WebSocket enquanto a página ainda está carregando (fontes,
-    // HMR, scripts de analytics disputando conexão) faz o browser derrubar
-    // a conexão ("interrupted while the page was loading"). Espera o
-    // carregamento terminar de verdade antes de conectar.
+    // Opening the WebSocket while the page is still loading (fonts,
+    // HMR, analytics scripts competing for the connection) makes the browser
+    // drop the connection ("interrupted while the page was loading"). Waits
+    // for loading to actually finish before connecting.
     function start() {
       if (cancelled) return
       editor.getApi(YjsPlugin).yjs.init({
@@ -155,10 +155,10 @@ export function WikiPageRichEditor({
       <Plate
         editor={editor}
         onChange={({ value }) => {
-          // Ctrl+A -> Del pode zerar editor.children antes da normalização
-          // do Slate rodar (a inicialização via Yjs desliga a normalização
-          // padrão, ver yjs.init()). Um documento vazio quebra a renderização
-          // — nunca deixa isso se propagar pro autosave nem pro resto da árvore.
+          // Ctrl+A -> Del can zero out editor.children before Slate's
+          // normalization runs (Yjs init disables the default normalization,
+          // see yjs.init()). An empty document breaks rendering
+          // — never let this propagate to autosave or the rest of the tree.
           if (value.length === 0) {
             editor.tf.insertNodes(editor.api.create.block({ type: KEYS.p }), {
               at: [0],
@@ -169,9 +169,9 @@ export function WikiPageRichEditor({
         }}
       >
         <div className={cn('flex h-full flex-col no-scrollbar', className)}>
-          {/* Força remontar a área editável assim que o Yjs sincroniza — o
-              editor.tf.init() chamado internamente pelo yjs.init() nem sempre
-              propaga o novo editor.children pra essa árvore sozinho. */}
+          {/* Forces remounting the editable area as soon as Yjs syncs — the
+              editor.tf.init() called internally by yjs.init() doesn't always
+              propagate the new editor.children to this tree on its own. */}
           <EditorContainer
             key={isSynced ? 'synced' : 'pending'}
             className='min-h-0 flex-1 no-scrollbar'

@@ -4,9 +4,9 @@ import remarkEmoji from 'remark-emoji'
 import remarkGfm from 'remark-gfm'
 import remarkMath from 'remark-math'
 
-// FootnoteReferencePlugin/FootnoteDefinitionPlugin já são registrados pelo
-// FootnoteKit (interativo) em wiki-editor.tsx — não duplicamos aqui com as
-// variantes Base pra não sobrescrever o componente interativo.
+// FootnoteReferencePlugin/FootnoteDefinitionPlugin are already registered by
+// FootnoteKit (interactive) in wiki-editor.tsx — we don't duplicate them
+// here with the Base variants so we don't override the interactive component.
 export const MarkdownKit = [
   MarkdownPlugin.configure({
     options: {
