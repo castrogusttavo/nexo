@@ -86,15 +86,15 @@ export async function seedProject(
   })
 }
 
-// A criação real (ProjectRepository.create()) sempre seeda EstimateSettings,
-// states, labels e os issue types de sistema (Task/Epic, isSystem: true)
-// numa transação. seedProject() acima fica de propósito sem isso — é usado
-// por ~40 specs de repositório que montam suas próprias fixtures precisas e
-// colidiriam com esses defaults (constraint única em EstimateSettings.
-// projectId, contagens de states/labels/types, etc.). Use esta variante só
-// quando o teste precisa que os defaults de produção existam de verdade
-// (rotas de estimate, listagem de issue-types, criação de issue sem typeId
-// explícito, ...).
+// The real creation (ProjectRepository.create()) always seeds EstimateSettings,
+// states, labels and the system issue types (Task/Epic, isSystem: true)
+// in a transaction. seedProject() above is deliberately without that — it's
+// used by ~40 repository specs that build their own precise fixtures and
+// would collide with these defaults (unique constraint on EstimateSettings.
+// projectId, states/labels/types counts, etc.). Use this variant only
+// when the test needs the production defaults to actually exist
+// (estimate routes, issue-types listing, issue creation without an
+// explicit typeId, ...).
 export async function seedProjectWithDefaults(
   workspaceId: string,
   leadId: string,
