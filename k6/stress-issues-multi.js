@@ -46,7 +46,7 @@ export function setup() {
   for (const port of PORTS) {
     const res = http.get(`${HOST}:${port}`, { tags: { name: 'setup_check' } })
     if (res.status !== 200) {
-      throw new Error(`Instância em ${HOST}:${port} não respondeu (status ${res.status}).`)
+      throw new Error(`Instance at ${HOST}:${port} did not respond (status ${res.status}).`)
     }
   }
 }
@@ -60,9 +60,9 @@ function uniqueIp() {
   return `${octet()}.${octet()}.${octet()}.${octet()}`
 }
 
-// Cada VU fica preso numa instância (round-robin por __VU), como um load
-// balancer com sticky session faria — evita reautenticar em cada request
-// e mede o efeito real de distribuir carga entre processos.
+// Each VU is pinned to one instance (round-robin by __VU), the way a load
+// balancer with sticky sessions would — avoids reauthenticating on every
+// request and measures the real effect of distributing load across processes.
 const baseUrl = `${HOST}:${PORTS[(__VU - 1) % PORTS.length]}`
 
 let cookieHeader = null

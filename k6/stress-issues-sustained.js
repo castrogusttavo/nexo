@@ -54,7 +54,7 @@ export const options = {
 export function setup() {
   const res = http.get(BASE_URL, { tags: { name: 'setup_check' } })
   if (res.status !== 200) {
-    throw new Error(`Servidor não respondeu em ${BASE_URL} (status ${res.status}).`)
+    throw new Error(`Server did not respond at ${BASE_URL} (status ${res.status}).`)
   }
 }
 
