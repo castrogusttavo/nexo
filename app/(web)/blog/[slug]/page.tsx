@@ -130,7 +130,7 @@ export default async function BlogPostPage({ params }: Props) {
           <div className='space-y-6 w-full lg:sticky top-24 h-fit lg:w-80 shrink-0 pr-8 block lg:mb-4 mt-4.5'>
             <CopyMarkdownButton markdown={post.content} />
             <TableOfContents headings={post.headings} />
-            <Button variant='outline' className='w-full'>
+            <Button variant='outline' size='lg' className='w-full'>
               Comece grátis
             </Button>
           </div>

@@ -128,7 +128,7 @@ export default function ContactPage() {
                     </p>
                   </div>
                   <Link href={card.href}>
-                    <Button>{card.cta}</Button>
+                    <Button size='lg'>{card.cta}</Button>
                   </Link>
                 </div>
               </div>

@@ -77,7 +77,7 @@ export default function CustomersPage() {
                 </p>
               </div>
               <Link href='/talk-to-sales'>
-                <Button>Falar com vendas</Button>
+                <Button size='lg'>Falar com vendas</Button>
               </Link>
             </div>
           ) : (

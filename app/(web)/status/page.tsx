@@ -144,7 +144,7 @@ export default async function StatusPage() {
         })}
       </div>
       <Link href='/status/history'>
-        <Button variant='outline'>
+        <Button variant='outline' size='lg'>
           <NexoIcon icon={Calendar04Icon} />
           Ver histórico
         </Button>

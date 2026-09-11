@@ -112,7 +112,7 @@ export default function SecurityPage() {
             </SubTitle>
           </div>
           <Link href='/talk-to-sales'>
-            <Button>Falar com vendas</Button>
+            <Button size='lg'>Falar com vendas</Button>
           </Link>
         </section>
         <section className='flex flex-col lg:flex-row lg:items-center gap-12 text-start mx-auto w-full xl:max-w-336 xl:px-11 2xl:max-w-384 py-16'>

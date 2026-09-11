@@ -162,7 +162,9 @@ export default async function CareerJobPage({ params }: Props) {
               {CAREER_EMPLOYMENT_TYPE_LABELS[job.employmentType]}
             </Muted>
             <Dialog>
-              <DialogTrigger render={<Button>Candidatar-se</Button>} />
+              <DialogTrigger
+                render={<Button size='lg'>Candidatar-se</Button>}
+              />
               <DialogContent
                 className='sm:max-w-lg max-h-[85vh] overflow-y-auto'
                 showCloseButton={false}

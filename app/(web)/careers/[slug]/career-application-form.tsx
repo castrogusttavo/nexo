@@ -224,7 +224,7 @@ export function CareerApplicationForm({ slug }: Props) {
         <FieldError>Necessário para enviar</FieldError>
       )}
 
-      <Button type='submit' disabled={sending}>
+      <Button size='lg' type='submit' disabled={sending}>
         {sending ? 'Enviando...' : 'Enviar candidatura'}
       </Button>
     </form>

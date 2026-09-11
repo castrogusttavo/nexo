@@ -163,7 +163,12 @@ export function TalkToSalesForm() {
         />
       </Field>
       {error && <FieldError>{error}</FieldError>}
-      <Button className='w-full' type='submit' disabled={status === 'sending'}>
+      <Button
+        size='lg'
+        className='w-full'
+        type='submit'
+        disabled={status === 'sending'}
+      >
         {status === 'sending' ? 'Enviando...' : 'Falar com vendas'}
       </Button>
     </form>
