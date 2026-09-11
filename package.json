@@ -1,6 +1,29 @@
 {
   "name": "nexo",
   "version": "0.1.0",
+  "description": "AI-native, multi-tenant project management platform — an open-source alternative to Linear, Jira, and Asana.",
+  "license": "AGPL-3.0-only",
+  "homepage": "https://nexo.coodee.dev",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/castrogusttavo/nexo.git"
+  },
+  "bugs": {
+    "url": "https://github.com/castrogusttavo/nexo/issues"
+  },
+  "keywords": [
+    "project-management",
+    "issue-tracker",
+    "multi-tenant",
+    "nextjs",
+    "typescript",
+    "postgresql",
+    "prisma",
+    "redis",
+    "bullmq",
+    "self-hosted",
+    "open-source"
+  ],
   "private": true,
   "packageManager": "pnpm@10.33.2",
   "scripts": {

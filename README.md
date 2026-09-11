@@ -21,6 +21,14 @@
 </p>
 
 <p align="center">
+  <a href="https://github.com/castrogusttavo/nexo/actions/workflows/ci.yml">
+    <img src="https://github.com/castrogusttavo/nexo/actions/workflows/ci.yml/badge.svg" alt="CI" />
+  </a>
+
+  <a href="https://github.com/castrogusttavo/nexo/actions/workflows/cd.yml">
+    <img src="https://github.com/castrogusttavo/nexo/actions/workflows/cd.yml/badge.svg" alt="CD" />
+  </a>
+
   <a href="https://www.react.doctor/share?p=nexo&s=84&e=1&w=62&f=31">
     <img src="https://www.react.doctor/share/badge?p=nexo&s=84&e=1&w=62&f=31" alt="React Doctor" />
   </a>
@@ -29,8 +37,12 @@
     <img src="https://codecov.io/gh/castrogusttavo/nexo/graph/badge.svg?token=LHSP0EU1VT" alt="Codecov" />
   </a>
 
-  <a href="https://github.com/castrogusttavo/nexo/actions/workflows/cd.yml">
-    <img src="https://github.com/castrogusttavo/nexo/actions/workflows/cd.yml/badge.svg" alt="CD" />
+  <a href="LICENSE">
+    <img src="https://img.shields.io/badge/license-AGPL--3.0-blue.svg" alt="License: AGPL v3" />
+  </a>
+
+  <a href="CONTRIBUTING.md">
+    <img src="https://img.shields.io/badge/PRs-welcome-brightgreen.svg" alt="PRs welcome" />
   </a>
 </p>
 
@@ -130,10 +142,14 @@ For subsequent runs, `pnpm infra` starts the containers and applies pending migr
 
 API reference and product documentation live at [nexo.coodee.dev/docs](https://nexo.coodee.dev/docs).
 
+## Contributing
+
+Contributions are welcome — see [`CONTRIBUTING.md`](CONTRIBUTING.md) for setup instructions, coding conventions, and the PR process. By participating, you agree to follow our [Code of Conduct](CODE_OF_CONDUCT.md).
+
 ## Security
 
-If you discover a security vulnerability, please report it responsibly instead of opening a public issue. Email **security@nexo.coodee.dev** with a description and reproduction steps. We take all legitimate reports seriously and investigate them promptly.
+If you discover a security vulnerability, please report it responsibly instead of opening a public issue. See [`SECURITY.md`](SECURITY.md) for how to report one privately — email **security@nexo.coodee.dev** with a description and reproduction steps. We take all legitimate reports seriously and investigate them promptly.
 
 ## License
 
-Proprietary. All rights reserved.
+Nexo is licensed under the [GNU Affero General Public License v3.0](LICENSE) (AGPLv3).
