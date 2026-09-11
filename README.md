@@ -55,11 +55,11 @@ Meet [Nexo](https://nexo.coodee.dev/), a project management platform built for t
 Two ways to run Nexo:
 
 - **Nexo Cloud.** Sign up at [nexo.coodee.dev](https://nexo.coodee.dev) — the fastest path to get started, with no infrastructure to manage.
-- **Self-host with Docker.** Bring your own infrastructure. The full stack runs from a single Compose file. See the [self-hosting documentation](https://nexo.coodee.dev/docs).
+- **Self-host with Docker.** Bring your own infrastructure. The full stack runs from a single Compose file — see [`docker-compose.yml`](./docker-compose.yml) to get started.
 
-| Installation method | Documentation                                          |
-| ------------------- | ------------------------------------------------------ |
-| Docker              | [Docker Compose guide](https://nexo.coodee.dev/docs)   |
+| Installation method | Documentation                                    |
+| ------------------- | ------------------------------------------------ |
+| Docker              | [`docker-compose.yml`](./docker-compose.yml)     |
 
 ## Features
 
