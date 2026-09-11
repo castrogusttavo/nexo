@@ -80,7 +80,7 @@ export default async function Page() {
             </div>
           </div>
           <Image
-            src='/home/bg-home.png'
+            src='/web/home/bg-home.png'
             alt='Visão geral do workspace do Nexo'
             width={5024}
             height={2752}
@@ -119,7 +119,7 @@ export default async function Page() {
               </div>
               <div className='mt-auto w-full pt-1 pl-5 md:pl-8'>
                 <Image
-                  src='/home/bg-home.png'
+                  src='/web/home/bg-home.png'
                   alt='Visão geral da gestão de projetos do Nexo'
                   width={5024}
                   height={2752}
@@ -148,7 +148,7 @@ export default async function Page() {
               </div>
               <div className='mt-auto w-full pt-1 pl-5 md:pl-8'>
                 <Image
-                  src='/home/bg-home.png'
+                  src='/web/home/bg-home.png'
                   alt='Visão geral da wiki do Nexo'
                   width={5024}
                   height={2752}
@@ -176,7 +176,7 @@ export default async function Page() {
               </div>
               <div className='mt-auto w-full pt-1 pl-5 md:pl-8'>
                 <Image
-                  src='/home/bg-home.png'
+                  src='/web/home/bg-home.png'
                   alt='Visão geral do Nexo AI'
                   width={5024}
                   height={2752}
@@ -205,7 +205,7 @@ export default async function Page() {
               </div>
               <div className='mt-auto w-full pt-1 pl-5 md:pl-8'>
                 <Image
-                  src='/home/bg-home.png'
+                  src='/web/home/bg-home.png'
                   alt='Visão geral das integrações do Nexo'
                   width={5024}
                   height={2752}
@@ -394,7 +394,7 @@ export default async function Page() {
                   </p>
                 </div>
                 <Image
-                  src='/home/bg-home.png'
+                  src='/web/home/bg-home.png'
                   alt='Visão geral das integrações do Nexo'
                   width={5024}
                   height={2752}
@@ -414,7 +414,7 @@ export default async function Page() {
                   </p>
                 </div>
                 <Image
-                  src='/home/bg-home.png'
+                  src='/web/home/bg-home.png'
                   alt='Visão geral das integrações do Nexo'
                   width={5024}
                   height={2752}
@@ -505,7 +505,7 @@ export default async function Page() {
                 </div>
               </div>
               <Image
-                src='/home/bg-home.png'
+                src='/web/home/bg-home.png'
                 alt='Visão geral do Nexo no mobile'
                 width={5024}
                 height={2752}
@@ -529,7 +529,7 @@ export default async function Page() {
             <div className='space-y-5'>
               <div className='border-border p-10 flex items-center justify-center rounded-xl bg-card aspect-square'>
                 <Image
-                  src='/home/bg-home.png'
+                  src='/web/home/bg-home.png'
                   alt='Visão geral do Nexo no mobile'
                   width={5024}
                   height={2752}
@@ -557,7 +557,7 @@ export default async function Page() {
             <div className='space-y-5'>
               <div className='border-border p-10 flex items-center justify-center rounded-xl bg-card aspect-square'>
                 <Image
-                  src='/home/bg-home.png'
+                  src='/web/home/bg-home.png'
                   alt='Visão geral do Nexo no mobile'
                   width={5024}
                   height={2752}
@@ -585,7 +585,7 @@ export default async function Page() {
             <div className='space-y-5'>
               <div className='border-border p-10 flex items-center justify-center rounded-xl bg-card aspect-square'>
                 <Image
-                  src='/home/bg-home.png'
+                  src='/web/home/bg-home.png'
                   alt='Visão geral do Nexo no mobile'
                   width={5024}
                   height={2752}
@@ -635,7 +635,7 @@ export default async function Page() {
               <div className='space-y-1.5 md:col-span-2 bg-card rounded-xl overflow-hidden grid grid-cols-1 md:grid-cols-2 items-center'>
                 <div className='relative hidden h-full md:block'>
                   <Image
-                    src='/home/project-as-code.jpg'
+                    src='/web/home/project-as-code.jpg'
                     alt='Visão geral do Nexo no mobile'
                     width={5024}
                     height={2752}
@@ -665,7 +665,7 @@ export default async function Page() {
               </div>
               <div className='relative space-y-1.5 rounded-lg p-6 hover:scale-101 transition-all duration-300 bg-card text-start'>
                 <img
-                  src='/home/api.svg'
+                  src='/web/home/api.svg'
                   alt=''
                   aria-hidden
                   className='absolute top-0 right-0 size-27.5'
@@ -681,7 +681,7 @@ export default async function Page() {
               </div>
               <div className='relative space-y-1.5 rounded-lg p-6 hover:scale-101 transition-all duration-300 bg-card text-start'>
                 <img
-                  src='/home/ai.svg'
+                  src='/web/home/ai.svg'
                   alt=''
                   aria-hidden
                   className='absolute top-0 right-0 size-27.5'

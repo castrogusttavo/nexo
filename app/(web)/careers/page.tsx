@@ -38,7 +38,7 @@ export default async function CareersPage() {
 
   return (
     <main className='mx-auto w-full flex flex-col items-center gap-10'>
-      <div className="w-full flex min-h-[calc(100vh-75px)] flex-col justify-end items-center py-12 md:py-16 bg-cover bg-center bg-no-repeat bg-[url('/home/career-hero-bg.webp')]">
+      <div className="w-full flex min-h-[calc(100vh-75px)] flex-col justify-end items-center py-12 md:py-16 bg-cover bg-center bg-no-repeat bg-[url('/web/home/career-hero-bg.webp')]">
         <div className='w-full flex items-center justify-between pt-20 px-4 py-3 sm:px-8 xl:max-w-336 xl:px-11 2xl:max-w-384 gap-10'>
           <div className='flex flex-col items-start gap-6'>
             <div className='space-y-4'>
@@ -156,7 +156,7 @@ export default async function CareersPage() {
         </figure>
       </div>
       <div className='w-full'>
-        <div className="w-full flex min-h-120 flex-col justify-end gap-32 py-16 md:min-h-140 md:py-24 bg-cover bg-center bg-no-repeat bg-[url('/home/career-workspace-bg.webp')] pb-0">
+        <div className="w-full flex min-h-120 flex-col justify-end gap-32 py-16 md:min-h-140 md:py-24 bg-cover bg-center bg-no-repeat bg-[url('/web/home/career-workspace-bg.webp')] pb-0">
           <div className='w-full mx-auto px-4 sm:px-8 xl:px-11 xl:max-w-336 2xl:max-w-384'>
             <div className='max-w-md grid grid-cols-2 gap-8'>
               <div className='space-y-2'>

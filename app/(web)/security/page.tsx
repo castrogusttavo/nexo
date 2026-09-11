@@ -152,7 +152,7 @@ export default function SecurityPage() {
           <SecurityCardGrid cards={AUTH_SECURITY_CARDS} />
         </section>
         <section className='grid grid-cols-1 gap-6 lg:grid-cols-3 mx-auto w-full xl:max-w-336 xl:px-11 2xl:max-w-384 py-16'>
-          <div className="relative flex h-full flex-col gap-16 overflow-hidden rounded-2xl p-8 md:p-12 lg:col-span-2 bg-cover bg-center bg-no-repeat bg-[url('/home/bg-home.png')]">
+          <div className="relative flex h-full flex-col gap-16 overflow-hidden rounded-2xl p-8 md:p-12 lg:col-span-2 bg-cover bg-center bg-no-repeat bg-[url('/web/home/bg-home.png')]">
             <Image src='/brand/logo.svg' alt='Nexo' width={100} height={45} />
             <div className='flex flex-col gap-6'>
               <div className='space-y-2 text-start'>
@@ -179,7 +179,7 @@ export default function SecurityPage() {
           </div>
           <Link
             href='/talk-to-sales'
-            className="group relative flex flex-col justify-between overflow-hidden rounded-2xl p-8 transition-transform duration-300 hover:scale-101 bg-cover bg-center bg-no-repeat bg-[url('/home/bg-home.png')]"
+            className="group relative flex flex-col justify-between overflow-hidden rounded-2xl p-8 transition-transform duration-300 hover:scale-101 bg-cover bg-center bg-no-repeat bg-[url('/web/home/bg-home.png')]"
           >
             <NexoIcon
               icon={ArrowRight02Icon}

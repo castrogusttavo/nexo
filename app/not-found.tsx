@@ -46,7 +46,7 @@ export default function Page() {
   return (
     <>
       <WebHeader />
-      <div className="w-full min-h-[calc(100vh-75px)] bg-cover bg-center bg-no-repeat bg-[url('/home/404.webp')] brightness-[1.1]">
+      <div className="w-full min-h-[calc(100vh-75px)] bg-cover bg-center bg-no-repeat bg-[url('/web/home/404.webp')] brightness-[1.1]">
         <div className='mx-auto w-full min-h-[calc(100vh-75px)] px-4 sm:px-8 xl:px-11 xl:max-w-336 2xl:max-w-384 flex flex-col justify-between'>
           <div className='mb-24 flex flex-col items-center gap-6 px-4 pt-16 text-center sm:gap-4 sm:pt-20 md:mb-0'>
             <Title>Hora de respirar fundo</Title>

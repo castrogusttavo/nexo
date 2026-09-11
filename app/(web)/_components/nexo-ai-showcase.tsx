@@ -14,19 +14,19 @@ const items = [
     title: 'Respostas que enxergam todo o seu workspace',
     description:
       'Pergunte qualquer coisa pra Nexo AI: status de um ciclo, o que travou um projeto, o que mudou numa doc semana passada. Ela lê o seu workspace inteiro, sem você colar contexto.',
-    image: '/home/bg-home.png',
+    image: '/web/home/bg-home.png',
   },
   {
     title: 'Agentes que cuidam do trabalho repetitivo',
     description:
       'Agentes embarcados triam pedidos que chegam, atribuem responsáveis, sinalizam bloqueios e mandam atualizações automaticamente.',
-    image: '/home/bg-home.png',
+    image: '/web/home/bg-home.png',
   },
   {
     title: 'Onde o seu time já conversa',
     description:
       'Leve a Nexo AI pro Slack: transforme uma mensagem perdida no canal em issue rastreável, sem abrir outra aba pra criar a tarefa.',
-    image: '/home/bg-home.png',
+    image: '/web/home/bg-home.png',
   },
 ]
 

@@ -75,7 +75,7 @@ const COMMITMENTS = [
 export default function WorkTrialsPage() {
   return (
     <main className='mx-auto w-full flex flex-col items-center gap-10'>
-      <div className="w-full flex min-h-[calc(100vh-75px)] flex-col justify-end items-center py-12 md:py-16 bg-cover bg-center bg-no-repeat bg-[url('/home/work-trials-hero-bg.webp')]">
+      <div className="w-full flex min-h-[calc(100vh-75px)] flex-col justify-end items-center py-12 md:py-16 bg-cover bg-center bg-no-repeat bg-[url('/web/home/work-trials-hero-bg.webp')]">
         <div className='w-full flex items-center justify-between pt-20 px-4 py-3 sm:px-8 xl:max-w-336 xl:px-11 2xl:max-w-384 gap-10'>
           <div className='flex flex-col items-start gap-6'>
             <div className='space-y-4'>
