@@ -30,6 +30,7 @@ export async function HeaderOnboarding() {
             width={100}
             height={45}
             style={{ height: 'auto' }}
+            className='invert dark:invert-0'
             priority
           />
         </div>

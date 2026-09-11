@@ -44,7 +44,7 @@ export function WebHeader() {
           alt='nexo-logo'
           width={100}
           height={45}
-          className='light:invert'
+          className='invert dark:invert-0'
         />
       </Link>
       <NavigationMenu className='flex-1'>

@@ -22,19 +22,19 @@ export function WebFooter({ showBanner = true }: WebFooterProps = {}) {
   return (
     <div className='w-full'>
       {showBanner && (
-        <div className="w-full py-20 bg-cover bg-center bg-no-repeat bg-[url('/home/bg-home.png')]">
+        <div className="w-full py-20 bg-cover bg-center bg-no-repeat bg-[url('/web/home/bg-home.png')]">
           <div className='mx-auto w-full px-4 sm:px-8 xl:px-11 xl:max-w-336 2xl:max-w-384 flex flex-col space-y-10 items-center text-center'>
             <h2 className='text-5xl font-normal md:whitespace-pre-line font-mono leading-[1.3] tracking-[-.03em] text-white'>
               A nova geração da gestão de projetos <br /> começa aqui
             </h2>
             <div className='flex flex-wrap w-full items-center gap-4 justify-center'>
-              <Link href='/sign-up'>
-                <Button size='lg'>Comece grátis</Button>
-              </Link>
               <Link href='/talk-to-sales'>
                 <Button variant='secondary' size='lg' className='border-border'>
                   Fale com um especialista em migração
                 </Button>
+              </Link>
+              <Link href='/sign-up'>
+                <Button size='lg'>Comece grátis</Button>
               </Link>
             </div>
           </div>
@@ -48,6 +48,7 @@ export function WebFooter({ showBanner = true }: WebFooterProps = {}) {
               alt='nexo-logo'
               width={100}
               height={45}
+              className='invert dark:invert-0'
             />
           </Link>
           <div className='flex gap-2.5'>

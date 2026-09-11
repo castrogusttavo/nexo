@@ -33,7 +33,13 @@ export function WebHeaderUpgrade() {
   return (
     <header className='flex items-center justify-between border-b border-border px-6 py-4 sm:py-0 min-h-12'>
       <Link href='/' className='justify-self-start'>
-        <Image src='/brand/logo.svg' alt='nexo-logo' width={95} height={35} />
+        <Image
+          src='/brand/logo.svg'
+          alt='nexo-logo'
+          width={95}
+          height={35}
+          className='invert dark:invert-0'
+        />
       </Link>
       <div className='flex items-center gap-1'>
         <Link href='/talk-to-sales'>
