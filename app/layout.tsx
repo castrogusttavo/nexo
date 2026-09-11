@@ -60,11 +60,7 @@ export default function RootLayout({
   return (
     <html
       lang='pt-BR'
-      className={cn(
-        'scroll-smooth dark',
-        GeistSans.variable,
-        GeistMono.variable,
-      )}
+      className={cn('scroll-smooth', GeistSans.variable, GeistMono.variable)}
       suppressHydrationWarning
     >
       <head>
