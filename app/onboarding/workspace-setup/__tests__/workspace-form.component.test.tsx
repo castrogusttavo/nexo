@@ -50,12 +50,40 @@ describe('<WorkspaceForm />', () => {
 
     await user.type(nameInput(), 'Acme')
     await user.clear(slugInput())
-    // Typed with a hyphen: a typed space is currently swallowed because
-    // `toSlug` trims on every keystroke, so it never survives.
     await user.type(slugInput(), 'My-Custom_Slug')
     await user.type(nameInput(), ' Corp')
 
     expect(slugInput()).toHaveValue('my-customslug')
+  })
+
+  it('turns spaces typed in the URL field into hyphens', async () => {
+    const { user } = renderWithProviders(<WorkspaceForm />)
+
+    await user.type(nameInput(), 'Acme')
+    await user.clear(slugInput())
+    await user.type(slugInput(), 'My Custom Slug')
+
+    expect(slugInput()).toHaveValue('my-custom-slug')
+  })
+
+  it('transliterates accents instead of dropping the letter', async () => {
+    const { user } = renderWithProviders(<WorkspaceForm />)
+
+    await user.type(nameInput(), 'Café São João')
+
+    expect(slugInput()).toHaveValue('cafe-sao-joao')
+  })
+
+  it('submits the slug without a dangling hyphen', async () => {
+    const { user } = renderWithProviders(<WorkspaceForm />)
+
+    await user.type(nameInput(), 'Acme')
+    await user.clear(slugInput())
+    await user.type(slugInput(), 'acme ')
+    await user.click(submitButton())
+
+    await waitFor(() => expect(createOnboardingWorkspace).toHaveBeenCalled())
+    expect(submittedFormData().get('slug')).toBe('acme')
   })
 
   it('blocks submit when the slug is cleared below 2 characters', async () => {

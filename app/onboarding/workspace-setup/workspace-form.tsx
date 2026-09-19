@@ -32,14 +32,23 @@ const TEAM_SIZES = [
 
 const INITIAL_STATE: WorkspaceSetupState = { ok: false }
 
-function toSlug(value: string) {
+// Keeps a trailing hyphen so a space typed in the URL field survives until
+// the next letter (trimming on every keystroke swallowed it); `toSlug`
+// drops the dangling hyphens for the value that is actually submitted.
+function slugify(value: string) {
   return value
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
     .toLowerCase()
-    .trim()
     .replace(/[^a-z0-9\s-]/g, '')
     .replace(/\s+/g, '-')
     .replace(/-+/g, '-')
+    .replace(/^-/, '')
     .slice(0, 50)
+}
+
+function toSlug(value: string) {
+  return slugify(value).replace(/-+$/, '')
 }
 
 export function WorkspaceForm() {
@@ -56,7 +65,8 @@ export function WorkspaceForm() {
     if (!slugTouched) setSlug(toSlug(name))
   }, [name, slugTouched])
 
-  const isValid = name.trim().length >= 2 && slug.length >= 2
+  const submittedSlug = toSlug(slug)
+  const isValid = name.trim().length >= 2 && submittedSlug.length >= 2
 
   return (
     <form action={formAction} className='flex flex-col gap-10'>
@@ -87,18 +97,19 @@ export function WorkspaceForm() {
                 <InputGroupText>nexo.coodee.dev/</InputGroupText>
                 <InputGroupInput
                   id='workspace-slug'
-                  name='slug'
                   value={slug}
                   onChange={(e) => {
                     setSlugTouched(true)
-                    setSlug(toSlug(e.target.value))
+                    setSlug(slugify(e.target.value))
                   }}
+                  onBlur={() => setSlug(submittedSlug)}
                   placeholder='Digite ou cole um URL'
                   disabled={isPending}
                   className='text-foreground'
                 />
               </InputGroupAddon>
             </InputGroup>
+            <input type='hidden' name='slug' value={submittedSlug} />
           </Field>
 
           <Field className='w-full'>
