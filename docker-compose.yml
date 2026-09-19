@@ -1,3 +1,11 @@
+# Public, non-secret settings shared by every service. NEXT_PUBLIC_REALTIME_URL
+# is validated at startup by lib/env (app, worker and realtime all crash-loop
+# without it) and is also baked into the client bundle via the CD build-args.
+# nginx proxies /realtime (same origin, so the session cookie reaches the
+# Hocuspocus server) to the realtime service on 127.0.0.1:1234.
+x-public-env: &public-env
+  NEXT_PUBLIC_REALTIME_URL: wss://nexo.coodee.dev/realtime
+
 services:
   nexo-app:
     image: ghcr.io/castrogusttavo/nexo:latest
@@ -7,6 +15,7 @@ services:
       - "3000:3000"
     env_file:
       - .env
+    environment: *public-env
     volumes:
       - ./redis-tls/ca.crt:/etc/redis-tls/ca.crt:ro
     dns:
@@ -22,6 +31,7 @@ services:
     command: ["node", "dist/worker.cjs"]
     env_file:
       - .env
+    environment: *public-env
     volumes:
       - ./redis-tls/ca.crt:/etc/redis-tls/ca.crt:ro
     dns:
@@ -35,10 +45,12 @@ services:
     container_name: nexo-realtime
     restart: unless-stopped
     command: ["node", "dist/realtime.cjs"]
+    # Loopback only: the public entry point is nginx's /realtime location.
     ports:
-      - "1234:1234"
+      - "127.0.0.1:1234:1234"
     env_file:
       - .env
+    environment: *public-env
     volumes:
       - ./redis-tls/ca.crt:/etc/redis-tls/ca.crt:ro
     dns:
