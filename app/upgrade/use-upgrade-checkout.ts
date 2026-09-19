@@ -67,7 +67,7 @@ export function useUpgradeCheckout(workspaces: { id: string }[]) {
         setCouponInput(result.data.code)
       } else {
         setAppliedCoupon(null)
-        setCouponError(result.error?.message ?? 'Cupom inválido')
+        setCouponError(result.message ?? 'Cupom inválido')
       }
     } catch (err) {
       setCouponError('Não foi possível validar o cupom')
@@ -109,7 +109,7 @@ export function useUpgradeCheckout(workspaces: { id: string }[]) {
         window.location.href = result.data.paymentUrl
         return
       }
-      setError(result.error?.message ?? 'Não foi possível iniciar o pagamento')
+      setError(result.message ?? 'Não foi possível iniciar o pagamento')
     } catch (err) {
       setError('Não foi possível iniciar o pagamento')
       log.error('upgrade.checkout_failed', {

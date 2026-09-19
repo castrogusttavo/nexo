@@ -143,8 +143,17 @@ describe('useUpgradeCheckout', () => {
       await applyCoupon(result, 'EXPIRED')
 
       expect(result.current.appliedCoupon).toBeNull()
-      expect(result.current.couponError).toBe('Cupom inválido')
+      expect(result.current.couponError).toBe('Cupom expirado')
       expect(result.current.finalTotal).toBe(PRO_YEARLY)
+    })
+
+    it('falls back to a generic message when the API sends none', async () => {
+      mockFetch().mockResolvedValueOnce(apiError(404))
+      const { result } = renderCheckout()
+
+      await applyCoupon(result, 'EXPIRED')
+
+      expect(result.current.couponError).toBe('Cupom inválido')
     })
 
     it('reports a network failure and logs it', async () => {
@@ -255,8 +264,17 @@ describe('useUpgradeCheckout', () => {
       expect(result.current.isPending).toBe(false)
     })
 
-    it('shows an error when the API does not return a payment URL', async () => {
+    it("shows the API's message when the checkout is rejected", async () => {
       mockFetch().mockResolvedValueOnce(apiError(400, 'Plano inválido'))
+      const { result } = renderCheckout()
+
+      await act(() => result.current.handleCheckout())
+
+      expect(result.current.error).toBe('Plano inválido')
+    })
+
+    it('shows an error when the API does not return a payment URL', async () => {
+      mockFetch().mockResolvedValueOnce(apiError(400))
       const { result } = renderCheckout()
 
       await act(() => result.current.handleCheckout())
