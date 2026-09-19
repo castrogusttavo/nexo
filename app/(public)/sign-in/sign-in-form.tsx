@@ -12,6 +12,7 @@ import { Button } from '@/components/ui/button'
 import { Field, FieldError, FieldLabel } from '@/components/ui/field'
 import { Input } from '@/components/ui/input'
 import { authClient } from '@/src/lib/auth-client'
+import { settleAuthRequest } from '@/src/lib/auth-request'
 
 type Step = 'form' | 'otp' | 'backup'
 
@@ -61,10 +62,9 @@ export function SignInForm({ redirectTo = '/' }: { redirectTo?: string }) {
       return
     }
 
-    let result = await authClient.signIn.email({
-      email: submittedEmail,
-      password,
-    })
+    let result = await settleAuthRequest(
+      authClient.signIn.email({ email: submittedEmail, password }),
+    )
 
     for (
       let attempt = 0;
@@ -81,10 +81,9 @@ export function SignInForm({ redirectTo = '/' }: { redirectTo?: string }) {
           ? result.error.retryAfterSeconds
           : 3
       await sleep(retryAfterSeconds * 1000 + Math.random() * 500)
-      result = await authClient.signIn.email({
-        email: submittedEmail,
-        password,
-      })
+      result = await settleAuthRequest(
+        authClient.signIn.email({ email: submittedEmail, password }),
+      )
     }
     setIsRetrying(false)
 
@@ -100,7 +99,9 @@ export function SignInForm({ redirectTo = '/' }: { redirectTo?: string }) {
       setEmail(submittedEmail)
       setStep('otp')
       setIsPending(false)
-      const { error: sendError } = await authClient.twoFactor.sendOtp()
+      const { error: sendError } = await settleAuthRequest(
+        authClient.twoFactor.sendOtp(),
+      )
       if (sendError) {
         setOtpError(
           sendError.message ?? 'Não foi possível enviar o código de acesso',
@@ -115,9 +116,9 @@ export function SignInForm({ redirectTo = '/' }: { redirectTo?: string }) {
   async function handleVerify(otp: string) {
     setOtpError(null)
     setIsVerifying(true)
-    const { error: verifyError } = await authClient.twoFactor.verifyOtp({
-      code: otp,
-    })
+    const { error: verifyError } = await settleAuthRequest(
+      authClient.twoFactor.verifyOtp({ code: otp }),
+    )
     setIsVerifying(false)
 
     if (verifyError) {
@@ -130,7 +131,9 @@ export function SignInForm({ redirectTo = '/' }: { redirectTo?: string }) {
 
   async function handleResend() {
     setOtpError(null)
-    const { error: resendError } = await authClient.twoFactor.sendOtp()
+    const { error: resendError } = await settleAuthRequest(
+      authClient.twoFactor.sendOtp(),
+    )
     if (resendError) {
       setOtpError(resendError.message ?? 'Não foi possível reenviar o código')
     }
@@ -146,9 +149,9 @@ export function SignInForm({ redirectTo = '/' }: { redirectTo?: string }) {
     }
     setOtpError(null)
     setIsVerifying(true)
-    const { error: verifyError } = await authClient.twoFactor.verifyBackupCode({
-      code: backupCode.trim(),
-    })
+    const { error: verifyError } = await settleAuthRequest(
+      authClient.twoFactor.verifyBackupCode({ code: backupCode.trim() }),
+    )
     setIsVerifying(false)
     if (verifyError) {
       setOtpError(verifyError.message ?? 'Código de backup inválido')
@@ -163,7 +166,7 @@ export function SignInForm({ redirectTo = '/' }: { redirectTo?: string }) {
   }
 
   return (
-    <div className='min-h-screen flex flex-col items-center justiyf-center p-4 pb-12'>
+    <div className='min-h-screen flex flex-col items-center justify-center p-4 pb-12'>
       <HeaderLogin path={signUpHref} pathname='Cadastre-se' />
       <div className='flex-1 w-full flex flex-col justify-center gap-y-6 max-w-90'>
         {step === 'form' && (
@@ -206,8 +209,9 @@ export function SignInForm({ redirectTo = '/' }: { redirectTo?: string }) {
                 </div>
               )}
               <Field data-invalid={!!fieldErrors.email || undefined}>
-                <FieldLabel>E-mail</FieldLabel>
+                <FieldLabel htmlFor='sign-in-email'>E-mail</FieldLabel>
                 <Input
+                  id='sign-in-email'
                   name='email'
                   type='email'
                   placeholder='nome@empresa.com'
@@ -218,8 +222,9 @@ export function SignInForm({ redirectTo = '/' }: { redirectTo?: string }) {
                 )}
               </Field>
               <Field data-invalid={!!fieldErrors.password || undefined}>
-                <FieldLabel>Senha</FieldLabel>
+                <FieldLabel htmlFor='sign-in-password'>Senha</FieldLabel>
                 <Input
+                  id='sign-in-password'
                   name='password'
                   type='password'
                   placeholder='••••••'
@@ -283,8 +288,11 @@ export function SignInForm({ redirectTo = '/' }: { redirectTo?: string }) {
               className='w-full space-y-4'
             >
               <Field data-invalid={!!otpError || undefined}>
-                <FieldLabel>Código de backup</FieldLabel>
+                <FieldLabel htmlFor='sign-in-backup-code'>
+                  Código de backup
+                </FieldLabel>
                 <Input
+                  id='sign-in-backup-code'
                   value={backupCode}
                   onChange={(e) => setBackupCode(e.target.value)}
                   placeholder='xxxxxxxx'

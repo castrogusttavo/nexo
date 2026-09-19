@@ -241,6 +241,28 @@ describe('<SignInForm /> credentials step', () => {
   })
 })
 
+describe('<SignInForm /> resilience and accessibility', () => {
+  it('labels the e-mail and password inputs', () => {
+    renderWithProviders(<SignInForm />)
+
+    expect(screen.getByLabelText('E-mail')).toHaveAttribute('name', 'email')
+    expect(screen.getByLabelText('Senha')).toHaveAttribute('name', 'password')
+  })
+
+  it('shows a connection error and re-enables the form when sign in throws', async () => {
+    signInEmail.mockRejectedValue(new TypeError('Failed to fetch'))
+    const { user } = renderWithProviders(<SignInForm />)
+
+    await fillAndSubmit(user)
+
+    expect(
+      await screen.findByText(/não foi possível conectar/i),
+    ).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: 'Continuar' })).toBeEnabled()
+    expect(push).not.toHaveBeenCalled()
+  })
+})
+
 describe('<SignInForm /> two-factor step', () => {
   it('moves to the OTP step and sends the code when 2FA is required', async () => {
     await reachOtpStep()
@@ -301,6 +323,27 @@ describe('<SignInForm /> backup code step', () => {
     )
     return utils
   }
+
+  it('labels the backup code input', async () => {
+    await reachBackupStep()
+
+    expect(screen.getByLabelText('Código de backup')).toBeInTheDocument()
+  })
+
+  it('shows a connection error and re-enables verifying when it throws', async () => {
+    verifyBackup.mockRejectedValue(new TypeError('Failed to fetch'))
+    const { user } = await reachBackupStep()
+
+    await user.type(screen.getByPlaceholderText('xxxxxxxx'), 'abcd1234')
+    await user.click(screen.getByRole('button', { name: 'Verificar código' }))
+
+    expect(
+      await screen.findByText(/não foi possível conectar/i),
+    ).toBeInTheDocument()
+    expect(
+      screen.getByRole('button', { name: 'Verificar código' }),
+    ).toBeEnabled()
+  })
 
   it('requires a code before verifying', async () => {
     const { user } = await reachBackupStep()

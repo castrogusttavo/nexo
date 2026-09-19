@@ -198,6 +198,27 @@ describe('<SignUpForm /> form step', () => {
     expect(screen.queryByText('Confirme seu e-mail')).not.toBeInTheDocument()
   })
 
+  it('labels the name, e-mail and password inputs', () => {
+    renderWithProviders(<SignUpForm />)
+
+    expect(screen.getByLabelText('Nome')).toHaveAttribute('name', 'name')
+    expect(screen.getByLabelText('E-mail')).toHaveAttribute('name', 'email')
+    expect(screen.getByLabelText('Senha')).toHaveAttribute('name', 'password')
+  })
+
+  it('shows a connection error and re-enables the form when sign up throws', async () => {
+    signUpEmail.mockRejectedValue(new TypeError('Failed to fetch'))
+    const { user } = renderWithProviders(<SignUpForm />)
+
+    await fillForm(user)
+    await user.click(submitButton())
+
+    expect(
+      await screen.findByText(/não foi possível conectar/i),
+    ).toBeInTheDocument()
+    expect(submitButton()).toBeEnabled()
+  })
+
   it('falls back to a generic error message', async () => {
     signUpEmail.mockResolvedValue({ data: null, error: {} })
     const { user } = renderWithProviders(<SignUpForm />)
@@ -284,6 +305,18 @@ describe('<SignUpForm /> email verification step', () => {
     await user.type(screen.getByRole('textbox'), '123456')
 
     expect(await screen.findByText('Código expirado')).toBeInTheDocument()
+    expect(push).not.toHaveBeenCalled()
+  })
+
+  it('shows a connection error when verification throws', async () => {
+    verifyEmail.mockRejectedValue(new TypeError('Failed to fetch'))
+    const { user } = await reachOtpStep()
+
+    await user.type(screen.getByRole('textbox'), '123456')
+
+    expect(
+      await screen.findByText(/não foi possível conectar/i),
+    ).toBeInTheDocument()
     expect(push).not.toHaveBeenCalled()
   })
 

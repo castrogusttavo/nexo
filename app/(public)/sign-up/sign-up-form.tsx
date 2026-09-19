@@ -13,6 +13,7 @@ import { Checkbox } from '@/components/ui/checkbox'
 import { Field, FieldError, FieldLabel } from '@/components/ui/field'
 import { Input } from '@/components/ui/input'
 import { authClient } from '@/src/lib/auth-client'
+import { settleAuthRequest } from '@/src/lib/auth-request'
 
 type Step = 'form' | 'otp'
 
@@ -125,13 +126,15 @@ export function SignUpForm({ redirectTo = '/' }: { redirectTo?: string }) {
     // server hook in `auth.ts` overwrites both with `new Date()` to
     // prevent a tampered client from backdating its acceptance.
     const now = new Date()
-    const { error: signUpError } = await authClient.signUp.email({
-      name,
-      email: submittedEmail,
-      password,
-      acceptedTermsAt: now,
-      acceptedPrivacyAt: now,
-    })
+    const { error: signUpError } = await settleAuthRequest(
+      authClient.signUp.email({
+        name,
+        email: submittedEmail,
+        password,
+        acceptedTermsAt: now,
+        acceptedPrivacyAt: now,
+      }),
+    )
 
     if (signUpError) {
       dispatch({
@@ -146,10 +149,9 @@ export function SignUpForm({ redirectTo = '/' }: { redirectTo?: string }) {
 
   async function handleVerify(otp: string) {
     dispatch({ type: 'verifyStart' })
-    const { error: verifyError } = await authClient.emailOtp.verifyEmail({
-      email,
-      otp,
-    })
+    const { error: verifyError } = await settleAuthRequest(
+      authClient.emailOtp.verifyEmail({ email, otp }),
+    )
 
     if (verifyError) {
       dispatch({
@@ -165,11 +167,12 @@ export function SignUpForm({ redirectTo = '/' }: { redirectTo?: string }) {
 
   async function handleResend() {
     dispatch({ type: 'resendStart' })
-    const { error: resendError } =
-      await authClient.emailOtp.sendVerificationOtp({
+    const { error: resendError } = await settleAuthRequest(
+      authClient.emailOtp.sendVerificationOtp({
         email,
         type: 'email-verification',
-      })
+      }),
+    )
     if (resendError) {
       dispatch({
         type: 'resendError',
@@ -183,7 +186,7 @@ export function SignUpForm({ redirectTo = '/' }: { redirectTo?: string }) {
   }
 
   return (
-    <div className='min-h-screen flex flex-col items-center justiyf-center p-4 pb-12'>
+    <div className='min-h-screen flex flex-col items-center justify-center p-4 pb-12'>
       <HeaderLogin path={signInHref} pathname='Entre' prompt='Já tem conta?' />
       <div className='flex-1 w-full flex flex-col justify-center gap-y-6 max-w-90'>
         {step === 'form' ? (
@@ -224,8 +227,9 @@ export function SignUpForm({ redirectTo = '/' }: { redirectTo?: string }) {
                 </div>
               )}
               <Field data-invalid={!!fieldErrors.name || undefined}>
-                <FieldLabel>Nome</FieldLabel>
+                <FieldLabel htmlFor='sign-up-name'>Nome</FieldLabel>
                 <Input
+                  id='sign-up-name'
                   name='name'
                   type='text'
                   placeholder='Seu nome'
@@ -236,8 +240,9 @@ export function SignUpForm({ redirectTo = '/' }: { redirectTo?: string }) {
                 )}
               </Field>
               <Field data-invalid={!!fieldErrors.email || undefined}>
-                <FieldLabel>E-mail</FieldLabel>
+                <FieldLabel htmlFor='sign-up-email'>E-mail</FieldLabel>
                 <Input
+                  id='sign-up-email'
                   name='email'
                   type='email'
                   placeholder='nome@empresa.com'
@@ -248,8 +253,9 @@ export function SignUpForm({ redirectTo = '/' }: { redirectTo?: string }) {
                 )}
               </Field>
               <Field data-invalid={!!fieldErrors.password || undefined}>
-                <FieldLabel>Senha</FieldLabel>
+                <FieldLabel htmlFor='sign-up-password'>Senha</FieldLabel>
                 <Input
+                  id='sign-up-password'
                   name='password'
                   type='password'
                   placeholder='••••••'
