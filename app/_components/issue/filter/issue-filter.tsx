@@ -41,10 +41,16 @@ export function IssueFilterDropdown() {
       getSearchText={(option) => option.label}
       value={value}
       onChange={setValue}
+      clearable
       emptyMessage='Nenhum resultado.'
       contentClassName='w-56'
       trigger={
-        <Button variant='outline' size='icon-sm' className='h-8'>
+        <Button
+          variant='outline'
+          size='icon-sm'
+          className='h-8'
+          aria-label={selected ? undefined : 'Filtrar'}
+        >
           {selected ? (
             <>
               <NexoIcon icon={selected.icon} strokeWidth={2} />

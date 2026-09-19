@@ -33,6 +33,8 @@ interface SingleComboboxProps<T> extends ComboboxBaseProps<T> {
   multiple?: false
   value: string | undefined
   onChange: (value: string) => void
+  /** Re-picking the selected option clears it (`onChange('')`). */
+  clearable?: boolean
 }
 
 interface MultiComboboxProps<T> extends ComboboxBaseProps<T> {
@@ -71,7 +73,8 @@ export function Combobox<T>(
       props.onChange(Array.from(next))
       return
     }
-    props.onChange(itemValue === props.value ? '' : itemValue)
+    if (itemValue !== props.value) props.onChange(itemValue)
+    else if (props.clearable) props.onChange('')
     setOpen(false)
   }
 
