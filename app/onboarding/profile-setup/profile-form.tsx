@@ -86,6 +86,7 @@ export function ProfileForm({
           type='button'
           onClick={() => fileInputRef.current?.click()}
           disabled={uploading}
+          aria-label='Mudar imagem'
           className='flex items-center gap-4'
         >
           <Avatar className='size-12'>
@@ -94,23 +95,21 @@ export function ProfileForm({
               {initials || '??'}
             </AvatarFallback>
           </Avatar>
-          <Field orientation='horizontal'>
-            <FieldLabel
-              htmlFor='image'
-              className='text-muted-foreground hover:text-primary/75'
-            >
-              <NexoIcon icon={Image} strokeWidth={2} size={16} />
-              Mudar imagem
-            </FieldLabel>
-            <Input
-              ref={fileInputRef}
-              type='file'
-              accept='image/jpeg,image/png,image/webp'
-              hidden
-              onChange={handleImageChange}
-            />
-          </Field>
+          {/* A span, not a label: the button already opens the picker, and
+              label/input are invalid inside a button. */}
+          <span className='flex items-center gap-2 text-sm leading-none font-medium text-muted-foreground hover:text-primary/75'>
+            <NexoIcon icon={Image} strokeWidth={2} size={16} />
+            Mudar imagem
+          </span>
         </button>
+        <input
+          ref={fileInputRef}
+          type='file'
+          accept='image/jpeg,image/png,image/webp'
+          aria-label='Foto de perfil'
+          hidden
+          onChange={handleImageChange}
+        />
       </div>
 
       <div className='flex flex-col gap-1.5'>

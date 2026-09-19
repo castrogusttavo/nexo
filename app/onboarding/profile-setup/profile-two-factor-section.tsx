@@ -197,11 +197,12 @@ export function ProfileTwoFactorSection({
           {twoFAMode !== 'idle' && (
             <div className='flex flex-col gap-3 border-t pt-3'>
               <Field data-invalid={!!twoFAError || undefined}>
-                <FieldLabel>
+                <FieldLabel htmlFor='two-factor-password'>
                   Senha para {twoFAMode === 'enabling' ? 'ativar' : 'desativar'}{' '}
                   a 2FA
                 </FieldLabel>
                 <Input
+                  id='two-factor-password'
                   type='password'
                   value={twoFAPass}
                   onChange={(e) =>

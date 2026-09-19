@@ -71,7 +71,9 @@ describe('<ProfileTwoFactorSection />', () => {
 
     await user.click(screen.getByRole('switch'))
 
-    expect(screen.getByText('Senha para ativar a 2FA')).toBeInTheDocument()
+    expect(screen.getByLabelText('Senha para ativar a 2FA')).toBe(
+      passwordInput(),
+    )
     expect(screen.getByRole('button', { name: 'Ativar 2FA' })).toBeEnabled()
     expect(enable).not.toHaveBeenCalled()
   })

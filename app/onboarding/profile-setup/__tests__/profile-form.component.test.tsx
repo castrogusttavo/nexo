@@ -55,6 +55,21 @@ describe('<ProfileForm />', () => {
     expect(screen.getByText('AS')).toBeInTheDocument()
   })
 
+  it('exposes the avatar picker as a named button with a labelled file input', async () => {
+    const { user, container } = renderWithProviders(
+      <ProfileForm {...DEFAULT_PROPS} />,
+    )
+    const click = vi.spyOn(fileInput(container), 'click')
+
+    const picker = screen.getByRole('button', { name: 'Mudar imagem' })
+    // Interactive content (label/input) nested in a button is invalid HTML.
+    expect(picker.querySelector('label, input')).toBeNull()
+    expect(screen.getByLabelText('Foto de perfil')).toBe(fileInput(container))
+
+    await user.click(picker)
+    expect(click).toHaveBeenCalledTimes(1)
+  })
+
   it('updates the initials as the name changes', async () => {
     const { user } = renderWithProviders(<ProfileForm {...DEFAULT_PROPS} />)
 

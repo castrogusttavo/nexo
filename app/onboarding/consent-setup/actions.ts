@@ -25,7 +25,7 @@ export async function acceptOnboardingConsent(
       ok: false,
       error:
         parsed.error.issues[0]?.message ??
-        'Você previsa aceitar ambos os documentos',
+        'Você precisa aceitar ambos os documentos',
     }
   }
 
