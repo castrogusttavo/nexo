@@ -161,25 +161,32 @@ export function useDeleteProject(workspaceId: string, slug: string) {
   })
 }
 
-export function useFavoriteProject(workspaceId: string) {
+// Favorite and unfavorite share one optimistic flow. The lists
+// (`[..., { archived }]`) and a project's detail (`[..., slug]`) both live under
+// `projectsKey(workspaceId)`, so the cache update must handle both shapes —
+// mapping blindly over the detail object threw and the request never went out.
+function useToggleFavoriteProject(
+  workspaceId: string,
+  favorited: boolean,
+  request: (slug: string) => Promise<unknown>,
+) {
   const queryClient = useQueryClient()
 
   return useMutation({
-    mutationFn: (slug: string) =>
-      apiFetch<{ favourited: boolean }>(
-        `/api/workspaces/${workspaceId}/projects/${slug}/favorite`,
-        { method: 'POST' },
-        'Erro ao favoritar projeto',
-      ),
+    mutationFn: request,
     onMutate: async (slug) => {
       await queryClient.cancelQueries({ queryKey: projectsKey(workspaceId) })
-      const previous = queryClient.getQueriesData<ProjectDTO[]>({
+      const previous = queryClient.getQueriesData<ProjectDTO[] | ProjectDTO>({
         queryKey: projectsKey(workspaceId),
       })
-      queryClient.setQueriesData<ProjectDTO[]>(
+      const flip = (p: ProjectDTO) =>
+        p.slug === slug ? { ...p, isFavorited: favorited } : p
+      queryClient.setQueriesData<ProjectDTO[] | ProjectDTO>(
         { queryKey: projectsKey(workspaceId) },
-        (old) =>
-          old?.map((p) => (p.slug === slug ? { ...p, isFavorited: true } : p)),
+        (old) => {
+          if (!old) return old
+          return Array.isArray(old) ? old.map(flip) : flip(old)
+        },
       )
       return { previous }
     },
@@ -195,36 +202,22 @@ export function useFavoriteProject(workspaceId: string) {
   })
 }
 
-export function useUnfavoriteProject(workspaceId: string) {
-  const queryClient = useQueryClient()
+export function useFavoriteProject(workspaceId: string) {
+  return useToggleFavoriteProject(workspaceId, true, (slug) =>
+    apiFetch<{ favourited: boolean }>(
+      `/api/workspaces/${workspaceId}/projects/${slug}/favorite`,
+      { method: 'POST' },
+      'Erro ao favoritar projeto',
+    ),
+  )
+}
 
-  return useMutation({
-    mutationFn: (slug: string) =>
-      apiFetch(
-        `/api/workspaces/${workspaceId}/projects/${slug}/favorite`,
-        { method: 'DELETE' },
-        'Erro ao desafavoritar projeto',
-      ),
-    onMutate: async (slug) => {
-      await queryClient.cancelQueries({ queryKey: projectsKey(workspaceId) })
-      const previous = queryClient.getQueriesData<ProjectDTO[]>({
-        queryKey: projectsKey(workspaceId),
-      })
-      queryClient.setQueriesData<ProjectDTO[]>(
-        { queryKey: projectsKey(workspaceId) },
-        (old) =>
-          old?.map((p) => (p.slug === slug ? { ...p, isFavorited: false } : p)),
-      )
-      return { previous }
-    },
-    onError: (_err, _slug, ctx) => {
-      for (const [key, data] of ctx?.previous ?? []) {
-        queryClient.setQueryData(key, data)
-      }
-    },
-    onSettled: (_data, _err, slug) => {
-      queryClient.invalidateQueries({ queryKey: projectsKey(workspaceId) })
-      queryClient.invalidateQueries({ queryKey: projectKey(workspaceId, slug) })
-    },
-  })
+export function useUnfavoriteProject(workspaceId: string) {
+  return useToggleFavoriteProject(workspaceId, false, (slug) =>
+    apiFetch(
+      `/api/workspaces/${workspaceId}/projects/${slug}/favorite`,
+      { method: 'DELETE' },
+      'Erro ao desafavoritar projeto',
+    ),
+  )
 }

@@ -556,6 +556,55 @@ describe.each([
     expect(queryClient.getQueryState(listKey(false))?.isInvalidated).toBe(true)
   })
 
+  // The detail key shares the lists' prefix, so the optimistic update also
+  // reaches a cached project page — it used to call `.map` on that object.
+  it('also flips the flag on a cached project page and still sends the request', async () => {
+    const pending = deferredResponse()
+    const fetchSpy = mockFetch().mockReturnValueOnce(pending.promise)
+    const { result, queryClient } = renderHookWithProviders(() =>
+      useHook(WORKSPACE_ID),
+    )
+    const { alpha } = seedLists(queryClient)
+    const beta = buildProject({ id: 'project-2', slug: 'beta' })
+    queryClient.setQueryData(detailKey('alpha'), alpha)
+    queryClient.setQueryData(detailKey('beta'), beta)
+
+    act(() => {
+      result.current.mutate('alpha')
+    })
+
+    await waitFor(() =>
+      expect(queryClient.getQueryData(detailKey('alpha'))).toEqual({
+        ...alpha,
+        isFavorited: to,
+      }),
+    )
+    expect(queryClient.getQueryData(detailKey('beta'))).toEqual(beta)
+    expect(fetchSpy).toHaveBeenCalledTimes(1)
+
+    await act(async () => {
+      pending.resolve(apiSuccess({ favourited: to }))
+    })
+    await waitFor(() => expect(result.current.isSuccess).toBe(true))
+  })
+
+  it('rolls a cached project page back when the request fails', async () => {
+    mockFetch().mockResolvedValueOnce(apiError(403, 'Sem permissão'))
+    const { result, queryClient } = renderHookWithProviders(() =>
+      useHook(WORKSPACE_ID),
+    )
+    const { alpha } = seedLists(queryClient)
+    queryClient.setQueryData(detailKey('alpha'), alpha)
+
+    await act(async () => {
+      await expect(result.current.mutateAsync('alpha')).rejects.toThrow(
+        'Sem permissão',
+      )
+    })
+
+    expect(queryClient.getQueryData(detailKey('alpha'))).toEqual(alpha)
+  })
+
   it('falls back to the hook message when the error body has none', async () => {
     mockFetch().mockResolvedValueOnce(apiError(500))
     const { result } = renderHookWithProviders(() => useHook(WORKSPACE_ID))
