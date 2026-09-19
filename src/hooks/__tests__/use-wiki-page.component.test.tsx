@@ -53,6 +53,15 @@ describe('useWikiPages', () => {
     })
   })
 
+  it('does not fetch without a workspace id', () => {
+    const fetchSpy = mockFetch()
+
+    const { result } = renderHookWithProviders(() => useWikiPages(''))
+
+    expect(result.current.fetchStatus).toBe('idle')
+    expect(fetchSpy).not.toHaveBeenCalled()
+  })
+
   it('surfaces the backend message when the request fails', async () => {
     mockFetch().mockResolvedValueOnce(apiError(403, 'Sem acesso'))
 

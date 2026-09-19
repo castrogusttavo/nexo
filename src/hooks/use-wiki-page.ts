@@ -20,6 +20,7 @@ export function useWikiPages(workspaceId: string) {
         undefined,
         'Erro ao buscar páginas de wiki',
       ),
+    enabled: !!workspaceId,
     staleTime: 60 * 1000,
   })
 }

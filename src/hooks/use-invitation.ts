@@ -73,7 +73,7 @@ export function useAcceptInvitation() {
         '/api/invitations/accept',
         'POST',
         { token },
-        'Erro ao reenviar convite',
+        'Erro ao aceitar convite',
       ),
   })
 }

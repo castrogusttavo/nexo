@@ -259,6 +259,17 @@ describe('useAcceptInvitation', () => {
       )
     })
   })
+
+  it('falls back to the accept message when the error body has none', async () => {
+    mockFetch().mockResolvedValueOnce(apiError(500))
+    const { result } = renderHookWithProviders(() => useAcceptInvitation())
+
+    await act(async () => {
+      await expect(result.current.mutateAsync('token-1')).rejects.toThrow(
+        'Erro ao aceitar convite',
+      )
+    })
+  })
 })
 
 describe('useUpdateInvitationRole', () => {
