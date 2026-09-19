@@ -1,7 +1,7 @@
 'use client'
 
 import { useRouter } from 'next/navigation'
-import { useState } from 'react'
+import { useId, useState } from 'react'
 import { Button } from '@/components/ui/button'
 import { Field, FieldLabel } from '@/components/ui/field'
 import { Input } from '@/components/ui/input'
@@ -32,9 +32,13 @@ import type { CareerJobDTO } from '@/types/career-job'
 // Mirrors the toSlug() helper duplicated in workspace/project forms
 // (app/onboarding/workspace-setup/workspace-form.tsx and the project
 // create modal) — same rules, kept local per the existing convention.
+// Accents are transliterated (NFD + strip combining marks) so "Sênior"
+// becomes "senior" instead of losing the letter.
 function toSlug(value: string) {
   return value
     .toLowerCase()
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
     .trim()
     .replace(/[^a-z0-9\s-]/g, '')
     .replace(/\s+/g, '-')
@@ -78,13 +82,18 @@ function BulletListField({
     setIds((prev) => [...prev, crypto.randomUUID()])
   }
 
+  const labelId = useId()
+
+  // The label names the whole list (Field is a role="group"); each item input
+  // gets its own numbered name since a <label> can only target one control.
   return (
-    <Field>
-      <FieldLabel>{label}</FieldLabel>
+    <Field aria-labelledby={labelId}>
+      <FieldLabel id={labelId}>{label}</FieldLabel>
       <div className='flex flex-col gap-2'>
         {items.map((item, index) => (
           <div key={ids[index] ?? index} className='flex gap-2'>
             <Input
+              aria-label={`${label} ${index + 1}`}
               value={item}
               disabled={disabled}
               onChange={(e) => updateItem(index, e.target.value)}
@@ -181,7 +190,7 @@ export function CareerJobForm({ mode, jobId, initial }: CareerJobFormProps) {
       await notify.mutate(promise, {
         loading: mode === 'create' ? 'Criando vaga...' : 'Salvando vaga...',
         success: mode === 'create' ? 'Vaga criada' : 'Vaga atualizada',
-        error: 'Não foi possível savar a vaga',
+        error: 'Não foi possível salvar a vaga',
       })
       router.push('/admin/careers')
     } catch {
@@ -256,14 +265,15 @@ export function CareerJobForm({ mode, jobId, initial }: CareerJobFormProps) {
       </Field>
 
       <Field>
-        <FieldLabel>Tipo de localização</FieldLabel>
+        <FieldLabel htmlFor='locationType'>Tipo de localização</FieldLabel>
         <Select
+          items={CAREER_LOCATION_TYPE_LABELS}
           value={locationType}
           onValueChange={(value) => {
             if (value) setLocationType(value)
           }}
         >
-          <SelectTrigger disabled={saving}>
+          <SelectTrigger id='locationType' disabled={saving}>
             <SelectValue />
           </SelectTrigger>
           <SelectContent alignItemWithTrigger={false}>
@@ -279,14 +289,15 @@ export function CareerJobForm({ mode, jobId, initial }: CareerJobFormProps) {
       </Field>
 
       <Field>
-        <FieldLabel>Tipo de emprego</FieldLabel>
+        <FieldLabel htmlFor='employmentType'>Tipo de emprego</FieldLabel>
         <Select
+          items={CAREER_EMPLOYMENT_TYPE_LABELS}
           value={employmentType}
           onValueChange={(value) => {
             if (value) setEmploymentType(value)
           }}
         >
-          <SelectTrigger disabled={saving}>
+          <SelectTrigger id='employmentType' disabled={saving}>
             <SelectValue />
           </SelectTrigger>
           <SelectContent alignItemWithTrigger={false}>

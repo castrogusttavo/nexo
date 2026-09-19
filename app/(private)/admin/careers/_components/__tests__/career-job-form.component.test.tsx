@@ -72,12 +72,15 @@ function buildJob(overrides: Partial<CareerJobDTO> = {}): CareerJobDTO {
   }
 }
 
+// Each bullet list is a labelled group of item inputs.
 function bulletField(label: string) {
-  const labelEl = screen.getByText(label, { selector: 'label' })
-  const field = labelEl.closest('[data-slot="field"]')
-  if (!(field instanceof HTMLElement)) throw new Error(`No field for ${label}`)
-  return within(field)
+  return within(screen.getByRole('group', { name: label }))
 }
+
+const locationTypeSelect = () =>
+  screen.getByRole('combobox', { name: 'Tipo de localização' })
+const employmentTypeSelect = () =>
+  screen.getByRole('combobox', { name: 'Tipo de emprego' })
 
 async function addBullet(
   user: ReturnType<typeof renderWithProviders>['user'],
@@ -151,16 +154,52 @@ describe('<CareerJobForm /> create mode', () => {
     await waitFor(() => expect(push).toHaveBeenCalledWith('/admin/careers'))
   })
 
+  it('shows the pt-BR labels of the default types in the selects', () => {
+    renderWithProviders(<CareerJobForm mode='create' />)
+
+    expect(locationTypeSelect()).toHaveTextContent('Presencial')
+    expect(locationTypeSelect()).not.toHaveTextContent('ON_SITE')
+    expect(employmentTypeSelect()).toHaveTextContent('Tempo integral')
+    expect(employmentTypeSelect()).not.toHaveTextContent('FULL_TIME')
+  })
+
+  it('transliterates accented letters into the derived slug', async () => {
+    const fetchSpy = mockFetch().mockResolvedValueOnce(apiSuccess(buildJob()))
+    const { user } = renderWithProviders(<CareerJobForm mode='create' />)
+
+    await user.type(
+      screen.getByLabelText('Título'),
+      'Engenheira Sênior de Integrações',
+    )
+    await user.type(screen.getByLabelText('Resumo'), 'Resumo.')
+    await user.type(screen.getByLabelText('Sobre a vaga'), 'Sobre.')
+    await user.click(screen.getByRole('button', { name: 'Salvar' }))
+
+    await waitFor(() => expect(fetchSpy).toHaveBeenCalledTimes(1))
+    expect(getFetchCall(fetchSpy).body.slug).toBe(
+      'engenheira-senior-de-integracoes',
+    )
+  })
+
+  it('labels each bullet item input with its list', async () => {
+    const { user } = renderWithProviders(<CareerJobForm mode='create' />)
+
+    await addBullet(user, 'Stack', 'Go')
+
+    expect(screen.getByLabelText('Stack 1')).toHaveValue('Go')
+  })
+
   it('sends the location and employment types picked in the selects', async () => {
     const fetchSpy = mockFetch().mockResolvedValueOnce(apiSuccess(buildJob()))
     const { user } = renderWithProviders(<CareerJobForm mode='create' />)
 
     await fillRequired(user)
-    const [locationSelect, employmentSelect] = screen.getAllByRole('combobox')
-    await user.click(locationSelect)
+    await user.click(locationTypeSelect())
     await user.click(await screen.findByRole('option', { name: 'Remoto' }))
-    await user.click(employmentSelect)
+    expect(locationTypeSelect()).toHaveTextContent('Remoto')
+    await user.click(employmentTypeSelect())
     await user.click(await screen.findByRole('option', { name: 'Estágio' }))
+    expect(employmentTypeSelect()).toHaveTextContent('Estágio')
     await user.click(screen.getByRole('button', { name: 'Salvar' }))
 
     await waitFor(() => expect(fetchSpy).toHaveBeenCalledTimes(1))
@@ -252,6 +291,20 @@ describe('<CareerJobForm /> create mode', () => {
     }
   })
 
+  it('falls back to a generic message when the request fails outright', async () => {
+    mockFetch().mockRejectedValueOnce(new TypeError('Failed to fetch'))
+    const { user } = renderWithProviders(<CareerJobForm mode='create' />)
+
+    await fillRequired(user)
+    await user.click(screen.getByRole('button', { name: 'Salvar' }))
+
+    await waitFor(() => expect(toast.promise).toHaveBeenCalled())
+    await expect(lastToastOutcome()).resolves.toEqual({
+      type: 'error',
+      message: 'Não foi possível salvar a vaga',
+    })
+  })
+
   it('surfaces the backend error message and stays on the page', async () => {
     mockFetch().mockResolvedValueOnce(
       apiError(409, 'Já existe uma vaga com esse slug', 'CONFLICT'),
@@ -282,6 +335,8 @@ describe('<CareerJobForm /> edit mode', () => {
     expect(screen.getByLabelText('Título')).toHaveValue('Engenheiro Backend')
     expect(screen.getByLabelText('Departamento')).toHaveValue('Engenharia')
     expect(screen.getByLabelText('Localização')).toHaveValue('São Paulo, SP')
+    expect(locationTypeSelect()).toHaveTextContent('Híbrido')
+    expect(employmentTypeSelect()).toHaveTextContent('PJ / Contrato')
     expect(
       bulletField('O que você vai fazer').getByRole('textbox'),
     ).toHaveValue('Desenhar APIs')
