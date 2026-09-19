@@ -5,9 +5,15 @@ import Link from "next/link";
 interface PathProps {
   path: string;
   pathname: string;
+  /** Text before the link — the sign-up page asks the opposite question. */
+  prompt?: string;
 }
 
-export function HeaderLogin({ path, pathname }: PathProps) {
+export function HeaderLogin({
+  path,
+  pathname,
+  prompt = 'Não tem conta?',
+}: PathProps) {
   return (
     <div className='w-full flex items-center justify-between'>
       <Link href='/'>
@@ -23,7 +29,7 @@ export function HeaderLogin({ path, pathname }: PathProps) {
       </Link>
       <div className='text-center text-sm'>
         <Muted>
-          Não tem conta?{' '}
+          {prompt}{' '}
           <Link href={path} className='text-primary hover:underline'>
             {pathname}
           </Link>

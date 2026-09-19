@@ -78,7 +78,7 @@ export function ResetPasswordForm({
 
   return (
     <div className='min-h-screen flex flex-col items-center justify-center p-4 pb-12'>
-      <HeaderLogin path='sign-up' pathname='Cadastre-se' />
+      <HeaderLogin path='/sign-up' pathname='Cadastre-se' />
       <div className='flex-1 w-full flex flex-col justify-center gap-y-6 max-w-90'>
         {tokenInvalid ? (
           <div className='space-y-3'>

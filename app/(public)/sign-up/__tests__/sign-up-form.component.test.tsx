@@ -240,6 +240,25 @@ describe('<SignUpForm /> form step', () => {
   })
 })
 
+describe('<SignUpForm /> header', () => {
+  it('asks "Já tem conta?" and links to sign-in keeping the redirect', () => {
+    renderWithProviders(<SignUpForm redirectTo='/acme' />)
+
+    // Header and footer both offer the way back to sign-in.
+    const prompts = screen.getAllByText(/já tem conta\?/i)
+    expect(prompts).toHaveLength(2)
+    for (const prompt of prompts) {
+      const link = prompt.querySelector('a')
+      expect(link).toHaveTextContent('Entre')
+      expect(link).toHaveAttribute(
+        'href',
+        `/sign-in?redirect=${encodeURIComponent('/acme')}`,
+      )
+    }
+    expect(screen.queryByText(/não tem conta\?/i)).not.toBeInTheDocument()
+  })
+})
+
 describe('<SignUpForm /> email verification step', () => {
   it('verifies the typed code for the signed-up email and redirects', async () => {
     const { user } = await reachOtpStep('/onboarding')
