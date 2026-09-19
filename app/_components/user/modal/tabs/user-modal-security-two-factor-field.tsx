@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useId, useState } from 'react'
 import { Muted } from '@/components/typography/text/muted'
 import { Button } from '@/components/ui/button'
 import {
@@ -26,6 +26,7 @@ export function UserModalSecurityTwoFactorField({
   isPending,
   hasPassword,
 }: UserModalSecurityTwoFactorFieldProps) {
+  const fieldId = useId()
   const [twoFactorPassword, setTwoFactorPassword] = useState('')
   const [twoFactorMode, setTwoFactorMode] = useState<
     'idle' | 'enabling' | 'disabling' | 'regenerating'
@@ -118,7 +119,9 @@ export function UserModalSecurityTwoFactorField({
     <div className='flex flex-col gap-y-1'>
       <Field orientation='horizontal' className='py-3'>
         <FieldContent>
-          <FieldLabel>Verificação em duas etapas (2FA)</FieldLabel>
+          <FieldLabel htmlFor={`${fieldId}-switch`}>
+            Verificação em duas etapas (2FA)
+          </FieldLabel>
           <FieldDescription>
             {hasPassword === false
               ? 'Defina uma senha antes de ativar a verificação em duas etapas.'
@@ -126,6 +129,7 @@ export function UserModalSecurityTwoFactorField({
           </FieldDescription>
         </FieldContent>
         <Switch
+          id={`${fieldId}-switch`}
           checked={twoFactorEnabled}
           disabled={
             isPending ||
@@ -156,7 +160,7 @@ export function UserModalSecurityTwoFactorField({
           className='flex flex-col gap-3 border-t border-border pt-4'
         >
           <Field data-invalid={!!twoFactorError || undefined}>
-            <FieldLabel>
+            <FieldLabel htmlFor={`${fieldId}-password`}>
               {twoFactorMode === 'enabling'
                 ? 'Senha para ativar a 2FA'
                 : twoFactorMode === 'regenerating'
@@ -164,6 +168,7 @@ export function UserModalSecurityTwoFactorField({
                   : 'Senha para desativar a 2FA'}
             </FieldLabel>
             <Input
+              id={`${fieldId}-password`}
               type='password'
               value={twoFactorPassword}
               onChange={(e) => setTwoFactorPassword(e.target.value)}

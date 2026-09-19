@@ -139,16 +139,9 @@ function groupCard(label: string) {
   return card
 }
 
-// The add button is an unlabeled icon button nested in the group header.
-function addButtonFor(label: string) {
-  const header = screen
-    .getByText(label, { selector: 'button *' })
-    .closest('button')
-  if (!header) throw new Error(`No header for ${label}`)
-  return within(header).getByRole('button')
-}
+const addButtonFor = (group: string) =>
+  screen.getByRole('button', { name: `Adicionar estado em ${group}` })
 
-// Row actions: [Marcar como padrão?] [edit icon] [delete icon].
 function rowFor(name: string) {
   const row = screen.getByText(name).parentElement
   if (!row) throw new Error(`No row for ${name}`)
@@ -156,9 +149,10 @@ function rowFor(name: string) {
 }
 
 function rowIconButtons(name: string) {
-  const buttons = within(rowFor(name)).getAllByRole('button')
-  const [edit, remove] = buttons.slice(-2)
-  return { edit, remove }
+  return {
+    edit: screen.getByRole('button', { name: `Editar estado ${name}` }),
+    remove: screen.getByRole('button', { name: `Excluir estado ${name}` }),
+  }
 }
 
 describe('<ProjectStatesSettings /> listing', () => {
@@ -172,6 +166,16 @@ describe('<ProjectStatesSettings /> listing', () => {
     expect(names).toEqual(['Triagem', 'A fazer'])
     expect(within(groupCard('Em progresso')).getByText('Fazendo')).toBeVisible()
     expect(within(groupCard('Concluído')).getByText('Feito')).toBeVisible()
+  })
+
+  it('keeps the add button out of the accordion trigger', async () => {
+    await renderSettings()
+
+    const add = addButtonFor('Backlog')
+    expect(add.parentElement?.closest('button')).toBeNull()
+    const trigger = screen.getByRole('button', { name: 'Backlog' })
+    expect(trigger).toHaveAttribute('aria-expanded', 'true')
+    expect(trigger).not.toContainElement(add)
   })
 
   it('fetches the project states from the API', async () => {

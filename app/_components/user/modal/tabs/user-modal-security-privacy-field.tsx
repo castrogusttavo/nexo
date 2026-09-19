@@ -1,5 +1,6 @@
 'use client'
 
+import { useId } from 'react'
 import {
   Field,
   FieldContent,
@@ -12,12 +13,13 @@ import { useCookieConsent } from '../../cookie-consent/provider'
 export function UserModalSecurityPrivacyField() {
   const { consent, setConsent } = useCookieConsent()
   const cookiesAccepted = consent === 'accepted'
+  const switchId = useId()
 
   return (
     <div>
       <Field orientation='horizontal' className='py-3'>
         <FieldContent>
-          <FieldLabel>Cookies de análise</FieldLabel>
+          <FieldLabel htmlFor={switchId}>Cookies de análise</FieldLabel>
           <FieldDescription>
             {consent === null
               ? 'Você ainda não decidiu sobre o uso de cookies de análise.'
@@ -27,6 +29,7 @@ export function UserModalSecurityPrivacyField() {
           </FieldDescription>
         </FieldContent>
         <Switch
+          id={switchId}
           checked={cookiesAccepted}
           onCheckedChange={(next) => setConsent(next ? 'accepted' : 'rejected')}
         />

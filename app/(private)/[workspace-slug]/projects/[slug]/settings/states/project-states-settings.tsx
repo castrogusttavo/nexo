@@ -122,8 +122,11 @@ export function ProjectStatesSettings({
                 <CardContent className='p-0 h-fit'>
                   <Accordion defaultValue={[group.state]}>
                     <AccordionItem value={group.state}>
-                      <AccordionTrigger className='p-0 flex items-center gap-1.5 hover:no-underline!'>
-                        <div className='w-full flex items-center justify-between'>
+                      {/* The add button can't live inside the trigger (a
+                          button in a button), so it's a sibling positioned
+                          just left of the trigger's chevron. */}
+                      <div className='relative'>
+                        <AccordionTrigger className='p-0 w-full min-h-8 flex items-center gap-1.5 hover:no-underline!'>
                           <div className='flex items-center gap-1.5'>
                             <NexoIcon
                               icon={group.icon}
@@ -136,22 +139,22 @@ export function ProjectStatesSettings({
                             />
                             {group.label}
                           </div>
-                          <Button
-                            variant='ghost'
-                            size='icon-sm'
-                            className='text-muted-foreground'
-                            onClick={(e) => {
-                              e.stopPropagation()
-                              setFormTarget({
-                                mode: 'create',
-                                group: group.state,
-                              })
-                            }}
-                          >
-                            <NexoIcon icon={Add01Icon} strokeWidth={2} />
-                          </Button>
-                        </div>
-                      </AccordionTrigger>
+                        </AccordionTrigger>
+                        <Button
+                          variant='ghost'
+                          size='icon-sm'
+                          className='absolute top-1/2 right-5.5 -translate-y-1/2 text-muted-foreground'
+                          aria-label={`Adicionar estado em ${group.label}`}
+                          onClick={() =>
+                            setFormTarget({
+                              mode: 'create',
+                              group: group.state,
+                            })
+                          }
+                        >
+                          <NexoIcon icon={Add01Icon} strokeWidth={2} />
+                        </Button>
+                      </div>
                       <AccordionContent className='mt-2.5 space-y-1.5 p-0'>
                         {formOpen && formTarget && (
                           <StateForm
@@ -206,6 +209,7 @@ export function ProjectStatesSettings({
                               <Button
                                 variant='ghost'
                                 size='icon-sm'
+                                aria-label={`Editar estado ${state.name}`}
                                 onClick={() =>
                                   setFormTarget({ mode: 'edit', state })
                                 }
@@ -218,7 +222,11 @@ export function ProjectStatesSettings({
                               <AlertDialog>
                                 <AlertDialogTrigger
                                   render={
-                                    <Button variant='ghost' size='icon-sm'>
+                                    <Button
+                                      variant='ghost'
+                                      size='icon-sm'
+                                      aria-label={`Excluir estado ${state.name}`}
+                                    >
                                       <NexoIcon
                                         icon={Delete02Icon}
                                         strokeWidth={2}

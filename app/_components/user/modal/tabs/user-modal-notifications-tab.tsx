@@ -1,5 +1,6 @@
 'use client'
 
+import { useId } from 'react'
 import { H4 } from '@/components/typography/heading/h4'
 import { Muted } from '@/components/typography/text/muted'
 import {
@@ -52,6 +53,7 @@ const OPTIONS = [
 export function UserModalNotificationsTab({ tab }: { tab: string }) {
   const { data: settings, isLoading } = useNotificationSettings()
   const update = useUpdateNotificationSettings()
+  const fieldId = useId()
 
   function save(patch: UpdateNotificationSettingDTO) {
     update.mutate(patch, {
@@ -94,11 +96,13 @@ export function UserModalNotificationsTab({ tab }: { tab: string }) {
           {OPTIONS.map((option) => (
             <Field key={option.key} orientation='horizontal' className='py-3'>
               <FieldContent>
-                <FieldLabel>{option.label}</FieldLabel>
+                <FieldLabel htmlFor={`${fieldId}-${option.key}`}>
+                  {option.label}
+                </FieldLabel>
                 <FieldDescription>{option.description}</FieldDescription>
               </FieldContent>
               <Switch
-                id={option.key}
+                id={`${fieldId}-${option.key}`}
                 checked={settings[option.key]}
                 onCheckedChange={(checked) => save({ [option.key]: checked })}
               />

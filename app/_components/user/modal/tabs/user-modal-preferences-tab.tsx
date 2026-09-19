@@ -5,6 +5,7 @@ import {
   Moon01Icon,
   Sun03Icon,
 } from '@hugeicons-pro/core-stroke-rounded'
+import { useId } from 'react'
 import { NexoIcon } from '@/components/icon/icon'
 import { H4 } from '@/components/typography/heading/h4'
 import { Muted } from '@/components/typography/text/muted'
@@ -70,6 +71,7 @@ const TIMEZONES = Intl.supportedValuesOf('timeZone').map((tz) => ({
 export function UserModalPreferencesTab({ tab }: { tab: string }) {
   const { data: prefs, isLoading } = useUserPreferences()
   const update = useUpdateUserPreferences()
+  const fieldId = useId()
 
   function save(patch: UpdateUserPreferenceDTO) {
     update.mutate(patch, {
@@ -118,7 +120,7 @@ export function UserModalPreferencesTab({ tab }: { tab: string }) {
         <div className='flex flex-col gap-y-1'>
           <Field orientation='horizontal' className='py-3'>
             <FieldContent>
-              <FieldLabel>Tema</FieldLabel>
+              <FieldLabel htmlFor={`${fieldId}-theme`}>Tema</FieldLabel>
               <FieldDescription>
                 Selecione ou personalize o esquema de cores da sua interface.
               </FieldDescription>
@@ -132,7 +134,7 @@ export function UserModalPreferencesTab({ tab }: { tab: string }) {
                 })
               }
             >
-              <SelectTrigger>
+              <SelectTrigger id={`${fieldId}-theme`}>
                 <SelectValue />
               </SelectTrigger>
               <SelectContent
@@ -153,14 +155,16 @@ export function UserModalPreferencesTab({ tab }: { tab: string }) {
           </Field>
           <Field orientation='horizontal' className='py-3'>
             <FieldContent>
-              <FieldLabel>Cursor Suave</FieldLabel>
+              <FieldLabel htmlFor={`${fieldId}-smooth-cursor`}>
+                Cursor Suave
+              </FieldLabel>
               <FieldDescription>
                 Selecione o estilo de movimento do cursor que parece certo para
                 você.
               </FieldDescription>
             </FieldContent>
             <Switch
-              id='smooth-cursor'
+              id={`${fieldId}-smooth-cursor`}
               checked={prefs.smoothCursor}
               onCheckedChange={(checked) =>
                 save({
@@ -171,7 +175,9 @@ export function UserModalPreferencesTab({ tab }: { tab: string }) {
           </Field>
           <Field orientation='horizontal' className='py-3'>
             <FieldContent>
-              <FieldLabel>Atalho para enviar comentários</FieldLabel>
+              <FieldLabel htmlFor={`${fieldId}-shortcut`}>
+                Atalho para enviar comentários
+              </FieldLabel>
               <FieldDescription>
                 Escolha o atalho de teclado para enviar comentários.
               </FieldDescription>
@@ -186,7 +192,7 @@ export function UserModalPreferencesTab({ tab }: { tab: string }) {
                 })
               }
             >
-              <SelectTrigger>
+              <SelectTrigger id={`${fieldId}-shortcut`}>
                 <SelectValue />
               </SelectTrigger>
               <SelectContent
@@ -208,7 +214,9 @@ export function UserModalPreferencesTab({ tab }: { tab: string }) {
         <div className='flex flex-col gap-y-1'>
           <Field orientation='horizontal' className='py-3'>
             <FieldContent>
-              <FieldLabel>Fuso horário</FieldLabel>
+              <FieldLabel htmlFor={`${fieldId}-timezone`}>
+                Fuso horário
+              </FieldLabel>
               <FieldDescription>
                 Configuração atual de fuso horário.
               </FieldDescription>
@@ -222,7 +230,7 @@ export function UserModalPreferencesTab({ tab }: { tab: string }) {
                 })
               }
             >
-              <SelectTrigger>
+              <SelectTrigger id={`${fieldId}-timezone`}>
                 <SelectValue />
               </SelectTrigger>
               <SelectContent
@@ -242,14 +250,24 @@ export function UserModalPreferencesTab({ tab }: { tab: string }) {
           </Field>
           <Field orientation='horizontal' className='py-3'>
             <FieldContent>
-              <FieldLabel>Primeiro dia da semana</FieldLabel>
+              <FieldLabel id={`${fieldId}-week-start-label`}>
+                Primeiro dia da semana
+              </FieldLabel>
               <FieldDescription>
                 Escolha o dia em que sua semana começa.
               </FieldDescription>
             </FieldContent>
             <DropdownMenu>
               <DropdownMenuTrigger
-                render={<Button variant='secondary'>{weekdayLabel}</Button>}
+                render={
+                  <Button
+                    id={`${fieldId}-week-start`}
+                    variant='secondary'
+                    aria-labelledby={`${fieldId}-week-start-label ${fieldId}-week-start`}
+                  >
+                    {weekdayLabel}
+                  </Button>
+                }
               />
               <DropdownMenuContent>
                 <DropdownMenuRadioGroup
@@ -274,14 +292,24 @@ export function UserModalPreferencesTab({ tab }: { tab: string }) {
           </Field>
           <Field orientation='horizontal' className='py-3'>
             <FieldContent>
-              <FieldLabel>Dias de fim de semana</FieldLabel>
+              <FieldLabel id={`${fieldId}-weekend-label`}>
+                Dias de fim de semana
+              </FieldLabel>
               <FieldDescription>
                 Define quais dias são tratados como tempo não trabalhado.
               </FieldDescription>
             </FieldContent>
             <DropdownMenu>
               <DropdownMenuTrigger
-                render={<Button variant='secondary'>{weekendLabel}</Button>}
+                render={
+                  <Button
+                    id={`${fieldId}-weekend`}
+                    variant='secondary'
+                    aria-labelledby={`${fieldId}-weekend-label ${fieldId}-weekend`}
+                  >
+                    {weekendLabel}
+                  </Button>
+                }
               />
               <DropdownMenuContent>
                 {WEEKDAYS.map((day) => (
