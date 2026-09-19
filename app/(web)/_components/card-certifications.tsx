@@ -2,7 +2,7 @@ const CERTS = ['gdpr', 'iso', 'soc2'] as const
 
 export function CardCertifications() {
   return (
-    <div className='w-full border border-border flex justify-between items-center p-6 py-10 pb-20'>
+    <div className='w-full border border-border flex flex-col md:flex-row justify-between items-start md:items-center p-6 py-10 pb-20'>
       <div className='flex flex-col gap-1.5'>
         <h4 className='font-normal text-4xl'>
           O Nexo é construído seguindo <br />
@@ -13,7 +13,7 @@ export function CardCertifications() {
           de boas práticas em toda a plataforma.
         </p>
       </div>
-      <div className='flex items-center'>
+      <div className='flex flex-wrap items-center'>
         {CERTS.map((cert: 'gdpr' | 'iso' | 'soc2') => (
           <div
             key={cert}

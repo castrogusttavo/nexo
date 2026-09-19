@@ -80,7 +80,7 @@ function SecurityCardGrid({ cards }: { cards: SecurityCard[] }) {
       {cards.map((card, index) => (
         <div
           key={card.title}
-          className={`bg-card p-4 md:p-8 rounded-xl overflow-hidden border border-border space-y-2 text-start ${CARD_SPAN_BY_INDEX[index]}`}
+          className={`bg-accent p-4 md:p-8 rounded-xl overflow-hidden border border-border space-y-2 text-start ${CARD_SPAN_BY_INDEX[index]}`}
         >
           <h6 className='font-medium text-lg md:whitespace-pre-line'>
             {card.title}
@@ -96,7 +96,7 @@ export default function SecurityPage() {
   return (
     <>
       <main className='min-h-dvh w-full flex flex-col items-center flex-1 mx-auto'>
-        <section className='flex flex-col items-center text-center mx-auto w-full xl:max-w-336 xl:px-11 2xl:max-w-384 py-16 space-y-6'>
+        <section className='flex flex-col items-center text-center mx-auto w-full xl:max-w-336 xl:px-11 2xl:max-w-384 py-16 space-y-6 px-4 sm:px-8'>
           <div className='uppercase text-cyan-500 text-sm md:whitespace-pre-line mb-4'>
             seguro por design, privado por padrão
           </div>
@@ -115,7 +115,7 @@ export default function SecurityPage() {
             <Button size='lg'>Falar com vendas</Button>
           </Link>
         </section>
-        <section className='flex flex-col lg:flex-row lg:items-center gap-12 text-start mx-auto w-full xl:max-w-336 xl:px-11 2xl:max-w-384 py-16'>
+        <section className='flex flex-col lg:flex-row lg:items-center gap-12 text-start mx-auto w-full xl:max-w-336 xl:px-11 2xl:max-w-384 py-16 px-4 sm:px-8'>
           <div className='space-y-2'>
             <Title>
               Conformidade com os padrões <br />
@@ -125,7 +125,7 @@ export default function SecurityPage() {
               Nexo segue diversas normas regulatórias regionais e globais.
             </SubTitle>
           </div>
-          <div className='flex-1 shrink-0 flex items-center justify-end gap-4'>
+          <div className='flex-1 shrink-0 flex flex-wrap items-start md:items-center justify-start md:justify-end gap-4'>
             {CERTS.map((cert: 'gdpr' | 'iso' | 'soc2') => (
               <div key={cert} className='flex items-center justify-center'>
                 <span
@@ -147,25 +147,25 @@ export default function SecurityPage() {
             ))}
           </div>
         </section>
-        <section className='flex flex-col items-center text-center mx-auto w-full xl:max-w-336 xl:px-11 2xl:max-w-384 py-16 gap-12'>
+        <section className='flex flex-col items-center text-center mx-auto w-full xl:max-w-336 xl:px-11 2xl:max-w-384 py-16 gap-12 px-4 sm:px-8'>
           <Title>Seguro desde o primeiro dia</Title>
           <SecurityCardGrid cards={AUTH_SECURITY_CARDS} />
         </section>
-        <section className='grid grid-cols-1 gap-6 lg:grid-cols-3 mx-auto w-full xl:max-w-336 xl:px-11 2xl:max-w-384 py-16'>
+        <section className='grid grid-cols-1 gap-6 lg:grid-cols-3 mx-auto w-full xl:max-w-336 xl:px-11 2xl:max-w-384 py-16 px-4 sm:px-8'>
           <div className="relative flex h-full flex-col gap-16 overflow-hidden rounded-2xl p-8 md:p-12 lg:col-span-2 bg-cover bg-center bg-no-repeat bg-[url('/web/home/bg-home.png')]">
             <Image src='/brand/logo.svg' alt='Nexo' width={100} height={45} />
             <div className='flex flex-col gap-6'>
               <div className='space-y-2 text-start'>
-                <h6 className='font-medium text-lg md:whitespace-pre-line'>
+                <h6 className='text-white font-medium text-lg md:whitespace-pre-line'>
                   Peça a documentação de segurança que sua empresa precisa
                 </h6>
-                <p className='text-base text-muted-foreground'>
+                <p className='text-base text-zinc-400'>
                   Comece na nossa nuvem com os mesmos princípios de proteção e
                   privacidade em toda a plataforma, sem precisar gerenciar
                   infraestrutura.
                 </p>
               </div>
-              <div className='flex items-center gap-2.5'>
+              <div className='flex flex-wrap items-center gap-2.5'>
                 <Link href='/talk-to-sales'>
                   <Button size='lg'>Falar com vendas</Button>
                 </Link>
@@ -179,7 +179,7 @@ export default function SecurityPage() {
           </div>
           <Link
             href='/talk-to-sales'
-            className="group relative flex flex-col justify-between overflow-hidden rounded-2xl p-8 transition-transform duration-300 hover:scale-101 bg-cover bg-center bg-no-repeat bg-[url('/web/home/bg-home.png')]"
+            className="text-white group relative flex flex-col justify-between overflow-hidden rounded-2xl p-8 transition-transform duration-300 hover:scale-101 bg-cover bg-center bg-no-repeat bg-[url('/web/home/bg-home.png')]"
           >
             <NexoIcon
               icon={ArrowRight02Icon}

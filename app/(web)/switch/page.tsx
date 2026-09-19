@@ -36,7 +36,7 @@ export default function SwitchPage() {
     <>
       <main className='min-h-dvh w-full flex flex-col items-center flex-1 mx-auto'>
         <section className="flex flex-col items-center text-center mx-auto w-full bg-[url('/web/home/hero-bg.jpg')] bg-cover bg-center bg-no-repeat">
-          <div className='xl:max-w-336 xl:px-11 2xl:max-w-384 flex flex-col items-start gap-6 py-16 text-left sm:py-20 md:items-center md:text-center lg:py-28'>
+          <div className='xl:max-w-336 xl:px-11 2xl:max-w-384 flex flex-col items-start gap-6 py-16 text-left sm:py-20 md:items-center md:text-center lg:py-28 px-4 py-3 sm:px-8'>
             <Title>Troque pro Nexo</Title>
             <SubTitle className='max-w-xl text-neutral-700'>
               Junte seu time e agentes de IA num só workspace. Mantenha
@@ -56,7 +56,7 @@ export default function SwitchPage() {
           </div>
         </section>
         <section className='mx-auto w-full px-4 sm:px-8 xl:max-w-336 xl:px-11 2xl:max-w-384 flex flex-col items-start gap-6 py-16 text-left sm:py-20 md:items-center md:text-center lg:py-28'>
-          <div className='w-full text-start flex items-start justify-between'>
+          <div className='w-full text-start flex flex-wrap gap-8 items-start justify-between'>
             <Title>
               Humanos e agentes, <br /> trabalhando juntos
             </Title>
@@ -118,8 +118,8 @@ export default function SwitchPage() {
           </div>
         </section>
         <section className='flex flex-col items-center text-center mx-auto w-full bg-surface-highlight'>
-          <div className='w-full xl:max-w-336 xl:px-11 2xl:max-w-384 flex flex-col items-start gap-6 py-16 text-left sm:py-20 md:items-center md:text-center lg:py-28'>
-            <div className='w-full text-start flex items-start justify-between'>
+          <div className='w-full xl:max-w-336 xl:px-11 2xl:max-w-384 flex flex-col items-start gap-6 py-16 text-left sm:py-20 md:items-center md:text-center lg:py-28 px-4 sm:px-8'>
+            <div className='w-full text-start flex-wrap gap-8 flex items-start justify-between'>
               <div className='space-y-4'>
                 <div className='uppercase text-cyan-500 text-sm md:whitespace-pre-line mb-4 font-medium'>
                   apresentando o nexo
@@ -137,7 +137,7 @@ export default function SwitchPage() {
             </div>
           </div>
         </section>
-        <section className='w-full xl:max-w-336 xl:px-11 2xl:max-w-384 flex flex-col items-start gap-20 py-16 text-left sm:py-20 md:items-center md:text-center lg:py-28'>
+        <section className='w-full xl:max-w-336 xl:px-11 2xl:max-w-384 flex flex-col items-start gap-20 py-16 text-left sm:py-20 md:items-center md:text-center lg:py-28 x-4 px-4 sm:px-8'>
           <div className='space-y-6'>
             <div className='uppercase text-cyan-500 text-sm md:whitespace-pre-line mb-4 font-medium'>
               por que trocar

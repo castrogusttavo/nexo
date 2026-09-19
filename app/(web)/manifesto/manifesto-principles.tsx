@@ -20,19 +20,14 @@ interface Principle {
   id: string
   number: string
   title: string
-  image: string
   blocks: PrincipleBlock[]
 }
-
-const PLACEHOLDER_IMAGE =
-  'https://plane.so/manifesto/system-of-records.svg?dpl=dpl_2imyqAGYTXw2hSRUDNE2AWDVjmEN'
 
 const PRINCIPLES: Principle[] = [
   {
     id: 'system-of-record',
     number: '01',
     title: 'Mantenha um único sistema de registro',
-    image: PLACEHOLDER_IMAGE,
     blocks: [
       {
         type: 'p',
@@ -53,7 +48,6 @@ const PRINCIPLES: Principle[] = [
     id: 'flexibly-opinionated',
     number: '02',
     title: 'Seja flexível, mas com opinião',
-    image: PLACEHOLDER_IMAGE,
     blocks: [
       {
         type: 'p',
@@ -73,7 +67,6 @@ const PRINCIPLES: Principle[] = [
     id: 'legible-for-machines',
     number: '03',
     title: 'Seja legível pra máquinas também',
-    image: PLACEHOLDER_IMAGE,
     blocks: [
       {
         type: 'p',
@@ -97,7 +90,6 @@ const PRINCIPLES: Principle[] = [
     id: 'never-coerce-deployment',
     number: '04',
     title: 'Nunca use hospedagem como moeda de troca',
-    image: PLACEHOLDER_IMAGE,
     blocks: [
       {
         type: 'p',
@@ -117,7 +109,6 @@ const PRINCIPLES: Principle[] = [
     id: 'scale-without-complexity',
     number: '05',
     title: 'Escale sem virar complexo',
-    image: PLACEHOLDER_IMAGE,
     blocks: [
       {
         type: 'p',
@@ -134,7 +125,6 @@ const PRINCIPLES: Principle[] = [
     id: 'operational-truth',
     number: '06',
     title: 'Mostre a verdade operacional em toda camada',
-    image: PLACEHOLDER_IMAGE,
     blocks: [
       {
         type: 'p',
@@ -178,9 +168,6 @@ export function ManifestoPrinciples() {
     return () => observer.disconnect()
   }, [])
 
-  const activePrinciple =
-    PRINCIPLES.find((principle) => principle.id === activeId) ?? PRINCIPLES[0]
-
   return (
     <section className='mx-auto w-full px-4 sm:px-8 xl:px-11 xl:max-w-336 2xl:max-w-384 border-r border-l border-border py-16'>
       <div className='w-full px-5 py-16 md:px-9 grid gap-12 lg:grid-cols-[240px_1fr]'>
@@ -195,7 +182,8 @@ export function ManifestoPrinciples() {
                 href={`#${principle.id}`}
                 className={cn(
                   'group relative flex items-center gap-3 text-sm text-muted-foreground transition-colors duration-300 ease-out before:absolute before:-left-[17px] before:top-0 before:h-full before:w-0.5 before:bg-brand-600 before:opacity-0 before:transition-opacity before:duration-300',
-                  activeId === principle.id && 'text-white before:opacity-100',
+                  activeId === principle.id &&
+                    'text-primary before:opacity-100',
                 )}
               >
                 <span className='w-6 font-mono text-xs font-semibold text-branding-600'>
@@ -204,27 +192,6 @@ export function ManifestoPrinciples() {
                 <span className='font-semibold'>{principle.title}</span>
               </a>
             ))}
-          </div>
-          <div className='relative w-full overflow-hidden rounded-xl aspect-square hidden lg:block'>
-            <AnimatePresence mode='wait'>
-              <motion.div
-                key={activePrinciple.id}
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                exit={{ opacity: 0 }}
-                transition={{ duration: 0.3, ease: 'easeOut' }}
-                className='absolute inset-0'
-              >
-                <Image
-                  src={activePrinciple.image}
-                  alt=''
-                  width={1024}
-                  height={1024}
-                  className='h-full w-full object-cover'
-                  color='transparent'
-                />
-              </motion.div>
-            </AnimatePresence>
           </div>
         </div>
         <div className='space-y-16'>

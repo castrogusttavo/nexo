@@ -91,7 +91,7 @@ const CONTACT_CARDS: ContactCard[] = [
     title: 'Outros assuntos',
     description:
       'Parcerias, imprensa ou qualquer outro assunto — é só mandar um e-mail.',
-    cta: 'contato@nexopm.com',
+    cta: 'Enviar e-mail',
     href: 'mailto:contato@nexopm.com',
     icon: Mail02Icon,
   },
@@ -101,7 +101,7 @@ export default function ContactPage() {
   return (
     <>
       <main className='w-full flex flex-col items-center flex-1 mx-auto'>
-        <div className='text-center mx-auto w-full xl:max-w-336 xl:px-11 2xl:max-w-384 py-16 space-y-12'>
+        <div className='text-center mx-auto w-full xl:max-w-336 xl:px-11 2xl:max-w-384 py-16 space-y-12 px-4 sm:px-8'>
           <div className='space-y-4'>
             <Title>Como podemos ajudar?</Title>
             <SubTitle>

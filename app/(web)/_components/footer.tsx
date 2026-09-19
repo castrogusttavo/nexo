@@ -22,7 +22,7 @@ export function WebFooter({ showBanner = true }: WebFooterProps = {}) {
   return (
     <div className='w-full'>
       {showBanner && (
-        <div className="w-full py-20 bg-cover bg-center bg-no-repeat bg-[url('/web/home/bg-home.png')]">
+        <div className="hidden md:block w-full py-20 bg-cover bg-center bg-no-repeat bg-[url('/web/home/bg-home.png')]">
           <div className='mx-auto w-full px-4 sm:px-8 xl:px-11 xl:max-w-336 2xl:max-w-384 flex flex-col space-y-10 items-center text-center'>
             <h2 className='text-5xl font-normal md:whitespace-pre-line font-mono leading-[1.3] tracking-[-.03em] text-white'>
               A nova geração da gestão de projetos <br /> começa aqui
@@ -41,7 +41,7 @@ export function WebFooter({ showBanner = true }: WebFooterProps = {}) {
         </div>
       )}
       <footer className='w-full bg-surface-highlight space-y-10 py-16'>
-        <div className='w-full mx-auto px-4 py-3 sm:px-8 xl:max-w-336 xl:px-11 2xl:max-w-384 flex items-center justify-between'>
+        <div className='w-full mx-auto px-4 py-3 sm:px-8 xl:max-w-336 xl:px-11 2xl:max-w-384 flex flex-col md:flex-row gap-4 justify-between'>
           <Link href='/' className='justify-self-start'>
             <Image
               src='/brand/logo.svg'

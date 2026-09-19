@@ -69,7 +69,7 @@ export default function ManifestoPage() {
           <div className='mx-auto w-full h-full xl:max-w-336 xl:px-11 2xl:max-w-384 border-r border-l border-border bg-[repeating-linear-gradient(90deg,var(--color-border)_0px,var(--color-border)_1px,transparent_1px,transparent_16px)] overflow-hidden' />
         </div>
       </main>
-      <WebFooter />
+      <WebFooter showBanner={false} />
     </>
   )
 }
