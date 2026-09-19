@@ -147,7 +147,17 @@ export function ListLayout({ workspaceId, projectSlug, createDefaults, sectionId
                 <Badge variant='outline'>{items.length}</Badge>
               </div>
             </div>
-            <Button size='icon-xs' variant='ghost' onClick={() => setIsCreating(true)}>
+            <Button
+              size='icon-xs'
+              variant='ghost'
+              aria-label={`Nova issue em ${sectionName}`}
+              // The header is the accordion trigger: without this the click
+              // also collapses the section, hiding the creator it just opened.
+              onClick={(event) => {
+                event.stopPropagation()
+                setIsCreating(true)
+              }}
+            >
               <NexoIcon icon={Add01Icon} strokeWidth={2} />
             </Button>
           </div>

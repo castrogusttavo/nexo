@@ -1,5 +1,5 @@
 import { screen, waitFor, within } from '@testing-library/react'
-import { beforeAll, beforeEach, describe, expect, it, vi } from 'vitest'
+import { beforeEach, describe, expect, it, vi } from 'vitest'
 import type {
   IssueGroupBy,
   IssueSortBy,
@@ -44,17 +44,6 @@ vi.mock('@/components/layouts/use-issue-list-preferences', () => ({
 vi.mock('../panel/issue-details-panel', () => ({
   IssueDetailsPanel: () => null,
 }))
-
-// cmdk (the pickers' option list) measures and scrolls items, which jsdom
-// does not implement.
-beforeAll(() => {
-  globalThis.ResizeObserver ??= class {
-    observe() {}
-    unobserve() {}
-    disconnect() {}
-  }
-  Element.prototype.scrollIntoView ??= () => {}
-})
 
 const WORKSPACE_ID = 'ws-1'
 const PROJECT_SLUG = 'nexo'
@@ -485,6 +474,70 @@ describe('<IssueListView /> grouping', () => {
     expect(rowTitles('Bruno Lima')).toEqual(['Do Bruno'])
   })
 
+  it('orders the state sections by the state order, not the API order', async () => {
+    mockProjectApi({
+      states: [STATES[2], STATES[0], STATES[1]],
+      issues: [buildIssue({ title: 'Login' })],
+    })
+    renderList()
+
+    await screen.findByText('Login')
+    expect(sectionNames()).toEqual(['A fazer', 'Em andamento', 'Concluído'])
+  })
+
+  it('keeps issues whose state no longer exists in a "Sem estado" section', async () => {
+    mockProjectApi({
+      issues: [
+        buildIssue({ id: 'i-1', title: 'Login' }),
+        buildIssue({
+          id: 'i-2',
+          number: 2,
+          title: 'Órfã',
+          stateId: 'state-deleted',
+        }),
+      ],
+    })
+    renderList()
+
+    await findSection('Sem estado')
+    expect(sectionNames()).toEqual([
+      'A fazer',
+      'Em andamento',
+      'Concluído',
+      'Sem estado',
+    ])
+    expect(rowTitles('Sem estado')).toEqual(['Órfã'])
+  })
+
+  it('omits the "Sem estado" section while every issue has a known state', async () => {
+    mockProjectApi({ issues: [buildIssue({ title: 'Login' })] })
+    renderList()
+
+    await screen.findByText('Login')
+    expect(sectionNames()).not.toContain('Sem estado')
+  })
+
+  it('keeps issues by authors who left the project in an "Outros" section', async () => {
+    setPreferences({ groupBy: 'created-by' })
+    mockProjectApi({
+      members: [buildMember({ userId: 'user-1', name: 'Ana Souza' })],
+      issues: [
+        buildIssue({ id: 'i-1', title: 'Da Ana', authorId: 'user-1' }),
+        buildIssue({
+          id: 'i-2',
+          number: 2,
+          title: 'De ex-membro',
+          authorId: 'user-gone',
+        }),
+      ],
+    })
+    renderList()
+
+    await findSection('Outros')
+    expect(sectionNames()).toEqual(['Ana Souza', 'Outros'])
+    expect(rowTitles('Outros')).toEqual(['De ex-membro'])
+  })
+
   it('puts every issue in a single section when grouping is off', async () => {
     setPreferences({ groupBy: 'none' })
     mockProjectApi({
@@ -513,6 +566,16 @@ describe('<IssueListView /> rows', () => {
 
     await screen.findByText('Login')
     expect(within(getRow('Login')).getByText('NEX-42')).toBeInTheDocument()
+  })
+
+  it('names the icon-only actions button of the row', async () => {
+    mockProjectApi({ issues: [buildIssue({ title: 'Login' })] })
+    renderList()
+
+    await screen.findByText('Login')
+    expect(
+      within(getRow('Login')).getByRole('button', { name: 'Mais ações' }),
+    ).toBeInTheDocument()
   })
 
   it('patches the priority picked from the row', async () => {
@@ -559,6 +622,44 @@ describe('<IssueListView /> rows', () => {
         },
       ]),
     )
+  })
+})
+
+describe('<IssueListView /> re-picking the current value', () => {
+  it('sends no request when the current priority is picked again', async () => {
+    const fetchSpy = mockProjectApi({
+      issues: [buildIssue({ id: 'i-1', title: 'Login', priority: 'HIGH' })],
+    })
+    const { user } = renderList()
+
+    await screen.findByText('Login')
+    await user.click(
+      within(getRow('Login')).getByRole('button', { name: 'Alta' }),
+    )
+    await user.click(await screen.findByRole('option', { name: 'Alta' }))
+
+    await waitFor(() =>
+      expect(screen.queryByRole('option')).not.toBeInTheDocument(),
+    )
+    expect(mutationCalls(fetchSpy)).toEqual([])
+  })
+
+  it('sends no request when the current state is picked again', async () => {
+    const fetchSpy = mockProjectApi({
+      issues: [buildIssue({ id: 'i-1', title: 'Login' })],
+    })
+    const { user } = renderList()
+
+    await screen.findByText('Login')
+    await user.click(
+      await within(getRow('Login')).findByRole('button', { name: 'A fazer' }),
+    )
+    await user.click(await screen.findByRole('option', { name: 'A fazer' }))
+
+    await waitFor(() =>
+      expect(screen.queryByRole('option')).not.toBeInTheDocument(),
+    )
+    expect(mutationCalls(fetchSpy)).toEqual([])
   })
 })
 
@@ -627,6 +728,18 @@ describe('<IssueListView /> quick create', () => {
     )
   }
 
+  it('opens the creator from the named "+" button in the section header', async () => {
+    mockProjectApi()
+    const { user } = renderList()
+    await findSection('Concluído')
+
+    await user.click(
+      screen.getByRole('button', { name: 'Nova issue em Concluído' }),
+    )
+
+    expect(screen.getByPlaceholderText('Nome da issue')).toBeInTheDocument()
+  })
+
   it('creates the issue in the state of the section it was added to', async () => {
     const fetchSpy = mockProjectApi()
     await createIn('Concluído', 'Nova tarefa')
@@ -694,5 +807,93 @@ describe('<IssueListView /> quick create', () => {
       method: 'POST',
       body: { userId: 'user-7' },
     })
+  })
+})
+
+describe('<IssueListView /> sorting and sub-issues', () => {
+  const SORTABLE = [
+    buildIssue({
+      id: 'i-a',
+      number: 1,
+      title: 'A',
+      priority: 'LOW',
+      createdAt: '2026-01-02T00:00:00.000Z',
+      updatedAt: '2026-01-09T00:00:00.000Z',
+      startDate: '2026-03-05T00:00:00.000Z',
+      dueDate: null,
+    }),
+    buildIssue({
+      id: 'i-b',
+      number: 2,
+      title: 'B',
+      priority: 'URGENT',
+      createdAt: '2026-01-03T00:00:00.000Z',
+      updatedAt: '2026-01-07T00:00:00.000Z',
+      startDate: null,
+      dueDate: '2026-03-20T00:00:00.000Z',
+    }),
+    buildIssue({
+      id: 'i-c',
+      number: 3,
+      title: 'C',
+      priority: 'NONE',
+      createdAt: '2026-01-01T00:00:00.000Z',
+      updatedAt: '2026-01-08T00:00:00.000Z',
+      startDate: '2026-03-01T00:00:00.000Z',
+      dueDate: '2026-03-10T00:00:00.000Z',
+    }),
+    buildIssue({
+      id: 'i-d',
+      number: 4,
+      title: 'D',
+      priority: 'HIGH',
+      createdAt: '2026-01-04T00:00:00.000Z',
+      updatedAt: '2026-01-06T00:00:00.000Z',
+      startDate: null,
+      dueDate: null,
+    }),
+  ]
+
+  it.each([
+    ['manual', ['A', 'B', 'C', 'D']],
+    ['created-at', ['D', 'B', 'A', 'C']],
+    ['updated-at', ['A', 'C', 'B', 'D']],
+    ['start-date', ['C', 'A', 'B', 'D']],
+    ['due-date', ['C', 'B', 'A', 'D']],
+    ['priority', ['B', 'D', 'A', 'C']],
+  ] as const)('sorts the rows of each section by %s', async (sortBy, expected) => {
+    setPreferences({ sortBy })
+    mockProjectApi({ issues: SORTABLE })
+    renderList()
+
+    await screen.findByText('A')
+    expect(rowTitles('A fazer')).toEqual(expected)
+  })
+
+  it('hides sub-issues when showSubIssues is off', async () => {
+    setPreferences({ showSubIssues: false })
+    mockProjectApi({
+      issues: [
+        buildIssue({ id: 'i-1', title: 'Pai' }),
+        buildIssue({ id: 'i-2', number: 2, title: 'Filha', parentId: 'i-1' }),
+      ],
+    })
+    renderList()
+
+    await screen.findByText('Pai')
+    expect(rowTitles('A fazer')).toEqual(['Pai'])
+  })
+
+  it('lists sub-issues alongside their parents when showSubIssues is on', async () => {
+    mockProjectApi({
+      issues: [
+        buildIssue({ id: 'i-1', title: 'Pai' }),
+        buildIssue({ id: 'i-2', number: 2, title: 'Filha', parentId: 'i-1' }),
+      ],
+    })
+    renderList()
+
+    await screen.findByText('Filha')
+    expect(rowTitles('A fazer')).toEqual(['Pai', 'Filha'])
   })
 })

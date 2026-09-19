@@ -25,7 +25,11 @@ import { useProjectMembers } from '@/src/hooks/use-project-member'
 import { useStates } from '@/src/hooks/use-state'
 import type { IssueDTO } from '@/types/issue'
 import type { StateDTO } from '@/types/state'
-import { issuePrioritiesIcon, issueStateIconMap } from './issue-icons'
+import {
+  issuePrioritiesIcon,
+  issueStateIconMap,
+  NO_STATE_LABEL,
+} from './issue-icons'
 import { IssueDetailsPanel } from './panel/issue-details-panel'
 
 interface IssueKanbanViewProps {
@@ -121,14 +125,20 @@ export function IssueKanbanView({
     [members],
   )
 
-  const columns = useMemo(() => {
+  const { columns, stateless } = useMemo(() => {
     const grouped = new Map<string, IssueDTO[]>(
       orderedStates.map((state) => [state.id, []]),
     )
+    const stateless: IssueDTO[] = []
     for (const issue of issues ?? []) {
-      grouped.get(issue.stateId)?.push(issue)
+      const column = grouped.get(issue.stateId)
+      if (column) column.push(issue)
+      else stateless.push(issue)
     }
-    return Object.fromEntries(grouped) as Record<string, IssueDTO[]>
+    return {
+      columns: Object.fromEntries(grouped) as Record<string, IssueDTO[]>,
+      stateless,
+    }
   }, [issues, orderedStates])
 
   const [localColumns, setLocalColumns] = useState<Record<
@@ -192,6 +202,14 @@ export function IssueKanbanView({
                 onOpen={setOpenIssueId}
               />
             ))}
+            {stateless.length > 0 && (
+              <StatelessColumn
+                issues={stateless}
+                projectIdentifier={projectIdentifier}
+                membersById={membersById}
+                onOpen={setOpenIssueId}
+              />
+            )}
           </KanbanBoard>
           <KanbanOverlay>
             {({ value: id }) => {
@@ -201,12 +219,7 @@ export function IssueKanbanView({
                 <IssueKanbanCard
                   issue={issue}
                   identifier={`${projectIdentifier}-${issue.number}`}
-                  assignees={issue.assigneeIds
-                    .map((userId) => membersById.get(userId))
-                    .filter(
-                      (member): member is NonNullable<typeof member> =>
-                        !!member,
-                    )}
+                  assignees={assigneesOf(issue, membersById)}
                   onOpen={() => {}}
                 />
               )
@@ -227,6 +240,64 @@ export function IssueKanbanView({
   )
 }
 
+type MembersById = Map<
+  string,
+  { userId: string; name: string; username: string; image: string | null }
+>
+
+function assigneesOf(issue: IssueDTO, membersById: MembersById) {
+  return issue.assigneeIds
+    .map((userId) => membersById.get(userId))
+    .filter((member): member is NonNullable<typeof member> => !!member)
+}
+
+/**
+ * Issues whose state was deleted. Not a drop target: moving a card here
+ * would have no state to patch, so these cards are only opened, and their
+ * state is fixed from the details panel.
+ */
+function StatelessColumn({
+  issues,
+  projectIdentifier,
+  membersById,
+  onOpen,
+}: {
+  issues: IssueDTO[]
+  projectIdentifier: string
+  membersById: MembersById
+  onOpen: (issueId: string) => void
+}) {
+  const icon = issueStateIconMap.BACKLOG
+
+  return (
+    <div
+      data-slot='kanban-no-state-column'
+      className='flex flex-col gap-3 rounded-lg bg-muted/40 p-3'
+    >
+      <div className='flex items-center gap-2 px-1'>
+        <NexoIcon
+          icon={icon.icon}
+          strokeWidth={icon.strokeWidth}
+          className='text-muted-foreground'
+        />
+        <h3 className='font-medium text-sm'>{NO_STATE_LABEL}</h3>
+        <Badge variant='outline'>{issues.length}</Badge>
+      </div>
+      <div className='flex min-h-12 flex-1 flex-col gap-2'>
+        {issues.map((issue) => (
+          <IssueKanbanCard
+            key={issue.id}
+            issue={issue}
+            identifier={`${projectIdentifier}-${issue.number}`}
+            assignees={assigneesOf(issue, membersById)}
+            onOpen={() => onOpen(issue.id)}
+          />
+        ))}
+      </div>
+    </div>
+  )
+}
+
 function IssueKanbanColumn({
   state,
   issues,
@@ -237,10 +308,7 @@ function IssueKanbanColumn({
   state: StateDTO
   issues: IssueDTO[]
   projectIdentifier: string
-  membersById: Map<
-    string,
-    { userId: string; name: string; username: string; image: string | null }
-  >
+  membersById: MembersById
   onOpen: (issueId: string) => void
 }) {
   const stateIcon = issueStateIconMap[state.group]
@@ -262,11 +330,7 @@ function IssueKanbanColumn({
             <IssueKanbanCard
               issue={issue}
               identifier={`${projectIdentifier}-${issue.number}`}
-              assignees={issue.assigneeIds
-                .map((userId) => membersById.get(userId))
-                .filter(
-                  (member): member is NonNullable<typeof member> => !!member,
-                )}
+              assignees={assigneesOf(issue, membersById)}
               onOpen={() => onOpen(issue.id)}
             />
           </KanbanItem>

@@ -243,7 +243,7 @@ describe('<IssueKanbanView /> columns', () => {
     expect(done.getByText('1')).toBeInTheDocument()
   })
 
-  it('drops issues whose state is not on the board', async () => {
+  it('keeps issues whose state is not on the board in a trailing "Sem estado" column', async () => {
     mockProjectApi({
       issues: [
         buildIssue({ id: 'i-1', title: 'Visível' }),
@@ -253,7 +253,46 @@ describe('<IssueKanbanView /> columns', () => {
     renderBoard()
 
     await screen.findByText('Visível')
-    expect(screen.queryByText('Órfã')).not.toBeInTheDocument()
+    const headings = screen
+      .getAllByRole('heading', { level: 3 })
+      .map((heading) => heading.textContent)
+    expect(headings).toEqual([
+      'A fazer',
+      'Em andamento',
+      'Concluído',
+      'Sem estado',
+    ])
+    const orphans = screen
+      .getByRole('heading', { name: 'Sem estado' })
+      .closest<HTMLElement>('[data-slot="kanban-no-state-column"]')
+    if (!orphans) throw new Error('"Sem estado" column not found')
+    expect(within(orphans).getByText('Órfã')).toBeInTheDocument()
+    expect(within(orphans).getByText('1')).toBeInTheDocument()
+    // It is not a drop target: no sortable column wraps it.
+    expect(orphans.closest('[data-slot="kanban-column"]')).toBeNull()
+  })
+
+  it('opens the details panel for an issue without a state', async () => {
+    mockProjectApi({
+      issues: [buildIssue({ id: 'i-2', title: 'Órfã', stateId: 'gone' })],
+    })
+    const { user } = renderBoard()
+
+    await user.click(await findCard('Órfã'))
+
+    expect(
+      screen.getByRole('dialog', { name: 'Detalhes da issue' }),
+    ).toHaveTextContent('Órfã')
+  })
+
+  it('omits the "Sem estado" column while every issue has a known state', async () => {
+    mockProjectApi({ issues: [buildIssue({ title: 'Visível' })] })
+    renderBoard()
+
+    await screen.findByText('Visível')
+    expect(
+      screen.queryByRole('heading', { name: 'Sem estado' }),
+    ).not.toBeInTheDocument()
   })
 
   it('renders nothing while the project has no states', async () => {

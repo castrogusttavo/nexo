@@ -189,6 +189,9 @@ export const issueStateIconMap: Record<
   issueStatesIcon.map((item) => [item.state, item]),
 ) as Record<StateGroupDTO, (typeof issueStatesIcon)[number]>
 
+// Bucket for issues whose state was deleted, shared by the list and kanban.
+export const NO_STATE_LABEL = 'Sem estado'
+
 export const issuePrioritiesIcon: Array<{
   priority: IssuePriorityDTO
   label: string

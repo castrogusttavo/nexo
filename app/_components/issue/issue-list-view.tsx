@@ -1,13 +1,20 @@
 'use client'
 
-import { TagIcon, UserMultipleIcon } from '@hugeicons-pro/core-stroke-rounded'
+import {
+  TagIcon,
+  UserMultipleIcon,
+  UserQuestion01Icon,
+} from '@hugeicons-pro/core-stroke-rounded'
 import { useMemo, useState } from 'react'
 import {
   type IconType,
   ListLayout,
   type ListLayoutCreateDefaults,
 } from '@/components/layouts/list-layout'
-import { useIssueListPreferences } from '@/components/layouts/use-issue-list-preferences'
+import {
+  type IssueSortBy,
+  useIssueListPreferences,
+} from '@/components/layouts/use-issue-list-preferences'
 import { colorToText } from '@/lib/state-colors'
 import { useCycles } from '@/src/hooks/use-cycle'
 import { useIssues } from '@/src/hooks/use-issue'
@@ -15,12 +22,50 @@ import { useLabels } from '@/src/hooks/use-label'
 import { useModules } from '@/src/hooks/use-module'
 import { useProjectMembers } from '@/src/hooks/use-project-member'
 import { useStates } from '@/src/hooks/use-state'
+import type { IssueDTO, IssuePriorityDTO } from '@/types/issue'
 import {
   issueCyclesIcon,
   issueModulesIcon,
   issuePrioritiesIcon,
   issueStateIconMap,
+  NO_STATE_LABEL,
 } from './issue-icons'
+
+const PRIORITY_RANK: Record<IssuePriorityDTO, number> = {
+  URGENT: 0,
+  HIGH: 1,
+  MEDIUM: 2,
+  LOW: 3,
+  NONE: 4,
+}
+
+function byTimestamp(
+  pick: (issue: IssueDTO) => string | null,
+  direction: 'asc' | 'desc',
+) {
+  return (a: IssueDTO, b: IssueDTO) => {
+    const left = pick(a)
+    const right = pick(b)
+    if (left === right) return 0
+    // Issues without the date always sink to the bottom.
+    if (left === null) return 1
+    if (right === null) return -1
+    const diff = Date.parse(left) - Date.parse(right)
+    return direction === 'asc' ? diff : -diff
+  }
+}
+
+// `manual` keeps the API order; Array#sort is stable, so ties do too.
+const ISSUE_COMPARATORS: Record<
+  Exclude<IssueSortBy, 'manual'>,
+  (a: IssueDTO, b: IssueDTO) => number
+> = {
+  'created-at': byTimestamp((issue) => issue.createdAt, 'desc'),
+  'updated-at': byTimestamp((issue) => issue.updatedAt, 'desc'),
+  'start-date': byTimestamp((issue) => issue.startDate, 'asc'),
+  'due-date': byTimestamp((issue) => issue.dueDate, 'asc'),
+  priority: (a, b) => PRIORITY_RANK[a.priority] - PRIORITY_RANK[b.priority],
+}
 
 interface IssueListViewProps {
   workspaceId: string
@@ -52,16 +97,27 @@ export function IssueListView({
     [states],
   )
 
-  const items = useMemo(
-    () =>
-      (issues ?? []).map((issue) => ({
-        issue,
-        state: statesById.get(issue.stateId),
-        identifier: `${projectIdentifier}-${issue.number}`,
-        href: `/${workspaceSlug}/projects/${projectSlug}/issues/${projectIdentifier}-${issue.number}`,
-      })),
-    [issues, statesById, projectIdentifier, workspaceSlug, projectSlug],
-  )
+  const items = useMemo(() => {
+    const visible = preferences.showSubIssues
+      ? [...(issues ?? [])]
+      : (issues ?? []).filter((issue) => !issue.parentId)
+    if (preferences.sortBy !== 'manual')
+      visible.sort(ISSUE_COMPARATORS[preferences.sortBy])
+    return visible.map((issue) => ({
+      issue,
+      state: statesById.get(issue.stateId),
+      identifier: `${projectIdentifier}-${issue.number}`,
+      href: `/${workspaceSlug}/projects/${projectSlug}/issues/${projectIdentifier}-${issue.number}`,
+    }))
+  }, [
+    issues,
+    preferences.showSubIssues,
+    preferences.sortBy,
+    statesById,
+    projectIdentifier,
+    workspaceSlug,
+    projectSlug,
+  ])
 
   function toggleOne(issueId: string) {
     setSelectedIds((current) => {
@@ -167,17 +223,36 @@ export function IssueListView({
     }
 
     if (preferences.groupBy === 'created-by') {
-      return (members ?? []).map((member) => ({
-        id: member.userId,
-        name: member.name,
-        avatar: {
-          image: member.image,
+      if (!members) return []
+      const memberIds = new Set(members.map((member) => member.userId))
+      // Authors who have since left the project have no member section.
+      const otherAuthors = items.filter(
+        (item) => !memberIds.has(item.issue.authorId),
+      )
+      return [
+        ...members.map((member) => ({
+          id: member.userId,
           name: member.name,
-          username: member.username,
-        },
-        items: items.filter((item) => item.issue.authorId === member.userId),
-        createDefaults: { stateId: defaultStateId },
-      }))
+          avatar: {
+            image: member.image,
+            name: member.name,
+            username: member.username,
+          },
+          items: items.filter((item) => item.issue.authorId === member.userId),
+          createDefaults: { stateId: defaultStateId },
+        })),
+        ...(otherAuthors.length > 0
+          ? [
+              {
+                id: 'other-authors',
+                name: 'Outros',
+                icon: UserQuestion01Icon,
+                items: otherAuthors,
+                createDefaults: { stateId: defaultStateId },
+              },
+            ]
+          : []),
+      ]
     }
 
     if (preferences.groupBy === 'labels') {
@@ -244,15 +319,34 @@ export function IssueListView({
       ]
     }
 
-    return (states ?? []).map((state) => ({
-      id: state.id,
-      name: state.name,
-      icon: issueStateIconMap[state.group].icon,
-      iconColor: colorToText(state.color),
-      iconStrokeWidth: issueStateIconMap[state.group].strokeWidth,
-      items: items.filter((item) => item.state?.id === state.id),
-      createDefaults: { stateId: state.id },
-    }))
+    if (!states) return []
+    // Issues pointing at a deleted state would otherwise match no section.
+    const stateless = items.filter((item) => !item.state)
+    return [
+      ...[...states]
+        .sort((a, b) => a.order - b.order)
+        .map((state) => ({
+          id: state.id,
+          name: state.name,
+          icon: issueStateIconMap[state.group].icon,
+          iconColor: colorToText(state.color),
+          iconStrokeWidth: issueStateIconMap[state.group].strokeWidth,
+          items: items.filter((item) => item.state?.id === state.id),
+          createDefaults: { stateId: state.id },
+        })),
+      ...(stateless.length > 0
+        ? [
+            {
+              id: 'no-state',
+              name: NO_STATE_LABEL,
+              icon: issueStateIconMap.BACKLOG.icon,
+              iconStrokeWidth: issueStateIconMap.BACKLOG.strokeWidth,
+              items: stateless,
+              createDefaults: { stateId: defaultStateId },
+            },
+          ]
+        : []),
+    ]
   }, [
     preferences.groupBy,
     items,
