@@ -81,6 +81,34 @@ describe('useIssueListPreferences', () => {
     expect(result.current.preferences).toEqual(stored)
   })
 
+  it('fills fields missing from older stored preferences with the defaults', async () => {
+    const { useIssueListPreferences, storage } = await loadModules()
+    // Saved by a version that predates sortBy/showEmptyGroups.
+    storage.setItem(STORAGE_KEY, { groupBy: 'priority', showSubIssues: false })
+
+    const { result } = renderHook(() => useIssueListPreferences())
+
+    expect(result.current.preferences).toEqual({
+      ...DEFAULTS,
+      groupBy: 'priority',
+      showSubIssues: false,
+    })
+  })
+
+  it('falls back to the default for values that are no longer valid', async () => {
+    const { useIssueListPreferences, storage } = await loadModules()
+    storage.setItem(STORAGE_KEY, {
+      ...DEFAULTS,
+      groupBy: 'milestone',
+      sortBy: 42,
+      showSubIssues: 'yes',
+    })
+
+    const { result } = renderHook(() => useIssueListPreferences())
+
+    expect(result.current.preferences).toEqual(DEFAULTS)
+  })
+
   it('merges a partial update and persists it', async () => {
     const { useIssueListPreferences, storage } = await loadModules()
     const { result } = renderHook(() => useIssueListPreferences())
