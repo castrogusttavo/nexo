@@ -15,7 +15,7 @@ jobs:
   lighthouse:
     name: Lighthouse CI
     if: github.event_name == 'push' || github.event_name == 'pull_request'
-    runs-on: ubuntu-latest
+    runs-on: avrea-ubuntu-latest-2-vcpu
     continue-on-error: true
     services:
       postgres:
@@ -85,7 +85,7 @@ jobs:
   k6-local:
     name: k6 Load Tests (Local)
     if: github.event_name == 'push' || github.event_name == 'pull_request'
-    runs-on: ubuntu-latest
+    runs-on: avrea-ubuntu-latest-2-vcpu
     continue-on-error: true
     services:
       postgres:
@@ -180,7 +180,7 @@ jobs:
   k6-production-smoke:
     name: k6 Production Smoke Test
     if: github.event_name == 'schedule' || github.event_name == 'workflow_dispatch'
-    runs-on: ubuntu-latest
+    runs-on: avrea-ubuntu-latest-2-vcpu
     steps:
       - name: Checkout repository
         uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
