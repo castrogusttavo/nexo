@@ -61,6 +61,8 @@ export const SaveProfileSchema = z.object({
     .string()
     .min(2, 'Nome deve ter ao menos 2 caracteres')
     .max(50, 'Nome deve ter no máximo 50 caracteres'),
+  // Opt-in only: absent means no consent (LGPD requires an active choice).
+  marketingConsent: z.boolean().default(false),
 })
 
 export const AcceptConsentSchema = z.object({

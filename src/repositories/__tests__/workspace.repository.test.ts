@@ -88,6 +88,17 @@ describe('WorkspaceRepository', () => {
       expect(membership?.role).toBe('OWNER')
     })
 
+    it('should persist the onboarding team size', async () => {
+      const owner = await seedUser({ email: 'sized@example.com' })
+
+      const result = await WorkspaceRepository.createWithOwner(
+        { name: 'Acme', slug: 'acme-sized', teamSize: '11-50' },
+        owner.id,
+      )
+
+      expect(expectOk(result).teamSize).toBe('11-50')
+    })
+
     it('should rollback workspace when membership cannot be created', async () => {
       const result = await WorkspaceRepository.createWithOwner(
         { name: 'Orphan', slug: 'orphan-ws' },

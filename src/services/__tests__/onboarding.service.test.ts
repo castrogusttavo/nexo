@@ -53,14 +53,29 @@ describe('OnboardingService', () => {
 
       const result = await OnboardingService.saveOnboardingProfile('user1', {
         name: 'Gusttavo',
+        marketingConsent: false,
       })
 
       expectOk(result)
       expect(mockedUser.saveProfile).toHaveBeenCalledWith(
         'user1',
-        'Gusttavo',
+        { name: 'Gusttavo', marketingConsentAt: null },
         'ROLE',
       )
+    })
+
+    it('records when the user opted in to marketing', async () => {
+      mockedUser.saveProfile.mockResolvedValue(ok(createFakeUser()))
+      const before = Date.now()
+
+      await OnboardingService.saveOnboardingProfile('user1', {
+        name: 'Gusttavo',
+        marketingConsent: true,
+      })
+
+      const [, data] = mockedUser.saveProfile.mock.calls[0]
+      expect(data.marketingConsentAt).toBeInstanceOf(Date)
+      expect(data.marketingConsentAt?.getTime()).toBeGreaterThanOrEqual(before)
     })
 
     it('propagates repository error and skips cache invalidation', async () => {
@@ -68,6 +83,7 @@ describe('OnboardingService', () => {
 
       const result = await OnboardingService.saveOnboardingProfile('user1', {
         name: 'Gusttavo',
+        marketingConsent: false,
       })
 
       expectErr(result, 'DATABASE_ERROR')

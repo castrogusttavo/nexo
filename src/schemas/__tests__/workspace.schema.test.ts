@@ -5,6 +5,27 @@ import {
 } from '@/src/schemas/workspace.schema'
 
 describe('CreateWorkspaceSchema', () => {
+  it('should accept a known team size bucket', () => {
+    const result = CreateWorkspaceSchema.safeParse({
+      name: 'Acme',
+      slug: 'acme',
+      teamSize: '11-50',
+    })
+
+    expect(result.success).toBe(true)
+    expect(result.data?.teamSize).toBe('11-50')
+  })
+
+  it('should reject an unknown team size', () => {
+    const result = CreateWorkspaceSchema.safeParse({
+      name: 'Acme',
+      slug: 'acme',
+      teamSize: '3-7',
+    })
+
+    expect(result.success).toBe(false)
+  })
+
   it('should accept valid name and slug', () => {
     const result = CreateWorkspaceSchema.safeParse({
       name: 'Acme',

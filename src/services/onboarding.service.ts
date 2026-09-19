@@ -65,7 +65,12 @@ export const OnboardingService = {
     actorId: string,
     dto: SaveProfileDTO,
   ): Promise<Result<void>> {
-    const result = await UserRepository.saveProfile(actorId, dto.name, 'ROLE')
+    const marketingConsentAt = dto.marketingConsent ? new Date() : null
+    const result = await UserRepository.saveProfile(
+      actorId,
+      { name: dto.name, marketingConsentAt },
+      'ROLE',
+    )
     if (!result.ok) {
       auditMutation({
         entity: 'user',
@@ -86,6 +91,17 @@ export const OnboardingService = {
       actorId,
       targetId: actorId,
     })
+    // LGPD: marketing consent is personal data processing on its own basis,
+    // so its grant gets an audit trail of its own.
+    if (marketingConsentAt) {
+      auditMutation({
+        entity: 'user',
+        action: 'grant',
+        actorId,
+        targetId: actorId,
+        meta: { consent: 'marketing' },
+      })
+    }
 
     return ok(undefined)
   },

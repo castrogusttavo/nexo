@@ -135,6 +135,24 @@ describe('WorkspaceService', () => {
       expect(mockedUserCache.invalidate).toHaveBeenCalledWith('owner-1')
     })
 
+    it('should persist the onboarding team size', async () => {
+      mockedWorkspaceRepo.createWithOwner.mockResolvedValue(
+        ok(createFakeWorkspace({ teamSize: '2-10' })),
+      )
+      mockedUserCache.invalidate.mockResolvedValue(undefined)
+
+      await WorkspaceService.create('owner-1', {
+        name: 'Acme',
+        slug: 'acme',
+        teamSize: '2-10',
+      })
+
+      expect(mockedWorkspaceRepo.createWithOwner).toHaveBeenCalledWith(
+        expect.objectContaining({ teamSize: '2-10' }),
+        'owner-1',
+      )
+    })
+
     it('should propagate repo error and skip cache invalidation', async () => {
       mockedWorkspaceRepo.createWithOwner.mockResolvedValue(
         err(databaseError()),

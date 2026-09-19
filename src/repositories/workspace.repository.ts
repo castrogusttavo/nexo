@@ -49,6 +49,7 @@ export const WorkspaceRepository = {
       slug: string
       activePlan?: Plan
       trialEndsAt?: Date | null
+      teamSize?: string | null
     },
     userId: string,
   ): Promise<Result<Workspace>> {

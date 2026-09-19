@@ -36,6 +36,7 @@ describe('toUserDTO()', () => {
             slug: 'acme',
             activePlan: 'FREE',
             trialEndsAt: null,
+            teamSize: null,
             createdAt: new Date(),
             updatedAt: new Date(),
           },

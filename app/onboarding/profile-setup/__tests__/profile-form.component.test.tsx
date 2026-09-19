@@ -91,18 +91,22 @@ describe('<ProfileForm />', () => {
     expect(submitButton()).toBeEnabled()
   })
 
-  it('submits the name and the marketing opt-in (checked by default)', async () => {
+  // LGPD: marketing consent must be an active choice, never pre-checked.
+  it('leaves the marketing opt-in unchecked and unsent by default', async () => {
     const { user } = renderWithProviders(<ProfileForm {...DEFAULT_PROPS} />)
 
+    expect(
+      screen.getByRole('checkbox', { name: /comunicações de marketing/i }),
+    ).not.toBeChecked()
     await user.click(submitButton())
 
     await waitFor(() => expect(saveProfileSetup).toHaveBeenCalled())
     const data: FormData = saveProfileSetup.mock.calls[0]?.[1]
     expect(data.get('name')).toBe('Ana Souza')
-    expect(data.get('marketingConsent')).toBe('on')
+    expect(data.get('marketingConsent')).toBeNull()
   })
 
-  it('omits the marketing opt-in once it is unchecked', async () => {
+  it('sends the marketing opt-in once the user checks it', async () => {
     const { user } = renderWithProviders(<ProfileForm {...DEFAULT_PROPS} />)
 
     await user.click(
@@ -112,7 +116,7 @@ describe('<ProfileForm />', () => {
 
     await waitFor(() => expect(saveProfileSetup).toHaveBeenCalled())
     const data: FormData = saveProfileSetup.mock.calls[0]?.[1]
-    expect(data.get('marketingConsent')).toBeNull()
+    expect(data.get('marketingConsent')).toBe('on')
   })
 
   it('shows the error returned by the action', async () => {

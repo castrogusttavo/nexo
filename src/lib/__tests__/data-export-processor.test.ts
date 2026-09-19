@@ -77,6 +77,7 @@ function buildUser(overrides: Partial<Record<string, unknown>> = {}) {
     deletionScheduledAt: null,
     acceptedTermsAt: now,
     acceptedPrivacyAt: now,
+    marketingConsentAt: now,
     createdAt: now,
     updatedAt: now,
     ...overrides,
@@ -121,6 +122,8 @@ describe('processDataExport', () => {
     const uploaded = JSON.parse(uploadCall.body)
     expect(uploaded.schemaVersion).toBe('1')
     expect(uploaded.profile.id).toBe('user-1')
+    // LGPD: the export carries every consent the user gave, marketing included.
+    expect(uploaded.profile.marketingConsentAt).toBe('2026-05-19T12:00:00.000Z')
     // Defense-in-depth: no token fields should appear anywhere
     expect(uploadCall.body).not.toContain('"accessToken"')
     expect(uploadCall.body).not.toContain('"refreshToken"')

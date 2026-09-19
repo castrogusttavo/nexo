@@ -18,6 +18,7 @@ export function createFakeUser(overrides?: Partial<User>): User {
     deletionScheduledAt: null,
     acceptedTermsAt: null,
     acceptedPrivacyAt: null,
+    marketingConsentAt: null,
     role: null,
     goals: [],
     onboardingStep: null,

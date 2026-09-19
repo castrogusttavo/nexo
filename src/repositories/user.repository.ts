@@ -167,13 +167,13 @@ export const UserRepository = {
 
   async saveProfile(
     id: string,
-    name: string,
+    profile: { name: string; marketingConsentAt: Date | null },
     nextStep: OnboardingStep,
   ): Promise<Result<User>> {
     try {
       const user = await prisma.user.update({
         where: { id },
-        data: { name, onboardingStep: nextStep },
+        data: { ...profile, onboardingStep: nextStep },
       })
       return ok(user)
     } catch (error) {

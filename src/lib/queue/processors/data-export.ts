@@ -92,6 +92,7 @@ async function gatherPostgresData(userId: string): Promise<{
       deletionScheduledAt: user.deletionScheduledAt?.toISOString() ?? null,
       acceptedTermsAt: user.acceptedTermsAt?.toISOString() ?? null,
       acceptedPrivacyAt: user.acceptedPrivacyAt?.toISOString() ?? null,
+      marketingConsentAt: user.marketingConsentAt?.toISOString() ?? null,
       createdAt: user.createdAt.toISOString(),
       updatedAt: user.updatedAt.toISOString(),
     },

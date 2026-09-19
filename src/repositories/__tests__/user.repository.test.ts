@@ -448,19 +448,33 @@ describe('UserRepository', () => {
 
       const result = await UserRepository.saveProfile(
         seeded.id,
-        'New Name',
+        { name: 'New Name', marketingConsentAt: null },
         'ROLE',
       )
 
       const user = expectOk(result)
       expect(user.name).toBe('New Name')
       expect(user.onboardingStep).toBe('ROLE')
+      expect(user.marketingConsentAt).toBeNull()
+    })
+
+    it('should persist when the user opted in to marketing', async () => {
+      const seeded = await seedUser()
+      const consentAt = new Date('2026-09-19T12:00:00.000Z')
+
+      const result = await UserRepository.saveProfile(
+        seeded.id,
+        { name: 'New Name', marketingConsentAt: consentAt },
+        'ROLE',
+      )
+
+      expect(expectOk(result).marketingConsentAt).toEqual(consentAt)
     })
 
     it('should return RESOURCE_NOT_FOUND for unknown user', async () => {
       const result = await UserRepository.saveProfile(
         'nope',
-        'New Name',
+        { name: 'New Name', marketingConsentAt: null },
         'ROLE',
       )
       expectErr(result, 'RESOURCE_NOT_FOUND')
@@ -469,7 +483,11 @@ describe('UserRepository', () => {
     it('should return DATABASE_ERROR on non-P2025 failures', async () => {
       vi.spyOn(prisma.user, 'update').mockRejectedValueOnce(new Error('boom'))
 
-      const result = await UserRepository.saveProfile('u', 'New Name', 'ROLE')
+      const result = await UserRepository.saveProfile(
+        'u',
+        { name: 'New Name', marketingConsentAt: null },
+        'ROLE',
+      )
 
       expectErr(result, 'DATABASE_ERROR')
     })

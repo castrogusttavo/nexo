@@ -18,6 +18,8 @@ export async function createOnboardingWorkspace(
   const parsed = CreateWorkspaceSchema.safeParse({
     name: formData.get('name'),
     slug: formData.get('slug'),
+    // The team size is optional: an unpicked select posts an empty string.
+    teamSize: formData.get('teamSize') || undefined,
   })
   if (!parsed.success)
     return {

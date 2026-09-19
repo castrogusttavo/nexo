@@ -14,7 +14,11 @@ export async function saveProfileSetup(
   const auth = await getAuthSession()
   if (!auth.ok) return _prev
 
-  const parsed = SaveProfileSchema.safeParse({ name: formData.get('name') })
+  const parsed = SaveProfileSchema.safeParse({
+    name: formData.get('name'),
+    // An unchecked checkbox is simply absent from the form data.
+    marketingConsent: formData.get('marketingConsent') === 'on',
+  })
   if (!parsed.success)
     return {
       ok: false,

@@ -1,5 +1,15 @@
 import { z } from 'zod'
 
+// Team-size buckets asked during onboarding; kept for plan segmentation.
+export const TEAM_SIZES = [
+  '1',
+  '2-10',
+  '11-50',
+  '51-200',
+  '201-500',
+  '500+',
+] as const
+
 export const CreateWorkspaceSchema = z.object({
   name: z
     .string()
@@ -13,6 +23,7 @@ export const CreateWorkspaceSchema = z.object({
       /^[a-z0-9-]+$/,
       'Slug deve conter apenas letras minúsculas, números e hífens',
     ),
+  teamSize: z.enum(TEAM_SIZES).optional(),
 })
 
 export type CreateWorkspaceDTO = z.infer<typeof CreateWorkspaceSchema>

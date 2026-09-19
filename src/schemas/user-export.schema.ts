@@ -15,6 +15,7 @@ export const ExportProfileSchema = z.object({
   deletionScheduledAt: IsoDate.nullable(),
   acceptedTermsAt: IsoDate.nullable(),
   acceptedPrivacyAt: IsoDate.nullable(),
+  marketingConsentAt: IsoDate.nullable(),
   createdAt: IsoDate,
   updatedAt: IsoDate,
 })

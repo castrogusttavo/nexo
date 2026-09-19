@@ -145,12 +145,7 @@ export function ProfileForm({
       </Button>
 
       <Field orientation='horizontal' className='w-fit mx-auto'>
-        <Checkbox
-          id='marketing'
-          name='marketingConsent'
-          disabled={isPending}
-          defaultChecked
-        />
+        <Checkbox id='marketing' name='marketingConsent' disabled={isPending} />
         <FieldLabel
           htmlFor='marketing'
           className='text-xs text-muted-foreground'

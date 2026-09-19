@@ -11,6 +11,7 @@ export function createFakeWorkspace(overrides?: Partial<Workspace>): Workspace {
     slug: `ws-${createId().slice(0, 8)}`,
     activePlan: 'FREE' as Plan,
     trialEndsAt: null,
+    teamSize: null,
     createdAt: now,
     updatedAt: now,
     ...overrides,

@@ -18,6 +18,8 @@ model User {
   deletionScheduledAt DateTime?            @map("deletion_scheduled_at")
   acceptedTermsAt     DateTime?            @map("accepted_terms_at")
   acceptedPrivacyAt   DateTime?            @map("accepted_privacy_at")
+  // When the user opted in to marketing e-mails; null = no consent.
+  marketingConsentAt  DateTime?            @map("marketing_consent_at")
   createdAt           DateTime             @default(now()) @map("created_at")
   updatedAt           DateTime             @updatedAt @map("updated_at")
   onboardingStep      OnboardingStep?      @default(PROFILE) @map("onboarding_step")
@@ -216,6 +218,8 @@ model Workspace {
   slug          String         @unique
   activePlan    Plan           @default(FREE) @map("active_plan")
   trialEndsAt   DateTime?      @map("trial_ends_at")
+  // Onboarding team-size bucket (TEAM_SIZES in workspace.schema.ts).
+  teamSize      String?        @map("team_size")
   createdAt     DateTime       @default(now()) @map("created_at")
   updatedAt     DateTime       @updatedAt @map("updated_at")
   memberships   Membership[]

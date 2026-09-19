@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { UpdateUserSchema } from '@/src/schemas/user.schema'
+import { SaveProfileSchema, UpdateUserSchema } from '@/src/schemas/user.schema'
 
 describe('UpdateUserSchema', () => {
   it('should accept valid name and email', () => {
@@ -106,5 +106,22 @@ describe('UpdateUserSchema', () => {
     const result = UpdateUserSchema.safeParse({ coverImage: 'not-a-url' })
 
     expect(result.success).toBe(false)
+  })
+})
+
+describe('SaveProfileSchema', () => {
+  it('treats a missing marketing choice as no consent', () => {
+    const result = SaveProfileSchema.parse({ name: 'Ana' })
+
+    expect(result.marketingConsent).toBe(false)
+  })
+
+  it('keeps an explicit opt-in', () => {
+    const result = SaveProfileSchema.parse({
+      name: 'Ana',
+      marketingConsent: true,
+    })
+
+    expect(result.marketingConsent).toBe(true)
   })
 })
