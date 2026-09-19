@@ -54,9 +54,6 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
 
-      - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@8d2750c68a42422c14e847fe6c8ac0403b4cbd6f # v3
-
       - name: Log in to Container Registry
         uses: docker/login-action@c94ce9fb468520275223c153574b00df6fe4bcc9 # v3
         with:
@@ -73,6 +70,10 @@ jobs:
             type=sha,prefix=
             type=raw,value=latest
 
+      # Builds on the self-hosted runner's default docker builder, whose layer
+      # cache and --mount=type=cache dirs persist between runs. A per-run
+      # buildx container + registry cache (mode=max) spent ~32 min just
+      # exporting the node_modules layers to ghcr on every deploy.
       - name: Build image for scanning
         uses: docker/build-push-action@ca052bb54ab0790a636c9b5f226502c73d547a25 # v5
         with:
@@ -81,8 +82,6 @@ jobs:
           load: true
           tags: ${{ env.IMAGE_NAME }}:scan
           labels: ${{ steps.meta.outputs.labels }}
-          cache-from: type=registry,ref=${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:buildcache
-          cache-to: type=registry,ref=${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:buildcache,mode=max
           build-args: |
             NEXT_PUBLIC_URL=https://nexo.coodee.dev
             NEXT_PUBLIC_AXIOM_TOKEN=${{ secrets.NEXT_PUBLIC_AXIOM_TOKEN }}
@@ -123,6 +122,7 @@ jobs:
           docker compose pull
           docker compose up -d
           docker image prune -f
+          docker builder prune -f --filter until=168h
 
   release:
     name: Tag & Release
