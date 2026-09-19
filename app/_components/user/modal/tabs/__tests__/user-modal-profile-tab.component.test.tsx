@@ -7,6 +7,7 @@ import {
   apiError,
   apiSuccess,
   createTestQueryClient,
+  deferredResponse,
   getFetchCall,
   mockFetch,
   renderWithProviders,
@@ -103,14 +104,7 @@ function renderTab() {
   )
 }
 
-// Labels are not bound to their inputs (no htmlFor); go through the Field.
-function fieldControl(label: RegExp) {
-  const field = screen
-    .getByText(label, { selector: 'label' })
-    .closest('[data-slot="field"]')
-  if (!(field instanceof HTMLElement)) throw new Error(`No field for ${label}`)
-  return within(field).getByRole('textbox')
-}
+const fieldControl = (label: RegExp) => screen.getByLabelText(label)
 
 const nameInput = () => fieldControl(/Nome completo/)
 const usernameInput = () => fieldControl(/Nome de exibição/)
@@ -133,6 +127,30 @@ describe('<UserModalProfileTab /> profile form', () => {
     expect(fieldControl(/E-mail/)).toHaveValue('ana@example.com')
     expect(fieldControl(/E-mail/)).toBeDisabled()
     expect(saveButton()).toBeDisabled()
+  })
+
+  it('fills the inputs once a cold user query resolves', async () => {
+    const deferred = deferredResponse()
+    mockFetch().mockReturnValueOnce(deferred.promise)
+    const { user } = renderWithProviders(
+      <Tabs value='profile'>
+        <UserModalProfileTab tab='profile' />
+      </Tabs>,
+    )
+
+    // Nothing loaded yet: there is nothing to save.
+    expect(
+      screen.queryByRole('button', { name: 'Salvar alterações' }),
+    ).not.toBeEnabled()
+
+    deferred.resolve(apiSuccess(USER))
+
+    await waitFor(() => expect(nameInput()).toHaveValue('Ana Souza'))
+    expect(usernameInput()).toHaveValue('ana')
+    expect(saveButton()).toBeDisabled()
+
+    await user.type(usernameInput(), 'x')
+    expect(saveButton()).toBeEnabled()
   })
 
   it('re-disables save when the edit is reverted', async () => {
@@ -160,8 +178,9 @@ describe('<UserModalProfileTab /> profile form', () => {
       method: 'PATCH',
       body: { name: 'Ana Lima' },
     })
-    await expect(lastToastOutcome()).resolves.toMatchObject({
+    await expect(lastToastOutcome()).resolves.toEqual({
       type: 'success',
+      message: 'Perfil atualizado',
     })
     expect(refetch).toHaveBeenCalledTimes(1)
   })
@@ -247,6 +266,7 @@ describe('<UserModalProfileTab /> account deactivation', () => {
 
     await user.click(screen.getByRole('button', { name: 'Desativar conta' }))
     const dialog = await screen.findByRole('alertdialog')
+    expect(dialog).toHaveTextContent('serão removidos permanentemente')
     expect(fetchSpy).not.toHaveBeenCalled()
     await user.click(
       within(dialog).getByRole('button', { name: 'Desativar conta' }),

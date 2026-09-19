@@ -2,7 +2,7 @@
 
 import Image from 'next/image'
 import { useRouter } from 'next/navigation'
-import { useRef, useState } from 'react'
+import { useId, useRef, useState } from 'react'
 import { H4 } from '@/components/typography/heading/h4'
 import { Muted } from '@/components/typography/text/muted'
 import {
@@ -36,18 +36,83 @@ import {
   useUser,
 } from '@/src/hooks/use-user'
 import { authClient } from '@/src/lib/auth-client'
+import type { UserDTO } from '@/types/user'
 import { UserCoverImagePicker } from '../user-modal-coverimage-dialog'
 
 export function UserModalProfileTab({ tab }: { tab: string }) {
   const { data: user } = useUser()
+  const deleteAccount = useDeleteAccount()
+  const router = useRouter()
+
+  async function handleDeleteAccount() {
+    try {
+      await notify.mutate(deleteAccount.mutateAsync(), {
+        loading: 'Desativando a conta...',
+        success: 'Conta desativada. Você será desconectado',
+        error: 'Erro ao desativar a conta',
+      })
+      await authClient.signOut()
+      router.push('/sign-in')
+    } catch {
+      //
+    }
+  }
+
+  return (
+    <TabsContent value={tab}>
+      {/* Keyed by user id so the inputs re-seed once a cold user query loads. */}
+      <UserModalProfileForm key={user?.id} user={user} />
+      <div className='w-full mt-10 bg-card rounded-lg border-border px-4 py-3 flex flex-col md:flex-row items-start md:items-center md:justify-between gap-4 md:gap-8'>
+        <div className='flex-1 flex flex-col gap-1.5'>
+          <H4 className='text-sm'>Desativar conta</H4>
+          <Muted className='text-xs'>
+            Ao desativar uma conta, todos os dados e recursos dessa conta serão
+            removidos permanentemente e não poderão ser recuperados.
+          </Muted>
+        </div>
+        <AlertDialog>
+          <AlertDialogTrigger
+            render={
+              <Button variant='destructive' className='w-fit'>
+                Desativar conta
+              </Button>
+            }
+          />
+          <AlertDialogContent>
+            <AlertDialogHeader>
+              <AlertDialogTitle>Desativar conta</AlertDialogTitle>
+              <AlertDialogDescription>
+                Todos os dados e recursos dessa conta serão removidos
+                permanentemente e não poderão ser recuperados. Você será
+                desconectado em seguida.
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+              <AlertDialogCancel disabled={deleteAccount.isPending}>
+                Cancelar
+              </AlertDialogCancel>
+              <AlertDialogAction
+                variant='destructive'
+                onClick={handleDeleteAccount}
+                disabled={deleteAccount.isPending}
+              >
+                Desativar conta
+              </AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
+      </div>
+    </TabsContent>
+  )
+}
+
+function UserModalProfileForm({ user }: { user: UserDTO | undefined }) {
   const { refetch: refetchSession } = useCacheUser()
 
   const updateUser = useUpdateUser()
   const uploadAvatar = useUploadAvatar()
-  const deleteAccount = useDeleteAccount()
 
-  const router = useRouter()
-
+  const fieldId = useId()
   const avatarInputRef = useRef<HTMLInputElement>(null)
 
   const [name, setName] = useState(user?.name || '')
@@ -69,7 +134,7 @@ export function UserModalProfileTab({ tab }: { tab: string }) {
     try {
       await notify.mutate(run(), {
         loading: 'Salvando perfil...',
-        success: 'Persil atualizado',
+        success: 'Perfil atualizado',
         error: 'Erro ao salvar',
       })
     } catch {
@@ -93,144 +158,93 @@ export function UserModalProfileTab({ tab }: { tab: string }) {
         error: 'Erro ao enviar avatar',
       })
     } catch {
-      // https://homologacao.stratustelecom.com.br/api/whatsapp/webhook/meta
-    }
-  }
-
-  async function handleDeleteAccount() {
-    try {
-      await notify.mutate(deleteAccount.mutateAsync(), {
-        loading: 'Desativando a conta...',
-        success: 'Conta desativada. Você será desconectado',
-        error: 'Erro ao desativar a conta',
-      })
-      await authClient.signOut()
-      router.push('/sign-in')
-    } catch {
       //
     }
   }
 
   return (
-    <TabsContent value={tab}>
-      <form key={user?.id} className='w-full' onSubmit={handleSave}>
-        <input
-          ref={avatarInputRef}
-          type='file'
-          accept='image/jpeg,image/png,image/webp'
-          className='hidden'
-          onChange={handleAvatarChange}
-        />
-        <div className='flex w-full flex-col gap-6'>
-          <div className='relative h-44 w-full'>
-            <Image
-              src={user?.coverImage || '/coverImages/image_1.jpg'}
-              alt=''
-              fill
-              sizes='(max-width: 768px) 100vw, 640px'
-              className='object-cover object-center rounded-lg bg-card'
-            />
-            <button
-              type='button'
-              onClick={() => avatarInputRef?.current?.click()}
-              className='absolute -bottom-6 left-6 rounded-full'
-              aria-label='Alterar avatar'
-            >
-              <Avatar className='flex items-end justify-between size-16'>
-                <AvatarImage src={user?.image || ''} alt={user?.name} />
-                <AvatarFallback className='text-lg'>
-                  {getInitials(user?.name)}
-                </AvatarFallback>
-              </Avatar>
-            </button>
-            <div className='absolute bottom-3 right-3 flex'>
-              <UserCoverImagePicker currentImage={user?.coverImage} />
-            </div>
-          </div>
-          <div className='mt-6 flex flex-col'>
-            <H4 className='text-lg'>{user?.name}</H4>
-            <Muted className='text-sm text-muted-foreground'>
-              {user?.email}
-            </Muted>
-          </div>
-          <FieldGroup className='grid grid-cols-2 gap-x-6 gap-y-4'>
-            <Field>
-              <FieldLabel>
-                Nome completo <span className='text-destructive'>*</span>
-              </FieldLabel>
-              <Input value={name} onChange={(e) => setName(e.target.value)} />
-            </Field>
-            <Field>
-              <FieldLabel>
-                Nome de exibição <span className='text-destructive'>*</span>
-              </FieldLabel>
-              <Input
-                value={username}
-                onChange={(e) => setUsername(e.target.value)}
-              />
-            </Field>
-            <Field>
-              <FieldLabel>
-                E-mail <span className='text-destructive'>*</span>
-              </FieldLabel>
-              <Input value={user?.email} disabled />
-              <FieldDescription>
-                <Button variant='link' size='xs'>
-                  Alterar e-mail
-                </Button>
-              </FieldDescription>
-            </Field>
-          </FieldGroup>
-          <Button
-            type='submit'
-            size='sm'
-            className='w-fit'
-            disabled={!dirty || updateUser.isPending}
-          >
-            Salvar alterações
-          </Button>
-        </div>
-      </form>
-      <div className='w-full mt-10 bg-card rounded-lg border-border px-4 py-3 flex flex-col md:flex-row items-start md:items-center md:justify-between gap-4 md:gap-8'>
-        <div className='flex-1 flex flex-col gap-1.5'>
-          <H4 className='text-sm'>Desativar conta</H4>
-          <Muted className='text-xs'>
-            Ao desativar uma conta, todos os dados e recursos dessa conta serão
-            removidos permanentemente e não poderão ser recuperados.
-          </Muted>
-        </div>
-        <AlertDialog>
-          <AlertDialogTrigger
-            render={
-              <Button variant='destructive' className='w-fit'>
-                Desativar conta
-              </Button>
-            }
+    <form className='w-full' onSubmit={handleSave}>
+      <input
+        ref={avatarInputRef}
+        type='file'
+        accept='image/jpeg,image/png,image/webp'
+        className='hidden'
+        onChange={handleAvatarChange}
+      />
+      <div className='flex w-full flex-col gap-6'>
+        <div className='relative h-44 w-full'>
+          <Image
+            src={user?.coverImage || '/coverImages/image_1.jpg'}
+            alt=''
+            fill
+            sizes='(max-width: 768px) 100vw, 640px'
+            className='object-cover object-center rounded-lg bg-card'
           />
-          <AlertDialogContent>
-            <AlertDialogHeader>
-              <AlertDialogTitle>Desativar conta</AlertDialogTitle>
-              <AlertDialogDescription>
-                Todos os dados e recursos dessa conta serão remotivos
-                permanentemente e não poderão ser recuperados. Você será
-                desconectado em seguida.
-              </AlertDialogDescription>
-            </AlertDialogHeader>
-            <AlertDialogFooter>
-              <AlertDialogCancel disabled={deleteAccount.isPending}>
-                Cancelar
-              </AlertDialogCancel>
-              <AlertDialogAction
-                variant='destructive'
-                onClick={handleDeleteAccount}
-                disabled={deleteAccount.isPending}
-              >
-                Desativar conta
-              </AlertDialogAction>
-            </AlertDialogFooter>
-          </AlertDialogContent>
-        </AlertDialog>
+          <button
+            type='button'
+            onClick={() => avatarInputRef?.current?.click()}
+            className='absolute -bottom-6 left-6 rounded-full'
+            aria-label='Alterar avatar'
+          >
+            <Avatar className='flex items-end justify-between size-16'>
+              <AvatarImage src={user?.image || ''} alt={user?.name} />
+              <AvatarFallback className='text-lg'>
+                {getInitials(user?.name)}
+              </AvatarFallback>
+            </Avatar>
+          </button>
+          <div className='absolute bottom-3 right-3 flex'>
+            <UserCoverImagePicker currentImage={user?.coverImage} />
+          </div>
+        </div>
+        <div className='mt-6 flex flex-col'>
+          <H4 className='text-lg'>{user?.name}</H4>
+          <Muted className='text-sm text-muted-foreground'>{user?.email}</Muted>
+        </div>
+        <FieldGroup className='grid grid-cols-2 gap-x-6 gap-y-4'>
+          <Field>
+            <FieldLabel htmlFor={`${fieldId}-name`}>
+              Nome completo <span className='text-destructive'>*</span>
+            </FieldLabel>
+            <Input
+              id={`${fieldId}-name`}
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              disabled={!user}
+            />
+          </Field>
+          <Field>
+            <FieldLabel htmlFor={`${fieldId}-username`}>
+              Nome de exibição <span className='text-destructive'>*</span>
+            </FieldLabel>
+            <Input
+              id={`${fieldId}-username`}
+              value={username}
+              disabled={!user}
+              onChange={(e) => setUsername(e.target.value)}
+            />
+          </Field>
+          <Field>
+            <FieldLabel htmlFor={`${fieldId}-email`}>
+              E-mail <span className='text-destructive'>*</span>
+            </FieldLabel>
+            <Input id={`${fieldId}-email`} value={user?.email ?? ''} disabled />
+            <FieldDescription>
+              <Button type='button' variant='link' size='xs'>
+                Alterar e-mail
+              </Button>
+            </FieldDescription>
+          </Field>
+        </FieldGroup>
+        <Button
+          type='submit'
+          size='sm'
+          className='w-fit'
+          disabled={!dirty || updateUser.isPending}
+        >
+          Salvar alterações
+        </Button>
       </div>
-    </TabsContent>
+    </form>
   )
 }
