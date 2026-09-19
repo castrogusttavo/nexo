@@ -80,6 +80,9 @@ jobs:
           context: .
           push: false
           load: true
+          # The persistent daemon otherwise keeps reusing its local copy of
+          # node:24-alpine, missing base-image security fixes (Trivy gate).
+          pull: true
           tags: ${{ env.IMAGE_NAME }}:scan
           labels: ${{ steps.meta.outputs.labels }}
           build-args: |

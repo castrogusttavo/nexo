@@ -1,6 +1,9 @@
 FROM node:24-alpine AS base
 
-FROM base AS deps
+# Dependencies are installed in the builder stage itself: a separate deps
+# stage made BuildKit copy the whole node_modules tree between stages
+# (~6-12 min on the CD runner) every time the lockfile changed.
+FROM base AS builder
 RUN apk add --no-cache libc6-compat
 WORKDIR /app
 
@@ -17,9 +20,6 @@ RUN --mount=type=secret,id=hugeicons_token \
     pnpm install --frozen-lockfile && \
     rm -f .npmrc
 
-FROM base AS builder
-WORKDIR /app
-COPY --from=deps /app/node_modules ./node_modules
 COPY . .
 
 ENV NEXT_TELEMETRY_DISABLED=1
@@ -57,6 +57,11 @@ WORKDIR /app
 
 ENV NODE_ENV=production
 ENV NEXT_TELEMETRY_DISABLED=1
+
+# node:24-alpine can lag behind Alpine security fixes (e.g. openssl
+# CVE-2026-31789), which fails the Trivy gate in cd.yml. Pull the patched
+# packages into the image that actually ships.
+RUN apk upgrade --no-cache libcrypto3 libssl3
 
 RUN addgroup --system --gid 1001 nodejs && \
     adduser --system --uid 1001 nextjs
