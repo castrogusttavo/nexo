@@ -17,6 +17,7 @@ import {
 import { issuesKey } from '@/src/hooks/use-issue'
 import type { IssueDTO } from '@/types/issue'
 import { IssueCalendarView } from '../issue-calendar-view'
+import { toIssueDateISO } from '../issue-dates'
 
 // The real panel mounts the Plate rich editor; a marker is enough to know
 // which issue the calendar opened.
@@ -73,13 +74,14 @@ function mockIssues(issues: IssueDTO[]) {
   })
 }
 
-function renderCalendar() {
+function renderCalendar(searchParams?: Record<string, string>) {
   return renderWithProviders(
     <IssueCalendarView
       workspaceId={WORKSPACE_ID}
       projectSlug={PROJECT_SLUG}
       projectIdentifier='NEX'
     />,
+    { searchParams },
   )
 }
 
@@ -274,6 +276,40 @@ describe('<IssueCalendarView /> navigation', () => {
     expect(
       screen.getByRole('dialog', { name: 'Detalhes da issue' }),
     ).toHaveTextContent('Backlog solto')
+  })
+})
+
+describe('<IssueCalendarView /> filters', () => {
+  it('renders only the issues matching the filters in the URL', async () => {
+    mockIssues([
+      buildIssue({
+        id: 'i-1',
+        number: 1,
+        title: 'Login',
+        dueDate: toIssueDateISO(new Date(2026, 2, 10)),
+      }),
+      buildIssue({
+        id: 'i-2',
+        number: 2,
+        title: 'Cadastro',
+        dueDate: toIssueDateISO(new Date(2026, 2, 20)),
+      }),
+    ])
+    renderCalendar({
+      filters: JSON.stringify([
+        {
+          id: 'c1',
+          field: 'due-date',
+          operator: 'before',
+          value: toIssueDateISO(new Date(2026, 2, 20)),
+        },
+      ]),
+    })
+
+    await screen.findByRole('button', { name: 'NEX-1 Login' })
+    expect(
+      screen.queryByRole('button', { name: 'NEX-2 Cadastro' }),
+    ).not.toBeInTheDocument()
   })
 })
 

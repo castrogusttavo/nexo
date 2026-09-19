@@ -7,6 +7,7 @@ import { ButtonGroup } from "../ui/button-group"
 import { FilterAdvanced } from "./filter-advanced"
 import { useIssueFilters } from "./use-issue-filters"
 import { FilterPql } from "./filter-pql"
+import { unsupportedIssueFilters } from "./apply-issue-filters"
 
 interface FilterContainerProps {
   workspaceId: string
@@ -15,7 +16,8 @@ interface FilterContainerProps {
 }
 
 export function FilterContainer({ workspaceId, projectSlug, onClose }: FilterContainerProps) {
-  const [{ mode, filters }, setFilters] = useIssueFilters()
+  const [{ mode, filters, pql }, setFilters] = useIssueFilters()
+  const unsupported = unsupportedIssueFilters({ mode, filters, pql })
 
   function handleModeChange(nextMode: 'basic' | 'pql') {
     setFilters({ mode: nextMode })
@@ -26,11 +28,11 @@ export function FilterContainer({ workspaceId, projectSlug, onClose }: FilterCon
   }
 
   function handleClearAll() {
-    setFilters({ filters: [] })
+    setFilters({ filters: [], pql: '' })
   }
 
   return (
-    <div className="flex flex-col gap-3 rounded-md border p-3">
+    <div className="flex flex-col gap-3 p-3">
       <ButtonGroup>
         <Button
           variant={mode === 'basic' ? 'secondary' : 'outline'}
@@ -59,11 +61,16 @@ export function FilterContainer({ workspaceId, projectSlug, onClose }: FilterCon
       ) : (
         <FilterPql />
       )}
+      {unsupported.length > 0 ? (
+        <p role='status' className='text-muted-foreground text-xs'>
+          Estes filtros ainda não são suportados e foram ignorados: {unsupported.join(', ')}.
+        </p>
+      ) : null}
       <div className='flex items-center gap-2'>
         <Button variant='ghost' size='sm' className='h-8' onClick={handleClearAll}>
           Limpar filtros
         </Button>
-        <Button variant='ghost' size='icon' className='h-8 w-8' onClick={onClose}>
+        <Button variant='ghost' size='icon' className='h-8 w-8' aria-label='Fechar filtros' onClick={onClose}>
           <NexoIcon icon={Cancel01Icon} strokeWidth={2} />
         </Button>
       </div>

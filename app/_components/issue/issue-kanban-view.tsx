@@ -2,6 +2,7 @@
 
 import { useQueryClient } from '@tanstack/react-query'
 import { useMemo, useState } from 'react'
+import { useFilteredIssues } from '@/components/filters/use-filtered-issues'
 import { NexoIcon } from '@/components/icon/icon'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Badge } from '@/components/ui/badge'
@@ -20,7 +21,7 @@ import {
   TooltipTrigger,
 } from '@/components/ui/tooltip'
 import { colorToText } from '@/lib/state-colors'
-import { issuesKey, useIssues, useUpdateIssue } from '@/src/hooks/use-issue'
+import { issuesKey, useUpdateIssue } from '@/src/hooks/use-issue'
 import { useProjectMembers } from '@/src/hooks/use-project-member'
 import { useStates } from '@/src/hooks/use-state'
 import type { IssueDTO } from '@/types/issue'
@@ -108,7 +109,11 @@ export function IssueKanbanView({
   projectSlug,
   projectIdentifier,
 }: IssueKanbanViewProps) {
-  const { data: issues } = useIssues(workspaceId, projectSlug)
+  const { data: issues } = useFilteredIssues(
+    workspaceId,
+    projectSlug,
+    projectIdentifier,
+  )
   const { data: states } = useStates(workspaceId, projectSlug)
   const { data: members } = useProjectMembers(workspaceId, projectSlug)
   const updateIssue = useUpdateIssue(workspaceId, projectSlug)

@@ -6,6 +6,7 @@ import {
   UserQuestion01Icon,
 } from '@hugeicons-pro/core-stroke-rounded'
 import { useMemo, useState } from 'react'
+import { useFilteredIssues } from '@/components/filters/use-filtered-issues'
 import {
   type IconType,
   ListLayout,
@@ -17,7 +18,6 @@ import {
 } from '@/components/layouts/use-issue-list-preferences'
 import { colorToText } from '@/lib/state-colors'
 import { useCycles } from '@/src/hooks/use-cycle'
-import { useIssues } from '@/src/hooks/use-issue'
 import { useLabels } from '@/src/hooks/use-label'
 import { useModules } from '@/src/hooks/use-module'
 import { useProjectMembers } from '@/src/hooks/use-project-member'
@@ -80,7 +80,11 @@ export function IssueListView({
   projectSlug,
   projectIdentifier,
 }: IssueListViewProps) {
-  const { data: issues } = useIssues(workspaceId, projectSlug)
+  const { data: issues, ordered } = useFilteredIssues(
+    workspaceId,
+    projectSlug,
+    projectIdentifier,
+  )
   const { data: states } = useStates(workspaceId, projectSlug)
   const { data: cycles } = useCycles(workspaceId, projectSlug)
   const { data: modules } = useModules(workspaceId, projectSlug)
@@ -101,7 +105,8 @@ export function IssueListView({
     const visible = preferences.showSubIssues
       ? [...(issues ?? [])]
       : (issues ?? []).filter((issue) => !issue.parentId)
-    if (preferences.sortBy !== 'manual')
+    // A PQL order-by is an explicit request, so it wins over the preference.
+    if (!ordered && preferences.sortBy !== 'manual')
       visible.sort(ISSUE_COMPARATORS[preferences.sortBy])
     return visible.map((issue) => ({
       issue,
@@ -111,6 +116,7 @@ export function IssueListView({
     }))
   }, [
     issues,
+    ordered,
     preferences.showSubIssues,
     preferences.sortBy,
     statesById,

@@ -70,7 +70,10 @@ export default async function ProjectIssuesPage({
         </HeaderBreadcrumbList>
         <div className='flex items-center gap-2'>
           <IssueLayoutToggle />
-          <IssuesFilters />
+          <IssuesFilters
+            workspaceId={context.workspaceId}
+            projectSlug={context.project.slug}
+          />
           <IssueModal
             trigger={
               <Button size='sm' className='h-8'>

@@ -14,6 +14,13 @@ import { Button } from "../ui/button"
 import { FilterSelect } from "./filter-select"
 import { FILTER_FIELDS } from "./field-registry"
 import { Input } from "../ui/input"
+import { parseIssueDate, toIssueDateISO } from "@/app/_components/issue/issue-dates"
+
+// Date filters name calendar days, stored like issue dates (UTC midnight of
+// the picked day) so a filter reads the same day in every timezone.
+function toFilterDay(iso: string): Date | undefined {
+  return iso ? parseIssueDate(iso) : undefined
+}
 
 const PRIORITY_OPTIONS = [
   { label: 'Sem prioridade', value: 'NONE' },
@@ -96,41 +103,48 @@ export function FilterValueInput({ workspaceId, projectSlug, field, operator, va
   if(fieldType === 'date') {
     if (operator === 'between' || operator === 'not-between') {
       const [start, end] = Array.isArray(value) ? value : ['', '']
+      const from = toFilterDay(start)
+      const to = toFilterDay(end)
       return (
         <Popover>
           <PopoverTrigger
             render={
               <Button variant='outline' size='sm' className='h-8'>
-                {start && end ? `${new Date(start).toLocaleDateString('pt-BR')} - ${new Date(end).toLocaleDateString('pt-BR')}` : 'Selecionar período'}
+                {from && to ? `${from.toLocaleDateString('pt-BR')} - ${to.toLocaleDateString('pt-BR')}` : 'Selecionar período'}
               </Button>
           }
           />
           <PopoverContent className='w-auto p-0'>
             <Calendar
               mode='range'
-              selected={{ from: start ? new Date(start) : undefined, to: end ? new Date(end) : undefined }}
-              onSelect={(range) => onChange([range?.from?.toISOString() ?? '', range?.to?.toISOString() ?? ''])}
+              selected={{ from, to }}
+              onSelect={(range) =>
+                onChange([
+                  range?.from ? toIssueDateISO(range.from) : '',
+                  range?.to ? toIssueDateISO(range.to) : '',
+                ])
+              }
             />
           </PopoverContent>
         </Popover>
       )
     }
 
-    const dateValue = typeof value === 'string' ? value : ''
+    const day = toFilterDay(typeof value === 'string' ? value : '')
     return (
       <Popover>
         <PopoverTrigger
           render={
             <Button variant='outline' size='sm' className='h-8'>
-              {dateValue ? new Date(dateValue).toLocaleDateString('pt-BR') : 'Selecionar data'}
+              {day ? day.toLocaleDateString('pt-BR') : 'Selecionar data'}
             </Button>
         }
         />
         <PopoverContent className='w-auto p-0'>
           <Calendar
             mode='single'
-            selected={dateValue ? new Date(dateValue) : undefined}
-            onSelect={(date) => onChange(date ? date.toISOString() : null)}
+            selected={day}
+            onSelect={(date) => onChange(date ? toIssueDateISO(date) : null)}
           />
         </PopoverContent>
       </Popover>

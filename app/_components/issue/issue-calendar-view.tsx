@@ -18,11 +18,11 @@ import {
 } from 'date-fns'
 import { ptBR } from 'date-fns/locale'
 import { useMemo, useState } from 'react'
+import { useFilteredIssues } from '@/components/filters/use-filtered-issues'
 import { NexoIcon } from '@/components/icon/icon'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { cn } from '@/lib/utils'
-import { useIssues } from '@/src/hooks/use-issue'
 import type { IssueDTO } from '@/types/issue'
 import { parseIssueDate } from './issue-dates'
 import { issuePrioritiesIcon } from './issue-icons'
@@ -41,7 +41,11 @@ export function IssueCalendarView({
   projectSlug,
   projectIdentifier,
 }: IssueCalendarViewProps) {
-  const { data: issues } = useIssues(workspaceId, projectSlug)
+  const { data: issues } = useFilteredIssues(
+    workspaceId,
+    projectSlug,
+    projectIdentifier,
+  )
   const [month, setMonth] = useState(() => new Date())
   const [openIssueId, setOpenIssueId] = useState<string | null>(null)
 

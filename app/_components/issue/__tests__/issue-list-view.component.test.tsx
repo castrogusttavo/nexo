@@ -224,7 +224,7 @@ beforeEach(() => {
   }
 })
 
-function renderList() {
+function renderList(searchParams?: Record<string, string>) {
   return renderWithProviders(
     <IssueListView
       workspaceId={WORKSPACE_ID}
@@ -232,6 +232,7 @@ function renderList() {
       projectSlug={PROJECT_SLUG}
       projectIdentifier='NEX'
     />,
+    { searchParams },
   )
 }
 
@@ -895,5 +896,42 @@ describe('<IssueListView /> sorting and sub-issues', () => {
 
     await screen.findByText('Filha')
     expect(rowTitles('A fazer')).toEqual(['Pai', 'Filha'])
+  })
+})
+
+describe('<IssueListView /> filters', () => {
+  const ISSUES = [
+    buildIssue({ id: 'i-1', number: 1, title: 'Login', priority: 'LOW' }),
+    buildIssue({ id: 'i-2', number: 2, title: 'Cadastro', priority: 'HIGH' }),
+    buildIssue({
+      id: 'i-3',
+      number: 3,
+      title: 'Deploy',
+      priority: 'URGENT',
+      stateId: 'state-done',
+    }),
+  ]
+
+  it('renders only the issues matching the basic filters in the URL', async () => {
+    mockProjectApi({ issues: ISSUES })
+    renderList({
+      filters: JSON.stringify([
+        { id: 'c1', field: 'priority', operator: 'is', value: ['HIGH'] },
+      ]),
+    })
+
+    await screen.findByText('Cadastro')
+    expect(rowTitles('A fazer')).toEqual(['Cadastro'])
+    expect(rowTitles('Concluído')).toEqual([])
+    expect(screen.queryByText('Login')).not.toBeInTheDocument()
+  })
+
+  it('keeps the PQL order-by over the sort preference', async () => {
+    setPreferences({ groupBy: 'none', sortBy: 'created-at' })
+    mockProjectApi({ issues: ISSUES })
+    renderList({ mode: 'pql', pql: 'order-by priority desc limit 2' })
+
+    await screen.findByText('Deploy')
+    expect(rowTitles('Todas as issues')).toEqual(['Deploy', 'Cadastro'])
   })
 })

@@ -12,6 +12,7 @@ import {
 } from 'date-fns'
 import { ptBR } from 'date-fns/locale'
 import { useMemo, useState } from 'react'
+import { useFilteredIssues } from '@/components/filters/use-filtered-issues'
 import { Badge } from '@/components/ui/badge'
 import {
   Tooltip,
@@ -19,7 +20,6 @@ import {
   TooltipTrigger,
 } from '@/components/ui/tooltip'
 import { colorToDot } from '@/lib/state-colors'
-import { useIssues } from '@/src/hooks/use-issue'
 import { useStates } from '@/src/hooks/use-state'
 import type { IssueDTO } from '@/types/issue'
 import { parseIssueDate } from './issue-dates'
@@ -44,7 +44,11 @@ export function IssueGanttView({
   projectSlug,
   projectIdentifier,
 }: IssueGanttViewProps) {
-  const { data: issues } = useIssues(workspaceId, projectSlug)
+  const { data: issues } = useFilteredIssues(
+    workspaceId,
+    projectSlug,
+    projectIdentifier,
+  )
   const { data: states } = useStates(workspaceId, projectSlug)
   const [openIssueId, setOpenIssueId] = useState<string | null>(null)
 

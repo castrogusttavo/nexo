@@ -144,13 +144,14 @@ function mockProjectApi({
   })
 }
 
-function renderBoard() {
+function renderBoard(searchParams?: Record<string, string>) {
   return renderWithProviders(
     <IssueKanbanView
       workspaceId={WORKSPACE_ID}
       projectSlug={PROJECT_SLUG}
       projectIdentifier='NEX'
     />,
+    { searchParams },
   )
 }
 
@@ -416,5 +417,34 @@ describe('<IssueKanbanView /> moving cards', () => {
       ([, init]) => init?.method === 'PATCH',
     )
     expect(mutations).toHaveLength(0)
+  })
+})
+
+describe('<IssueKanbanView /> filters', () => {
+  it('renders only the cards matching the filters in the URL', async () => {
+    mockProjectApi({
+      issues: [
+        buildIssue({ id: 'i-1', number: 1, title: 'Login' }),
+        buildIssue({
+          id: 'i-2',
+          number: 2,
+          title: 'Cadastro',
+          assigneeIds: ['user-1'],
+        }),
+        buildIssue({
+          id: 'i-3',
+          number: 3,
+          title: 'Deploy',
+          stateId: 'state-done',
+          assigneeIds: ['user-1'],
+        }),
+      ],
+    })
+    renderBoard({ mode: 'pql', pql: 'assignees IN (user-1)' })
+
+    await findCard('Cadastro')
+    expect(screen.getByText('Deploy')).toBeInTheDocument()
+    expect(screen.queryByText('Login')).not.toBeInTheDocument()
+    expect(within(getColumn('A fazer')).getByText('1')).toBeInTheDocument()
   })
 })

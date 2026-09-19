@@ -9,11 +9,7 @@ const OPTIONS = [
 ]
 
 function renderCombobox(
-  props: {
-    value?: string
-    clearable?: boolean
-    onChange?: (value: string) => void
-  } = {},
+  props: { value?: string; onChange?: (value: string) => void } = {},
 ) {
   const onChange = props.onChange ?? vi.fn()
   const result = renderWithProviders(
@@ -23,7 +19,6 @@ function renderCombobox(
       getSearchText={(option) => option.name}
       renderItem={(option) => option.name}
       value={props.value}
-      clearable={props.clearable}
       onChange={onChange}
       trigger={<button type='button'>Abrir</button>}
     />,
@@ -55,17 +50,6 @@ describe('<Combobox /> single value', () => {
 
     expect(onChange).not.toHaveBeenCalled()
     expect(screen.queryByRole('option')).not.toBeInTheDocument()
-  })
-
-  it('clears the value on re-pick only when clearable', async () => {
-    const { user, onChange } = renderCombobox({
-      value: 'todo',
-      clearable: true,
-    })
-
-    await pick(user, 'A fazer')
-
-    expect(onChange).toHaveBeenCalledExactlyOnceWith('')
   })
 })
 

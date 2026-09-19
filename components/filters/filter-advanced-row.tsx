@@ -46,7 +46,7 @@ export function FilterAdvancedRow({ workspaceId, projectSlug, clause, onChange, 
         value={clause.value}
         onChange={handleValueChange}
       />
-      <Button variant='ghost' size='icon' className='h-8 w-8' onClick={onRemove}>
+      <Button variant='ghost' size='icon' className='h-8 w-8' aria-label='Remover filtro' onClick={onRemove}>
         <NexoIcon icon={Cancel01Icon} strokeWidth={2} />
       </Button>
     </div>

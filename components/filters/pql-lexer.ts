@@ -1,7 +1,8 @@
 import { PqlToken } from "./pql-types"
 
 const DATE_PATTERN = /^\d{4}-\d{2}-\d{2}/
-const IDENTIFIER_CHAR = /[A-Za-z0-9-]/
+// Unicode letters so accented pt-BR names (Concluído) need no quotes.
+const IDENTIFIER_CHAR = /[\p{L}\p{N}-]/u
 
 export class PqlLexError extends Error {
   position: number
@@ -16,7 +17,7 @@ function isDigit(ch: string) {
 }
 
 function isLetter(ch: string) {
-  return /[A-Za-z]/.test(ch)
+  return /\p{L}/u.test(ch)
 }
 
 export function tokenize(input: string): PqlToken[] {

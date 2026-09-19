@@ -83,13 +83,14 @@ function mockProjectApi(issues: IssueDTO[], states = STATES) {
   })
 }
 
-function renderTimeline() {
+function renderTimeline(searchParams?: Record<string, string>) {
   return renderWithProviders(
     <IssueGanttView
       workspaceId={WORKSPACE_ID}
       projectSlug={PROJECT_SLUG}
       projectIdentifier='NEX'
     />,
+    { searchParams },
   )
 }
 
@@ -335,6 +336,34 @@ describe('<IssueGanttView /> details', () => {
     expect(
       screen.getByRole('dialog', { name: 'Detalhes da issue' }),
     ).toHaveTextContent('Solta')
+  })
+})
+
+describe('<IssueGanttView /> filters', () => {
+  it('renders only the bars matching the filters in the URL', async () => {
+    mockProjectApi([
+      buildIssue({
+        id: 'i-1',
+        number: 1,
+        title: 'Login',
+        priority: 'HIGH',
+        startDate: localDay(2026, 3, 2),
+        dueDate: localDay(2026, 3, 4),
+      }),
+      buildIssue({
+        id: 'i-2',
+        number: 2,
+        title: 'Cadastro',
+        startDate: localDay(2026, 3, 10),
+        dueDate: localDay(2026, 3, 12),
+      }),
+    ])
+    renderTimeline({ mode: 'pql', pql: 'priority = HIGH' })
+
+    await findBar('Login')
+    expect(
+      screen.queryByRole('button', { name: 'Cadastro' }),
+    ).not.toBeInTheDocument()
   })
 })
 
