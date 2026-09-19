@@ -113,6 +113,7 @@ export function RelationsPicker({
               variant='ghost'
               size='icon'
               className='h-8 w-8'
+              aria-label='Remover relação'
               onClick={() => handleRemove(relation.id)}
             >
               <NexoIcon icon={Cancel01Icon} strokeWidth={2} />

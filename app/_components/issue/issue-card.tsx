@@ -170,7 +170,7 @@ export function IssueCardList({
               value={issue.labelIds}
               onChange={handleLabelsChange}
             />
-            <Button size='icon-xs' variant='ghost'>
+            <Button size='icon-xs' variant='ghost' aria-label='Mais ações'>
               <NexoIcon icon={MoreHorizontalIcon} />
             </Button>
           </div>

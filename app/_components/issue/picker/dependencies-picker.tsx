@@ -122,6 +122,7 @@ export function DependenciesPicker({
               variant='ghost'
               size='icon'
               className='size-8'
+              aria-label='Remover dependência'
               onClick={() => handleRemove(dependency.id)}
             >
               <NexoIcon icon={Cancel01Icon} strokeWidth={2} />
