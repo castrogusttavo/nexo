@@ -86,7 +86,7 @@ const SECTIONS: LegalSection[] = [
     blocks: [
       {
         paragraphs: [
-          'O Cliente autoriza, de forma geral, o Nexo a contratar sub-processadores para operar o Serviço, listados em nexo.coodee.dev/legals/sub-processors. O Nexo impõe a esses sub-processadores obrigações de proteção de dados equivalentes às deste DPA, e permanece responsável pelo cumprimento delas.',
+          'O Cliente autoriza, de forma geral, o Nexo a contratar sub-processadores para operar o Serviço, listados em nexopm.com/legals/sub-processors. O Nexo impõe a esses sub-processadores obrigações de proteção de dados equivalentes às deste DPA, e permanece responsável pelo cumprimento delas.',
           'O Nexo notificará o Cliente com pelo menos 30 dias de antecedência antes de contratar um novo sub-processador ou substituir um existente, através de aviso por e-mail ou na página de sub-processadores. O Cliente pode se opor por escrito dentro desse prazo; nesse caso, as partes buscarão uma solução razoável, podendo o Cliente rescindir o Prazo de Assinatura afetado caso a objeção não seja resolvida.',
         ],
       },
@@ -109,7 +109,7 @@ const SECTIONS: LegalSection[] = [
     blocks: [
       {
         paragraphs: [
-          'O Nexo mantém medidas técnicas e organizacionais compatíveis com o risco do tratamento, incluindo criptografia em trânsito e em repouso, controle de acesso baseado em função, e monitoramento de segurança. Detalhes estão disponíveis em nexo.coodee.dev/legals/security.',
+          'O Nexo mantém medidas técnicas e organizacionais compatíveis com o risco do tratamento, incluindo criptografia em trânsito e em repouso, controle de acesso baseado em função, e monitoramento de segurança. Detalhes estão disponíveis em nexopm.com/legals/security.',
         ],
       },
     ],
@@ -149,7 +149,7 @@ const SECTIONS: LegalSection[] = [
     blocks: [
       {
         paragraphs: [
-          'Dúvidas sobre este DPA: Nexo Software, Inc., e-mail juridico@nexo.coodee.dev.',
+          'Dúvidas sobre este DPA: Nexo Software, Inc., e-mail juridico@nexopm.com.',
         ],
       },
     ],

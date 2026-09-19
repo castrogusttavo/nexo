@@ -98,7 +98,7 @@ export default function SubProcessorsPage() {
           </SectionHeading>
           <P>
             {linkifyLegalText(
-              'Notificamos o Cliente com pelo menos 30 dias de antecedência antes de contratar um novo sub-processador ou substituir um existente, conforme a Seção 4 do DPA. Para receber essas notificações por e-mail, entre em contato com juridico@nexo.coodee.dev.',
+              'Notificamos o Cliente com pelo menos 30 dias de antecedência antes de contratar um novo sub-processador ou substituir um existente, conforme a Seção 4 do DPA. Para receber essas notificações por e-mail, entre em contato com juridico@nexopm.com.',
             )}
           </P>
         </section>
@@ -143,7 +143,7 @@ export default function SubProcessorsPage() {
           </SectionHeading>
           <P>
             {linkifyLegalText(
-              'Dúvidas sobre esta lista: Nexo Software, Inc., e-mail juridico@nexo.coodee.dev.',
+              'Dúvidas sobre esta lista: Nexo Software, Inc., e-mail juridico@nexopm.com.',
             )}
           </P>
         </section>

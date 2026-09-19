@@ -148,7 +148,7 @@ export default function CreateWorkspacePage() {
               </FieldLabel>
               <InputGroup>
                 <InputGroupAddon>
-                  <InputGroupText>nexo.coodee.dev/</InputGroupText>
+                  <InputGroupText>nexopm.com/</InputGroupText>
                   <InputGroupInput
                     id='workspace-slug'
                     name='slug'

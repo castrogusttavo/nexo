@@ -128,7 +128,7 @@ const SECTIONS: LegalSection[] = [
     blocks: [
       {
         paragraphs: [
-          'Dúvidas sobre esta Política de Cookies: Nexo Software, Inc., e-mail juridico@nexo.coodee.dev.',
+          'Dúvidas sobre esta Política de Cookies: Nexo Software, Inc., e-mail juridico@nexopm.com.',
         ],
       },
     ],

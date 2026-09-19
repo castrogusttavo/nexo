@@ -1,10 +1,10 @@
-// Role-based mail addresses for nexo.coodee.dev — one address per function,
+// Role-based mail addresses for nexopm.com — one address per function,
 // not per person. Outbound transactional mail goes out via `notifications`
 // with Reply-To pointing at a human inbox; receive-only addresses exist for
 // inbound (Resend) and legal/public listing. Keep this file in sync with the
 // Resend domain + inbound configuration.
 
-export const mailDomain = 'nexo.coodee.dev'
+export const mailDomain = 'nexopm.com'
 
 const displayName = 'nexo'
 

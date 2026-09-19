@@ -20,7 +20,7 @@ jobs:
       - name: OWASP ZAP Baseline Scan
         uses: zaproxy/action-baseline@7c4deb10e6261301961c86d65d54a516394f9aed # v0.14.0
         with:
-          target: 'https://nexo.coodee.dev'
+          target: 'https://nexopm.com'
           rules_file_name: '.zap/rules.tsv'
           cmd_options: '-a -J zap-report.json'
           allow_issue_writing: true
@@ -152,7 +152,7 @@ jobs:
     steps:
       - name: Check security headers
         run: |
-          RESPONSE=$(curl -sI https://nexo.coodee.dev)
+          RESPONSE=$(curl -sI https://nexopm.com)
           echo "$RESPONSE"
 
           check_header() {

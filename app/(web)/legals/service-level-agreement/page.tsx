@@ -115,7 +115,7 @@ const SECTIONS: LegalSection[] = [
       {
         heading: '5.4 Como solicitar',
         paragraphs: [
-          'Solicitações de crédito devem ser enviadas por escrito para suporte@nexo.coodee.dev em até 30 dias corridos após o fim do mês em que ocorreu a Indisponibilidade, com os horários e o impacto observados.',
+          'Solicitações de crédito devem ser enviadas por escrito para suporte@nexopm.com em até 30 dias corridos após o fim do mês em que ocorreu a Indisponibilidade, com os horários e o impacto observados.',
         ],
       },
     ],
@@ -146,7 +146,7 @@ const SECTIONS: LegalSection[] = [
     blocks: [
       {
         paragraphs: [
-          'Manutenções programadas são avisadas com pelo menos 3 dias de antecedência e agendadas em horários de menor uso. Manutenções emergenciais buscam um aviso de pelo menos 60 minutos, quando viável. O status do serviço é público em nexo.coodee.dev/status, com atualizações durante qualquer incidente em andamento.',
+          'Manutenções programadas são avisadas com pelo menos 3 dias de antecedência e agendadas em horários de menor uso. Manutenções emergenciais buscam um aviso de pelo menos 60 minutos, quando viável. O status do serviço é público em nexopm.com/status, com atualizações durante qualquer incidente em andamento.',
         ],
       },
     ],
@@ -168,7 +168,7 @@ const SECTIONS: LegalSection[] = [
     blocks: [
       {
         paragraphs: [
-          'Dúvidas sobre este SLA ou solicitações de crédito: suporte@nexo.coodee.dev.',
+          'Dúvidas sobre este SLA ou solicitações de crédito: suporte@nexopm.com.',
         ],
       },
     ],

@@ -1,10 +1,10 @@
 import Link from 'next/link'
 import type { ReactNode } from 'react'
 
-// Matches emails and references to nexo.coodee.dev (with or without "docs.",
+// Matches emails and references to nexopm.com (with or without "docs.",
 // with or without a path) within the running text of legal documents.
 const LEGAL_REFERENCE_REGEX =
-  /((?:docs\.)?nexo\.coodee\.dev(?:\/[A-Za-z0-9-/]*)?|[\w.+-]+@[\w-]+(?:\.[\w-]+)+)/g
+  /((?:docs\.)?nexopm\.com(?:\/[A-Za-z0-9-/]*)?|[\w.+-]+@[\w-]+(?:\.[\w-]+)+)/g
 
 const LINK_CLASSNAME = 'font-bold underline'
 
@@ -13,7 +13,7 @@ function resolveHref(match: string): { href: string; external: boolean } {
   if (match.startsWith('docs.'))
     return { href: `https://${match}`, external: true }
   return {
-    href: match.replace(/^nexo\.coodee\.dev/, '') || '/',
+    href: match.replace(/^nexopm\.com/, '') || '/',
     external: false,
   }
 }

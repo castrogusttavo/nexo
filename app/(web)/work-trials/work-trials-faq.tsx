@@ -80,7 +80,7 @@ export function WorkTrialsFaq() {
         </Title>
         <SubTitle>
           Qualquer coisa que não foi respondida aqui, manda pra
-          vagas@nexo.coodee.dev, e alguém do nosso time responde.
+          vagas@nexopm.com, e alguém do nosso time responde.
         </SubTitle>
       </div>
       <Accordion

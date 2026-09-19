@@ -58,8 +58,8 @@ representing the community in public spaces.
 ## Enforcement
 
 Instances of abusive, harassing, or otherwise unacceptable behavior may be
-reported to the maintainers at **contato@nexo.coodee.dev** (general contact)
-or **security@nexo.coodee.dev** (security-sensitive reports). All complaints
+reported to the maintainers at **contato@nexopm.com** (general contact)
+or **security@nexopm.com** (security-sensitive reports). All complaints
 will be reviewed and investigated promptly and fairly.
 
 All community leaders are obligated to respect the privacy and security of

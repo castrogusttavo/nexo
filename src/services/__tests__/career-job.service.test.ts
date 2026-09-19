@@ -4,7 +4,7 @@ vi.mock('@/lib/env/server-admin', async (importOriginal) => {
   const actual = await importOriginal<typeof import('@/lib/env/server-admin')>()
   return {
     ...actual,
-    PLATFORM_ADMIN_EMAILS: ['admin@nexo.coodee.dev'],
+    PLATFORM_ADMIN_EMAILS: ['admin@nexopm.com'],
   }
 })
 vi.mock('@/src/repositories/career-job.repository')
@@ -50,10 +50,7 @@ describe('CareerJobService', () => {
       const job = createFakeCareerJob({ id: 'job-1' })
       mockedRepo.findById.mockResolvedValue(ok(job))
 
-      const result = await CareerJobService.getById(
-        'admin@nexo.coodee.dev',
-        'job-1',
-      )
+      const result = await CareerJobService.getById('admin@nexopm.com', 'job-1')
 
       const dto = expectOk(result)
       expect(dto.id).toBe('job-1')
@@ -75,10 +72,7 @@ describe('CareerJobService', () => {
         }),
       )
 
-      const result = await CareerJobService.getById(
-        'admin@nexo.coodee.dev',
-        'nope',
-      )
+      const result = await CareerJobService.getById('admin@nexopm.com', 'nope')
 
       expectErr(result, 'CAREER_JOB_NOT_FOUND')
     })
@@ -99,7 +93,7 @@ describe('CareerJobService', () => {
     it('should return all jobs for a platform admin', async () => {
       mockedRepo.listAll.mockResolvedValue(ok([createFakeCareerJob()]))
 
-      const result = await CareerJobService.listAll('admin@nexo.coodee.dev')
+      const result = await CareerJobService.listAll('admin@nexopm.com')
 
       expectOk(result)
       expect(mockedRepo.listAll).toHaveBeenCalled()
@@ -139,7 +133,7 @@ describe('CareerJobService', () => {
 
       const result = await CareerJobService.create(
         'actor-1',
-        'admin@nexo.coodee.dev',
+        'admin@nexopm.com',
         dto,
       )
 
@@ -162,7 +156,7 @@ describe('CareerJobService', () => {
 
       const result = await CareerJobService.create(
         'actor-1',
-        'admin@nexo.coodee.dev',
+        'admin@nexopm.com',
         dto,
       )
 
@@ -180,7 +174,7 @@ describe('CareerJobService', () => {
 
       const result = await CareerJobService.update(
         'actor-1',
-        'admin@nexo.coodee.dev',
+        'admin@nexopm.com',
         'job-1',
         { title: 'Updated' },
       )
@@ -212,7 +206,7 @@ describe('CareerJobService', () => {
 
       const result = await CareerJobService.update(
         'actor-1',
-        'admin@nexo.coodee.dev',
+        'admin@nexopm.com',
         'nope',
         { title: 'Updated' },
       )
@@ -229,7 +223,7 @@ describe('CareerJobService', () => {
 
       const result = await CareerJobService.update(
         'actor-1',
-        'admin@nexo.coodee.dev',
+        'admin@nexopm.com',
         'job-1',
         { title: 'Updated' },
       )
@@ -248,7 +242,7 @@ describe('CareerJobService', () => {
 
       const result = await CareerJobService.changeStatus(
         'actor-1',
-        'admin@nexo.coodee.dev',
+        'admin@nexopm.com',
         'job-1',
         { status: 'OPEN' },
       )
@@ -279,7 +273,7 @@ describe('CareerJobService', () => {
 
       const result = await CareerJobService.changeStatus(
         'actor-1',
-        'admin@nexo.coodee.dev',
+        'admin@nexopm.com',
         'nope',
         { status: 'OPEN' },
       )
@@ -296,7 +290,7 @@ describe('CareerJobService', () => {
 
       const result = await CareerJobService.changeStatus(
         'actor-1',
-        'admin@nexo.coodee.dev',
+        'admin@nexopm.com',
         'job-1',
         { status: 'OPEN' },
       )

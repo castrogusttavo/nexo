@@ -57,10 +57,8 @@ export default function TalkToSalesPage() {
             </div>
             <Muted className='text-xs'>
               Suporte técnico ou de produto:{' '}
-              <Link href='mailto:suporte@nexo.coodee.dev'>
-                <strong className='text-primary'>
-                  suporte@nexo.coodee.dev
-                </strong>
+              <Link href='mailto:suporte@nexopm.com'>
+                <strong className='text-primary'>suporte@nexopm.com</strong>
               </Link>{' '}
               ou veja os{' '}
               <Link href='/docs'>

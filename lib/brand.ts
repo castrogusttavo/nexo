@@ -5,7 +5,7 @@ export const brand = {
   legalName: 'Nexo software, Inc.',
   displayName: 'Nexo',
   url: baseEmailUrl,
-  contactEmail: 'contato@nexo.coodee.dev',
+  contactEmail: 'contato@nexopm.com',
 } as const
 
 /**

@@ -63,7 +63,7 @@ const SECTIONS: LegalSection[] = [
     blocks: [
       {
         paragraphs: [
-          'No Nexo Cloud, suas entradas ("Entrada de IA") são enviadas a provedores terceiros de IA, listados como sub-processadores em nexo.coodee.dev/legals/sub-processors, e processadas para gerar uma resposta ("Resultado de IA"). Entrada e Resultado de IA são tratados como Dados do Cliente, sujeitos às mesmas proteções contratuais e de segurança.',
+          'No Nexo Cloud, suas entradas ("Entrada de IA") são enviadas a provedores terceiros de IA, listados como sub-processadores em nexopm.com/legals/sub-processors, e processadas para gerar uma resposta ("Resultado de IA"). Entrada e Resultado de IA são tratados como Dados do Cliente, sujeitos às mesmas proteções contratuais e de segurança.',
         ],
       },
     ],
@@ -118,7 +118,7 @@ const SECTIONS: LegalSection[] = [
     blocks: [
       {
         paragraphs: [
-          'Dúvidas sobre estes Termos de Uso de IA: Nexo Software, Inc., e-mail juridico@nexo.coodee.dev.',
+          'Dúvidas sobre estes Termos de Uso de IA: Nexo Software, Inc., e-mail juridico@nexopm.com.',
         ],
       },
     ],

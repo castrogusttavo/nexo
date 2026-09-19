@@ -37,7 +37,7 @@ const nextConfig: NextConfig = {
       },
       {
         protocol: 'https',
-        hostname: 'nexo.coodee.dev'
+        hostname: 'nexopm.com'
       },
       {
         protocol: 'https',

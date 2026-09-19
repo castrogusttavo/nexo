@@ -174,7 +174,7 @@ const SECTIONS: LegalSection[] = [
     blocks: [
       {
         paragraphs: [
-          'Para denunciar uma violação desta AUP, envie um e-mail para juridico@nexo.coodee.dev. O Nexo investiga toda denúncia de boa-fé e pode solicitar sua cooperação durante a apuração.',
+          'Para denunciar uma violação desta AUP, envie um e-mail para juridico@nexopm.com. O Nexo investiga toda denúncia de boa-fé e pode solicitar sua cooperação durante a apuração.',
         ],
       },
     ],
@@ -185,7 +185,7 @@ const SECTIONS: LegalSection[] = [
     blocks: [
       {
         paragraphs: [
-          'Em caso de dúvidas sobre esta AUP, entre em contato: Nexo Software, Inc., e-mail juridico@nexo.coodee.dev.',
+          'Em caso de dúvidas sobre esta AUP, entre em contato: Nexo Software, Inc., e-mail juridico@nexopm.com.',
         ],
       },
     ],

@@ -49,7 +49,7 @@ jobs:
       packages: write
     environment:
       name: production
-      url: https://nexo.coodee.dev
+      url: https://nexopm.com
     steps:
       - name: Checkout repository
         uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
@@ -86,8 +86,8 @@ jobs:
           tags: ${{ env.IMAGE_NAME }}:scan
           labels: ${{ steps.meta.outputs.labels }}
           build-args: |
-            NEXT_PUBLIC_URL=https://nexo.coodee.dev
-            NEXT_PUBLIC_REALTIME_URL=wss://nexo.coodee.dev/realtime
+            NEXT_PUBLIC_URL=https://nexopm.com
+            NEXT_PUBLIC_REALTIME_URL=wss://nexopm.com/realtime
             NEXT_PUBLIC_AXIOM_TOKEN=${{ secrets.NEXT_PUBLIC_AXIOM_TOKEN }}
             NEXT_PUBLIC_AXIOM_DATASET=${{ secrets.NEXT_PUBLIC_AXIOM_DATASET }}
           secrets: |

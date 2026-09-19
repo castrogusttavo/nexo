@@ -94,7 +94,7 @@ export function WorkspaceForm() {
             </FieldLabel>
             <InputGroup>
               <InputGroupAddon>
-                <InputGroupText>nexo.coodee.dev/</InputGroupText>
+                <InputGroupText>nexopm.com/</InputGroupText>
                 <InputGroupInput
                   id='workspace-slug'
                   value={slug}

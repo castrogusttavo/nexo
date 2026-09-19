@@ -96,7 +96,7 @@ const SECTIONS: LegalSection[] = [
     blocks: [
       {
         paragraphs: [
-          'Qualquer subcontratado do Nexo que trate PHI deve firmar um acordo por escrito com obrigações equivalentes às deste BAA. A lista de sub-processadores está disponível em nexo.coodee.dev/legals/sub-processors.',
+          'Qualquer subcontratado do Nexo que trate PHI deve firmar um acordo por escrito com obrigações equivalentes às deste BAA. A lista de sub-processadores está disponível em nexopm.com/legals/sub-processors.',
         ],
       },
     ],
@@ -118,7 +118,7 @@ const SECTIONS: LegalSection[] = [
     blocks: [
       {
         paragraphs: [
-          'Para solicitar este BAA ou tirar dúvidas: Nexo Software, Inc., e-mail juridico@nexo.coodee.dev.',
+          'Para solicitar este BAA ou tirar dúvidas: Nexo Software, Inc., e-mail juridico@nexopm.com.',
         ],
       },
     ],

@@ -278,10 +278,10 @@ export default function WorkTrialsPage() {
               <br />
               desses pontos, escreva pra{' '}
               <Link
-                href='mailto:vagas@nexo.coodee.dev'
+                href='mailto:vagas@nexopm.com'
                 className='text-branding-600 dark:text-branding-400'
               >
-                vagas@nexo.coodee.dev
+                vagas@nexopm.com
               </Link>{' '}
               que alguém vai resolver.
             </SubTitle>

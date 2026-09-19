@@ -66,7 +66,7 @@ const SECTIONS: LegalSection[] = [
     blocks: [
       {
         paragraphs: [
-          'Esta Política de Privacidade se aplica a: o Nexo Cloud — o Serviço hospedado na nuvem operado pelo Nexo; nexo.coodee.dev e sites de marketing, documentação e suporte relacionados; e comunicações com nossos times de suporte, comercial e de produto.',
+          'Esta Política de Privacidade se aplica a: o Nexo Cloud — o Serviço hospedado na nuvem operado pelo Nexo; nexopm.com e sites de marketing, documentação e suporte relacionados; e comunicações com nossos times de suporte, comercial e de produto.',
           'Esta Política não se aplica a: Dados do Cliente armazenados dentro do workspace de um Cliente (regidos pelo DPA); e serviços de terceiros integrados ao Nexo (regidos pelas próprias políticas de privacidade deles).',
         ],
       },
@@ -151,7 +151,7 @@ const SECTIONS: LegalSection[] = [
         heading: '6.1 Prestadores de serviço',
         paragraphs: [
           'Contratamos empresas terceiras de confiança para nos ajudar a operar e melhorar o Serviço, incluindo provedores de infraestrutura e hospedagem em nuvem, processamento de pagamentos, análise de dados, ferramentas de suporte ao cliente e envio de e-mails. Todos os prestadores de serviço estão contratualmente obrigados a proteger seus dados e usá-los apenas conforme nossas instruções.',
-          'Uma lista atual dos nossos sub-processadores está disponível em nexo.coodee.dev/legals/sub-processors.',
+          'Uma lista atual dos nossos sub-processadores está disponível em nexopm.com/legals/sub-processors.',
         ],
       },
       {
@@ -194,7 +194,7 @@ const SECTIONS: LegalSection[] = [
         paragraphs: [
           'O Nexo é operado a partir do Brasil. Se você acessa o Serviço de fora do Brasil, suas informações pessoais podem ser transferidas e tratadas no Brasil ou em outros países onde nós ou nossos prestadores de serviço operamos.',
           'Protegemos transferências internacionais de dados pessoais usando salvaguardas apropriadas, incluindo cláusulas contratuais e outros mecanismos de transferência reconhecidos pela legislação de proteção de dados aplicável, como a LGPD e, quando aplicável, o regime de adequação de outras jurisdições.',
-          'Para mais informações sobre as salvaguardas específicas em vigor, entre em contato em juridico@nexo.coodee.dev.',
+          'Para mais informações sobre as salvaguardas específicas em vigor, entre em contato em juridico@nexopm.com.',
         ],
       },
     ],
@@ -206,7 +206,7 @@ const SECTIONS: LegalSection[] = [
       {
         paragraphs: [
           'O Nexo AI oferece funcionalidades baseadas em IA dentro do Serviço, conforme descrito na Seção 5 dos nossos Termos e nos Termos de Uso de IA.',
-          'Como as Funcionalidades de IA tratam dados. Quando você usa o Nexo AI no Nexo Cloud, suas entradas (como texto enviado pra resumo ou geração) são enviadas a provedores terceiros de IA para processamento. Esses provedores atuam como sub-processadores e estão listados em nexo.coodee.dev/legals/sub-processors.',
+          'Como as Funcionalidades de IA tratam dados. Quando você usa o Nexo AI no Nexo Cloud, suas entradas (como texto enviado pra resumo ou geração) são enviadas a provedores terceiros de IA para processamento. Esses provedores atuam como sub-processadores e estão listados em nexopm.com/legals/sub-processors.',
           'Processamento automatizado. O Cliente permanece o único responsável por quaisquer decisões, ações ou processos automatizados implementados com base em resultados gerados por IA.',
           'Sem treinamento com seus dados. O Nexo não usa Dados do Cliente para treinar, ajustar ou melhorar modelos de IA de propósito geral — nem os nossos, nem os de provedores terceiros. Nossos acordos com sub-processadores de IA proíbem o uso dos seus dados para treinamento de modelo.',
           'Resultados de IA. Resultados gerados por IA são tratados como Dados do Cliente e recebem as mesmas proteções. Você é responsável por revisar e verificar resultados de IA antes de confiar neles.',
@@ -226,7 +226,7 @@ const SECTIONS: LegalSection[] = [
           'Cookies funcionais. Lembram suas preferências, idioma e configurações.',
           'Cookies de análise. Ajudam a entender como visitantes usam nossos sites, medir desempenho e identificar tendências.',
           'Cookies de marketing. Entregam anúncios relevantes e medem a eficácia das nossas campanhas de marketing.',
-          'Para informações detalhadas, incluindo os cookies específicos usados e como gerenciá-los, veja nossa Política de Cookies (nexo.coodee.dev/legals/cookie-policy).',
+          'Para informações detalhadas, incluindo os cookies específicos usados e como gerenciá-los, veja nossa Política de Cookies (nexopm.com/legals/cookie-policy).',
         ],
       },
       {
@@ -267,7 +267,7 @@ const SECTIONS: LegalSection[] = [
       {
         paragraphs: [
           'Implementamos salvaguardas técnicas, organizacionais e administrativas alinhadas às práticas do setor para proteger informações pessoais, incluindo criptografia em trânsito (TLS/SSL) e em repouso, controles de acesso e permissões baseadas em função para sistemas internos, avaliações de segurança e testes de vulnerabilidade recorrentes, treinamento de segurança e obrigações de confidencialidade para a equipe, e detecção, registro e monitoramento de incidentes.',
-          'Detalhes das práticas de segurança do Nexo estão disponíveis em nexo.coodee.dev/legals/security.',
+          'Detalhes das práticas de segurança do Nexo estão disponíveis em nexopm.com/legals/security.',
           'Notificação de incidentes. Em caso de incidente de segurança que afete suas informações pessoais, vamos notificar você e as autoridades regulatórias aplicáveis conforme exigido pela legislação de proteção de dados aplicável — incluindo, quando cabível, a comunicação à Autoridade Nacional de Proteção de Dados (ANPD) prevista na LGPD. Para clientes do Nexo Cloud, obrigações de notificação de incidente também são tratadas no DPA.',
           'Suas responsabilidades. Nenhum sistema é 100% seguro. Você é responsável por manter a confidencialidade das suas credenciais, escolher senhas fortes e proteger os dispositivos usados para acessar o Serviço.',
         ],
@@ -290,8 +290,8 @@ const SECTIONS: LegalSection[] = [
           'Revogação do consentimento. Revogar o consentimento a qualquer momento, quando o tratamento tiver esse fundamento.',
           'Oposição. Se opor a tratamento realizado com base em outra hipótese legal, em caso de descumprimento da LGPD.',
           'Cancelar inscrição de marketing. Cancelar comunicações de marketing a qualquer momento, pelo link de descadastro em qualquer e-mail ou entrando em contato conosco.',
-          'Para exercer qualquer um desses direitos, entre em contato em juridico@nexo.coodee.dev. Vamos responder dentro do prazo exigido pela legislação aplicável. Podemos pedir a verificação da sua identidade antes de processar sua solicitação. Não discriminamos você por exercer seus direitos de privacidade.',
-          'Se você estiver fora do Brasil, outras leis de proteção de dados podem se aplicar às suas informações — por exemplo, o RGPD europeu ou leis estaduais dos Estados Unidos. Nesses casos, tratamos sua solicitação com base no regime aplicável ao seu caso; entre em contato em juridico@nexo.coodee.dev para saber mais.',
+          'Para exercer qualquer um desses direitos, entre em contato em juridico@nexopm.com. Vamos responder dentro do prazo exigido pela legislação aplicável. Podemos pedir a verificação da sua identidade antes de processar sua solicitação. Não discriminamos você por exercer seus direitos de privacidade.',
+          'Se você estiver fora do Brasil, outras leis de proteção de dados podem se aplicar às suas informações — por exemplo, o RGPD europeu ou leis estaduais dos Estados Unidos. Nesses casos, tratamos sua solicitação com base no regime aplicável ao seu caso; entre em contato em juridico@nexopm.com para saber mais.',
         ],
       },
     ],
@@ -302,7 +302,7 @@ const SECTIONS: LegalSection[] = [
     blocks: [
       {
         paragraphs: [
-          'O Serviço não é direcionado a crianças e adolescentes menores de 18 anos, e não coletamos intencionalmente dados pessoais desse público sem o consentimento específico e em destaque de ao menos um dos pais ou do responsável legal, conforme o art. 14 da LGPD. Se soubermos que coletamos dados pessoais de uma criança sem esse consentimento, vamos excluí-los prontamente. Se você acredita que uma criança nos forneceu dados pessoais, entre em contato em juridico@nexo.coodee.dev.',
+          'O Serviço não é direcionado a crianças e adolescentes menores de 18 anos, e não coletamos intencionalmente dados pessoais desse público sem o consentimento específico e em destaque de ao menos um dos pais ou do responsável legal, conforme o art. 14 da LGPD. Se soubermos que coletamos dados pessoais de uma criança sem esse consentimento, vamos excluí-los prontamente. Se você acredita que uma criança nos forneceu dados pessoais, entre em contato em juridico@nexopm.com.',
         ],
       },
     ],
@@ -325,7 +325,7 @@ const SECTIONS: LegalSection[] = [
       {
         paragraphs: [
           'Podemos atualizar esta Política de Privacidade periodicamente. Quando fizermos mudanças materiais, vamos publicar a política atualizada nesta página com uma data de vigência revisada, enviar uma notificação por e-mail para o endereço associado à sua conta, e exibir um aviso dentro do produto para usuários do Nexo Cloud.',
-          'A versão mais recente estará sempre disponível em nexo.coodee.dev/legals/privacy-policy. O uso continuado do Serviço após as mudanças entrarem em vigor representa aceitação da política atualizada.',
+          'A versão mais recente estará sempre disponível em nexopm.com/legals/privacy-policy. O uso continuado do Serviço após as mudanças entrarem em vigor representa aceitação da política atualizada.',
         ],
       },
     ],
@@ -336,7 +336,7 @@ const SECTIONS: LegalSection[] = [
     blocks: [
       {
         paragraphs: [
-          'Se você tiver dúvidas ou solicitações sobre esta Política de Privacidade ou nossas práticas de privacidade, entre em contato: Nexo Software, Inc., e-mail juridico@nexo.coodee.dev.',
+          'Se você tiver dúvidas ou solicitações sobre esta Política de Privacidade ou nossas práticas de privacidade, entre em contato: Nexo Software, Inc., e-mail juridico@nexopm.com.',
           'Esse é também o canal para falar com o nosso Encarregado de Proteção de Dados (DPO), nos termos do art. 41 da LGPD.',
         ],
       },

@@ -21,7 +21,7 @@ import { EmailFooter } from '../_components/email-footer'
 export const InviteUserToWorkspace = ({
   inviterEmail = 'ana@empresa.com',
   inviterName = 'Ana Silva',
-  redirectUrl = 'https://nexo.coodee.dev/invite/token',
+  redirectUrl = 'https://nexopm.com/invite/token',
   workspaceName = 'Acme',
   inviterImage,
   workspaceImage,

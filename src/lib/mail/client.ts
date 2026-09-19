@@ -17,4 +17,4 @@ export const resend = new Proxy({} as Resend, {
   },
 }) as Resend
 
-export const defaultFrom = 'nexo <suporte@nexo.coodee.dev>'
+export const defaultFrom = 'nexo <suporte@nexopm.com>'

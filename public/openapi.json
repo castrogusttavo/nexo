@@ -6,7 +6,7 @@
     "description": "API do Nexo — gestão ágil de projetos. As respostas de sucesso seguem o envelope padrão `{ success, statusCode, data }` e os erros o envelope `{ success, statusCode, message, error }`, exceto as rotas `/auth/*` (Better Auth), que retornam payloads próprios fora do envelope. As rotas de e-mail transacional são disparadas internamente pelo Better Auth e não são expostas publicamente.",
     "contact": {
       "name": "Coodee",
-      "email": "suporte@nexo.coodee.dev"
+      "email": "suporte@nexopm.com"
     }
   },
   "servers": [
@@ -15,7 +15,7 @@
       "description": "Desenvolvimento Local"
     },
     {
-      "url": "https://nexo.coodee.dev/api",
+      "url": "https://nexopm.com/api",
       "description": "Produção"
     }
   ],
@@ -275,7 +275,7 @@
                   "callbackURL": {
                     "type": "string",
                     "format": "uri",
-                    "example": "https://nexo.coodee.dev"
+                    "example": "https://nexopm.com"
                   }
                 }
               }
@@ -484,7 +484,7 @@
                   "redirectTo": {
                     "type": "string",
                     "format": "uri",
-                    "example": "https://nexo.coodee.dev/reset-password"
+                    "example": "https://nexopm.com/reset-password"
                   }
                 }
               }
@@ -9869,7 +9869,7 @@
           "url": {
             "type": "string",
             "format": "uri",
-            "example": "https://nexo.coodee.dev/docs"
+            "example": "https://nexopm.com/docs"
           },
           "userId": {
             "type": "string",
@@ -9902,7 +9902,7 @@
             "type": "string",
             "format": "uri",
             "maxLength": 2048,
-            "example": "https://nexo.coodee.dev/docs"
+            "example": "https://nexopm.com/docs"
           }
         }
       },
@@ -9919,7 +9919,7 @@
             "type": "string",
             "format": "uri",
             "maxLength": 2048,
-            "example": "https://nexo.coodee.dev/docs/v2"
+            "example": "https://nexopm.com/docs/v2"
           }
         }
       },

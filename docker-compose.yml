@@ -1,10 +1,13 @@
-# Public, non-secret settings shared by every service. NEXT_PUBLIC_REALTIME_URL
+# Public, non-secret settings shared by every service; they override the same
+# keys in the sops-decrypted .env. NEXT_PUBLIC_REALTIME_URL
 # is validated at startup by lib/env (app, worker and realtime all crash-loop
 # without it) and is also baked into the client bundle via the CD build-args.
 # nginx proxies /realtime (same origin, so the session cookie reaches the
 # Hocuspocus server) to the realtime service on 127.0.0.1:1234.
 x-public-env: &public-env
-  NEXT_PUBLIC_REALTIME_URL: wss://nexo.coodee.dev/realtime
+  NEXT_PUBLIC_URL: https://nexopm.com
+  BETTER_AUTH_URL: https://nexopm.com
+  NEXT_PUBLIC_REALTIME_URL: wss://nexopm.com/realtime
 
 services:
   nexo-app:

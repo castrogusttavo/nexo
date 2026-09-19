@@ -24,7 +24,7 @@ Instead, report them through one of these private channels:
    button under this repository's Security tab. This creates a private
    advisory thread with maintainers and lets us coordinate a fix before
    disclosure.
-2. **Email** — send details to **security@nexo.coodee.dev** with the subject
+2. **Email** — send details to **security@nexopm.com** with the subject
    line `[SECURITY] <short summary>`.
 
 Please include as much of the following as you can:

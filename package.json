@@ -3,7 +3,7 @@
   "version": "0.1.0",
   "description": "AI-native, multi-tenant project management platform — an open-source alternative to Linear, Jira, and Asana.",
   "license": "AGPL-3.0-only",
-  "homepage": "https://nexo.coodee.dev",
+  "homepage": "https://nexopm.com",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/castrogusttavo/nexo.git"

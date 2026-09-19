@@ -48,7 +48,7 @@ export function UserDropdownHelper() {
               Suporte por mensagens
             </DropdownMenuItem>
           </Link>
-          <Link href='mailto:sales@nexo.coodee.dev' target='_blank'>
+          <Link href='mailto:sales@nexopm.com' target='_blank'>
             <DropdownMenuItem className='text-xs'>
               <NexoIcon icon={UserIcon} strokeWidth={2} size={20} />
               Contatar vendas

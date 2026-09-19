@@ -145,12 +145,12 @@ jobs:
       - name: Run smoke test against production
         run: k6 run k6/smoke-test.js
         env:
-          BASE_URL: https://nexo.coodee.dev
+          BASE_URL: https://nexopm.com
 
       - name: Run API smoke test against production
         run: k6 run k6/api-smoke-test.js
         env:
-          BASE_URL: https://nexo.coodee.dev
+          BASE_URL: https://nexopm.com
 
       # Real stress test — ramps to 100 VUs against production, unlike
       # k6-local's load-test.js which shares its runner's CPU with the app
@@ -163,4 +163,4 @@ jobs:
         continue-on-error: true
         run: k6 run k6/stress-test.js
         env:
-          BASE_URL: https://nexo.coodee.dev
+          BASE_URL: https://nexopm.com

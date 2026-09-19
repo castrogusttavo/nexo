@@ -2,7 +2,7 @@
 <br />
 
 <p  align="center">
-    <a href="https://nexo.coodee.dev" target="_blank" align="center">
+    <a href="https://nexopm.com" target="_blank" align="center">
       <img
         src="./public/brand/nexo-readme.png"
         alt="Nexo"
@@ -14,10 +14,10 @@
 <p align="center"><b>Project management that actually works for your team</b></p>
 
 <p align="center">
-    <a href="https://nexo.coodee.dev/"><b>Website</b></a> •
-    <a href="https://nexo.coodee.dev/status"><b>Status</b></a> •
+    <a href="https://nexopm.com/"><b>Website</b></a> •
+    <a href="https://nexopm.com/status"><b>Status</b></a> •
     <a href="https://x.com/nexopowers"><b>X</b></a> •
-    <a href="https://nexo.coodee.dev/docs"><b>Documentation</b></a>
+    <a href="https://nexopm.com/docs"><b>Documentation</b></a>
 </p>
 
 <p align="center">
@@ -46,7 +46,7 @@
   </a>
 </p>
 
-Meet [Nexo](https://nexo.coodee.dev/), a project management platform built for teams that want to ship without fighting their tools. Multi-tenant by default, opinionated where it matters, and ready to grow with you.
+Meet [Nexo](https://nexopm.com/), a project management platform built for teams that want to ship without fighting their tools. Multi-tenant by default, opinionated where it matters, and ready to grow with you.
 
 > Nexo is in active development. The foundation — auth, workspaces, billing, status, and docs — is in place, and project tracking primitives are landing next. Suggestions, ideas, and reported bugs help us immensely.
 
@@ -54,7 +54,7 @@ Meet [Nexo](https://nexo.coodee.dev/), a project management platform built for t
 
 Two ways to run Nexo:
 
-- **Nexo Cloud.** Sign up at [nexo.coodee.dev](https://nexo.coodee.dev) — the fastest path to get started, with no infrastructure to manage.
+- **Nexo Cloud.** Sign up at [nexopm.com](https://nexopm.com) — the fastest path to get started, with no infrastructure to manage.
 - **Self-host with Docker.** Bring your own infrastructure. The full stack runs from a single Compose file — see [`docker-compose.yml`](./docker-compose.yml) to get started.
 
 | Installation method | Documentation                                    |
@@ -96,31 +96,31 @@ Project management primitives are next on deck:
 -->
 
 <p>
-    <a href="https://nexo.coodee.dev" target="_blank">
+    <a href="https://nexopm.com" target="_blank">
       <!-- <img src="./public/brand/screens/workspaces.png" alt="Workspaces" width="100%" /> -->
     </a>
 </p>
 
 <p>
-    <a href="https://nexo.coodee.dev" target="_blank">
+    <a href="https://nexopm.com" target="_blank">
       <!-- <img src="./public/brand/screens/auth.png" alt="Authentication" width="100%" /> -->
     </a>
 </p>
 
 <p>
-    <a href="https://nexo.coodee.dev" target="_blank">
+    <a href="https://nexopm.com" target="_blank">
       <!-- <img src="./public/brand/screens/billing.png" alt="Billing" width="100%" /> -->
     </a>
 </p>
 
 <p>
-    <a href="https://nexo.coodee.dev" target="_blank">
+    <a href="https://nexopm.com" target="_blank">
       <!-- <img src="./public/brand/screens/status.png" alt="Status page" width="100%" /> -->
     </a>
 </p>
 
 <p>
-    <a href="https://nexo.coodee.dev" target="_blank">
+    <a href="https://nexopm.com" target="_blank">
       <!-- <img src="./public/brand/screens/docs.png" alt="API docs" width="100%" /> -->
     </a>
 </p>
@@ -140,7 +140,7 @@ For subsequent runs, `pnpm infra` starts the containers and applies pending migr
 
 ## Documentation
 
-API reference and product documentation live at [nexo.coodee.dev/docs](https://nexo.coodee.dev/docs).
+API reference and product documentation live at [nexopm.com/docs](https://nexopm.com/docs).
 
 ## Contributing
 
@@ -148,7 +148,7 @@ Contributions are welcome — see [`CONTRIBUTING.md`](CONTRIBUTING.md) for setup
 
 ## Security
 
-If you discover a security vulnerability, please report it responsibly instead of opening a public issue. See [`SECURITY.md`](SECURITY.md) for how to report one privately — email **security@nexo.coodee.dev** with a description and reproduction steps. We take all legitimate reports seriously and investigate them promptly.
+If you discover a security vulnerability, please report it responsibly instead of opening a public issue. See [`SECURITY.md`](SECURITY.md) for how to report one privately — email **security@nexopm.com** with a description and reproduction steps. We take all legitimate reports seriously and investigate them promptly.
 
 ## License
 

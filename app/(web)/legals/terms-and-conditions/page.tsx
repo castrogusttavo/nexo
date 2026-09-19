@@ -54,13 +54,13 @@ const SECTIONS: LegalSection[] = [
     blocks: [
       {
         paragraphs: [
-          '"Política de Uso Aceitável" ou "AUP" significa a Política de Uso Aceitável do Nexo, disponível em nexo.coodee.dev/legals/acceptable-use-policy, conforme atualizada periodicamente.',
+          '"Política de Uso Aceitável" ou "AUP" significa a Política de Uso Aceitável do Nexo, disponível em nexopm.com/legals/acceptable-use-policy, conforme atualizada periodicamente.',
           '"Afiliada" significa qualquer entidade que controle, seja controlada por, ou esteja sob controle comum com uma das partes, sendo "controle" a titularidade de mais de 50% das participações com direito a voto dessa entidade.',
           '"Usuário Autorizado" significa a pessoa física autorizada pelo Cliente a acessar e usar o Serviço através da conta do Cliente, incluindo funcionários, contratados e prepostos.',
           '"Serviço Beta" significa qualquer serviço, funcionalidade ou recurso designado como alfa, beta, prévia, acesso antecipado, piloto ou por descrição semelhante.',
           '"Informação Confidencial" significa toda informação de negócio, produto, tecnologia e marketing não pública, divulgada por uma parte à outra, oralmente ou por escrito, designada como confidencial ou que uma pessoa razoável entenderia como confidencial dada a natureza da informação e as circunstâncias da divulgação.',
           '"Dados do Cliente" significa quaisquer dados, conteúdos, arquivos, anexos, textos, imagens ou outros materiais enviados, submetidos ou transmitidos pelo Cliente ou por qualquer Usuário Autorizado, para ou através do Serviço. Dados do Cliente não incluem Dados de Uso.',
-          '"Documentação" significa a documentação técnica do Serviço disponibilizada em nexo.coodee.dev/docs ou por qualquer outro meio fornecido pelo Nexo.',
+          '"Documentação" significa a documentação técnica do Serviço disponibilizada em nexopm.com/docs ou por qualquer outro meio fornecido pelo Nexo.',
           '"Direitos de Propriedade Intelectual" significa todas as patentes, direitos autorais, marcas, segredos de negócio, direitos morais e demais direitos de propriedade intelectual existentes ou que venham a existir, incluindo todos os pedidos, renovações e extensões correspondentes.',
           '"Leis" significa todas as leis, normas e regulamentos locais, estaduais, federais e internacionais aplicáveis, incluindo os relacionados à proteção de dados, transferência internacional de dados, controle de exportação e comunicações eletrônicas — em especial a Lei Geral de Proteção de Dados (Lei nº 13.709/2018, "LGPD") e o Código de Defesa do Consumidor (Lei nº 8.078/1990, "CDC"), quando aplicável.',
           '"Pedido de Contratação" significa o documento de contratação, escrito ou eletrônico, que faça referência a estes Termos e especifique o Serviço contratado, o prazo de assinatura, os valores e demais condições comerciais. Uma vez assinado por ambas as partes (ou, no caso de contratação online, confirmado), cada Pedido de Contratação fica sujeito a estes Termos.',
@@ -136,8 +136,8 @@ const SECTIONS: LegalSection[] = [
       {
         paragraphs: [
           '(a) O Nexo hospeda e gerencia a infraestrutura, e o Cliente acessa o Serviço via web ou aplicativos móveis.',
-          '(b) O Serviço está sujeito ao Acordo de Nível de Serviço disponível em nexo.coodee.dev/legals/service-level-agreement.',
-          '(c) O Nexo é responsável por manter a segurança do ambiente de hospedagem de acordo com suas práticas de segurança descritas em nexo.coodee.dev/legals/security.',
+          '(b) O Serviço está sujeito ao Acordo de Nível de Serviço disponível em nexopm.com/legals/service-level-agreement.',
+          '(c) O Nexo é responsável por manter a segurança do ambiente de hospedagem de acordo com suas práticas de segurança descritas em nexopm.com/legals/security.',
         ],
       },
     ],
@@ -186,7 +186,7 @@ const SECTIONS: LegalSection[] = [
       {
         heading: '4.5 Tratamento de dados',
         paragraphs: [
-          'O tratamento de dados pessoais contidos nos Dados do Cliente pelo Nexo é regido pelo Aditivo de Processamento de Dados disponível em nexo.coodee.dev/legals/dpa, incorporado a estes Termos por referência. Na medida aplicável, o Cliente atua como controlador e o Nexo como operador, nos termos da LGPD, e eventuais transferências internacionais de dados pessoais serão realizadas em conformidade com a legislação de proteção de dados aplicável e mecanismos de transferência apropriados. Em caso de conflito entre estes Termos e o DPA quanto ao tratamento de dados pessoais, prevalece o DPA.',
+          'O tratamento de dados pessoais contidos nos Dados do Cliente pelo Nexo é regido pelo Aditivo de Processamento de Dados disponível em nexopm.com/legals/dpa, incorporado a estes Termos por referência. Na medida aplicável, o Cliente atua como controlador e o Nexo como operador, nos termos da LGPD, e eventuais transferências internacionais de dados pessoais serão realizadas em conformidade com a legislação de proteção de dados aplicável e mecanismos de transferência apropriados. Em caso de conflito entre estes Termos e o DPA quanto ao tratamento de dados pessoais, prevalece o DPA.',
         ],
       },
     ],
@@ -204,7 +204,7 @@ const SECTIONS: LegalSection[] = [
       {
         heading: '5.2 Dados do Cliente e IA',
         paragraphs: [
-          'O Nexo não utiliza Dados do Cliente para treinar modelos de machine learning de propósito geral. Os Dados do Cliente processados pelas Funcionalidades de IA são usados exclusivamente para gerar resultados para o Cliente solicitante e não são compartilhados com outros clientes nem utilizados em benefício deles. O Nexo pode utilizar Funcionalidades de IA fornecidas por provedores terceiros; a lista atual de sub-processadores está disponível em nexo.coodee.dev/legals/sub-processors.',
+          'O Nexo não utiliza Dados do Cliente para treinar modelos de machine learning de propósito geral. Os Dados do Cliente processados pelas Funcionalidades de IA são usados exclusivamente para gerar resultados para o Cliente solicitante e não são compartilhados com outros clientes nem utilizados em benefício deles. O Nexo pode utilizar Funcionalidades de IA fornecidas por provedores terceiros; a lista atual de sub-processadores está disponível em nexopm.com/legals/sub-processors.',
         ],
       },
       {
@@ -246,7 +246,7 @@ const SECTIONS: LegalSection[] = [
       {
         heading: '7.1 Taxas',
         paragraphs: [
-          'Todas as taxas estão definidas no Pedido de Contratação aplicável ou em nexo.coodee.dev/pricing, e são expressas em reais (BRL), salvo indicação em contrário. As taxas são calculadas com base no número de assentos ou em outras métricas de uso especificadas no momento da contratação. Salvo disposição em contrário no Pedido de Contratação, todas as taxas são não reembolsáveis, exceto conforme expressamente previsto na Seção 7.8.',
+          'Todas as taxas estão definidas no Pedido de Contratação aplicável ou em nexopm.com/pricing, e são expressas em reais (BRL), salvo indicação em contrário. As taxas são calculadas com base no número de assentos ou em outras métricas de uso especificadas no momento da contratação. Salvo disposição em contrário no Pedido de Contratação, todas as taxas são não reembolsáveis, exceto conforme expressamente previsto na Seção 7.8.',
         ],
       },
       {
@@ -283,7 +283,7 @@ const SECTIONS: LegalSection[] = [
         heading: '7.7 Cancelamento',
         paragraphs: [
           '(a) Assinaturas mensais. O Cliente pode cancelar uma assinatura mensal a qualquer momento pelas configurações da conta no Serviço. O cancelamento produz efeitos ao final do período de cobrança vigente, e o Cliente mantém acesso ao Serviço pago até o fim desse período.',
-          '(b) Assinaturas anuais. O Cliente pode cancelar uma assinatura anual a qualquer momento pelas configurações da conta ou entrando em contato com sales@nexo.coodee.dev. O cancelamento produz efeitos ao final do Prazo de Assinatura anual vigente. O Cliente permanece responsável por todas as taxas até o fim do prazo e mantém acesso ao Serviço pago até essa data.',
+          '(b) Assinaturas anuais. O Cliente pode cancelar uma assinatura anual a qualquer momento pelas configurações da conta ou entrando em contato com sales@nexopm.com. O cancelamento produz efeitos ao final do Prazo de Assinatura anual vigente. O Cliente permanece responsável por todas as taxas até o fim do prazo e mantém acesso ao Serviço pago até essa data.',
           '(c) Relação com a rescisão. O cancelamento nos termos desta Seção 7.7 é a opção do Cliente de não continuar uma assinatura paga. As consequências jurídicas do cancelamento — incluindo a recuperação de Dados do Cliente, o término da licença e as obrigações de confidencialidade — são regidas pela Seção 9.5 (Efeitos da Rescisão).',
         ],
       },
@@ -292,7 +292,7 @@ const SECTIONS: LegalSection[] = [
         paragraphs: [
           '(a) Rescisão por justa causa pelo Cliente. Se o Cliente rescindir estes Termos em razão de descumprimento material não sanado pelo Nexo, nos termos da Seção 9.2, o Nexo reembolsará o Cliente proporcionalmente pelas taxas pagas antecipadamente referentes à parcela não utilizada do Prazo de Assinatura, calculada a partir da data efetiva da rescisão.',
           '(b) Alterações materiais no Serviço. Caso o Nexo realize alterações no Serviço que reduzam materialmente sua funcionalidade essencial e não seja capaz de oferecer funcionalidade substancialmente equivalente, o Cliente poderá rescindir o Prazo de Assinatura afetado em até trinta (30) dias após a alteração e receber reembolso proporcional das taxas pagas antecipadamente pela parcela não utilizada do prazo.',
-          '(c) Cancelamento antecipado de plano anual. Para assinaturas anuais canceladas nos primeiros trinta (30) dias do Prazo de Assinatura inicial, o Cliente pode solicitar reembolso entrando em contato com sales@nexo.coodee.dev. O Nexo reembolsará o valor da assinatura, descontado o valor proporcional aos dias de uso efetivo. Este reembolso de cancelamento antecipado está disponível apenas para o Prazo de Assinatura inicial e não se aplica a renovações.',
+          '(c) Cancelamento antecipado de plano anual. Para assinaturas anuais canceladas nos primeiros trinta (30) dias do Prazo de Assinatura inicial, o Cliente pode solicitar reembolso entrando em contato com sales@nexopm.com. O Nexo reembolsará o valor da assinatura, descontado o valor proporcional aos dias de uso efetivo. Este reembolso de cancelamento antecipado está disponível apenas para o Prazo de Assinatura inicial e não se aplica a renovações.',
           '(d) Demais casos. Exceto conforme expressamente previsto nesta Seção 7.8, todas as taxas são não reembolsáveis. Sem prejuízo do disposto acima, não há reembolso para: (i) meses ou períodos de cobrança parcialmente utilizados; (ii) redução de assentos (tratada como crédito nos termos da Seção 7.2); (iii) downgrade de um plano superior para um inferior; (iv) testes gratuitos ou planos gratuitos; ou (v) serviços identificados pelo Nexo como não reembolsáveis no momento da contratação.',
           '(e) Estornos. Caso o Nexo receba um estorno ou contestação de pagamento referente a taxas devidas nos termos destes Termos, isso será considerado descumprimento das obrigações de pagamento do Cliente. O Nexo pode suspender ou encerrar o acesso ao Serviço até que o valor integral, incluindo eventuais taxas de estorno ou custos de processamento, seja pago. Isso se soma a quaisquer outros remédios disponíveis ao Nexo nos termos destes Termos ou da legislação aplicável.',
           '(f) Forma de reembolso. Todos os reembolsos serão realizados pelo mesmo meio de pagamento utilizado na contratação. O Nexo não se responsabiliza por reembolsar taxas de terceiros, incluindo tarifas bancárias, conversão de moeda ou taxas de processamento do processador de pagamentos.',
@@ -483,19 +483,19 @@ const SECTIONS: LegalSection[] = [
       {
         heading: '14.1 Segurança',
         paragraphs: [
-          'O Nexo implementa medidas técnicas e organizacionais razoáveis para proteger os Dados do Cliente. Detalhes das práticas de segurança do Nexo estão disponíveis em nexo.coodee.dev/legals/security.',
+          'O Nexo implementa medidas técnicas e organizacionais razoáveis para proteger os Dados do Cliente. Detalhes das práticas de segurança do Nexo estão disponíveis em nexopm.com/legals/security.',
         ],
       },
       {
         heading: '14.2 Privacidade',
         paragraphs: [
-          'A coleta, o uso e a divulgação de dados pessoais pelo Nexo estão descritos na Política de Privacidade em nexo.coodee.dev/legals/privacy-policy, incorporada a estes Termos por referência.',
+          'A coleta, o uso e a divulgação de dados pessoais pelo Nexo estão descritos na Política de Privacidade em nexopm.com/legals/privacy-policy, incorporada a estes Termos por referência.',
         ],
       },
       {
         heading: '14.3 Sub-processadores',
         paragraphs: [
-          'O Nexo mantém uma lista de sub-processadores em nexo.coodee.dev/legals/sub-processors. O Nexo notificará o Cliente sobre alterações materiais em sua lista de sub-processadores, de acordo com o DPA.',
+          'O Nexo mantém uma lista de sub-processadores em nexopm.com/legals/sub-processors. O Nexo notificará o Cliente sobre alterações materiais em sua lista de sub-processadores, de acordo com o DPA.',
         ],
       },
     ],
@@ -549,7 +549,7 @@ const SECTIONS: LegalSection[] = [
       {
         heading: '16.3 Divulgação',
         paragraphs: [
-          'O Nexo pode identificar o Cliente como cliente do Nexo e usar o nome e a logo do Cliente em seu site e materiais de marketing. O Cliente pode revogar essa permissão a qualquer momento mediante solicitação por escrito a juridico@nexo.coodee.dev.',
+          'O Nexo pode identificar o Cliente como cliente do Nexo e usar o nome e a logo do Cliente em seu site e materiais de marketing. O Cliente pode revogar essa permissão a qualquer momento mediante solicitação por escrito a juridico@nexopm.com.',
         ],
       },
       {
@@ -567,7 +567,7 @@ const SECTIONS: LegalSection[] = [
       {
         heading: '16.6 Notificações',
         paragraphs: [
-          'As notificações previstas nestes Termos devem ser feitas por escrito. O Nexo opera de forma 100% remota, sem endereço físico ou escritório — por isso, as notificações são feitas exclusivamente através do Serviço ou por e-mail, nunca por correio. Notificações ao Nexo devem ser enviadas para: Nexo Software, Inc., Att.: Departamento Jurídico, e-mail juridico@nexo.coodee.dev. Notificações eletrônicas são consideradas recebidas no primeiro dia útil seguinte ao envio.',
+          'As notificações previstas nestes Termos devem ser feitas por escrito. O Nexo opera de forma 100% remota, sem endereço físico ou escritório — por isso, as notificações são feitas exclusivamente através do Serviço ou por e-mail, nunca por correio. Notificações ao Nexo devem ser enviadas para: Nexo Software, Inc., Att.: Departamento Jurídico, e-mail juridico@nexopm.com. Notificações eletrônicas são consideradas recebidas no primeiro dia útil seguinte ao envio.',
         ],
       },
       {
@@ -614,8 +614,8 @@ const SECTIONS: LegalSection[] = [
     blocks: [
       {
         paragraphs: [
-          'Em caso de dúvidas sobre estes Termos, entre em contato: Nexo Software, Inc., e-mail juridico@nexo.coodee.dev.',
-          'Para relatar violações destes Termos, envie um e-mail para: juridico@nexo.coodee.dev.',
+          'Em caso de dúvidas sobre estes Termos, entre em contato: Nexo Software, Inc., e-mail juridico@nexopm.com.',
+          'Para relatar violações destes Termos, envie um e-mail para: juridico@nexopm.com.',
         ],
       },
     ],
