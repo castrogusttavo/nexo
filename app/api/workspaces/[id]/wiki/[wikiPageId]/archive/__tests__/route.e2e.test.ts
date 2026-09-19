@@ -31,6 +31,32 @@ describe('PATCH /api/workspaces/[id]/wiki/[wikiPageId]/archive', () => {
     ).toBeUndefined()
   })
 
+  it('should archive the sub-pages along with the page', async () => {
+    const { user, workspace } = await authenticatedOwner()
+    const page = await seedWikiPage(workspace.id, user.id)
+    const child = await seedWikiPage(workspace.id, user.id, {
+      parentId: page.id,
+    })
+    const grandchild = await seedWikiPage(workspace.id, user.id, {
+      parentId: child.id,
+    })
+
+    const res = await patchJson(
+      `/api/workspaces/${workspace.id}/wiki/${page.id}/archive`,
+      {},
+      user.cookie,
+    )
+    expect(res.status).toBe(200)
+
+    const list = await getJson(
+      `/api/workspaces/${workspace.id}/wiki`,
+      user.cookie,
+    )
+    const ids = (await list.json()).data.map((p: { id: string }) => p.id)
+    expect(ids).not.toContain(child.id)
+    expect(ids).not.toContain(grandchild.id)
+  })
+
   it('should return 403 for a page in another workspace', async () => {
     const { user, workspace } = await authenticatedOwner()
     const other = await authenticatedOwner()

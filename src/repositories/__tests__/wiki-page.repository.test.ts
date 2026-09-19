@@ -97,6 +97,52 @@ describe('WikiPageRepository', () => {
       expect(page.archivedAt).not.toBeNull()
       expect(page.updatedById).toBe(user.id)
     })
+
+    it('should archive every descendant with the same timestamp', async () => {
+      const workspace = await seedWorkspace()
+      const user = await seedUser()
+      const root = await seedWikiPage(workspace.id, user.id)
+      const child = await seedWikiPage(workspace.id, user.id, {
+        parentId: root.id,
+      })
+      const grandchild = await seedWikiPage(workspace.id, user.id, {
+        parentId: child.id,
+      })
+      const sibling = await seedWikiPage(workspace.id, user.id)
+
+      const page = expectOk(await WikiPageRepository.archive(root.id, user.id))
+
+      const [archivedChild, archivedGrandchild, untouched] = await Promise.all(
+        [child, grandchild, sibling].map((p) =>
+          prisma.wikiPage.findUniqueOrThrow({ where: { id: p.id } }),
+        ),
+      )
+      expect(archivedChild.archivedAt).toEqual(page.archivedAt)
+      expect(archivedGrandchild.archivedAt).toEqual(page.archivedAt)
+      expect(archivedGrandchild.updatedById).toBe(user.id)
+      expect(untouched.archivedAt).toBeNull()
+    })
+
+    it('should keep the original timestamp of an already archived child', async () => {
+      const workspace = await seedWorkspace()
+      const user = await seedUser()
+      const root = await seedWikiPage(workspace.id, user.id)
+      const child = await seedWikiPage(workspace.id, user.id, {
+        parentId: root.id,
+      })
+      const earlier = new Date('2026-01-01T00:00:00.000Z')
+      await prisma.wikiPage.update({
+        where: { id: child.id },
+        data: { archivedAt: earlier },
+      })
+
+      expectOk(await WikiPageRepository.archive(root.id, user.id))
+
+      const stored = await prisma.wikiPage.findUniqueOrThrow({
+        where: { id: child.id },
+      })
+      expect(stored.archivedAt).toEqual(earlier)
+    })
   })
 
   describe('updateYjsState()', () => {

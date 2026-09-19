@@ -202,6 +202,22 @@ describe('useArchiveWikiPage', () => {
     expect(queryClient.getQueryData(PAGES_KEY)).toEqual([kept])
   })
 
+  it('drops the sub-pages the server archived with it', async () => {
+    const root = buildWikiPage({ id: 'page-1' })
+    const child = buildWikiPage({ id: 'page-2', parentId: 'page-1' })
+    const grandchild = buildWikiPage({ id: 'page-3', parentId: 'page-2' })
+    const sibling = buildWikiPage({ id: 'page-4' })
+    mockFetch().mockResolvedValueOnce(apiSuccess(root))
+    const { result, queryClient } = renderHookWithProviders(() =>
+      useArchiveWikiPage('ws-1', 'page-1'),
+    )
+    queryClient.setQueryData(PAGES_KEY, [root, child, grandchild, sibling])
+
+    await act(() => result.current.mutateAsync())
+
+    expect(queryClient.getQueryData(PAGES_KEY)).toEqual([sibling])
+  })
+
   it('leaves the cache empty when the list was never loaded', async () => {
     mockFetch().mockResolvedValueOnce(apiSuccess(buildWikiPage()))
     const { result, queryClient } = renderHookWithProviders(() =>

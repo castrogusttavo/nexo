@@ -67,6 +67,25 @@ export function useUpdateWikiPage(workspaceId: string, wikiPageId: string) {
   })
 }
 
+function withoutSubtree(pages: WikiPageDTO[], rootId: string) {
+  const removed = new Set([rootId])
+  let grew = true
+  while (grew) {
+    grew = false
+    for (const page of pages) {
+      if (
+        page.parentId &&
+        removed.has(page.parentId) &&
+        !removed.has(page.id)
+      ) {
+        removed.add(page.id)
+        grew = true
+      }
+    }
+  }
+  return pages.filter((page) => !removed.has(page.id))
+}
+
 export function useArchiveWikiPage(workspaceId: string, wikiPageId: string) {
   const queryClient = useQueryClient()
 
@@ -78,10 +97,11 @@ export function useArchiveWikiPage(workspaceId: string, wikiPageId: string) {
         {},
         'Erro ao arquivar página',
       ),
-    onSuccess: (_updated, _vars) => {
+    // The server archives the whole subtree, so drop the descendants too.
+    onSuccess: () => {
       queryClient.setQueryData<WikiPageDTO[]>(
         wikiPagesKey(workspaceId),
-        (old) => old?.filter((p) => p.id !== wikiPageId),
+        (old) => old && withoutSubtree(old, wikiPageId),
       )
     },
   })

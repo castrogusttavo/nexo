@@ -95,11 +95,35 @@ export const WikiPageRepository = {
     }
   },
 
+  // Archives the page and its whole subtree with one shared timestamp, so a
+  // future restore can bring back exactly what went away together. Pages
+  // already archived keep their own timestamp, but the walk still goes
+  // through them to reach live descendants left behind by older archives.
   async archive(id: string, updatedById: string): Promise<Result<WikiPage>> {
     try {
-      const wikiPage = await prisma.wikiPage.update({
-        where: { id },
-        data: { archivedAt: new Date(), updatedById },
+      const archivedAt = new Date()
+      const wikiPage = await prisma.$transaction(async (tx) => {
+        const page = await tx.wikiPage.update({
+          where: { id },
+          data: { archivedAt, updatedById },
+        })
+
+        let parentIds = [id]
+        while (parentIds.length > 0) {
+          const children = await tx.wikiPage.findMany({
+            where: { parentId: { in: parentIds } },
+            select: { id: true },
+          })
+          parentIds = children.map((child) => child.id)
+          if (parentIds.length > 0) {
+            await tx.wikiPage.updateMany({
+              where: { id: { in: parentIds }, archivedAt: null },
+              data: { archivedAt, updatedById },
+            })
+          }
+        }
+
+        return page
       })
       return ok(wikiPage)
     } catch (error) {
