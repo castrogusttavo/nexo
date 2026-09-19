@@ -28,7 +28,7 @@ export default function AboutPage() {
   return (
     <>
       <main className='min-h-dvh w-full flex flex-col items-center flex-1 mx-auto'>
-        <div className='flex flex-col items-center text-start mx-auto w-full xl:max-w-336 xl:px-11 2xl:max-w-384 py-16 gap-12'>
+        <div className='flex flex-col items-center text-start mx-auto w-full px-4 sm:px-8 xl:max-w-336 xl:px-11 2xl:max-w-384 py-16 gap-12'>
           <section className='grid grid-cols-1 items-center gap-20 md:grid-cols-2'>
             <div className='space-y-2'>
               <h3 className='font-normal text-2xl md:whitespace-pre-line'>
@@ -49,10 +49,10 @@ export default function AboutPage() {
               </p>
             </div>
             <Image
-              src='https://plane.so/_next/image?url=%2Fapi%2Fmedia%2Ffile%2Fabout-us-one-workspace-for-all-teams_2%2520(1).webp&w=1920&q=75&dpl=dpl_F6x68kwz9eVd34XwBheHvEp1ELmn'
+              src='/web/about/about:image-1.png'
               alt=''
-              width={2465}
-              height={2465}
+              width={1920}
+              height={1920}
               className='w-full'
             />
           </section>
@@ -77,10 +77,10 @@ export default function AboutPage() {
               </p>
             </div>
             <Image
-              src='https://plane.so/_next/image?url=%2Fapi%2Fmedia%2Ffile%2Fabout-us-one-workspace-for-all-teams_2%2520(1).webp&w=1920&q=75&dpl=dpl_F6x68kwz9eVd34XwBheHvEp1ELmn'
+              src='/web/about/about:image-2.svg'
               alt=''
-              width={2465}
-              height={2465}
+              width={1920}
+              height={1920}
               className='w-full'
             />
           </section>
@@ -106,10 +106,10 @@ export default function AboutPage() {
               </p>
             </div>
             <Image
-              src='https://plane.so/_next/image?url=%2Fapi%2Fmedia%2Ffile%2Fabout-us-one-workspace-for-all-teams_2%2520(1).webp&w=1920&q=75&dpl=dpl_F6x68kwz9eVd34XwBheHvEp1ELmn'
+              src='/web/about/about:image-3.svg'
               alt=''
-              width={2465}
-              height={2465}
+              width={1920}
+              height={1920}
               className='w-full'
             />
           </section>
