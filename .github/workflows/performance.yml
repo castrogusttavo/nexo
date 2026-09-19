@@ -15,7 +15,7 @@ jobs:
   lighthouse:
     name: Lighthouse CI
     if: github.event_name == 'push' || github.event_name == 'pull_request'
-    runs-on: ubuntu-latest
+    runs-on: avrea-ubuntu-latest-2-vcpu
     continue-on-error: true
     services:
       postgres:
@@ -45,6 +45,7 @@ jobs:
       REDIS_URL: redis://localhost:6379
       BETTER_AUTH_SECRET: ci-test-secret-not-real
       BETTER_AUTH_URL: http://localhost:3000
+      NEXT_PUBLIC_URL: http://localhost:3000
       SKIP_ENV_VALIDATION: 'true'
     steps:
       - name: Checkout repository
@@ -74,7 +75,11 @@ jobs:
         run: pnpm prisma db push
 
       - name: Build application
+        # Avrea runners export NODE_OPTIONS=--use-openssl-ca, which Node rejects
+        # for worker threads, crashing next build's workers.
         run: pnpm build
+        env:
+          NODE_OPTIONS: ''
 
       - name: Install Lighthouse CI
         run: pnpm add -g @lhci/cli@0.14.x
@@ -85,7 +90,7 @@ jobs:
   k6-local:
     name: k6 Load Tests (Local)
     if: github.event_name == 'push' || github.event_name == 'pull_request'
-    runs-on: ubuntu-latest
+    runs-on: avrea-ubuntu-latest-2-vcpu
     continue-on-error: true
     services:
       postgres:
@@ -115,6 +120,7 @@ jobs:
       REDIS_URL: redis://localhost:6379
       BETTER_AUTH_SECRET: ci-test-secret-not-real
       BETTER_AUTH_URL: http://localhost:3000
+      NEXT_PUBLIC_URL: http://localhost:3000
       SKIP_ENV_VALIDATION: 'true'
     steps:
       - name: Checkout repository
@@ -144,12 +150,17 @@ jobs:
         run: pnpm prisma db push
 
       - name: Build application
+        # Avrea runners export NODE_OPTIONS=--use-openssl-ca, which Node rejects
+        # for worker threads, crashing next build's workers.
         run: pnpm build
+        env:
+          NODE_OPTIONS: ''
 
       - name: Start server
         run: pnpm start &
         env:
           PORT: 3000
+          NODE_OPTIONS: ''
 
       - name: Wait for server to be ready
         run: |
@@ -180,7 +191,7 @@ jobs:
   k6-production-smoke:
     name: k6 Production Smoke Test
     if: github.event_name == 'schedule' || github.event_name == 'workflow_dispatch'
-    runs-on: ubuntu-latest
+    runs-on: avrea-ubuntu-latest-2-vcpu
     steps:
       - name: Checkout repository
         uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4

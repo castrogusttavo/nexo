@@ -15,7 +15,7 @@ concurrency:
 jobs:
   lint:
     name: Lint & Type Check
-    runs-on: ubuntu-latest
+    runs-on: avrea-ubuntu-latest-2-vcpu
     env:
       DATABASE_URL: postgresql://dummy:dummy@localhost:5432/dummy
     steps:
@@ -50,7 +50,7 @@ jobs:
 
   unit-tests:
     name: Unit Tests
-    runs-on: ubuntu-latest
+    runs-on: avrea-ubuntu-latest-2-vcpu
     env:
       DATABASE_URL: postgresql://dummy:dummy@localhost:5432/dummy
     steps:
@@ -85,7 +85,7 @@ jobs:
 
   integration-tests:
     name: Integration Tests
-    runs-on: ubuntu-latest
+    runs-on: avrea-ubuntu-latest-2-vcpu
     services:
       postgres:
         image: postgres:16
@@ -144,7 +144,7 @@ jobs:
 
   e2e-tests:
     name: E2E Tests
-    runs-on: ubuntu-latest
+    runs-on: avrea-ubuntu-latest-2-vcpu
     services:
       postgres:
         image: postgres:16
@@ -227,7 +227,7 @@ jobs:
             -p 9000:9000 \
             -e MINIO_ROOT_USER=ci-minio-user \
             -e MINIO_ROOT_PASSWORD=ci-minio-password \
-            minio/minio:RELEASE.2025-02-28T09-55-16Z server /data
+            quay.io/minio/minio:RELEASE.2025-02-28T09-55-16Z server /data
 
       - name: Wait for MinIO to be ready
         run: |
@@ -243,12 +243,17 @@ jobs:
           exit 1
 
       - name: Build application
+        # Avrea runners export NODE_OPTIONS=--use-openssl-ca, which Node rejects
+        # for worker threads, crashing next build's workers.
         run: pnpm build
+        env:
+          NODE_OPTIONS: ''
 
       - name: Start server
         run: pnpm start &
         env:
           PORT: 3000
+          NODE_OPTIONS: ''
 
       - name: Wait for server to be ready
         run: |
@@ -268,7 +273,7 @@ jobs:
 
   coverage-tests:
     name: Coverage Tests
-    runs-on: ubuntu-latest
+    runs-on: avrea-ubuntu-latest-2-vcpu
     services:
       postgres:
         image: postgres:16
@@ -332,7 +337,7 @@ jobs:
 
   build:
     name: Build
-    runs-on: ubuntu-latest
+    runs-on: avrea-ubuntu-latest-2-vcpu
     services:
       postgres:
         image: postgres:16
@@ -391,7 +396,11 @@ jobs:
         run: pnpm prisma db push
 
       - name: Build application
+        # Avrea runners export NODE_OPTIONS=--use-openssl-ca, which Node rejects
+        # for worker threads, crashing next build's workers.
         run: pnpm build
+        env:
+          NODE_OPTIONS: ''
 
   # TEMPORARY (2026-07-15): `pnpm audit` hits the npm registry's legacy audit
   # endpoints, which npm retired today (410 Gone) in favor of a bulk-advisory
@@ -406,7 +415,7 @@ jobs:
   # blocking check.
   audit:
     name: Dependency Audit
-    runs-on: ubuntu-latest
+    runs-on: avrea-ubuntu-latest-2-vcpu
     steps:
       - name: Checkout repository
         uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
@@ -438,7 +447,7 @@ jobs:
   # still blocked by the audit job.
   snyk:
     name: Snyk Security Scan
-    runs-on: ubuntu-latest
+    runs-on: avrea-ubuntu-latest-2-vcpu
     permissions:
       contents: read
       security-events: write
@@ -479,7 +488,7 @@ jobs:
 
   semgrep:
     name: Semgrep SAST
-    runs-on: ubuntu-latest
+    runs-on: avrea-ubuntu-latest-2-vcpu
     permissions:
       contents: read
       security-events: write
@@ -509,7 +518,7 @@ jobs:
   # fails this job itself on a "critico" verdict, never blocks the deploy.
   lpa2v-triage:
     name: LPA2v Contextual Triage (SAST+SCA)
-    runs-on: ubuntu-latest
+    runs-on: avrea-ubuntu-latest-2-vcpu
     continue-on-error: true
     permissions:
       contents: read
@@ -604,7 +613,7 @@ jobs:
 
   redis-tls-smoke:
     name: Redis TLS Smoke
-    runs-on: ubuntu-latest
+    runs-on: avrea-ubuntu-latest-2-vcpu
     env:
       REDIS_URL: rediss://:testpassword@localhost:6379
       REDIS_PASSWORD: testpassword
@@ -669,7 +678,7 @@ jobs:
 
   gitleaks:
     name: Secret Scan
-    runs-on: ubuntu-latest
+    runs-on: avrea-ubuntu-latest-2-vcpu
     steps:
       - name: Checkout repository
         uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
@@ -684,7 +693,7 @@ jobs:
   pr-title:
     name: PR Title Convention
     if: github.event_name == 'pull_request'
-    runs-on: ubuntu-latest
+    runs-on: avrea-ubuntu-latest-2-vcpu
     permissions:
       pull-requests: read
     steps:
@@ -706,7 +715,7 @@ jobs:
       - gitleaks
       - redis-tls-smoke
     if: always()
-    runs-on: ubuntu-latest
+    runs-on: avrea-ubuntu-latest-2-vcpu
     steps:
       - name: Fail if any required job failed or was cancelled
         if: ${{ contains(needs.*.result, 'failure') || contains(needs.*.result, 'cancelled') }}
@@ -722,7 +731,7 @@ jobs:
     name: Notify Slack on Failure
     needs: [gate]
     if: failure()
-    runs-on: ubuntu-latest
+    runs-on: avrea-ubuntu-latest-2-vcpu
     steps:
       - name: Prepare notification context
         id: ctx

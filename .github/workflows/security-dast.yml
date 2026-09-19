@@ -12,7 +12,7 @@ permissions:
 jobs:
   zap-baseline:
     name: OWASP ZAP Baseline Scan
-    runs-on: ubuntu-latest
+    runs-on: avrea-ubuntu-latest-2-vcpu
     steps:
       - name: Checkout repository
         uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
@@ -50,7 +50,7 @@ jobs:
   lpa2v-triage-full:
     name: LPA2v Contextual Triage (SAST+SCA+DAST)
     needs: [zap-baseline]
-    runs-on: ubuntu-latest
+    runs-on: avrea-ubuntu-latest-2-vcpu
     continue-on-error: true
     steps:
       - name: Checkout nexo
@@ -148,7 +148,7 @@ jobs:
 
   headers-check:
     name: Security Headers Validation
-    runs-on: ubuntu-latest
+    runs-on: avrea-ubuntu-latest-2-vcpu
     steps:
       - name: Check security headers
         run: |
