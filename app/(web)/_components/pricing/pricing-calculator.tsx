@@ -146,7 +146,7 @@ export function PricingCalculator() {
 
   return (
     <div
-      className='w-full grid lg:grid-cols-3 border border-border scroll-mt-20'
+      className='w-full overflow-hidden grid lg:grid-cols-3 border border-border scroll-mt-20'
       id='calculator'
     >
       <div className='w-full flex flex-col lg:col-span-2'>
@@ -258,7 +258,7 @@ function ToolSelect({
   return (
     <fieldset className='flex flex-col gap-2'>
       <Label className='mb-1 text-muted-foreground text-base'>{label}</Label>
-      <div className='flex item-center gap-2'>
+      <div className='flex flex-wrap item-center gap-2'>
         {tools.map((tool) => (
           <label
             key={tool.id}

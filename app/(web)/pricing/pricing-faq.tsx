@@ -60,7 +60,7 @@ export function PricingFaq() {
   const [value, setValue] = useState<string[]>(['item-1'])
 
   return (
-    <div className='flex items-start justify-between gap-6 w-full mx-auto px-4 sm:px-8 xl:px-11 xl:max-w-336 2xl:max-w-384 py-16 md:py-24'>
+    <div className='flex flex-col md:flex-row items-start justify-between gap-6 w-full mx-auto px-4 sm:px-8 xl:px-11 xl:max-w-336 2xl:max-w-384 py-16 md:py-24'>
       <JsonLd data={PRICING_FAQ_SCHEMA} />
       <div className='space-y-6'>
         <Title as='h2' className='text-4xl font-medium'>
