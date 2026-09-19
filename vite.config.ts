@@ -1,6 +1,45 @@
 import path from 'node:path'
 import { defineConfig } from 'vitest/config'
 
+// Backend (unit + integration) and frontend (component) coverage are measured
+// separately — `pnpm test:coverage` vs `pnpm test:coverage:component` — and
+// uploaded to Codecov under their own flags. Merging the ~500 client files
+// into the backend include would sink its 95%+ to a number that means nothing.
+const BACKEND_COVERAGE = [
+  'src/services/**',
+  'src/mappers/**',
+  'src/schemas/**',
+  'src/errors/**',
+  'src/repositories/**',
+  'src/cache/**',
+  'src/lib/auth-session.ts',
+  'src/lib/rate-limit.ts',
+  'src/lib/rate-limit-helpers.ts',
+  'src/lib/result.ts',
+  'utils/**',
+  'lib/abacatepay.ts',
+  'app/api/**/route.ts',
+]
+
+// Client code with real logic. `components/ui` (shadcn/Plate primitives) and
+// the marketing pages are left out on purpose.
+const FRONTEND_COVERAGE = [
+  'src/hooks/**',
+  'components/hooks/**',
+  'components/filters/**',
+  'components/layouts/**',
+  'app/_components/**/*.tsx',
+  // Parentheses are escaped: unescaped, the glob engine reads `(public)` as
+  // a pattern group and silently matches nothing.
+  'app/\\(public\\)/sign-in/**/*.tsx',
+  'app/\\(public\\)/sign-up/**/*.tsx',
+  'app/onboarding/**/*.tsx',
+  'app/upgrade/**',
+  'app/\\(private\\)/**/*.tsx',
+]
+
+const isFrontendCoverage = process.env.COVERAGE_SCOPE === 'frontend'
+
 export default defineConfig({
   test: {
     projects: [
@@ -71,7 +110,11 @@ export default defineConfig({
           name: 'component',
           environment: 'jsdom',
           globals: true,
-          include: ['app/**/__tests__/*.component.test.tsx'],
+          include: [
+            'app/**/__tests__/*.component.test.tsx',
+            'components/**/__tests__/*.component.test.tsx',
+            'src/hooks/**/__tests__/*.component.test.tsx',
+          ],
           setupFiles: [
             './src/__tests__/setup.ts',
             './src/__tests__/setup.component.ts',
@@ -94,21 +137,10 @@ export default defineConfig({
     coverage: {
       provider: 'v8',
       reporter: ['text', 'json', 'html', 'lcov'],
-      include: [
-        'src/services/**',
-        'src/mappers/**',
-        'src/schemas/**',
-        'src/errors/**',
-        'src/repositories/**',
-        'src/cache/**',
-        'src/lib/auth-session.ts',
-        'src/lib/rate-limit.ts',
-        'src/lib/rate-limit-helpers.ts',
-        'src/lib/result.ts',
-        'utils/**',
-        'lib/abacatepay.ts',
-        'app/api/**/route.ts',
-      ],
+      include: isFrontendCoverage ? FRONTEND_COVERAGE : BACKEND_COVERAGE,
+      reportsDirectory: isFrontendCoverage
+        ? './coverage/frontend'
+        : './coverage',
       exclude: [
         'node_modules/**',
         'src/__tests__/**',
@@ -119,6 +151,7 @@ export default defineConfig({
         // Pure re-export barrel, no logic to cover; v8 also misreports it as
         // 0% when coverage is merged across the unit + integration projects.
         'src/errors/index.ts',
+        '**/__tests__/**',
       ],
     },
   },

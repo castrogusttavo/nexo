@@ -254,13 +254,26 @@ jobs:
       - name: Run unit + integration tests with coverage
         run: pnpm test:coverage
 
-      - name: Run component tests
-        run: pnpm test:component
+      - name: Run component tests with coverage
+        run: pnpm test:coverage:component
 
-      - name: Upload results to Codecov
+      # Two uploads under separate flags so the frontend number (still being
+      # built up) never drags the backend's down — see codecov.yml.
+      - name: Upload backend coverage to Codecov
         uses: codecov/codecov-action@0fb7174895f61a3b6b78fc075e0cd60383518dac # v5
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
+          files: ./coverage/lcov.info
+          flags: backend
+          disable_search: true
+
+      - name: Upload frontend coverage to Codecov
+        uses: codecov/codecov-action@0fb7174895f61a3b6b78fc075e0cd60383518dac # v5
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}
+          files: ./coverage/frontend/lcov.info
+          flags: frontend
+          disable_search: true
 
   # TEMPORARY (2026-07-15): `pnpm audit` hits the npm registry's legacy audit
   # endpoints, which npm retired today (410 Gone) in favor of a bulk-advisory
