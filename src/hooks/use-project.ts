@@ -32,7 +32,7 @@ export function useProjects(workspaceId: string, archived = false) {
     queryKey: [...projectsKey(workspaceId), { archived }],
     queryFn: () =>
       apiFetch<ProjectDTO[]>(
-        `/api/workspaces/${workspaceId}/projects/${archived ? '?archived=true' : ''}`,
+        `/api/workspaces/${workspaceId}/projects${archived ? '?archived=true' : ''}`,
         undefined,
         'Erro ao buscar projetos',
       ),

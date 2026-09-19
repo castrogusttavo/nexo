@@ -112,7 +112,8 @@ describe('useProjects', () => {
     await waitFor(() => expect(result.current.isSuccess).toBe(true))
     expect(result.current.data).toEqual(projects)
     expect(getFetchCall(fetchSpy)).toMatchObject({
-      url: '/api/workspaces/ws-1/projects/',
+      // No trailing slash: Next answers '/projects/' with a 308 redirect.
+      url: '/api/workspaces/ws-1/projects',
       method: 'GET',
     })
   })
@@ -127,7 +128,7 @@ describe('useProjects', () => {
 
     await waitFor(() => expect(result.current.isSuccess).toBe(true))
     expect(getFetchCall(fetchSpy).url).toBe(
-      '/api/workspaces/ws-1/projects/?archived=true',
+      '/api/workspaces/ws-1/projects?archived=true',
     )
     expect(queryClient.getQueryData(listKey(true))).toEqual(archived)
     expect(queryClient.getQueryData(listKey(false))).toBeUndefined()
