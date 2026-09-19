@@ -1,5 +1,14 @@
 import { screen, waitFor, within } from '@testing-library/react'
-import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
+import {
+  afterAll,
+  afterEach,
+  beforeAll,
+  beforeEach,
+  describe,
+  expect,
+  it,
+  vi,
+} from 'vitest'
 import {
   apiSuccess,
   mockFetch,
@@ -74,12 +83,12 @@ function renderCalendar() {
   )
 }
 
-/** The prev / next month buttons are the icon-only neighbours of "Hoje". */
 function getNavigation() {
-  const today = screen.getByRole('button', { name: 'Hoje' })
-  const previous = today.previousElementSibling as HTMLElement
-  const next = today.nextElementSibling as HTMLElement
-  return { previous, today, next }
+  return {
+    previous: screen.getByRole('button', { name: 'Mês anterior' }),
+    today: screen.getByRole('button', { name: 'Hoje' }),
+    next: screen.getByRole('button', { name: 'Próximo mês' }),
+  }
 }
 
 beforeEach(() => {
@@ -265,5 +274,44 @@ describe('<IssueCalendarView /> navigation', () => {
     expect(
       screen.getByRole('dialog', { name: 'Detalhes da issue' }),
     ).toHaveTextContent('Backlog solto')
+  })
+})
+
+describe('<IssueCalendarView /> timezones', () => {
+  // Node re-reads TZ when it changes, so a viewer west of UTC is simulated
+  // here whatever timezone the suite itself runs in.
+  const originalTz = process.env.TZ
+  beforeAll(() => {
+    process.env.TZ = 'America/Sao_Paulo'
+  })
+  afterAll(() => {
+    process.env.TZ = originalTz
+  })
+
+  function dayOfChip(name: string) {
+    const chip = screen.getByRole('button', { name })
+    const cell = chip.closest('div.min-h-24') as HTMLElement
+    return cell.querySelector('span')?.textContent
+  }
+
+  it('shows a date stored as UTC midnight on that same day', async () => {
+    mockIssues([
+      buildIssue({ title: 'Entrega', dueDate: '2026-03-10T00:00:00.000Z' }),
+    ])
+    renderCalendar()
+
+    await screen.findByRole('button', { name: 'NEX-1 Entrega' })
+    expect(dayOfChip('NEX-1 Entrega')).toBe('10')
+  })
+
+  it('shows a date saved as local midnight east of UTC on its intended day', async () => {
+    // 10 Mar picked in Tokyo (UTC+9) by the old picker: 9 Mar, 15:00 UTC.
+    mockIssues([
+      buildIssue({ title: 'De Tóquio', dueDate: '2026-03-09T15:00:00.000Z' }),
+    ])
+    renderCalendar()
+
+    await screen.findByRole('button', { name: 'NEX-1 De Tóquio' })
+    expect(dayOfChip('NEX-1 De Tóquio')).toBe('10')
   })
 })

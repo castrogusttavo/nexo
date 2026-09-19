@@ -12,7 +12,6 @@ import {
   format,
   isSameMonth,
   isToday,
-  parseISO,
   startOfMonth,
   startOfWeek,
   subMonths,
@@ -25,6 +24,7 @@ import { Button } from '@/components/ui/button'
 import { cn } from '@/lib/utils'
 import { useIssues } from '@/src/hooks/use-issue'
 import type { IssueDTO } from '@/types/issue'
+import { parseIssueDate } from './issue-dates'
 import { issuePrioritiesIcon } from './issue-icons'
 import { IssueDetailsPanel } from './panel/issue-details-panel'
 
@@ -55,7 +55,7 @@ export function IssueCalendarView({
         undated.push(issue)
         continue
       }
-      const key = format(parseISO(issue.dueDate), 'yyyy-MM-dd')
+      const key = format(parseIssueDate(issue.dueDate), 'yyyy-MM-dd')
       const list = map.get(key) ?? []
       list.push(issue)
       map.set(key, list)
@@ -80,6 +80,7 @@ export function IssueCalendarView({
             <Button
               size='icon-sm'
               variant='secondary'
+              aria-label='Mês anterior'
               onClick={() => setMonth((current) => subMonths(current, 1))}
             >
               <NexoIcon icon={ArrowLeft01Icon} strokeWidth={2} />
@@ -94,6 +95,7 @@ export function IssueCalendarView({
             <Button
               size='icon-sm'
               variant='secondary'
+              aria-label='Próximo mês'
               onClick={() => setMonth((current) => addMonths(current, 1))}
             >
               <NexoIcon icon={ArrowRight01Icon} strokeWidth={2} />

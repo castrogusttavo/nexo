@@ -6,6 +6,7 @@ import {
   PopoverTrigger,
 } from '@/components/ui/popover'
 import { getDueDateColorClass } from '@/lib/issue-due-date'
+import { parseIssueDate, toIssueDateISO } from '../issue-dates'
 
 interface DateRangePickerProps {
   startDate: string | null
@@ -21,13 +22,15 @@ export function DateRangePicker({
   dueDate,
   onChange,
 }: DateRangePickerProps) {
+  const start = startDate ? parseIssueDate(startDate) : undefined
+  const due = dueDate ? parseIssueDate(dueDate) : undefined
   const label =
-    startDate && dueDate
-      ? `${new Date(startDate).toLocaleDateString('pt-BR')} - ${new Date(dueDate).toLocaleDateString('pt-BR')}`
-      : startDate
-        ? `A partir de ${new Date(startDate).toLocaleDateString('pt-BR')}`
-        : dueDate
-          ? `Até ${new Date(dueDate).toLocaleDateString('pt-BR')}`
+    start && due
+      ? `${start.toLocaleDateString('pt-BR')} - ${due.toLocaleDateString('pt-BR')}`
+      : start
+        ? `A partir de ${start.toLocaleDateString('pt-BR')}`
+        : due
+          ? `Até ${due.toLocaleDateString('pt-BR')}`
           : 'Datas'
 
   return (
@@ -37,7 +40,8 @@ export function DateRangePicker({
           <Button
             variant='outline'
             size='xs'
-            className={getDueDateColorClass(dueDate)}
+            // It compares local calendar days, so it gets the normalised day.
+            className={getDueDateColorClass(due?.toISOString() ?? null)}
           >
             {label}
           </Button>
@@ -47,13 +51,13 @@ export function DateRangePicker({
         <Calendar
           mode='range'
           selected={{
-            from: startDate ? new Date(startDate) : undefined,
-            to: dueDate ? new Date(dueDate) : undefined,
+            from: start,
+            to: due,
           }}
           onSelect={(range) =>
             onChange({
-              startDate: range?.from ? range.from.toISOString() : null,
-              dueDate: range?.to ? range.to.toISOString() : null,
+              startDate: range?.from ? toIssueDateISO(range.from) : null,
+              dueDate: range?.to ? toIssueDateISO(range.to) : null,
             })
           }
         />

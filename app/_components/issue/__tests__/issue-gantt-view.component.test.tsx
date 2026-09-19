@@ -1,5 +1,5 @@
 import { screen, waitFor, within } from '@testing-library/react'
-import { describe, expect, it, vi } from 'vitest'
+import { afterAll, beforeAll, describe, expect, it, vi } from 'vitest'
 import {
   apiSuccess,
   mockFetch,
@@ -335,5 +335,45 @@ describe('<IssueGanttView /> details', () => {
     expect(
       screen.getByRole('dialog', { name: 'Detalhes da issue' }),
     ).toHaveTextContent('Solta')
+  })
+})
+
+describe('<IssueGanttView /> timezones', () => {
+  // Node re-reads TZ when it changes, so a viewer west of UTC is simulated
+  // here whatever timezone the suite itself runs in.
+  const originalTz = process.env.TZ
+  beforeAll(() => {
+    process.env.TZ = 'America/Sao_Paulo'
+  })
+  afterAll(() => {
+    process.env.TZ = originalTz
+  })
+
+  it('spans the calendar days of dates stored as UTC midnight', async () => {
+    mockProjectApi([
+      buildIssue({
+        id: 'i-1',
+        title: 'Base',
+        dueDate: '2026-03-01T00:00:00.000Z',
+      }),
+      buildIssue({
+        id: 'i-2',
+        number: 2,
+        title: 'Sprint',
+        startDate: '2026-03-10T00:00:00.000Z',
+        dueDate: '2026-03-12T00:00:00.000Z',
+      }),
+    ])
+    renderTimeline()
+
+    // 1 Mar opens the range, so 10 Mar sits 9 days in, plus the padding.
+    expect(barGeometry(await findBar('Sprint'))).toEqual({
+      offsetDays: PADDING_DAYS + 9,
+      spanDays: 3,
+    })
+    // The day header starts two days before 1 Mar: 27 Feb.
+    expect(
+      screen.getByText('Issue').nextElementSibling?.firstElementChild,
+    ).toHaveTextContent(/^27/)
   })
 })

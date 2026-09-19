@@ -9,7 +9,6 @@ import {
   isWeekend,
   max as maxDate,
   min as minDate,
-  parseISO,
 } from 'date-fns'
 import { ptBR } from 'date-fns/locale'
 import { useMemo, useState } from 'react'
@@ -23,6 +22,7 @@ import { colorToDot } from '@/lib/state-colors'
 import { useIssues } from '@/src/hooks/use-issue'
 import { useStates } from '@/src/hooks/use-state'
 import type { IssueDTO } from '@/types/issue'
+import { parseIssueDate } from './issue-dates'
 import { IssueDetailsPanel } from './panel/issue-details-panel'
 
 interface IssueGanttViewProps {
@@ -64,8 +64,8 @@ export function IssueGanttView({
         unscheduled.push(issue)
         continue
       }
-      const start = parseISO(issue.startDate ?? issue.dueDate ?? '')
-      const end = parseISO(issue.dueDate ?? issue.startDate ?? '')
+      const start = parseIssueDate(issue.startDate ?? issue.dueDate ?? '')
+      const end = parseIssueDate(issue.dueDate ?? issue.startDate ?? '')
       scheduled.push({
         issue,
         start: start <= end ? start : end,
