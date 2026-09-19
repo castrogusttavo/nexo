@@ -408,3 +408,31 @@ describe.each([
     expect(queryClient.getQueryState(modulesKey())?.isInvalidated).toBe(false)
   })
 })
+
+describe('member fallback messages', () => {
+  it('names the módulo members in the fetch fallback', async () => {
+    mockFetch().mockResolvedValueOnce(apiError(500))
+
+    const { result } = renderHookWithProviders(() =>
+      useModuleMembers('ws-1', 'alpha', 'module-1'),
+    )
+
+    await waitFor(() => expect(result.current.isError).toBe(true))
+    expect(result.current.error?.message).toBe(
+      'Erro ao buscar membros do módulo',
+    )
+  })
+
+  it('names the módulo in the remove fallback', async () => {
+    mockFetch().mockResolvedValueOnce(apiError(500))
+    const { result } = renderHookWithProviders(() =>
+      useRemoveModuleMember('ws-1', 'alpha', 'module-1'),
+    )
+
+    await act(async () => {
+      await expect(result.current.mutateAsync('user-1')).rejects.toThrow(
+        'Erro ao remover membro do módulo',
+      )
+    })
+  })
+})

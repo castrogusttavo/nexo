@@ -5,7 +5,7 @@ export interface HttpResponse<T = unknown> {
   message?: string
   error?: {
     code: string
-    details?: string
+    details?: unknown
   }
 }
 

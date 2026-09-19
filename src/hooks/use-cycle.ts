@@ -76,7 +76,7 @@ export function useUpdateCycle(workspaceId: string, projectSlug: string) {
         `/api/workspaces/${workspaceId}/projects/${projectSlug}/cycles/${cycleId}`,
         'PATCH',
         data,
-        'Erro ao atualziar ciclo',
+        'Erro ao atualizar ciclo',
       ),
     onSuccess: () => {
       queryClient.invalidateQueries({
@@ -115,7 +115,7 @@ export function useCycleMembers(
       apiFetch<CycleMemberDTO[]>(
         `/api/workspaces/${workspaceId}/projects/${projectSlug}/cycles/${cycleId}/members`,
         undefined,
-        'Erro ao buscar memberos do ciclos',
+        'Erro ao buscar membros do ciclo',
       ),
     enabled: !!workspaceId && !!projectSlug && !!cycleId,
   })
@@ -156,7 +156,7 @@ export function useRemoveCycleMember(
       apiSend(
         `/api/workspaces/${workspaceId}/projects/${projectSlug}/cycles/${cycleId}/members/${userId}`,
         { method: 'DELETE' },
-        'Erro ao remover membro ao ciclo',
+        'Erro ao remover membro do ciclo',
       ),
     onSuccess: () => {
       queryClient.invalidateQueries({
@@ -172,7 +172,9 @@ export function useCycle(
   cycleId: string | undefined,
 ) {
   return useQuery({
-    queryKey: ['cycles', workspaceId, projectSlug, cycleId],
+    // Under cyclesKey so the update/delete invalidations reach it; a plain
+    // 'cycles' string here never matched the [['cycles'], ...] prefix.
+    queryKey: [...cyclesKey(workspaceId, projectSlug), cycleId],
     queryFn: () =>
       apiFetch<CycleDTO>(
         `/api/workspaces/${workspaceId}/projects/${projectSlug}/cycles/${cycleId}`,

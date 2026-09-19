@@ -118,7 +118,7 @@ export function useModuleMembers(
       apiFetch<ModuleMemberDTO[]>(
         `/api/workspaces/${workspaceId}/projects/${projectSlug}/modules/${moduleId}/members`,
         undefined,
-        'Erro ao buscar memberos do módulo',
+        'Erro ao buscar membros do módulo',
       ),
     enabled: !!workspaceId && !!projectSlug && !!moduleId,
   })
@@ -159,7 +159,7 @@ export function useRemoveModuleMember(
       apiSend(
         `/api/workspaces/${workspaceId}/projects/${projectSlug}/modules/${moduleId}/members/${userId}`,
         { method: 'DELETE' },
-        'Erro ao remover membro ao módulo',
+        'Erro ao remover membro do módulo',
       ),
     onSuccess: () => {
       queryClient.invalidateQueries({

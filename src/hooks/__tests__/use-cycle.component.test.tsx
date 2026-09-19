@@ -220,6 +220,43 @@ describe('useUpdateCycle', () => {
     expect(queryClient.getQueryState(cyclesKey())?.isInvalidated).toBe(true)
   })
 
+  it('refetches an open cycle detail after the update', async () => {
+    const fetchSpy = mockFetch().mockResolvedValueOnce(apiSuccess(buildCycle()))
+    const { result } = renderHookWithProviders(() => ({
+      cycle: useCycle('ws-1', 'alpha', 'cycle-1'),
+      update: useUpdateCycle('ws-1', 'alpha'),
+    }))
+    await waitFor(() => expect(result.current.cycle.isSuccess).toBe(true))
+    const updated = buildCycle({ status: 'COMPLETED' })
+    fetchSpy
+      .mockResolvedValueOnce(apiSuccess(updated))
+      .mockResolvedValueOnce(apiSuccess(updated))
+
+    await act(() =>
+      result.current.update.mutateAsync({
+        cycleId: 'cycle-1',
+        data: { status: 'COMPLETED' },
+      }),
+    )
+
+    await waitFor(() =>
+      expect(result.current.cycle.data?.status).toBe('COMPLETED'),
+    )
+  })
+
+  it('falls back to the hook message when the error body has none', async () => {
+    mockFetch().mockResolvedValueOnce(apiError(500))
+    const { result } = renderHookWithProviders(() =>
+      useUpdateCycle('ws-1', 'alpha'),
+    )
+
+    await act(async () => {
+      await expect(
+        result.current.mutateAsync({ cycleId: 'cycle-1', data: {} }),
+      ).rejects.toThrow('Erro ao atualizar ciclo')
+    })
+  })
+
   it('surfaces the backend message when the update fails', async () => {
     mockFetch().mockResolvedValueOnce(apiError(422, 'Datas inválidas'))
     const { result } = renderHookWithProviders(() =>
@@ -235,6 +272,26 @@ describe('useUpdateCycle', () => {
 })
 
 describe('useDeleteCycle', () => {
+  it('invalidates an open cycle detail too', async () => {
+    const fetchSpy = mockFetch().mockResolvedValueOnce(apiSuccess(buildCycle()))
+    const { result, queryClient } = renderHookWithProviders(() => ({
+      cycle: useCycle('ws-1', 'alpha', 'cycle-1'),
+      remove: useDeleteCycle('ws-1', 'alpha'),
+    }))
+    await waitFor(() => expect(result.current.cycle.isSuccess).toBe(true))
+    fetchSpy
+      .mockResolvedValueOnce(new Response(null, { status: 204 }))
+      .mockResolvedValueOnce(apiError(404, 'Ciclo não encontrado'))
+
+    await act(() => result.current.remove.mutateAsync('cycle-1'))
+
+    const detail = queryClient
+      .getQueryCache()
+      .findAll({ predicate: (q) => q.queryKey.includes('cycle-1') })
+    expect(detail).not.toHaveLength(0)
+    for (const query of detail) expect(query.state.isInvalidated).toBe(true)
+  })
+
   it('DELETEs the cycle and invalidates the cycles', async () => {
     const fetchSpy = mockFetch().mockResolvedValueOnce(
       new Response(null, { status: 204 }),
@@ -391,5 +448,33 @@ describe('useRemoveCycleMember', () => {
     expect(queryClient.getQueryState(cycleMembersKey())?.isInvalidated).toBe(
       false,
     )
+  })
+})
+
+describe('member fallback messages', () => {
+  it('names the ciclo members in the fetch fallback', async () => {
+    mockFetch().mockResolvedValueOnce(apiError(500))
+
+    const { result } = renderHookWithProviders(() =>
+      useCycleMembers('ws-1', 'alpha', 'cycle-1'),
+    )
+
+    await waitFor(() => expect(result.current.isError).toBe(true))
+    expect(result.current.error?.message).toBe(
+      'Erro ao buscar membros do ciclo',
+    )
+  })
+
+  it('names the ciclo in the remove fallback', async () => {
+    mockFetch().mockResolvedValueOnce(apiError(500))
+    const { result } = renderHookWithProviders(() =>
+      useRemoveCycleMember('ws-1', 'alpha', 'cycle-1'),
+    )
+
+    await act(async () => {
+      await expect(result.current.mutateAsync('user-1')).rejects.toThrow(
+        'Erro ao remover membro do ciclo',
+      )
+    })
   })
 })

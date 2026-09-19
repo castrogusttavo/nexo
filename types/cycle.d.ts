@@ -15,7 +15,7 @@ export interface CycleDTO {
 
 export interface CycleMemberDTO {
   userId: string
-  name: stirng
+  name: string
   username: string
   image: string | null
   isLead: boolean
