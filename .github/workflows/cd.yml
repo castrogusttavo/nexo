@@ -128,7 +128,7 @@ jobs:
     name: Tag & Release
     needs: [migrate, deploy]
     if: ${{ github.event.workflow_run.conclusion == 'success' }}
-    runs-on: ubuntu-latest
+    runs-on: avrea-ubuntu-latest-2-vcpu
     permissions:
       contents: write
     steps:
@@ -162,7 +162,7 @@ jobs:
     name: Notify Slack
     needs: [migrate, deploy]
     if: always() && needs.migrate.result != 'skipped' && needs.deploy.result != 'skipped'
-    runs-on: ubuntu-latest
+    runs-on: avrea-ubuntu-latest-2-vcpu
     steps:
       - name: Prepare notification context
         id: ctx
