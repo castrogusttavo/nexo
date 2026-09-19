@@ -46,6 +46,18 @@ beforeEach(() => {
   useSession.mockReturnValue({ data: { user: { id: 'user-1' } } })
 })
 
+// Mounts `useUser` next to the mutation under test and waits for the profile
+// to load, so tests can assert the mutation really refreshes that query.
+async function renderWithLoadedUser<T>(useMutationHook: () => T) {
+  const fetchSpy = mockFetch().mockResolvedValueOnce(apiSuccess(buildUser()))
+  const rendered = renderHookWithProviders(() => ({
+    user: useUser(),
+    mutation: useMutationHook(),
+  }))
+  await waitFor(() => expect(rendered.result.current.user.isSuccess).toBe(true))
+  return { fetchSpy, ...rendered }
+}
+
 describe('useUser', () => {
   it('fetches the signed-in user', async () => {
     const user = buildUser()
@@ -60,7 +72,7 @@ describe('useUser', () => {
       method: 'GET',
     })
     // Scoped by session user so switching accounts never reuses the cache.
-    expect(queryClient.getQueryData([['user'], 'user-1'])).toEqual(user)
+    expect(queryClient.getQueryData(['user', 'user-1'])).toEqual(user)
   })
 
   it('does not fetch while signed out', () => {
@@ -92,10 +104,6 @@ describe('useUser', () => {
   })
 })
 
-// NOTE: the mutations below invalidate `['user']`, which does not prefix-match
-// `useUser`'s `[['user'], id]` key, so the profile query is never refreshed.
-// That is a source bug (reported), so the invalidation is not asserted here.
-
 describe('useUpdateUser', () => {
   it('PATCHes the profile fields and returns the updated user', async () => {
     const updated = buildUser({ name: 'Ana Souza', username: 'anasouza' })
@@ -116,6 +124,20 @@ describe('useUpdateUser', () => {
       method: 'PATCH',
       body: { name: 'Ana Souza', username: 'anasouza' },
     })
+  })
+
+  it("refetches the signed-in user's profile on success", async () => {
+    const { fetchSpy, result } = await renderWithLoadedUser(useUpdateUser)
+    const updated = buildUser({ name: 'Ana Souza' })
+    fetchSpy
+      .mockResolvedValueOnce(apiSuccess(updated))
+      .mockResolvedValueOnce(apiSuccess(updated))
+
+    await act(() => result.current.mutation.mutateAsync({ name: 'Ana Souza' }))
+
+    await waitFor(() =>
+      expect(result.current.user.data?.name).toBe('Ana Souza'),
+    )
   })
 
   it('surfaces the backend message when the request fails', async () => {
@@ -175,6 +197,20 @@ describe.each([
     expect(call.method).toBe('POST')
     expect(call.body).toBeInstanceOf(FormData)
     expect((call.body as FormData).get(field)).toBe(file)
+  })
+
+  it("refetches the signed-in user's profile on success", async () => {
+    const { fetchSpy, result } = await renderWithLoadedUser(useHook)
+    const url = 'https://cdn.example.com/img.png'
+    fetchSpy
+      .mockResolvedValueOnce(apiSuccess({ url }))
+      .mockResolvedValueOnce(apiSuccess(buildUser({ image: url })))
+
+    await act(() =>
+      result.current.mutation.mutateAsync(new File(['x'], 'img.png')),
+    )
+
+    await waitFor(() => expect(result.current.user.data?.image).toBe(url))
   })
 
   it('surfaces the backend message when the upload is rejected', async () => {

@@ -10,7 +10,10 @@ export function useUser() {
   const { data: session } = authClient.useSession()
 
   return useQuery({
-    queryKey: [USER_KEY, session?.user.id],
+    // Spread, not nested: the mutations here (and useCreateWorkspace)
+    // invalidate by the `['user']` prefix, which a nested `[['user'], id]`
+    // key never matched — the profile stayed stale after every update.
+    queryKey: [...USER_KEY, session?.user.id],
     queryFn: () =>
       apiFetch<UserDTO>(BASE_API_ROUTE, undefined, 'Erro ao buscar usuário'),
     enabled: !!session?.user.id,

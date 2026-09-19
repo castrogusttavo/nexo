@@ -1,5 +1,5 @@
-import { act } from '@testing-library/react'
-import { describe, expect, it } from 'vitest'
+import { act, waitFor } from '@testing-library/react'
+import { describe, expect, it, vi } from 'vitest'
 import {
   apiError,
   apiSuccess,
@@ -8,7 +8,11 @@ import {
   renderHookWithProviders,
 } from '@/src/__tests__/helpers/component'
 import type { WorkspaceDTO } from '@/types/workspace'
+import { useUser } from '../use-user'
 import { useCreateWorkspace } from '../use-workspace'
+
+const { useSession } = vi.hoisted(() => ({ useSession: vi.fn() }))
+vi.mock('@/src/lib/auth-client', () => ({ authClient: { useSession } }))
 
 const WORKSPACE_KEY = ['workspace']
 
@@ -59,6 +63,34 @@ describe('useCreateWorkspace', () => {
     await act(() => result.current.mutateAsync({ name: 'Acme', slug: 'acme' }))
 
     expect(queryClient.getQueryState(WORKSPACE_KEY)?.isInvalidated).toBe(true)
+  })
+
+  // The user DTO carries the memberships, so creating a workspace must
+  // refetch the signed-in user's profile for the new one to show up.
+  it("refetches the signed-in user's profile on success", async () => {
+    useSession.mockReturnValue({ data: { user: { id: 'user-1' } } })
+    const fetchSpy = mockFetch().mockResolvedValueOnce(
+      apiSuccess({ id: 'user-1', memberships: [] }),
+    )
+    const { result } = renderHookWithProviders(() => ({
+      user: useUser(),
+      create: useCreateWorkspace(),
+    }))
+    await waitFor(() => expect(result.current.user.isSuccess).toBe(true))
+    const membership = { workspaceId: 'ws-1', slug: 'acme', name: 'Acme' }
+    fetchSpy
+      .mockResolvedValueOnce(apiSuccess(buildWorkspace(), 201))
+      .mockResolvedValueOnce(
+        apiSuccess({ id: 'user-1', memberships: [membership] }),
+      )
+
+    await act(() =>
+      result.current.create.mutateAsync({ name: 'Acme', slug: 'acme' }),
+    )
+
+    await waitFor(() =>
+      expect(result.current.user.data?.memberships).toEqual([membership]),
+    )
   })
 
   it('leaves the cache untouched when the request fails', async () => {

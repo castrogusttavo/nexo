@@ -94,7 +94,7 @@ const USER: UserDTO = {
 // the app where the user query is already warm when the modal opens.
 function renderTab() {
   const queryClient = createTestQueryClient()
-  queryClient.setQueryData([['user'], USER.id], USER)
+  queryClient.setQueryData(['user', USER.id], USER)
   return renderWithProviders(
     <Tabs value='profile'>
       <UserModalProfileTab tab='profile' />
