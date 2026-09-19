@@ -1,9 +1,13 @@
 name: Performance
 
 on:
+  # Not on pull_request: these checks are informational (continue-on-error)
+  # and PRs here are Dependabot bumps, where nobody reads them.
   push:
     branches: [main]
-  pull_request:
+    paths-ignore:
+      - '*.md'
+      - 'LICENSE'
   schedule:
     - cron: '0 6 * * 1' # Every Monday at 06:00 UTC
   workflow_dispatch:
@@ -12,9 +16,12 @@ permissions:
   contents: read
 
 jobs:
-  lighthouse:
-    name: Lighthouse CI
-    if: github.event_name == 'push' || github.event_name == 'pull_request'
+  # Lighthouse and the local k6 suite share one job so the app is installed
+  # and built once (they used to be two jobs, each with its own next build).
+  # Informational only: continue-on-error, never gates a deploy.
+  local-perf:
+    name: Lighthouse & k6 (Local)
+    if: github.event_name == 'push'
     runs-on: avrea-ubuntu-latest-2-vcpu
     continue-on-error: true
     services:
@@ -84,75 +91,11 @@ jobs:
       - name: Install Lighthouse CI
         run: pnpm add -g @lhci/cli@0.14.x
 
+      # lhci starts and stops its own `pnpm start` (lighthouserc.js), so it
+      # runs before the server k6 needs is brought up.
       - name: Run Lighthouse CI
         run: lhci autorun
-
-  k6-local:
-    name: k6 Load Tests (Local)
-    if: github.event_name == 'push' || github.event_name == 'pull_request'
-    runs-on: avrea-ubuntu-latest-2-vcpu
-    continue-on-error: true
-    services:
-      postgres:
-        image: postgres:16
-        env:
-          POSTGRES_USER: test
-          POSTGRES_PASSWORD: test
-          POSTGRES_DB: nexo_test
-        ports:
-          - 5432:5432
-        options: >-
-          --health-cmd="pg_isready -U test"
-          --health-interval=10s
-          --health-timeout=5s
-          --health-retries=5
-      redis:
-        image: redis:7-alpine
-        ports:
-          - 6379:6379
-        options: >-
-          --health-cmd="redis-cli ping"
-          --health-interval=10s
-          --health-timeout=5s
-          --health-retries=5
-    env:
-      DATABASE_URL: postgresql://test:test@localhost:5432/nexo_test
-      REDIS_URL: redis://localhost:6379
-      BETTER_AUTH_SECRET: ci-test-secret-not-real
-      BETTER_AUTH_URL: http://localhost:3000
-      NEXT_PUBLIC_URL: http://localhost:3000
-      SKIP_ENV_VALIDATION: 'true'
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
-
-      - name: Setup pnpm
-        uses: pnpm/action-setup@a3252b78c470c02df07e9d59298aecedc3ccdd6d # v3
-
-      - name: Setup Node.js
-        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
-        with:
-          node-version: 24
-          cache: 'pnpm'
-
-      - name: Configure HugeIcons registry
-        run: |
-          echo "@hugeicons-pro:registry=https://npm.hugeicons.com" > .npmrc
-          echo "//npm.hugeicons.com/:_authToken=${{ secrets.HUGEICONS_TOKEN }}" >> .npmrc
-
-      - name: Install dependencies
-        run: pnpm install --frozen-lockfile
-
-      - name: Generate Prisma Client
-        run: pnpm prisma:generate
-
-      - name: Push database schema
-        run: pnpm prisma db push
-
-      - name: Build application
-        # Avrea runners export NODE_OPTIONS=--use-openssl-ca, which Node rejects
-        # for worker threads, crashing next build's workers.
-        run: pnpm build
+        continue-on-error: true
         env:
           NODE_OPTIONS: ''
 

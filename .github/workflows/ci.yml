@@ -3,6 +3,11 @@ name: CI
 on:
   push:
     branches: [main]
+    # Root-level docs only (README, CONTRIBUTING, ...): markdown under the
+    # app tree is rendered content and must still build and deploy.
+    paths-ignore:
+      - '*.md'
+      - 'LICENSE'
   pull_request:
 
 permissions:
@@ -47,100 +52,6 @@ jobs:
 
       - name: Lint
         run: pnpm biome lint --error-on-warnings
-
-  unit-tests:
-    name: Unit Tests
-    runs-on: avrea-ubuntu-latest-2-vcpu
-    env:
-      DATABASE_URL: postgresql://dummy:dummy@localhost:5432/dummy
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
-
-      - name: Setup pnpm
-        uses: pnpm/action-setup@a3252b78c470c02df07e9d59298aecedc3ccdd6d # v3
-
-      - name: Setup Node.js
-        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
-        with:
-          node-version: 24
-          cache: 'pnpm'
-
-      - name: Configure HugeIcons registry
-        run: |
-          echo "@hugeicons-pro:registry=https://npm.hugeicons.com" > .npmrc
-          echo "//npm.hugeicons.com/:_authToken=${{ secrets.HUGEICONS_TOKEN }}" >> .npmrc
-
-      - name: Install dependencies
-        run: pnpm install --frozen-lockfile
-
-      - name: Generate Prisma Client
-        run: pnpm prisma:generate
-
-      - name: Run unit tests
-        run: pnpm test:unit
-
-      - name: Run component tests
-        run: pnpm test:component
-
-  integration-tests:
-    name: Integration Tests
-    runs-on: avrea-ubuntu-latest-2-vcpu
-    services:
-      postgres:
-        image: postgres:16
-        env:
-          POSTGRES_USER: test
-          POSTGRES_PASSWORD: test
-          POSTGRES_DB: nexo_test
-        ports:
-          - 5432:5432
-        options: >-
-          --health-cmd="pg_isready -U test"
-          --health-interval=10s
-          --health-timeout=5s
-          --health-retries=5
-      redis:
-        image: redis:7-alpine
-        ports:
-          - 6379:6379
-        options: >-
-          --health-cmd="redis-cli ping"
-          --health-interval=10s
-          --health-timeout=5s
-          --health-retries=5
-    env:
-      DATABASE_URL: postgresql://test:test@localhost:5432/nexo_test
-      REDIS_URL: redis://localhost:6379
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
-
-      - name: Setup pnpm
-        uses: pnpm/action-setup@a3252b78c470c02df07e9d59298aecedc3ccdd6d # v3
-
-      - name: Setup Node.js
-        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
-        with:
-          node-version: 24
-          cache: 'pnpm'
-
-      - name: Configure HugeIcons registry
-        run: |
-          echo "@hugeicons-pro:registry=https://npm.hugeicons.com" > .npmrc
-          echo "//npm.hugeicons.com/:_authToken=${{ secrets.HUGEICONS_TOKEN }}" >> .npmrc
-
-      - name: Install dependencies
-        run: pnpm install --frozen-lockfile
-
-      - name: Generate Prisma Client
-        run: pnpm prisma:generate
-
-      - name: Push database schema
-        run: pnpm prisma db push
-
-      - name: Run integration tests
-        run: pnpm test:integration
 
   e2e-tests:
     name: E2E Tests
@@ -242,6 +153,16 @@ jobs:
           echo "MinIO failed to start"
           exit 1
 
+      - name: Restore Next.js build cache
+        uses: actions/cache@0400d5f644dc74513175e3cd8d07132dd4860809 # v4
+        with:
+          path: .next/cache
+          key: nextjs-${{ runner.os }}-${{ hashFiles('pnpm-lock.yaml') }}-${{ hashFiles('app/**', 'components/**', 'src/**', 'lib/**', 'utils/**', 'hooks/**') }}
+          restore-keys: |
+            nextjs-${{ runner.os }}-${{ hashFiles('pnpm-lock.yaml') }}-
+
+      # The only `next build` in CI: also serves as the build check (a
+      # standalone build job used to compile the app a second time).
       - name: Build application
         # Avrea runners export NODE_OPTIONS=--use-openssl-ca, which Node rejects
         # for worker threads, crashing next build's workers.
@@ -271,8 +192,11 @@ jobs:
       - name: Run e2e tests
         run: pnpm test:e2e
 
+  # Single run of unit + integration (with coverage, uploaded to Codecov) and
+  # component tests. Separate unit/integration jobs used to repeat the exact
+  # same suites without coverage.
   coverage-tests:
-    name: Coverage Tests
+    name: Unit, Integration & Component Tests
     runs-on: avrea-ubuntu-latest-2-vcpu
     services:
       postgres:
@@ -327,80 +251,16 @@ jobs:
       - name: Push database schema
         run: pnpm prisma db push
 
-      - name: Run coverage tests
+      - name: Run unit + integration tests with coverage
         run: pnpm test:coverage
+
+      - name: Run component tests
+        run: pnpm test:component
 
       - name: Upload results to Codecov
         uses: codecov/codecov-action@0fb7174895f61a3b6b78fc075e0cd60383518dac # v5
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
-
-  build:
-    name: Build
-    runs-on: avrea-ubuntu-latest-2-vcpu
-    services:
-      postgres:
-        image: postgres:16
-        env:
-          POSTGRES_USER: test
-          POSTGRES_PASSWORD: test
-          POSTGRES_DB: nexo_test
-        ports:
-          - 5432:5432
-        options: >-
-          --health-cmd="pg_isready -U test"
-          --health-interval=10s
-          --health-timeout=5s
-          --health-retries=5
-      redis:
-        image: redis:7-alpine
-        ports:
-          - 6379:6379
-        options: >-
-          --health-cmd="redis-cli ping"
-          --health-interval=10s
-          --health-timeout=5s
-          --health-retries=5
-    env:
-      DATABASE_URL: postgresql://test:test@localhost:5432/nexo_test
-      REDIS_URL: redis://localhost:6379
-      BETTER_AUTH_SECRET: ci-test-secret-not-real
-      BETTER_AUTH_URL: http://localhost:3000
-      NEXT_PUBLIC_URL: http://localhost:3000
-      SKIP_ENV_VALIDATION: 'true'
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
-
-      - name: Setup pnpm
-        uses: pnpm/action-setup@a3252b78c470c02df07e9d59298aecedc3ccdd6d # v3
-
-      - name: Setup Node.js
-        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
-        with:
-          node-version: 24
-          cache: 'pnpm'
-
-      - name: Configure HugeIcons registry
-        run: |
-          echo "@hugeicons-pro:registry=https://npm.hugeicons.com" > .npmrc
-          echo "//npm.hugeicons.com/:_authToken=${{ secrets.HUGEICONS_TOKEN }}" >> .npmrc
-
-      - name: Install dependencies
-        run: pnpm install --frozen-lockfile
-
-      - name: Generate Prisma Client
-        run: pnpm prisma:generate
-
-      - name: Push database schema
-        run: pnpm prisma db push
-
-      - name: Build application
-        # Avrea runners export NODE_OPTIONS=--use-openssl-ca, which Node rejects
-        # for worker threads, crashing next build's workers.
-        run: pnpm build
-        env:
-          NODE_OPTIONS: ''
 
   # TEMPORARY (2026-07-15): `pnpm audit` hits the npm registry's legacy audit
   # endpoints, which npm retired today (410 Gone) in favor of a bulk-advisory
@@ -423,20 +283,7 @@ jobs:
       - name: Setup pnpm
         uses: pnpm/action-setup@a3252b78c470c02df07e9d59298aecedc3ccdd6d # v3
 
-      - name: Setup Node.js
-        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
-        with:
-          node-version: 24
-          cache: 'pnpm'
-
-      - name: Configure HugeIcons registry
-        run: |
-          echo "@hugeicons-pro:registry=https://npm.hugeicons.com" > .npmrc
-          echo "//npm.hugeicons.com/:_authToken=${{ secrets.HUGEICONS_TOKEN }}" >> .npmrc
-
-      - name: Install dependencies
-        run: pnpm install --frozen-lockfile
-
+      # `pnpm audit` reads pnpm-lock.yaml only, so no install/cache is needed.
       - name: Run pnpm audit
         run: pnpm audit --audit-level=critical
         continue-on-error: true
@@ -498,10 +345,19 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
 
+      # One scan, two outputs: SARIF for the Security tab, JSON for the
+      # lpa2v-triage job (which used to run the same scan a second time).
       - name: Run Semgrep
-        run: semgrep scan --config auto --config p/nextjs --config p/react --config p/typescript --sarif --output=semgrep.sarif
+        run: semgrep scan --config auto --config p/nextjs --config p/react --config p/typescript --sarif-output=semgrep.sarif --json-output=semgrep.json
         env:
           SEMGREP_APP_TOKEN: ${{ secrets.SEMGREP_APP_TOKEN }}
+
+      - name: Upload Semgrep JSON for triage
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: semgrep-json
+          path: semgrep.json
+          retention-days: 1
 
       - name: Upload Semgrep SARIF to GitHub
         uses: github/codeql-action/upload-sarif@411c4c9a36b3fca4d674f06b6396b2c6d23522c6 # v3
@@ -518,6 +374,7 @@ jobs:
   # fails this job itself on a "critico" verdict, never blocks the deploy.
   lpa2v-triage:
     name: LPA2v Contextual Triage (SAST+SCA)
+    needs: [semgrep]
     runs-on: avrea-ubuntu-latest-2-vcpu
     continue-on-error: true
     permissions:
@@ -547,13 +404,10 @@ jobs:
         working-directory: .lpa2v-appsec
         run: pnpm install --frozen-lockfile
 
-      - name: Run Semgrep (JSON output)
-        run: |
-          docker run --rm -v "${PWD}:/src" semgrep/semgrep \
-            semgrep scan --config auto --config p/nextjs --config p/react --config p/typescript \
-            --json --output=/src/semgrep.json
-        env:
-          SEMGREP_APP_TOKEN: ${{ secrets.SEMGREP_APP_TOKEN }}
+      - name: Download Semgrep JSON
+        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4
+        with:
+          name: semgrep-json
 
       - name: Configure HugeIcons registry
         run: |
@@ -706,11 +560,8 @@ jobs:
     name: CI Gate
     needs:
       - lint
-      - unit-tests
-      - integration-tests
       - e2e-tests
       - coverage-tests
-      - build
       - semgrep
       - gitleaks
       - redis-tls-smoke
