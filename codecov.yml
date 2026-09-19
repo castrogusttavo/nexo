@@ -16,3 +16,8 @@ coverage:
 comment:
   layout: 'reach, diff, flags, files'
   require_changes: true
+
+# Route handlers are only exercised by e2e (separate `next start` process),
+# which v8 can't instrument — they'd always show as uncovered here.
+ignore:
+  - 'app/api/**'
