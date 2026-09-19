@@ -6,7 +6,7 @@ import {
   SquareLock02Icon,
 } from '@hugeicons-pro/core-stroke-rounded'
 import { useRouter } from 'next/navigation'
-import { useState } from 'react'
+import { useId, useState } from 'react'
 import { CoverImagePicker } from '@/app/_components/workspace/projects/modal/workspace-project-modal-coverimage-dialog'
 import { EmojiIconPicker } from '@/app/_components/workspace/projects/modal/workspace-project-modal-emoji-icon-dialog'
 import { NexoIcon } from '@/components/icon/icon'
@@ -66,6 +66,7 @@ export function ProjectGeneralSettingsForm({
 }: ProjectGeneralSettingsFormProps) {
   const router = useRouter()
   const projectSlug = project.slug
+  const fieldId = useId()
 
   const updateProject = useUpdateProject(workspaceId, projectSlug)
   const archiveProject = useArchiveProject(workspaceId, projectSlug)
@@ -118,12 +119,13 @@ export function ProjectGeneralSettingsForm({
 
   async function handleDelete() {
     try {
-      await notify.mutate(archiveProject.mutateAsync(), {
+      await notify.mutate(deleteProject.mutateAsync(), {
         loading: 'Excluindo projeto...',
         success: 'Projeto excluído',
         error: 'Erro ao excluir projeto',
       })
-      router.push(`/${workspaceSlug}/projects`)
+      // Replace so going back doesn't land on the deleted project's settings.
+      router.replace(`/${workspaceSlug}/projects`)
     } catch {
       //
     }
@@ -162,12 +164,21 @@ export function ProjectGeneralSettingsForm({
         <FieldGroup>
           <FieldSet className='mt-8 space-y-4'>
             <Field>
-              <FieldLabel>Nome do projeto</FieldLabel>
-              <Input value={name} onChange={(e) => setName(e.target.value)} />
+              <FieldLabel htmlFor={`${fieldId}-name`}>
+                Nome do projeto
+              </FieldLabel>
+              <Input
+                id={`${fieldId}-name`}
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+              />
             </Field>
             <Field>
-              <FieldLabel>Descrição</FieldLabel>
+              <FieldLabel htmlFor={`${fieldId}-description`}>
+                Descrição
+              </FieldLabel>
               <Textarea
+                id={`${fieldId}-description`}
                 value={description}
                 onChange={(e) => setDescription(e.target.value)}
                 className='min-h-26'
@@ -175,13 +186,19 @@ export function ProjectGeneralSettingsForm({
             </Field>
             <FieldGroup className='grid grid-cols-2'>
               <Field className='col-span-1'>
-                <FieldLabel>ID do projeto</FieldLabel>
+                <FieldLabel htmlFor={`${fieldId}-identifier`}>
+                  ID do projeto
+                </FieldLabel>
                 <InputGroup>
                   <Popover>
                     <InputGroupAddon>
                       <PopoverTrigger
                         render={
-                          <InputGroupButton variant='secondary' size='icon-xs'>
+                          <InputGroupButton
+                            variant='secondary'
+                            size='icon-xs'
+                            aria-label='Sobre o ID do projeto'
+                          >
                             <NexoIcon
                               icon={InformationCircleIcon}
                               strokeWidth={2}
@@ -201,6 +218,7 @@ export function ProjectGeneralSettingsForm({
                     </PopoverContent>
                   </Popover>
                   <InputGroupInput
+                    id={`${fieldId}-identifier`}
                     value={identifier}
                     onChange={(e) =>
                       setIdentifier(e.target.value.toUpperCase())
@@ -209,14 +227,16 @@ export function ProjectGeneralSettingsForm({
                 </InputGroup>
               </Field>
               <Field className='col-span-1'>
-                <FieldLabel>Visibilidade</FieldLabel>
+                <FieldLabel htmlFor={`${fieldId}-visibility`}>
+                  Visibilidade
+                </FieldLabel>
                 <Select
                   value={isPublic ? 'public' : 'private'}
                   onValueChange={(value) => {
                     if (value) setIsPublic(value === 'public')
                   }}
                 >
-                  <SelectTrigger size='sm'>
+                  <SelectTrigger id={`${fieldId}-visibility`} size='sm'>
                     <SelectValue>
                       {isPublic ? (
                         <>
@@ -325,7 +345,7 @@ export function ProjectGeneralSettingsForm({
             <AlertDialogContent>
               <AlertDialogHeader>Excluir projeto</AlertDialogHeader>
               <AlertDialogDescription>
-                Todos os dados e recursos desse projeto serõ removidos
+                Todos os dados e recursos desse projeto serão removidos
                 permanentemente e não poderão ser recuperados.
               </AlertDialogDescription>
               <AlertDialogFooter>

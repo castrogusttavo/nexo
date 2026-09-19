@@ -11,11 +11,14 @@ import {
 import type { ProjectDTO } from '@/types/project'
 import { ProjectGeneralSettingsForm } from '../project-general-settings-form'
 
-const { push, refresh } = vi.hoisted(() => ({
+const { push, replace, refresh } = vi.hoisted(() => ({
   push: vi.fn(),
+  replace: vi.fn(),
   refresh: vi.fn(),
 }))
-vi.mock('next/navigation', () => ({ useRouter: () => ({ push, refresh }) }))
+vi.mock('next/navigation', () => ({
+  useRouter: () => ({ push, replace, refresh }),
+}))
 
 vi.mock('sonner', () => ({
   toast: {
@@ -109,21 +112,14 @@ function renderForm(project = buildProject()) {
   )
 }
 
-// The labels here are not bound to their inputs (no htmlFor), so resolve
-// the control through the surrounding Field instead.
-function fieldControl(label: string) {
-  const field = screen
-    .getByText(label, { selector: 'label' })
-    .closest('[data-slot="field"]')
-  if (!(field instanceof HTMLElement)) throw new Error(`No field for ${label}`)
-  return within(field).getByRole('textbox')
-}
+const fieldControl = (label: string) => screen.getByLabelText(label)
 
 const saveButton = () =>
   screen.getByRole('button', { name: 'Atualizar projeto' })
 
 beforeEach(() => {
   push.mockReset()
+  replace.mockReset()
   refresh.mockReset()
 })
 
@@ -138,6 +134,18 @@ describe('<ProjectGeneralSettingsForm /> general settings', () => {
     expect(screen.getByText(/Criado em/)).toHaveTextContent(
       `Criado em ${new Date('2026-03-15T12:00:00.000Z').toLocaleDateString('pt-BR')}`,
     )
+  })
+
+  it('labels the ID help button', async () => {
+    const { user } = renderForm()
+
+    await user.click(
+      screen.getByRole('button', { name: 'Sobre o ID do projeto' }),
+    )
+
+    expect(
+      await screen.findByText(/Máximo de 50 caracteres/),
+    ).toBeInTheDocument()
   })
 
   it('upper-cases the identifier as it is typed', async () => {
@@ -202,9 +210,10 @@ describe('<ProjectGeneralSettingsForm /> general settings', () => {
     )
     const { user } = renderForm()
 
-    await user.click(screen.getByRole('combobox'))
+    const visibility = screen.getByRole('combobox', { name: 'Visibilidade' })
+    await user.click(visibility)
     await user.click(await screen.findByRole('option', { name: /Público/ }))
-    expect(screen.getByRole('combobox')).toHaveTextContent('Público')
+    expect(visibility).toHaveTextContent('Público')
 
     await user.click(saveButton())
 
@@ -293,7 +302,61 @@ describe('<ProjectGeneralSettingsForm /> danger zone', () => {
     expect(push).not.toHaveBeenCalled()
   })
 
-  // Deleting is not covered: `handleDelete` currently calls
-  // `archiveProject.mutateAsync()` instead of `deleteProject`, so confirming
-  // "Excluir" archives the project. See the report for details.
+  it('deletes the project after confirmation and leaves its settings', async () => {
+    const fetchSpy = mockFetch().mockResolvedValueOnce(
+      new Response(null, { status: 204 }),
+    )
+    const { user } = renderForm()
+
+    await user.click(screen.getByRole('button', { name: 'Excluir' }))
+    const dialog = await screen.findByRole('alertdialog')
+    expect(dialog).toHaveTextContent('serão removidos permanentemente')
+    expect(fetchSpy).not.toHaveBeenCalled()
+    await user.click(within(dialog).getByRole('button', { name: 'Excluir' }))
+
+    await waitFor(() => expect(fetchSpy).toHaveBeenCalledTimes(1))
+    const { url, method } = getFetchCall(fetchSpy)
+    expect(url).toBe('/api/workspaces/ws-1/projects/roadmap')
+    expect(method).toBe('DELETE')
+    await expect(lastToastOutcome()).resolves.toEqual({
+      type: 'success',
+      message: 'Projeto excluído',
+    })
+    // Replace, not push: going back must not land on a deleted project.
+    await waitFor(() => expect(replace).toHaveBeenCalledWith('/acme/projects'))
+    expect(push).not.toHaveBeenCalled()
+  })
+
+  it('shows the pending state while the deletion is in flight', async () => {
+    mockFetch().mockReturnValueOnce(new Promise<Response>(() => {}))
+    const { user } = renderForm()
+
+    await user.click(screen.getByRole('button', { name: 'Excluir' }))
+    const dialog = await screen.findByRole('alertdialog')
+    await user.click(within(dialog).getByRole('button', { name: 'Excluir' }))
+
+    expect(
+      await within(dialog).findByRole('button', { name: 'Excluindo...' }),
+    ).toBeDisabled()
+    expect(
+      within(dialog).getByRole('button', { name: 'Cancelar' }),
+    ).toBeDisabled()
+  })
+
+  it('keeps the user on the page when deleting fails', async () => {
+    mockFetch().mockResolvedValueOnce(apiError(403, 'Sem permissão'))
+    const { user } = renderForm()
+
+    await user.click(screen.getByRole('button', { name: 'Excluir' }))
+    const dialog = await screen.findByRole('alertdialog')
+    await user.click(within(dialog).getByRole('button', { name: 'Excluir' }))
+
+    await waitFor(() => expect(toast.promise).toHaveBeenCalled())
+    await expect(lastToastOutcome()).resolves.toEqual({
+      type: 'error',
+      message: 'Sem permissão',
+    })
+    expect(replace).not.toHaveBeenCalled()
+    expect(push).not.toHaveBeenCalled()
+  })
 })
