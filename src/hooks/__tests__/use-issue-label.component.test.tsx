@@ -8,6 +8,7 @@ import {
   renderHookWithProviders,
 } from '@/src/__tests__/helpers/component'
 import type { IssueLabelDTO } from '@/types/issue'
+import { issuesKey } from '../use-issue'
 import {
   useAddIssueLabel,
   useIssueLabels,
@@ -176,5 +177,40 @@ describe('useRemoveIssueLabel', () => {
     })
 
     expect(queryClient.getQueryState(LABELS_KEY)?.isInvalidated).toBe(false)
+  })
+})
+
+// The issue list embeds each issue's label ids, so changing them must
+// refresh the project's issue list too, not only the per-issue labels.
+describe.each([
+  {
+    name: 'useAddIssueLabel',
+    useHook: () => useAddIssueLabel(WORKSPACE_ID, PROJECT_SLUG, ISSUE_ID),
+    response: () => apiSuccess(buildIssueLabel({ labelId: 'label-2' }), 201),
+  },
+  {
+    name: 'useRemoveIssueLabel',
+    useHook: () => useRemoveIssueLabel(WORKSPACE_ID, PROJECT_SLUG, ISSUE_ID),
+    response: () => new Response(null, { status: 204 }),
+  },
+])('$name', ({ useHook, response }) => {
+  it('refreshes the project issue list and leaves other projects alone', async () => {
+    mockFetch().mockResolvedValueOnce(response())
+    const { result, queryClient } = renderMutation<{
+      mutateAsync: (id: string) => Promise<unknown>
+    }>(useHook)
+    queryClient.setQueryData(issuesKey(WORKSPACE_ID, PROJECT_SLUG), [])
+    queryClient.setQueryData(issuesKey(WORKSPACE_ID, 'other-project'), [])
+
+    await act(() => result.current.mutateAsync('target-id'))
+
+    expect(
+      queryClient.getQueryState(issuesKey(WORKSPACE_ID, PROJECT_SLUG))
+        ?.isInvalidated,
+    ).toBe(true)
+    expect(
+      queryClient.getQueryState(issuesKey(WORKSPACE_ID, 'other-project'))
+        ?.isInvalidated,
+    ).toBe(false)
   })
 })

@@ -8,6 +8,7 @@ import {
   renderHookWithProviders,
 } from '@/src/__tests__/helpers/component'
 import type { IssueAssigneeDTO } from '@/types/issue'
+import { issuesKey } from '../use-issue'
 import {
   useAssignIssue,
   useIssueAssignees,
@@ -254,5 +255,40 @@ describe('useUnsubscribeIssue', () => {
         'Erro ao cancelar inscrição na issue',
       )
     })
+  })
+})
+
+// The issue list embeds each issue's assignee ids, so changing them must
+// refresh the project's issue list too, not only the per-issue assignees.
+describe.each([
+  {
+    name: 'useAssignIssue',
+    useHook: () => useAssignIssue(WORKSPACE_ID, PROJECT_SLUG, ISSUE_ID),
+    response: () => apiSuccess(buildAssignee(), 201),
+  },
+  {
+    name: 'useUnassignIssue',
+    useHook: () => useUnassignIssue(WORKSPACE_ID, PROJECT_SLUG, ISSUE_ID),
+    response: () => new Response(null, { status: 204 }),
+  },
+])('$name', ({ useHook, response }) => {
+  it('refreshes the project issue list and leaves other projects alone', async () => {
+    mockFetch().mockResolvedValueOnce(response())
+    const { result, queryClient } = renderMutation<{
+      mutateAsync: (id: string) => Promise<unknown>
+    }>(useHook)
+    queryClient.setQueryData(issuesKey(WORKSPACE_ID, PROJECT_SLUG), [])
+    queryClient.setQueryData(issuesKey(WORKSPACE_ID, 'other-project'), [])
+
+    await act(() => result.current.mutateAsync('target-id'))
+
+    expect(
+      queryClient.getQueryState(issuesKey(WORKSPACE_ID, PROJECT_SLUG))
+        ?.isInvalidated,
+    ).toBe(true)
+    expect(
+      queryClient.getQueryState(issuesKey(WORKSPACE_ID, 'other-project'))
+        ?.isInvalidated,
+    ).toBe(false)
   })
 })

@@ -1,6 +1,7 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import type { IssueAssigneeDTO } from '@/types/issue'
 import { apiFetch, apiFetchJson, apiSend } from './_fetch'
+import { issuesKey } from './use-issue'
 
 const ISSUE_ASSIGNEES_KEY = ['issue-assignees']
 
@@ -49,6 +50,10 @@ export function useAssignIssue(
       queryClient.invalidateQueries({
         queryKey: assigneesKey(workspaceId, projectSlug, issueId),
       })
+      // The list embeds the ids, so it goes stale too.
+      queryClient.invalidateQueries({
+        queryKey: issuesKey(workspaceId, projectSlug),
+      })
     },
   })
 }
@@ -70,6 +75,10 @@ export function useUnassignIssue(
     onSuccess: () => {
       queryClient.invalidateQueries({
         queryKey: assigneesKey(workspaceId, projectSlug, issueId),
+      })
+      // The list embeds the ids, so it goes stale too.
+      queryClient.invalidateQueries({
+        queryKey: issuesKey(workspaceId, projectSlug),
       })
     },
   })
