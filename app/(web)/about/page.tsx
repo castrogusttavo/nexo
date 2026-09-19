@@ -49,7 +49,7 @@ export default function AboutPage() {
               </p>
             </div>
             <Image
-              src='/web/about/about:image-1.png'
+              src='/web/about/about-image-1.png'
               alt=''
               width={1920}
               height={1920}
@@ -77,7 +77,7 @@ export default function AboutPage() {
               </p>
             </div>
             <Image
-              src='/web/about/about:image-2.svg'
+              src='/web/about/about-image-2.svg'
               alt=''
               width={1920}
               height={1920}
@@ -106,7 +106,7 @@ export default function AboutPage() {
               </p>
             </div>
             <Image
-              src='/web/about/about:image-3.svg'
+              src='/web/about/about-image-3.svg'
               alt=''
               width={1920}
               height={1920}
