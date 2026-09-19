@@ -227,7 +227,7 @@ jobs:
             -p 9000:9000 \
             -e MINIO_ROOT_USER=ci-minio-user \
             -e MINIO_ROOT_PASSWORD=ci-minio-password \
-            minio/minio:RELEASE.2025-02-28T09-55-16Z server /data
+            quay.io/minio/minio:RELEASE.2025-02-28T09-55-16Z server /data
 
       - name: Wait for MinIO to be ready
         run: |
@@ -243,12 +243,17 @@ jobs:
           exit 1
 
       - name: Build application
+        # Avrea runners export NODE_OPTIONS=--use-openssl-ca, which Node rejects
+        # for worker threads, crashing next build's workers.
         run: pnpm build
+        env:
+          NODE_OPTIONS: ''
 
       - name: Start server
         run: pnpm start &
         env:
           PORT: 3000
+          NODE_OPTIONS: ''
 
       - name: Wait for server to be ready
         run: |
@@ -391,7 +396,11 @@ jobs:
         run: pnpm prisma db push
 
       - name: Build application
+        # Avrea runners export NODE_OPTIONS=--use-openssl-ca, which Node rejects
+        # for worker threads, crashing next build's workers.
         run: pnpm build
+        env:
+          NODE_OPTIONS: ''
 
   # TEMPORARY (2026-07-15): `pnpm audit` hits the npm registry's legacy audit
   # endpoints, which npm retired today (410 Gone) in favor of a bulk-advisory
