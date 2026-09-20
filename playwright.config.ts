@@ -91,6 +91,23 @@ export default defineConfig({
         // Driven as a real preference, not as a CSS override: the `motion`
         // components and the app's own transitions honour it.
         reducedMotion: 'reduce',
+        launchOptions: {
+          // Pinning the image pins the fonts and the Chromium build, but not
+          // the CPU: Skia picks SIMD paths at runtime, so the same page
+          // rasterises a shade differently on a machine with other
+          // instruction sets. That cost one pixel of a blue heading between
+          // this laptop and the CI runner. These flags take the decision away
+          // from the hardware instead of buying silence with a tolerance.
+          args: [
+            '--disable-skia-runtime-opts',
+            '--disable-lcd-text',
+            '--disable-font-subpixel-positioning',
+            '--font-render-hinting=none',
+            '--force-color-profile=srgb',
+            '--disable-partial-raster',
+            '--disable-gpu',
+          ],
+        },
       },
       expect: {
         // A project-level `expect` replaces the top-level one rather than
