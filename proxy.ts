@@ -27,10 +27,21 @@ const PUBLIC_ROUTES = [
 // elements/blocks). Dropping unsafe-inline here would break floating-UI
 // positioning app-wide. Re-evaluate if/when the UI kit moves off inline
 // transforms.
-function buildCspHeader(nonce: string): string {
+// script-src carries the same kind of trade-off, forced by cacheComponents:
+// the shell is prerendered at build time, so neither its bootstrap
+// <script src> tags nor the ~50 inline scripts Next streams per request can
+// carry a per-request nonce, and the inline payload differs on every
+// request, so hashes are out too. A nonce (or 'strict-dynamic', which makes
+// browsers ignore 'self') blocks the whole shell and the app never
+// hydrates. 'self' + 'unsafe-inline' still refuses scripts from any other
+// origin and refuses eval in production, which is what this CSP is mainly
+// buying us -- uploads are served from the storage subdomain, not from this
+// origin. Revisit if cacheComponents is ever turned off: full dynamic
+// rendering makes the nonce path work end to end.
+function buildCspHeader(): string {
   return `
     default-src 'self';
-    script-src 'self' 'nonce-${nonce}' 'strict-dynamic'${NODE_ENV === 'development' ? " 'unsafe-eval'" : ''};
+    script-src 'self' 'unsafe-inline'${NODE_ENV === 'development' ? " 'unsafe-eval'" : ''};
     style-src 'self' 'unsafe-inline';
     img-src 'self' blob: data: https:${NODE_ENV === 'development' ? ' http://localhost:9000' : ''};
     media-src 'self' blob: https:${NODE_ENV === 'development' ? ' http://localhost:9000' : ''};
@@ -47,11 +58,8 @@ function buildCspHeader(nonce: string): string {
     .trim()
 }
 
-function withSecurityHeaders(
-  response: NextResponse,
-  nonce: string,
-): NextResponse {
-  response.headers.set('Content-Security-Policy', buildCspHeader(nonce))
+function withSecurityHeaders(response: NextResponse): NextResponse {
+  response.headers.set('Content-Security-Policy', buildCspHeader())
   response.headers.set(
     'Strict-Transport-Security',
     'max-age=63072000; includeSubDomains; preload',
@@ -64,17 +72,13 @@ export function proxy(request: NextRequest, event: NextFetchEvent) {
 
   event.waitUntil(logger.flush())
 
-  const nonce = Buffer.from(crypto.randomUUID()).toString('base64')
-  const requestHeaders = new Headers(request.headers)
-  requestHeaders.set('x-nonce', nonce)
-
   const { pathname } = request.nextUrl
 
   if (
     NODE_ENV === 'development' &&
     (pathname === '/reference' || pathname === '/openapi.json' || pathname === '/contact' || pathname === '/testes')
   ) {
-    return NextResponse.next({ request: { headers: requestHeaders } })
+    return NextResponse.next()
   }
 
   const isPublic = PUBLIC_ROUTES.some(
@@ -82,10 +86,7 @@ export function proxy(request: NextRequest, event: NextFetchEvent) {
   )
 
   if (isPublic) {
-    return withSecurityHeaders(
-      NextResponse.next({ request: { headers: requestHeaders } }),
-      nonce,
-    )
+    return withSecurityHeaders(NextResponse.next())
   }
 
   const sessionToken =
@@ -107,10 +108,7 @@ export function proxy(request: NextRequest, event: NextFetchEvent) {
     )
   }
 
-  return withSecurityHeaders(
-    NextResponse.next({ request: { headers: requestHeaders } }),
-    nonce,
-  )
+  return withSecurityHeaders(NextResponse.next())
 }
 
 export const config = {

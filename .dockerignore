@@ -37,7 +37,6 @@ secrets/
 .claude
 biome.json
 commitlint.config.js
-proxy.ts
 
 # Docs
 docs
