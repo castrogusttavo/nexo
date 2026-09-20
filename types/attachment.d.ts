@@ -5,6 +5,6 @@ export interface AttachmentDTO {
   size: number
   url: string
   issueId: string
-  uploadedById: string
+  uploadedById: string | null
   createdAt: string
 }

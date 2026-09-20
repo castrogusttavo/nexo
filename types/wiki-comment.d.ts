@@ -13,7 +13,7 @@ export interface WikiCommentDTO {
   markId: string
   parentId: string | null
   content: Value
-  author: WikiCommentAuthorDTO
+  author: WikiCommentAuthorDTO | null
   resolved: boolean
   resolvedAt: string | null
   resolvedById: string | null

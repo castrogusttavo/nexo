@@ -15,7 +15,7 @@ function signedInAs(user: { id: string; name: string; image?: string | null }) {
   })
 }
 
-function renderMembers(leadId: string) {
+function renderMembers(leadId: string | null) {
   return renderWithProviders(<ProjectCardMembers leadId={leadId} />)
 }
 
@@ -109,5 +109,36 @@ describe('<ProjectCardMembers />', () => {
     await hoverAvatar(user)
 
     expect(await screen.findByText('Membro')).toBeInTheDocument()
+  })
+
+  // Deleting a user nulls `leadId` rather than deleting the project, so the
+  // card has to render a project that genuinely has nobody leading it.
+  describe('when the lead was deleted', () => {
+    it('shows a dash instead of borrowing nobody else initials', () => {
+      renderMembers(null)
+
+      expect(screen.getByText('—')).toBeInTheDocument()
+      expect(screen.queryByText('AS')).not.toBeInTheDocument()
+      expect(screen.queryByText('??')).not.toBeInTheDocument()
+    })
+
+    it('does not claim the viewer leads it', () => {
+      signedInAs({
+        id: SIGNED_IN_USER,
+        name: 'Ana Souza',
+        image: 'https://cdn.nexo.dev/ana.png',
+      })
+      renderMembers(null)
+
+      expect(screen.queryByRole('img')).not.toBeInTheDocument()
+    })
+
+    it('says there is no lead on hover', async () => {
+      const { user } = renderMembers(null)
+
+      await hoverAvatar(user)
+
+      expect(await screen.findByText('Sem líder')).toBeInTheDocument()
+    })
   })
 })

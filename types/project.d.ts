@@ -12,7 +12,7 @@ export interface ProjectDTO {
   cyclesEnabled: boolean
   estimatesEnabled: boolean,
   isFavorited: boolean
-  leadId: string
+  leadId: string | null
   workspaceId: string
   archivedAt: string | null
   createdAt: string

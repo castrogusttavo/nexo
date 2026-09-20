@@ -447,13 +447,13 @@ model Project {
   cyclesEnabled     Boolean   @default(true) @map("cycles_enabled")
   estimatesEnabled  Boolean   @default(true) @map("estimates_enabled")
   issueSequence     Int       @default(0) @map("issue_sequence")
-  leadId            String    @map("lead_id")
+  leadId            String?   @map("lead_id")
   workspaceId       String    @map("workspace_id")
   archivedAt        DateTime? @map("archived_at")
   createdAt         DateTime  @default(now()) @map("created_at")
   updatedAt         DateTime  @updatedAt @map("updated_at")
 
-  lead             User                  @relation("ProjectLead", fields: [leadId], references: [id])
+  lead             User?                 @relation("ProjectLead", fields: [leadId], references: [id], onDelete: SetNull)
   workspace        Workspace             @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
   members          ProjectMember[]
   favourites       ProjectFavorite[]
@@ -678,12 +678,12 @@ model Module {
   status    ModuleStatus @default(BACKLOG)
   startDate DateTime?    @map("start_date")
   endDate   DateTime?    @map("end_date")
-  leadId    String       @map("lead_id")
+  leadId    String?      @map("lead_id")
   projectId String       @map("project_id")
   createdAt DateTime     @default(now()) @map("created_at")
   updatedAt DateTime     @updatedAt @map("updated_at")
 
-  lead       User             @relation("ModuleLead", fields: [leadId], references: [id])
+  lead       User?            @relation("ModuleLead", fields: [leadId], references: [id], onDelete: SetNull)
   project    Project          @relation(fields: [projectId], references: [id], onDelete: Cascade)
   members    ModuleMember[]
   favourites ModuleFavorite[]
@@ -746,12 +746,12 @@ model Cycle {
   status      CycleStatus @default(NOT_STARTED)
   startDate   DateTime?   @map("start_date")
   endDate     DateTime?   @map("end_date")
-  leadId      String      @map("lead_id")
+  leadId      String?     @map("lead_id")
   projectId   String      @map("project_id")
   createdAt   DateTime    @default(now()) @map("created_at")
   updatedAt   DateTime    @updatedAt @map("updated_at")
 
-  lead    User          @relation("CycleLead", fields: [leadId], references: [id])
+  lead    User?         @relation("CycleLead", fields: [leadId], references: [id], onDelete: SetNull)
   project Project       @relation(fields: [projectId], references: [id], onDelete: Cascade)
   members CycleMember[]
   issues  Issue[]
@@ -808,7 +808,7 @@ model Issue {
   cycleId         String?       @map("cycle_id")
   moduleId        String?       @map("module_id")
   estimateValueId String?       @map("estimate_value_id")
-  authorId        String        @map("author_id")
+  authorId        String?       @map("author_id")
   projectId       String        @map("project_id")
   parentId        String?       @map("parent_id")
   deletedAt       DateTime?     @map("deleted_at")
@@ -817,7 +817,7 @@ model Issue {
 
   state            State             @relation(fields: [stateId], references: [id])
   type             IssueType         @relation(fields: [typeId], references: [id])
-  author           User              @relation("IssueAuthor", fields: [authorId], references: [id])
+  author           User?             @relation("IssueAuthor", fields: [authorId], references: [id], onDelete: SetNull)
   project          Project           @relation(fields: [projectId], references: [id], onDelete: Cascade)
   assignees        IssueAssignee[]
   subscribers      IssueSubscriber[]
@@ -950,11 +950,11 @@ model Attachment {
   bucket       String
   key          String
   issueId      String   @map("issue_id")
-  uploadedById String   @map("uploaded_by_id")
+  uploadedById String?  @map("uploaded_by_id")
   createdAt    DateTime @default(now()) @map("created_at")
 
   issue      Issue @relation(fields: [issueId], references: [id], onDelete: Cascade)
-  uploadedBy User  @relation(fields: [uploadedById], references: [id])
+  uploadedBy User? @relation(fields: [uploadedById], references: [id], onDelete: SetNull)
 
   @@index([issueId])
   @@map("attachments")
@@ -985,14 +985,14 @@ model Comment {
   id        String    @id @default(cuid())
   content   Json
   issueId   String    @map("issue_id")
-  authorId  String    @map("author_id")
+  authorId  String?   @map("author_id")
   parentId  String?   @map("parent_id")
   editedAt  DateTime? @map("edited_at")
   createdAt DateTime  @default(now()) @map("created_at")
   updatedAt DateTime  @updatedAt @map("updated_at")
 
   issue   Issue     @relation(fields: [issueId], references: [id], onDelete: Cascade)
-  author  User      @relation(fields: [authorId], references: [id])
+  author  User?     @relation(fields: [authorId], references: [id], onDelete: SetNull)
   parent  Comment?  @relation("CommentThread", fields: [parentId], references: [id], onDelete: Cascade)
   replies Comment[] @relation("CommentThread")
 
@@ -1005,13 +1005,13 @@ model Activity {
   id         String             @id @default(cuid())
   entityType ActivityEntityType @map("entity_type")
   entityId   String             @map("entity_id")
-  actorId    String             @map("actor_id")
+  actorId    String?            @map("actor_id")
   field      String
   oldValue   Json?              @map("old_value")
   newValue   Json?              @map("new_value")
   createdAt  DateTime           @default(now()) @map("created_at")
 
-  actor User @relation(fields: [actorId], references: [id])
+  actor User? @relation(fields: [actorId], references: [id], onDelete: SetNull)
 
   @@index([entityType, entityId, createdAt])
   @@map("activities")
@@ -1028,13 +1028,13 @@ model IssueUpdate {
   status    IssueUpdateStatus
   content   String?
   issueId   String            @map("issue_id")
-  authorId  String            @map("author_id")
+  authorId  String?           @map("author_id")
   editedAt  DateTime?         @map("edited_at")
   createdAt DateTime          @default(now()) @map("created_at")
   updatedAt DateTime          @updatedAt @map("updated_at")
 
   issue  Issue @relation(fields: [issueId], references: [id], onDelete: Cascade)
-  author User  @relation(fields: [authorId], references: [id])
+  author User? @relation(fields: [authorId], references: [id], onDelete: SetNull)
 
   @@index([issueId, createdAt])
   @@map("issue_updates")
@@ -1056,7 +1056,7 @@ model WikiPage {
   content     Json
   yjsState    Bytes?    @map("yjs_state")
   position    Int       @default(0)
-  createdById String    @map("created_by_id")
+  createdById String?   @map("created_by_id")
   updatedById String?   @map("updated_by_id")
   archivedAt  DateTime? @map("archived_at")
   createdAt   DateTime  @default(now()) @map("created_at")
@@ -1065,8 +1065,8 @@ model WikiPage {
   workspace Workspace     @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
   parent    WikiPage?     @relation("WikiPageTree", fields: [parentId], references: [id], onDelete: Cascade)
   children  WikiPage[]    @relation("WikiPageTree")
-  createdBy User          @relation("WikiPageAuthor", fields: [createdById], references: [id])
-  updatedBy User?         @relation("WikiPageEditor", fields: [updatedById], references: [id])
+  createdBy User?         @relation("WikiPageAuthor", fields: [createdById], references: [id], onDelete: SetNull)
+  updatedBy User?         @relation("WikiPageEditor", fields: [updatedById], references: [id], onDelete: SetNull)
   comments  WikiComment[]
 
   @@map("wiki_pages")
@@ -1075,7 +1075,7 @@ model WikiPage {
 model WikiComment {
   id           String    @id @default(cuid())
   wikiPageId   String    @map("wiki_page_id")
-  authorId     String    @map("author_id")
+  authorId     String?   @map("author_id")
   parentId     String?   @map("parent_id")
   // Discussion id shared by the root comment and all its replies — matches
   // the Plate `comment_<markId>` mark applied to the referenced text range.
@@ -1090,8 +1090,8 @@ model WikiComment {
   updatedAt    DateTime  @updatedAt @map("updated_at")
 
   wikiPage   WikiPage      @relation(fields: [wikiPageId], references: [id], onDelete: Cascade)
-  author     User          @relation("WikiCommentAuthor", fields: [authorId], references: [id])
-  resolvedBy User?         @relation("WikiCommentResolver", fields: [resolvedById], references: [id])
+  author     User?         @relation("WikiCommentAuthor", fields: [authorId], references: [id], onDelete: SetNull)
+  resolvedBy User?         @relation("WikiCommentResolver", fields: [resolvedById], references: [id], onDelete: SetNull)
   parent     WikiComment?  @relation("WikiCommentThread", fields: [parentId], references: [id], onDelete: Cascade)
   replies    WikiComment[] @relation("WikiCommentThread")
 

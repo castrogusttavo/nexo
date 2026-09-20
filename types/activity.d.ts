@@ -14,6 +14,6 @@ export interface ActivityDTO {
   field: string
   oldValue: unknown
   newValue: unknown
-  actor: ActivityActorDTO
+  actor: ActivityActorDTO | null
   createdAt: string
 }

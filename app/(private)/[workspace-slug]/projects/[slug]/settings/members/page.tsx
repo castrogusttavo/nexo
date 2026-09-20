@@ -18,7 +18,11 @@ export default async function ProjectSettingsMembersPage({
   const context = await getProjectContext(workspaceSlug, slug)
   if (!context) notFound()
 
-  const canManage = context.userId === context.project.leadId
+  // A project whose lead was deleted has no lead to fall back on, so the
+  // workspace's owners and admins keep the management the API already grants
+  // them.
+  const canManage =
+    context.isPrivileged || context.userId === context.project.leadId
 
   return (
     <div className='w-full h-full flex flex-col overflow-hidden'>

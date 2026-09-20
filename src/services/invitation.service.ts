@@ -108,7 +108,7 @@ async function assertProjectManager(
   actorId: string,
   workspaceId: string,
   slug: string,
-): Promise<Result<{ id: string; leadId: string }>> {
+): Promise<Result<{ id: string; leadId: string | null }>> {
   const membership = await assertMember(actorId, workspaceId)
   if (!membership.ok) return membership
 

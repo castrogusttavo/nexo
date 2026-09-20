@@ -42,7 +42,7 @@ describe('IssueUpdateRepository', () => {
       })
 
       expect(expectOk(result).status).toBe('ON_TRACK')
-      expect(expectOk(result).author.id).toBe(author.id)
+      expect(expectOk(result).author?.id).toBe(author.id)
       expect(expectOk(result).editedAt).toBeNull()
     })
 

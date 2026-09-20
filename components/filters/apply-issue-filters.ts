@@ -1,3 +1,4 @@
+import { REMOVED_USER_NAME } from '@/lib/removed-user'
 import { parseIssueDate } from '@/app/_components/issue/issue-dates'
 import type { CycleDTO } from '@/types/cycle'
 import type { IssueDTO, IssuePriorityDTO } from '@/types/issue'
@@ -177,7 +178,9 @@ class Lookup {
     return this.childrenByParent.get(issue.id) ?? []
   }
 
-  memberName(userId: string): string {
+  /** `null` means the author was deleted — sort and display it as removed. */
+  memberName(userId: string | null): string {
+    if (userId === null) return REMOVED_USER_NAME
     return this.ctx.members?.find((m) => m.userId === userId)?.name ?? userId
   }
 
@@ -588,7 +591,9 @@ function pqlValuesOf(
     case 'module':
       return issue.moduleId ? [issue.moduleId] : []
     case 'created-by':
-      return [issue.authorId]
+      // A deleted author matches no member id, so `mine` and per-member
+      // filters never claim an anonymized issue.
+      return issue.authorId ? [issue.authorId] : []
     default:
       return []
   }

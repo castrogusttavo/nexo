@@ -1,7 +1,7 @@
 import type { Job } from 'bullmq'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { createFakeUser } from '@/src/__tests__/factories/user.factory'
-import { notFound } from '@/src/errors'
+import { databaseError, notFound } from '@/src/errors'
 import { err, ok } from '@/src/lib/result'
 
 vi.mock('@/src/cache/user.cache')
@@ -69,6 +69,29 @@ describe('processAccountLifecycle', () => {
       reason: 'deletion_canceled',
     })
     expect(mockedUser.deleteHard).not.toHaveBeenCalled()
+  })
+
+  // Where the shipped bug surfaced: `deleteHard` hit a NOT NULL authorship FK
+  // ("violates foreign key constraint \"activities_actor_id_fkey\""), the
+  // repository turned it into DATABASE_ERROR, and the job threw, retried three
+  // times and died — leaving the account undeleted and the cache untouched.
+  // The delete is fixed at the schema level; this pins the failure path so a
+  // future one can never be swallowed into a "deleted" outcome.
+  it('throws when deleteHard fails, so BullMQ retries and nothing is cached away', async () => {
+    const user = createFakeUser({
+      id: 'user-1',
+      deletionScheduledAt: new Date('2026-06-01T00:00:00Z'),
+    })
+    mockedUser.findById.mockResolvedValue(ok(user))
+    mockedUser.deleteHard.mockResolvedValue(
+      err(databaseError('Failed to delete user')),
+    )
+
+    await expect(
+      processAccountLifecycle(fakeJob('delete-account', { userId: 'user-1' })),
+    ).rejects.toThrow(/deleteHard failed: DATABASE_ERROR/)
+
+    expect(mockedUserCache.invalidate).not.toHaveBeenCalled()
   })
 
   it('throws on unknown job name', async () => {

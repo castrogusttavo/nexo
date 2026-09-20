@@ -752,3 +752,49 @@ describe('applyIssueFilters dates across timezones', () => {
     })
   }
 })
+
+// Deleting a user nulls `authorId` and keeps the issue. "Criado por" must
+// never hand an anonymized issue to a real person, and ordering by it has to
+// have something to sort the issue under.
+describe('applyIssueFilters with an author that was removed', () => {
+  const ORPHAN = buildIssue({
+    id: 'i-orphan',
+    number: 9,
+    title: 'Sem autor',
+    authorId: null,
+  })
+  const MINE = buildIssue({ id: 'i-mine', number: 10, authorId: 'user-bia' })
+  const POOL = [MINE, ORPHAN]
+
+  function run(state: IssueFilterState) {
+    return ids(applyIssueFilters(POOL, state, CTX).issues)
+  }
+
+  it('never matches an author filter in basic mode', () => {
+    expect(run(basic('created-by', 'is', ['user-bia']))).toEqual(['i-mine'])
+  })
+
+  it('is kept by "is-not", since nobody authored it', () => {
+    expect(run(basic('created-by', 'is-not', ['user-bia']))).toEqual([
+      'i-orphan',
+    ])
+  })
+
+  it('never matches "me" in PQL', () => {
+    expect(ids(applyIssueFilters(POOL, pql('created-by = me'), CTX).issues))
+      .toEqual(['i-mine'])
+  })
+
+  it('is kept by a PQL negation', () => {
+    expect(
+      ids(applyIssueFilters(POOL, pql('created-by != bia'), CTX).issues),
+    ).toEqual(['i-orphan'])
+  })
+
+  it('sorts under the removed-user name rather than a raw null', () => {
+    // "Bia Lima" < "Usuário removido", so the orphan sorts last.
+    expect(
+      ids(applyIssueFilters(POOL, pql('order-by created-by'), CTX).issues),
+    ).toEqual(['i-mine', 'i-orphan'])
+  })
+})

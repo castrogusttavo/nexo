@@ -19,7 +19,7 @@ export function toCycleDTO(cycle: Cycle): CycleDTO {
 
 export function toCycleMemberDTO(
   member: CycleMemberWithUser,
-  leadId: string,
+  leadId: string | null,
 ): CycleMemberDTO {
   return {
     userId: member.userId,

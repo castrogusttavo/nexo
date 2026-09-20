@@ -118,7 +118,14 @@ async function main() {
   })
   if (!issueType) throw new Error(`Tipo "Task" não encontrado no projeto "${project.identifier}".`)
 
+  // The seeded content is attributed to the project lead; a project whose
+  // lead was deleted has nobody to attribute it to.
   const authorId = project.leadId
+  if (!authorId) {
+    throw new Error(
+      `Projeto "${project.identifier}" não tem líder — defina um antes de rodar o seed.`,
+    )
+  }
 
   const cycle = await seedCycle(project.id, authorId, { name: CYCLE_NAME, status: 'IN_PROGRESS' })
   const projectModule = await seedModule(project.id, authorId, {

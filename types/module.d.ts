@@ -14,7 +14,7 @@ export interface ModuleDTO {
   startDate: string | null
   endDate: string | null
   isFavorited: boolean
-  leadId: string
+  leadId: string | null
   projectId: string
   createdAt: string
   updatedAt: string

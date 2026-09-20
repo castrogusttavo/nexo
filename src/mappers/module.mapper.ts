@@ -20,7 +20,7 @@ export function toModuleDTO(module: Module, isFavorited = false): ModuleDTO {
 
 export function toModuleMemberDTO(
   member: ModuleMemberWithUser,
-  leadId: string,
+  leadId: string | null,
 ): ModuleMemberDTO {
   return {
     userId: member.userId,

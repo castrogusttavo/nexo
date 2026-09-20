@@ -12,7 +12,7 @@ export interface CommentDTO {
   content: JSONContent
   issueId: string
   parentId: string | null
-  author: CommentAuthorDTO
+  author: CommentAuthorDTO | null
   editedAt: string | null
   createdAt: string
   updatedAt: string

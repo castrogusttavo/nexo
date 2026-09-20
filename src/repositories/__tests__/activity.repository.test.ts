@@ -121,7 +121,7 @@ describe('ActivityRepository', () => {
       })
 
       const result = await ActivityRepository.listByEntity('ISSUE', 'issue-1')
-      expect(expectOk(result)[0].actor.id).toBe(actor.id)
+      expect(expectOk(result)[0].actor?.id).toBe(actor.id)
     })
   })
 })

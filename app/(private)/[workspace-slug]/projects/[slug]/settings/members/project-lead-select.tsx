@@ -7,6 +7,7 @@ import { Muted } from '@/components/typography/text/muted'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Button } from '@/components/ui/button'
 import { notify } from '@/lib/notify'
+import { NO_LEAD_NAME } from '@/lib/removed-user'
 import { getInitials } from '@/lib/user-name-initials'
 import { useProject, useUpdateProject } from '@/src/hooks/use-project'
 import type { ProjectMemberDTO } from '@/types/project'
@@ -28,6 +29,10 @@ export function ProjectLeadSelect({
   const updateProject = useUpdateProject(workspaceId, projectSlug)
 
   const currentLead = members.find((m) => m.userId === project?.leadId)
+  // A project whose lead was deleted has no lead at all — say so, rather than
+  // prompting a viewer who may not be allowed to pick one.
+  const emptyLeadLabel =
+    project && !project.leadId ? NO_LEAD_NAME : 'Selecionar líder do projeto'
 
   function handleSelect(userId: string) {
     if (userId === project?.leadId) return
@@ -48,7 +53,7 @@ export function ProjectLeadSelect({
         options={members}
         getValue={(m) => m.userId}
         getSearchText={(m) => `${m.name} ${m.username}`}
-        value={project?.leadId}
+        value={project?.leadId ?? undefined}
         onChange={handleSelect}
         searchPlaceholder='Procurar membro...'
         emptyMessage='Nenhum membro encontrado.'
@@ -74,7 +79,7 @@ export function ProjectLeadSelect({
                 @{currentLead.username}
               </span>
             ) : (
-              'Selecionar líder do projeto'
+              emptyLeadLabel
             )}
           </Button>
         }

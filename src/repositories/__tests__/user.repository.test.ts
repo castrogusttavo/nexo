@@ -1,6 +1,13 @@
 import { afterEach, describe, expect, it, vi } from 'vitest'
+import { seedActivity } from '@/src/__tests__/factories/activity.factory'
+import { seedComment } from '@/src/__tests__/factories/comment.factory'
+import { seedIssue } from '@/src/__tests__/factories/issue.factory'
+import { seedIssueType } from '@/src/__tests__/factories/issue-type.factory'
 import { seedMembership } from '@/src/__tests__/factories/membership.factory'
+import { seedProject } from '@/src/__tests__/factories/project.factory'
+import { seedState } from '@/src/__tests__/factories/state.factory'
 import { seedUser } from '@/src/__tests__/factories/user.factory'
+import { seedWikiPage } from '@/src/__tests__/factories/wiki-page.factory'
 import { seedWorkspace } from '@/src/__tests__/factories/workspace.factory'
 import { expectErr, expectOk } from '@/src/__tests__/helpers/result.helpers'
 import { prisma } from '@/src/lib/prisma'
@@ -233,6 +240,55 @@ describe('UserRepository', () => {
       expect(
         await prisma.shortLink.count({ where: { userId: seeded.id } }),
       ).toBe(0)
+    })
+
+    // The regression this guards: every authorship column used to be a
+    // NOT NULL FK with no `onDelete`, so Postgres refused to delete any user
+    // who had ever authored anything — the scheduled-deletion job failed with
+    // `violates foreign key constraint "activities_actor_id_fkey"`, retried
+    // three times and died. The fixture above is bare, which is exactly why
+    // it never caught it.
+    it('should anonymize authored content instead of refusing the delete', async () => {
+      const user = await seedUser()
+      const workspace = await seedWorkspace()
+      await seedMembership({ userId: user.id, workspaceId: workspace.id })
+
+      const project = await seedProject(workspace.id, user.id)
+      const state = await seedState(project.id)
+      const issueType = await seedIssueType(project.id)
+      const issue = await seedIssue({
+        stateId: state.id,
+        typeId: issueType.id,
+        authorId: user.id,
+        projectId: project.id,
+      })
+      const comment = await seedComment(issue.id, user.id)
+      const wikiPage = await seedWikiPage(workspace.id, user.id)
+      const activity = await seedActivity('ISSUE', issue.id, user.id)
+
+      const result = await UserRepository.deleteHard(user.id)
+
+      expectOk(result)
+      expect(
+        await prisma.user.findUnique({ where: { id: user.id } }),
+      ).toBeNull()
+
+      // The workspace's collective work survives, with authorship erased.
+      expect(
+        await prisma.project.findUnique({ where: { id: project.id } }),
+      ).toMatchObject({ leadId: null })
+      expect(
+        await prisma.issue.findUnique({ where: { id: issue.id } }),
+      ).toMatchObject({ authorId: null })
+      expect(
+        await prisma.comment.findUnique({ where: { id: comment.id } }),
+      ).toMatchObject({ authorId: null })
+      expect(
+        await prisma.wikiPage.findUnique({ where: { id: wikiPage.id } }),
+      ).toMatchObject({ createdById: null })
+      expect(
+        await prisma.activity.findUnique({ where: { id: activity.id } }),
+      ).toMatchObject({ actorId: null })
     })
 
     it('should return RESOURCE_NOT_FOUND for unknown user', async () => {

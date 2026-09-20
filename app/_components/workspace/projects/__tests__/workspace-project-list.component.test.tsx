@@ -277,6 +277,25 @@ describe('<ProjectList /> filters', () => {
     await waitFor(() => expect(cardNames()).toEqual(['Público']))
   })
 
+  // Deleting a user nulls the lead rather than the project. Nobody leads it,
+  // so it can never be claimed as "mine" by whoever is looking.
+  it('never claims a project whose lead was deleted', async () => {
+    await renderList(
+      [
+        publicProject,
+        buildProject({
+          id: 'p-orphan',
+          name: 'Sem líder',
+          slug: 'sem-lider',
+          leadId: null,
+        }),
+      ],
+      { mine: 'true', sortField: 'name', sortOrder: 'asc' },
+    )
+
+    await waitFor(() => expect(cardNames()).toEqual(['Público']))
+  })
+
   it('claims nothing while the session is still loading', async () => {
     useSession.mockReturnValue({ data: null, isPending: true })
     await renderList([publicProject, privateProject], { mine: 'true' })

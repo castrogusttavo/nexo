@@ -5,7 +5,7 @@ import { err, ok, type Result } from '../lib/result'
 import { dbError } from './db-error'
 
 export type CommentWithAuthor = Comment & {
-  author: Pick<User, 'id' | 'name' | 'username' | 'image'>
+  author: Pick<User, 'id' | 'name' | 'username' | 'image'> | null
 }
 
 const authorSelect = {

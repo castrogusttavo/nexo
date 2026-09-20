@@ -21,7 +21,7 @@ export interface IssueDTO {
   labelIds: string[]
   assigneeIds: string[]
   estimateValueId: string | null
-  authorId: string
+  authorId: string | null
   projectId: string
   parentId: string | null
   createdAt: string

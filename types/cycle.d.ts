@@ -7,7 +7,7 @@ export interface CycleDTO {
   status: CycleStatusDTO
   startDate: string | null
   endDate: string | null
-  leadId: string
+  leadId: string | null
   projectId: string
   createdAt: string
   updatedAt: string

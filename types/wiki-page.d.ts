@@ -9,7 +9,7 @@ export interface WikiPageDTO {
 	coverImage: string | null
 	content: Value
 	position: number
-	createdById: string
+	createdById: string | null
 	updatedById: string | null
 	archivedAt: string | null
 	createdAt: string

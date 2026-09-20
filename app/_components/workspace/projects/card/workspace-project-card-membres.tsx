@@ -11,10 +11,11 @@ import {
   TooltipContent,
   TooltipTrigger,
 } from '@/components/ui/tooltip'
+import { NO_LEAD_NAME } from '@/lib/removed-user'
 import { useCacheUser } from '@/src/hooks/cache/use-user'
 
 interface ProjectCardMembersProps {
-  leadId: string
+  leadId: string | null
 }
 
 function nameInitials(name: string) {
@@ -28,9 +29,12 @@ function nameInitials(name: string) {
 
 export function ProjectCardMembers({ leadId }: ProjectCardMembersProps) {
   const { data: session } = useCacheUser()
-  const isCurrentUser = session?.user.id === leadId
+  // A project whose lead was deleted keeps no lead at all.
+  const hasLead = leadId !== null
+  const isCurrentUser = hasLead && session?.user.id === leadId
 
   const name = isCurrentUser ? (session?.user.name ?? '') : ''
+  const label = hasLead ? name || 'Membro' : NO_LEAD_NAME
 
   return (
     <AvatarGroup className='grayscale-75'>
@@ -41,9 +45,11 @@ export function ProjectCardMembers({ leadId }: ProjectCardMembersProps) {
           {isCurrentUser && session?.user.image ? (
             <AvatarImage src={session.user.image} alt={name} />
           ) : null}
-          <AvatarFallback>{name ? nameInitials(name) : '??'}</AvatarFallback>
+          <AvatarFallback>
+            {name ? nameInitials(name) : hasLead ? '??' : '—'}
+          </AvatarFallback>
         </TooltipTrigger>
-        <TooltipContent side='bottom'>{name || 'Membro'}</TooltipContent>
+        <TooltipContent side='bottom'>{label}</TooltipContent>
       </Tooltip>
     </AvatarGroup>
   )

@@ -84,8 +84,12 @@ export function ProjectList({ workspaceId, workspaceSlug }: ProjectListProps) {
     let result = [...projects]
 
     // "Mine" means the projects this user leads; with no session resolved
-    // yet there is nothing that can be claimed as theirs.
-    if (mine) result = result.filter((p) => p.leadId === currentUserId)
+    // yet, or with a project whose lead was deleted, there is nothing that
+    // can be claimed as theirs.
+    if (mine)
+      result = result.filter(
+        (p) => p.leadId !== null && p.leadId === currentUserId,
+      )
     if (access.includes('public') && !access.includes('private')) {
       result = result.filter((p) => p.isPublic)
     } else if (access.includes('private') && !access.includes('public')) {

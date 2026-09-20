@@ -1,5 +1,6 @@
 import { cache } from 'react'
 import { getAuthSession } from '@/src/lib/auth-session'
+import { isPrivilegedRole } from '@/src/services/_authz'
 import { MembershipService } from '@/src/services/membership.service'
 import { ProjectService } from '@/src/services/project.service'
 import type { ProjectDTO } from '@/types/project'
@@ -8,6 +9,8 @@ export interface ProjectContext {
   userId: string
   workspaceId: string
   workspaceSlug: string
+  /** Workspace OWNER/ADMIN — may manage a project they do not lead. */
+  isPrivileged: boolean
   project: ProjectDTO
 }
 
@@ -36,6 +39,7 @@ export const getProjectContext = cache(
       userId: session.value.user.id,
       workspaceId: membership.value.workspaceId,
       workspaceSlug,
+      isPrivileged: isPrivilegedRole(membership.value.role),
       project: project.value,
     }
   },

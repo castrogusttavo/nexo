@@ -16,6 +16,7 @@ import {
   type IssueSortBy,
   useIssueListPreferences,
 } from '@/components/layouts/use-issue-list-preferences'
+import { REMOVED_USER_NAME } from '@/lib/removed-user'
 import { colorToText } from '@/lib/state-colors'
 import { useCycles } from '@/src/hooks/use-cycle'
 import { useLabels } from '@/src/hooks/use-label'
@@ -231,9 +232,11 @@ export function IssueListView({
     if (preferences.groupBy === 'created-by') {
       if (!members) return []
       const memberIds = new Set(members.map((member) => member.userId))
+      // A deleted author leaves the issue behind with no authorship at all.
+      const removedAuthors = items.filter((item) => !item.issue.authorId)
       // Authors who have since left the project have no member section.
       const otherAuthors = items.filter(
-        (item) => !memberIds.has(item.issue.authorId),
+        (item) => !!item.issue.authorId && !memberIds.has(item.issue.authorId),
       )
       return [
         ...members.map((member) => ({
@@ -254,6 +257,17 @@ export function IssueListView({
                 name: 'Outros',
                 icon: UserQuestion01Icon,
                 items: otherAuthors,
+                createDefaults: { stateId: defaultStateId },
+              },
+            ]
+          : []),
+        ...(removedAuthors.length > 0
+          ? [
+              {
+                id: 'removed-author',
+                name: REMOVED_USER_NAME,
+                icon: UserQuestion01Icon,
+                items: removedAuthors,
                 createDefaults: { stateId: defaultStateId },
               },
             ]

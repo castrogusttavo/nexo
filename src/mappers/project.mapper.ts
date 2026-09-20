@@ -30,7 +30,7 @@ export function toProjectDTO(
 
 export function toProjectMemberDTO(
   member: ProjectMemberWithUser,
-  leadId: string,
+  leadId: string | null,
 ): ProjectMemberDTO {
   return {
     userId: member.userId,

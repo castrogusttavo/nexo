@@ -42,7 +42,7 @@ describe('CommentRepository', () => {
       })
 
       expect(expectOk(result).issueId).toBe(issue.id)
-      expect(expectOk(result).author.id).toBe(author.id)
+      expect(expectOk(result).author?.id).toBe(author.id)
       expect(expectOk(result).parentId).toBeNull()
       expect(expectOk(result).editedAt).toBeNull()
     })

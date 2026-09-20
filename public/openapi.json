@@ -10886,7 +10886,10 @@
             "example": false
           },
           "leadId": {
-            "type": "string",
+            "type": [
+              "string",
+              "null"
+            ],
             "example": "clx0v5k2p0000qwer5678efgh"
           },
           "workspaceId": {
@@ -12039,7 +12042,10 @@
             "format": "date-time"
           },
           "leadId": {
-            "type": "string",
+            "type": [
+              "string",
+              "null"
+            ],
             "example": "clx0v5k2p0000qwer5678efgh"
           },
           "projectId": {
@@ -12481,7 +12487,10 @@
             "example": "clx0v5k2p0000qwertype001"
           },
           "authorId": {
-            "type": "string",
+            "type": [
+              "string",
+              "null"
+            ],
             "example": "clx0v5k2p0000qwer5678efgh"
           },
           "projectId": {
@@ -13091,7 +13100,10 @@
             "example": false
           },
           "leadId": {
-            "type": "string",
+            "type": [
+              "string",
+              "null"
+            ],
             "example": "clx0v5k2p0000qwer5678efgh"
           },
           "projectId": {
@@ -13761,7 +13773,14 @@
             ]
           },
           "author": {
-            "$ref": "#/components/schemas/CommentAuthor"
+            "oneOf": [
+              {
+                "$ref": "#/components/schemas/CommentAuthor"
+              },
+              {
+                "type": "null"
+              }
+            ]
           },
           "editedAt": {
             "oneOf": [
@@ -13869,7 +13888,10 @@
             "type": "string"
           },
           "uploadedById": {
-            "type": "string"
+            "type": [
+              "string",
+              "null"
+            ]
           },
           "createdAt": {
             "type": "string",
@@ -13966,7 +13988,14 @@
             "type": "string"
           },
           "author": {
-            "$ref": "#/components/schemas/IssueUpdateAuthor"
+            "oneOf": [
+              {
+                "$ref": "#/components/schemas/IssueUpdateAuthor"
+              },
+              {
+                "type": "null"
+              }
+            ]
           },
           "editedAt": {
             "oneOf": [
@@ -14108,7 +14137,14 @@
             "description": "Novo valor do campo (formato depende do campo); pode ser `null`."
           },
           "actor": {
-            "$ref": "#/components/schemas/ActivityActor"
+            "oneOf": [
+              {
+                "$ref": "#/components/schemas/ActivityActor"
+              },
+              {
+                "type": "null"
+              }
+            ]
           },
           "createdAt": {
             "type": "string",
@@ -14274,7 +14310,10 @@
             "type": "integer"
           },
           "createdById": {
-            "type": "string"
+            "type": [
+              "string",
+              "null"
+            ]
           },
           "updatedById": {
             "oneOf": [
@@ -14475,7 +14514,14 @@
             "description": "Conteúdo rico (JSON do editor Plate)."
           },
           "author": {
-            "$ref": "#/components/schemas/WikiCommentAuthor"
+            "oneOf": [
+              {
+                "$ref": "#/components/schemas/WikiCommentAuthor"
+              },
+              {
+                "type": "null"
+              }
+            ]
           },
           "resolved": {
             "type": "boolean"

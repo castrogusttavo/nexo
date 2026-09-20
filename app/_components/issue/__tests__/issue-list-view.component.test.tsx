@@ -539,6 +539,49 @@ describe('<IssueListView /> grouping', () => {
     expect(rowTitles('Outros')).toEqual(['De ex-membro'])
   })
 
+  // Deleting a user nulls `authorId` and keeps the issue: the work is the
+  // workspace's, only the person is erased. That is a different state from an
+  // author who merely left the project, so it gets its own section.
+  it('keeps issues whose author was deleted in a "Usuário removido" section', async () => {
+    setPreferences({ groupBy: 'created-by' })
+    mockProjectApi({
+      members: [buildMember({ userId: 'user-1', name: 'Ana Souza' })],
+      issues: [
+        buildIssue({ id: 'i-1', title: 'Da Ana', authorId: 'user-1' }),
+        buildIssue({
+          id: 'i-2',
+          number: 2,
+          title: 'De alguém removido',
+          authorId: null,
+        }),
+        buildIssue({
+          id: 'i-3',
+          number: 3,
+          title: 'De ex-membro',
+          authorId: 'user-gone',
+        }),
+      ],
+    })
+    renderList()
+
+    await findSection('Usuário removido')
+    expect(sectionNames()).toEqual(['Ana Souza', 'Outros', 'Usuário removido'])
+    expect(rowTitles('Usuário removido')).toEqual(['De alguém removido'])
+    expect(rowTitles('Outros')).toEqual(['De ex-membro'])
+  })
+
+  it('omits the "Usuário removido" section while every author is present', async () => {
+    setPreferences({ groupBy: 'created-by' })
+    mockProjectApi({
+      members: [buildMember({ userId: 'user-1', name: 'Ana Souza' })],
+      issues: [buildIssue({ id: 'i-1', title: 'Da Ana', authorId: 'user-1' })],
+    })
+    renderList()
+
+    await findSection('Ana Souza')
+    expect(sectionNames()).not.toContain('Usuário removido')
+  })
+
   it('puts every issue in a single section when grouping is off', async () => {
     setPreferences({ groupBy: 'none' })
     mockProjectApi({

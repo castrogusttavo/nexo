@@ -12,7 +12,7 @@ export interface IssueUpdateDTO {
   status: IssueUpdateStatusDTO
   content: string | null
   issueId: string
-  author: IssueUpdateAuthorDTO
+  author: IssueUpdateAuthorDTO | null
   editedAt: string | null
   createdAt: string
   updatedAt: string

@@ -9,6 +9,8 @@ import { CheckIcon, MoreHorizontalIcon, PencilIcon, SendIcon, TrashIcon, XIcon }
 import type { Value } from 'platejs'
 import { useEditorRef } from 'platejs/react'
 import { discussionPlugin } from '@/components/editor/plugins/discussion-plugin'
+import { displayUserName } from '@/lib/removed-user'
+import { getInitials } from '@/lib/user-name-initials'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Button } from '@/components/ui/button'
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu'
@@ -131,7 +133,7 @@ export function DiscussionThread({ markId }: { markId: string }) {
             comment={comment}
             index={index}
             isLast={index === thread.length - 1}
-            isOwn={comment.author.id === userId}
+            isOwn={!!comment.author && comment.author.id === userId}
             isRoot={!comment.parentId}
             isEditing={editingId === comment.id}
             editingText={editingText}
@@ -223,6 +225,7 @@ function CommentItem({
   const [hovering, setHovering] = React.useState(false)
   const [dropdownOpen, setDropdownOpen] = React.useState(false)
   const showActions = hovering || dropdownOpen
+  const authorName = displayUserName(comment.author?.name)
 
   return (
     <div
@@ -231,10 +234,10 @@ function CommentItem({
     >
       <div className='relative flex items-center'>
         <Avatar className='size-5'>
-          <AvatarImage alt={comment.author.name} src={comment.author.image ?? undefined} />
-          <AvatarFallback>{comment.author.name[0]}</AvatarFallback>
+          <AvatarImage alt={authorName} src={comment.author?.image ?? undefined} />
+          <AvatarFallback>{getInitials(comment.author?.name) || '?'}</AvatarFallback>
         </Avatar>
-        <h4 className='mx-2 font-semibold text-sm leading-none'>{comment.author.name}</h4>
+        <h4 className='mx-2 font-semibold text-sm leading-none'>{authorName}</h4>
         <span className='text-muted-foreground/80 text-xs leading-none'>
           {formatDistanceToNow(new Date(comment.createdAt), { addSuffix: true, locale: ptBR })}
         </span>

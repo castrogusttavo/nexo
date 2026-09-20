@@ -4,7 +4,7 @@ import { err, ok, type Result } from '../lib/result'
 import { dbError } from './db-error'
 
 export type ActivityWithActor = Activity & {
-  actor: Pick<User, 'id' | 'name' | 'username' | 'image'>
+  actor: Pick<User, 'id' | 'name' | 'username' | 'image'> | null
 }
 
 const actorSelect = {

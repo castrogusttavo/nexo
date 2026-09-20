@@ -56,7 +56,7 @@ describe('WikiCommentRepository', () => {
       const comment = expectOk(result)
       expect(comment.wikiPageId).toBe(page.id)
       expect(comment.markId).toBe('mark1')
-      expect(comment.author.id).toBe(author.id)
+      expect(comment.author?.id).toBe(author.id)
       expect(comment.parentId).toBeNull()
       expect(comment.resolved).toBe(false)
     })
