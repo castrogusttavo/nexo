@@ -121,6 +121,8 @@ model UserPreference {
   updatedAt         DateTime          @updatedAt @map("updated_at")
 
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("user_preferences")
 }
 
 model NotificationSetting {
@@ -1066,6 +1068,8 @@ model WikiPage {
   createdBy User          @relation("WikiPageAuthor", fields: [createdById], references: [id])
   updatedBy User?         @relation("WikiPageEditor", fields: [updatedById], references: [id])
   comments  WikiComment[]
+
+  @@map("wiki_pages")
 }
 
 model WikiComment {
