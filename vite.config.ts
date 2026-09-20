@@ -83,6 +83,20 @@ export default defineConfig({
       {
         extends: true,
         test: {
+          // Static checks of public/openapi.json against the code that
+          // implements it. Pure filesystem + JSON work: no DB, no Redis, no
+          // server — it stays fast enough to run on every push.
+          name: 'contract',
+          environment: 'node',
+          globals: true,
+          include: ['src/__tests__/contract/*.contract.test.ts'],
+          setupFiles: ['./src/__tests__/setup.ts'],
+          testTimeout: 10000,
+        },
+      },
+      {
+        extends: true,
+        test: {
           name: 'integration',
           environment: 'node',
           globals: true,

@@ -72,7 +72,7 @@ export const ERROR_CODES = {
   MODULE_FORBIDDEN: { code: 'MODULE_FORBIDDEN', status: 403 },
   MODULE_MEMBER_ALREADY_EXISTS: {
     code: 'MODULE_MEMBER_ALREADY_EXISTS',
-    status: 405,
+    status: 409,
   },
   MODULE_MEMBER_NOT_FOUND: { code: 'MODULE_MEMBER_NOT_FOUND', status: 404 },
   CYCLE_NOT_FOUND: { code: 'CYCLE_NOT_FOUND', status: 404 },

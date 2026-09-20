@@ -3026,6 +3026,55 @@
         }
       }
     },
+    "/health": {
+      "get": {
+        "tags": [
+          "Status"
+        ],
+        "summary": "Health check da aplicação",
+        "description": "Liveness probe destinado a load balancers e monitoramento externo: responde `200` enquanto o banco de dados aceitar uma query, e `503` caso contrário. Rota pública, sem autenticação e sem rate limit. Não usa o envelope padrão da API — o corpo é mínimo de propósito.",
+        "responses": {
+          "200": {
+            "description": "Aplicação saudável.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "status": {
+                      "type": "string",
+                      "const": "ok"
+                    }
+                  }
+                },
+                "example": {
+                  "status": "ok"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Banco de dados indisponível.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "status": {
+                      "type": "string",
+                      "const": "unavailable"
+                    }
+                  }
+                },
+                "example": {
+                  "status": "unavailable"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/sticky-notes": {
       "get": {
         "tags": [
@@ -5629,7 +5678,7 @@
           "Tipos de Issue"
         ],
         "summary": "Atualizar tipo de issue",
-        "description": "Atualiza um tipo de issue do projeto. Requer role OWNER/ADMIN do workspace ou ser o lead do projeto, e consentimento de cookies aceito. Falha com `ISSUE_TYPE_SYSTEM_PROTECTED` (403) para os tipos padrão do sistema (Task/Epic).",
+        "description": "Atualiza um tipo de issue do projeto. Requer role OWNER/ADMIN do workspace ou ser o lead do projeto, e consentimento de cookies aceito. Falha com `ISSUE_TYPE_SYSTEM_PROTECTED` (409) para os tipos padrão do sistema (Task/Epic).",
         "security": [
           {
             "cookieAuth": []
@@ -5665,6 +5714,24 @@
           "404": {
             "$ref": "#/components/responses/NotFoundError"
           },
+          "409": {
+            "description": "Tipo de issue protegido do sistema (Task/Epic) não pode ser alterado ou removido",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "example": {
+                  "success": false,
+                  "statusCode": 409,
+                  "error": {
+                    "code": "ISSUE_TYPE_SYSTEM_PROTECTED"
+                  },
+                  "message": "Tipos padrão do sistema não podem ser alterados"
+                }
+              }
+            }
+          },
           "422": {
             "$ref": "#/components/responses/ValidationError"
           },
@@ -5678,7 +5745,7 @@
           "Tipos de Issue"
         ],
         "summary": "Excluir tipo de issue",
-        "description": "Remove um tipo de issue do projeto. Requer role OWNER/ADMIN do workspace ou ser o lead do projeto, e consentimento de cookies aceito. Falha com `ISSUE_TYPE_SYSTEM_PROTECTED` (403) para os tipos padrão do sistema (Task/Epic).",
+        "description": "Remove um tipo de issue do projeto. Requer role OWNER/ADMIN do workspace ou ser o lead do projeto, e consentimento de cookies aceito. Falha com `ISSUE_TYPE_SYSTEM_PROTECTED` (409) para os tipos padrão do sistema (Task/Epic).",
         "security": [
           {
             "cookieAuth": []
@@ -5703,6 +5770,24 @@
           },
           "404": {
             "$ref": "#/components/responses/NotFoundError"
+          },
+          "409": {
+            "description": "Tipo de issue protegido do sistema (Task/Epic) não pode ser alterado ou removido",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "example": {
+                  "success": false,
+                  "statusCode": 409,
+                  "error": {
+                    "code": "ISSUE_TYPE_SYSTEM_PROTECTED"
+                  },
+                  "message": "Tipos padrão do sistema não podem ser alterados"
+                }
+              }
+            }
           },
           "429": {
             "$ref": "#/components/responses/RateLimitError"
@@ -8656,6 +8741,24 @@
     "/workspaces/{id}/projects/{slug}/embed-thumbnails/{key}": {
       "parameters": [
         {
+          "name": "id",
+          "in": "path",
+          "required": true,
+          "description": "ID do workspace (cuid2).",
+          "schema": {
+            "type": "string"
+          }
+        },
+        {
+          "name": "slug",
+          "in": "path",
+          "required": true,
+          "description": "Slug do projeto.",
+          "schema": {
+            "type": "string"
+          }
+        },
+        {
           "name": "key",
           "in": "path",
           "required": true,
@@ -9504,8 +9607,10 @@
             "example": true
           },
           "image": {
-            "type": "string",
-            "nullable": true,
+            "type": [
+              "string",
+              "null"
+            ],
             "example": null
           },
           "twoFactorEnabled": {
@@ -9513,15 +9618,19 @@
             "example": false
           },
           "acceptedTermsAt": {
-            "type": "string",
+            "type": [
+              "string",
+              "null"
+            ],
             "format": "date-time",
-            "nullable": true,
             "example": "2026-01-01T00:00:00.000Z"
           },
           "acceptedPrivacyAt": {
-            "type": "string",
+            "type": [
+              "string",
+              "null"
+            ],
             "format": "date-time",
-            "nullable": true,
             "example": "2026-01-01T00:00:00.000Z"
           },
           "createdAt": {
@@ -9553,12 +9662,16 @@
             "format": "date-time"
           },
           "ipAddress": {
-            "type": "string",
-            "nullable": true
+            "type": [
+              "string",
+              "null"
+            ]
           },
           "userAgent": {
-            "type": "string",
-            "nullable": true
+            "type": [
+              "string",
+              "null"
+            ]
           },
           "createdAt": {
             "type": "string",
@@ -9603,8 +9716,10 @@
         "description": "Resposta de cadastro. O token fica nulo enquanto o e-mail não é verificado.",
         "properties": {
           "token": {
-            "type": "string",
-            "nullable": true,
+            "type": [
+              "string",
+              "null"
+            ],
             "example": null
           },
           "user": {
@@ -9667,13 +9782,17 @@
             "example": true
           },
           "image": {
-            "type": "string",
-            "nullable": true,
+            "type": [
+              "string",
+              "null"
+            ],
             "example": null
           },
           "coverImage": {
-            "type": "string",
-            "nullable": true,
+            "type": [
+              "string",
+              "null"
+            ],
             "example": null
           },
           "createdAt": {
@@ -9682,37 +9801,49 @@
             "example": "2026-01-01T00:00:00.000Z"
           },
           "deletionScheduledAt": {
-            "type": "string",
+            "type": [
+              "string",
+              "null"
+            ],
             "format": "date-time",
-            "nullable": true,
             "example": null
           },
           "acceptedTermsAt": {
-            "type": "string",
+            "type": [
+              "string",
+              "null"
+            ],
             "format": "date-time",
-            "nullable": true,
             "example": "2026-01-01T00:00:00.000Z"
           },
           "acceptedPrivacyAt": {
-            "type": "string",
+            "type": [
+              "string",
+              "null"
+            ],
             "format": "date-time",
-            "nullable": true,
             "example": "2026-01-01T00:00:00.000Z"
           },
           "onboardingStep": {
-            "type": "string",
+            "type": [
+              "string",
+              "null"
+            ],
             "enum": [
               "PROFILE",
               "ROLE",
               "BRINGS",
-              "WORKSPACE"
+              "WORKSPACE",
+              null
             ],
-            "nullable": true,
             "description": "`null` indica onboarding concluído.",
             "example": null
           },
           "role": {
-            "type": "string",
+            "type": [
+              "string",
+              "null"
+            ],
             "enum": [
               "PRODUCT_MANAGER",
               "ENGINEERING_MANAGER",
@@ -9720,9 +9851,9 @@
               "DEVELOPER",
               "FOUNDER_EXECUTIVE",
               "OPERATIONS_MANAGER",
-              "OTHER"
+              "OTHER",
+              null
             ],
-            "nullable": true,
             "example": "DEVELOPER"
           },
           "goals": {
@@ -9811,6 +9942,15 @@
           "updatedAt": {
             "type": "string",
             "format": "date-time"
+          },
+          "trialEndsAt": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "format": "date-time",
+            "description": "Fim do período de teste; `null` fora de um trial.",
+            "example": null
           }
         }
       },
@@ -9834,6 +9974,19 @@
             "pattern": "^[a-z0-9-]+$",
             "description": "Apenas letras minúsculas, números e hífens.",
             "example": "acme"
+          },
+          "teamSize": {
+            "type": "string",
+            "enum": [
+              "1",
+              "2-10",
+              "11-50",
+              "51-200",
+              "201-500",
+              "500+"
+            ],
+            "description": "Faixa de tamanho do time, informada no onboarding e usada para segmentação de plano.",
+            "example": "11-50"
           }
         }
       },
@@ -9852,6 +10005,19 @@
             "maxLength": 50,
             "pattern": "^[a-z0-9-]+$",
             "example": "acme-corp"
+          },
+          "teamSize": {
+            "type": "string",
+            "enum": [
+              "1",
+              "2-10",
+              "11-50",
+              "51-200",
+              "201-500",
+              "500+"
+            ],
+            "description": "Faixa de tamanho do time, informada no onboarding e usada para segmentação de plano.",
+            "example": "51-200"
           }
         }
       },
@@ -9974,8 +10140,10 @@
             "example": "monthly"
           },
           "coupon": {
-            "type": "string",
-            "nullable": true,
+            "type": [
+              "string",
+              "null"
+            ],
             "example": null
           },
           "paymentUrl": {
@@ -10688,19 +10856,25 @@
             "example": "redesign-onboarding"
           },
           "description": {
-            "type": "string",
-            "nullable": true,
+            "type": [
+              "string",
+              "null"
+            ],
             "example": "Melhoria no fluxo de cadastro e ativação"
           },
           "emoji": {
-            "type": "string",
-            "nullable": true,
+            "type": [
+              "string",
+              "null"
+            ],
             "example": "🚀"
           },
           "coverImage": {
-            "type": "string",
+            "type": [
+              "string",
+              "null"
+            ],
             "format": "uri",
-            "nullable": true,
             "example": null
           },
           "isPublic": {
@@ -10720,9 +10894,11 @@
             "example": "clx0v5k2p0000qwer9012ijkl"
           },
           "archivedAt": {
-            "type": "string",
+            "type": [
+              "string",
+              "null"
+            ],
             "format": "date-time",
-            "nullable": true,
             "example": null
           },
           "createdAt": {
@@ -10732,6 +10908,27 @@
           "updatedAt": {
             "type": "string",
             "format": "date-time"
+          },
+          "identifier": {
+            "type": "string",
+            "description": "Prefixo dos identificadores das issues do projeto.",
+            "example": "NEX"
+          },
+          "issueTypesEnabled": {
+            "type": "boolean",
+            "example": true
+          },
+          "modulesEnabled": {
+            "type": "boolean",
+            "example": true
+          },
+          "cyclesEnabled": {
+            "type": "boolean",
+            "example": true
+          },
+          "estimatesEnabled": {
+            "type": "boolean",
+            "example": true
           }
         }
       },
@@ -10774,6 +10971,34 @@
           "isPublic": {
             "type": "boolean",
             "default": false
+          },
+          "issueTypesEnabled": {
+            "type": "boolean",
+            "default": true,
+            "description": "Habilita tipos de issue no projeto."
+          },
+          "modulesEnabled": {
+            "type": "boolean",
+            "default": true,
+            "description": "Habilita módulos no projeto."
+          },
+          "cyclesEnabled": {
+            "type": "boolean",
+            "default": true,
+            "description": "Habilita ciclos no projeto."
+          },
+          "estimatesEnabled": {
+            "type": "boolean",
+            "default": true,
+            "description": "Habilita estimativas no projeto."
+          },
+          "identifier": {
+            "type": "string",
+            "minLength": 2,
+            "maxLength": 10,
+            "pattern": "^[A-Z0-9]+$",
+            "description": "Prefixo usado nos identificadores das issues do projeto (ex.: `NEX-42`). Apenas letras maiúsculas e números. Se omitido, é derivado do nome do projeto.",
+            "example": "NEX"
           }
         }
       },
@@ -10807,6 +11032,35 @@
           },
           "isPublic": {
             "type": "boolean"
+          },
+          "issueTypesEnabled": {
+            "type": "boolean",
+            "description": "Habilita tipos de issue no projeto."
+          },
+          "modulesEnabled": {
+            "type": "boolean",
+            "description": "Habilita módulos no projeto."
+          },
+          "cyclesEnabled": {
+            "type": "boolean",
+            "description": "Habilita ciclos no projeto."
+          },
+          "estimatesEnabled": {
+            "type": "boolean",
+            "description": "Habilita estimativas no projeto."
+          },
+          "identifier": {
+            "type": "string",
+            "minLength": 2,
+            "maxLength": 10,
+            "pattern": "^[A-Z0-9]+$",
+            "description": "Prefixo usado nos identificadores das issues do projeto (ex.: `NEX-42`). Apenas letras maiúsculas e números. Se omitido, é derivado do nome do projeto.",
+            "example": "NEX2"
+          },
+          "leadId": {
+            "type": "string",
+            "description": "cuid2 do membro do projeto que passa a ser o lead.",
+            "example": "clx0v5k2p0000qwer5678efgh"
           }
         }
       },
@@ -10859,8 +11113,10 @@
             "example": "joao"
           },
           "image": {
-            "type": "string",
-            "nullable": true,
+            "type": [
+              "string",
+              "null"
+            ],
             "example": null
           },
           "isLead": {
@@ -10870,6 +11126,11 @@
           "createdAt": {
             "type": "string",
             "format": "date-time"
+          },
+          "email": {
+            "type": "string",
+            "format": "email",
+            "example": "ana@acme.com"
           }
         }
       },
@@ -10965,8 +11226,10 @@
             "example": "joao@exemplo.com"
           },
           "image": {
-            "type": "string",
-            "nullable": true,
+            "type": [
+              "string",
+              "null"
+            ],
             "example": null
           },
           "role": {
@@ -11143,8 +11406,10 @@
             "example": "clx2ws456"
           },
           "projectId": {
-            "type": "string",
-            "nullable": true,
+            "type": [
+              "string",
+              "null"
+            ],
             "description": "Presente quando o convite é escopado a um projeto.",
             "example": null
           },
@@ -11542,8 +11807,10 @@
             "example": "Engenheiro(a) Backend"
           },
           "department": {
-            "type": "string",
-            "nullable": true,
+            "type": [
+              "string",
+              "null"
+            ],
             "example": "Engenharia"
           },
           "summary": {
@@ -11554,8 +11821,10 @@
             "$ref": "#/components/schemas/CareerJobContent"
           },
           "location": {
-            "type": "string",
-            "nullable": true,
+            "type": [
+              "string",
+              "null"
+            ],
             "example": "São Paulo, SP"
           },
           "locationType": {
@@ -11746,22 +12015,28 @@
             "example": "Sprint 14"
           },
           "description": {
-            "type": "string",
-            "nullable": true,
+            "type": [
+              "string",
+              "null"
+            ],
             "example": "Foco em performance do dashboard"
           },
           "status": {
             "$ref": "#/components/schemas/CycleStatus"
           },
           "startDate": {
-            "type": "string",
-            "format": "date-time",
-            "nullable": true
+            "type": [
+              "string",
+              "null"
+            ],
+            "format": "date-time"
           },
           "endDate": {
-            "type": "string",
-            "format": "date-time",
-            "nullable": true
+            "type": [
+              "string",
+              "null"
+            ],
+            "format": "date-time"
           },
           "leadId": {
             "type": "string",
@@ -11831,14 +12106,18 @@
             "$ref": "#/components/schemas/CycleStatus"
           },
           "startDate": {
-            "type": "string",
-            "format": "date-time",
-            "nullable": true
+            "type": [
+              "string",
+              "null"
+            ],
+            "format": "date-time"
           },
           "endDate": {
-            "type": "string",
-            "format": "date-time",
-            "nullable": true
+            "type": [
+              "string",
+              "null"
+            ],
+            "format": "date-time"
           }
         }
       },
@@ -11858,9 +12137,11 @@
             "example": "anasouza"
           },
           "image": {
-            "type": "string",
-            "format": "uri",
-            "nullable": true
+            "type": [
+              "string",
+              "null"
+            ],
+            "format": "uri"
           },
           "isLead": {
             "type": "boolean",
@@ -12178,14 +12459,18 @@
             "$ref": "#/components/schemas/IssuePriority"
           },
           "startDate": {
-            "type": "string",
-            "format": "date-time",
-            "nullable": true
+            "type": [
+              "string",
+              "null"
+            ],
+            "format": "date-time"
           },
           "dueDate": {
-            "type": "string",
-            "format": "date-time",
-            "nullable": true
+            "type": [
+              "string",
+              "null"
+            ],
+            "format": "date-time"
           },
           "stateId": {
             "type": "string",
@@ -12210,6 +12495,48 @@
           "updatedAt": {
             "type": "string",
             "format": "date-time"
+          },
+          "cycleId": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "description": "Ciclo ao qual a issue pertence."
+          },
+          "moduleId": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "description": "Módulo ao qual a issue pertence."
+          },
+          "labelIds": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "IDs das labels aplicadas à issue."
+          },
+          "assigneeIds": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "IDs dos responsáveis pela issue."
+          },
+          "estimateValueId": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "description": "Valor de estimativa atribuído à issue."
+          },
+          "parentId": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "description": "Issue pai, quando esta é uma sub-issue."
           }
         }
       },
@@ -12252,6 +12579,22 @@
           "typeId": {
             "type": "string",
             "description": "cuid2 de um tipo de issue pertencente ao projeto. Se omitido, usa o tipo padrão do sistema (Task)."
+          },
+          "cycleId": {
+            "type": "string",
+            "description": "cuid2 de um ciclo do projeto. Se omitido, a issue não entra em nenhum ciclo."
+          },
+          "moduleId": {
+            "type": "string",
+            "description": "cuid2 de um módulo do projeto."
+          },
+          "estimateValueId": {
+            "type": "string",
+            "description": "cuid2 de um valor da escala de estimativas configurada no projeto."
+          },
+          "parentId": {
+            "type": "string",
+            "description": "cuid2 da issue pai, quando esta é uma sub-issue."
           }
         }
       },
@@ -12273,17 +12616,49 @@
             "$ref": "#/components/schemas/IssuePriority"
           },
           "startDate": {
-            "type": "string",
-            "format": "date-time",
-            "nullable": true
+            "type": [
+              "string",
+              "null"
+            ],
+            "format": "date-time"
           },
           "dueDate": {
-            "type": "string",
-            "format": "date-time",
-            "nullable": true
+            "type": [
+              "string",
+              "null"
+            ],
+            "format": "date-time"
           },
           "typeId": {
             "type": "string"
+          },
+          "cycleId": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "description": "`null` remove a issue do ciclo atual."
+          },
+          "moduleId": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "description": "`null` remove a issue do módulo atual."
+          },
+          "estimateValueId": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "description": "`null` remove a estimativa da issue."
+          },
+          "parentId": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "description": "`null` desvincula a issue da issue pai."
           }
         }
       },
@@ -12350,9 +12725,11 @@
                 "example": "anasouza"
               },
               "image": {
-                "type": "string",
-                "format": "uri",
-                "nullable": true
+                "type": [
+                  "string",
+                  "null"
+                ],
+                "format": "uri"
               }
             }
           },
@@ -12419,8 +12796,10 @@
             "example": "Bug"
           },
           "description": {
-            "type": "string",
-            "nullable": true,
+            "type": [
+              "string",
+              "null"
+            ],
             "example": "Comportamento inesperado ou incorreto"
           },
           "color": {
@@ -12565,8 +12944,10 @@
             "example": "Frontend"
           },
           "description": {
-            "type": "string",
-            "nullable": true,
+            "type": [
+              "string",
+              "null"
+            ],
             "example": "Mudanças na interface"
           },
           "color": {
@@ -12692,14 +13073,18 @@
             "$ref": "#/components/schemas/ModuleStatus"
           },
           "startDate": {
-            "type": "string",
-            "format": "date-time",
-            "nullable": true
+            "type": [
+              "string",
+              "null"
+            ],
+            "format": "date-time"
           },
           "endDate": {
-            "type": "string",
-            "format": "date-time",
-            "nullable": true
+            "type": [
+              "string",
+              "null"
+            ],
+            "format": "date-time"
           },
           "isFavorited": {
             "type": "boolean",
@@ -12794,9 +13179,11 @@
             "example": "anasouza"
           },
           "image": {
-            "type": "string",
-            "format": "uri",
-            "nullable": true
+            "type": [
+              "string",
+              "null"
+            ],
+            "format": "uri"
           },
           "isLead": {
             "type": "boolean",
@@ -12932,8 +13319,10 @@
             "example": "Em progresso"
           },
           "description": {
-            "type": "string",
-            "nullable": true,
+            "type": [
+              "string",
+              "null"
+            ],
             "example": "Issue sendo trabalhada ativamente"
           },
           "group": {
@@ -13713,12 +14102,10 @@
             "example": "stateId"
           },
           "oldValue": {
-            "nullable": true,
-            "description": "Valor anterior do campo (formato depende do campo)."
+            "description": "Valor anterior do campo (formato depende do campo); pode ser `null`."
           },
           "newValue": {
-            "nullable": true,
-            "description": "Novo valor do campo (formato depende do campo)."
+            "description": "Novo valor do campo (formato depende do campo); pode ser `null`."
           },
           "actor": {
             "$ref": "#/components/schemas/ActivityActor"

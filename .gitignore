@@ -62,6 +62,10 @@ scripts/.load-test-manifest.json
 # k6 run outputs (raw JSON exports for building graphs)
 k6/results/
 
+# mutation testing (Stryker sandbox, incremental cache and HTML/JSON reports)
+/.stryker-tmp/
+/.stryker/
+
 # AI Agents & Skills
 .agents*
 .claude
