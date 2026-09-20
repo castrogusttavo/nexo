@@ -41,7 +41,7 @@ describe('<RoleForm />', () => {
     await waitFor(() => expect(saveRoleSetup).toHaveBeenCalled())
     const data = submittedFormData()
     expect(data.get('intent')).toBe('continue')
-    expect(data.get('role')).toBe('FOUNDER_EXECUTIBE')
+    expect(data.get('role')).toBe('FOUNDER_EXECUTIVE')
   })
 
   it('submits the skip intent with no role', async () => {

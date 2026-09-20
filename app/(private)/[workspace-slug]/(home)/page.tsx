@@ -16,6 +16,7 @@ import { H4 } from '@/components/typography/heading/h4'
 import { Muted } from '@/components/typography/text/muted'
 import { Small } from '@/components/typography/text/small'
 import { Button } from '@/components/ui/button'
+import { getAuthSession } from '@/src/lib/auth-session'
 
 export const metadata: Metadata = {
   title: 'Página inicial | Nexo',
@@ -58,7 +59,15 @@ async function getFullDate() {
     .join('')
 }
 
+/** First name only: the greeting is a salutation, not an identity check. */
+function firstName(name: string | null | undefined): string {
+  return name?.trim().split(/\s+/)[0] ?? ''
+}
+
 export default async function Page() {
+  const session = await getAuthSession()
+  const greeted = session.ok ? firstName(session.value.user.name) : ''
+
   return (
     <div className='w-full h-full overflow-y-scroll'>
       <HeaderInternalNavigation>
@@ -79,7 +88,10 @@ export default async function Page() {
       <div className='max-w-200 w-full h-full mx-auto p-6 space-y-8'>
         <div>
           <div className='text-center'>
-            <H4>{getGreeting()}, Gusttavo Castro</H4>
+            <H4>
+              {getGreeting()}
+              {greeted && `, ${greeted}`}
+            </H4>
             <Muted>{getFullDate()}</Muted>
           </div>
         </div>

@@ -25,7 +25,7 @@ const ROLES = [
   { value: 'DESIGNER', label: 'Designer', icon: PenTool03Icon },
   { value: 'DEVELOPER', label: 'Developer', icon: SourceCodeSquareIcon },
   {
-    value: 'FOUNDER_EXECUTIBE',
+    value: 'FOUNDER_EXECUTIVE',
     label: 'Fundador / Executivo',
     icon: Rocket01Icon,
   },

@@ -13,6 +13,7 @@ import {
   KanbanColumnContent,
   type KanbanCommitMeta,
   KanbanItem,
+  KanbanItemHandle,
   KanbanOverlay,
 } from '@/components/ui/kanban'
 import {
@@ -332,12 +333,18 @@ function IssueKanbanColumn({
       <KanbanColumnContent value={state.id} className='min-h-12 flex-1 gap-2'>
         {issues.map((issue) => (
           <KanbanItem key={issue.id} value={issue.id}>
-            <IssueKanbanCard
-              issue={issue}
-              identifier={`${projectIdentifier}-${issue.number}`}
-              assignees={assigneesOf(issue, membersById)}
-              onOpen={() => onOpen(issue.id)}
-            />
+            {/* KanbanItem keeps the drag listeners in context for a handle to
+                claim -- without one the card is not draggable at all. The whole
+                card is the handle here; dnd-kit's activation distance keeps a
+                plain click opening the issue. */}
+            <KanbanItemHandle className='w-full'>
+              <IssueKanbanCard
+                issue={issue}
+                identifier={`${projectIdentifier}-${issue.number}`}
+                assignees={assigneesOf(issue, membersById)}
+                onOpen={() => onOpen(issue.id)}
+              />
+            </KanbanItemHandle>
           </KanbanItem>
         ))}
       </KanbanColumnContent>

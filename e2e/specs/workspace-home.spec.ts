@@ -17,16 +17,14 @@ test.describe('workspace home', () => {
     await expect(page.getByRole('link', { name: 'Ajustes' })).toBeVisible()
   })
 
-  // BUG: the home greeting is hardcoded — app/(private)/[workspace-slug]/
-  // (home)/page.tsx renders `{getGreeting()}, Gusttavo Castro`, so every
-  // account in every workspace is greeted with the author's name. jsdom
-  // component tests never rendered this Server Component, so nothing caught
-  // it. Un-fixme once the greeting uses the session user.
-  test.fixme('greets the signed-in user by name', async ({ page, account }) => {
+  // The greeting used to be hardcoded to the author's own name for every
+  // account: a Server Component, so no jsdom test ever rendered it.
+  test('greets the signed-in user by first name', async ({ page, account }) => {
     await page.goto(`/${account.workspaceSlug}`)
+    const [firstName] = account.name.split(' ')
     await expect(
       page.getByRole('heading', {
-        name: new RegExp(`(Bom dia|Boa tarde|Boa noite), ${account.name}`),
+        name: new RegExp(`(Bom dia|Boa tarde|Boa noite), ${firstName}`),
       }),
     ).toBeVisible()
   })

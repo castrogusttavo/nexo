@@ -110,24 +110,80 @@ test.describe('projects and issues', () => {
     ).toBeVisible()
   })
 
-  // BUG: the kanban cards cannot be dragged at all. components/ui/kanban.tsx
-  // attaches the dnd-kit listeners to <KanbanItemHandle>, and no screen
-  // renders one — IssueKanbanView puts a plain <button> inside <KanbanItem>.
-  // Verified in Chromium: a mouse drag past the 10px activation distance and
-  // the KeyboardSensor pick-up (Space on the focused card) both leave
-  // data-dragging="false" and fire no PATCH. Un-fixme once a handle is wired.
-  test.fixme('drags an issue card to another kanban column', async ({
+  test('drags an issue card to another column and persists the move', async ({
     page,
     account,
+    api,
   }) => {
-    await page.goto(
-      `/${account.workspaceSlug}/projects/any/issues?layout=kanban`,
+    const suffix = uniqueSuffix()
+    const slug = `arrasta-${suffix}`
+    const title = `Arrastar ${suffix}`
+
+    const created = await api.post(
+      `/api/workspaces/${account.workspaceId}/projects`,
+      { data: { name: `Arrasta ${suffix}`, slug } },
     )
-    const card = page.locator('[data-slot="kanban-item"]').first()
-    await card.focus()
-    await page.keyboard.press('Space')
-    await expect(page.locator('[data-dragging="true"]')).toHaveCount(1)
-    await page.keyboard.press('ArrowRight')
-    await page.keyboard.press('Space')
+    expect(created.ok()).toBe(true)
+    const project = (await created.json()).data
+
+    // An issue needs a state, and the project's default set is created with
+    // it, so read Backlog back instead of hardcoding an id.
+    const states = await api.get(
+      `/api/workspaces/${account.workspaceId}/projects/${slug}/states`,
+    )
+    expect(states.ok()).toBe(true)
+    const backlog = (await states.json()).data.find(
+      (state: { name: string }) => state.name === 'Backlog',
+    )
+    expect(backlog, 'project has no Backlog state').toBeTruthy()
+
+    const issue = await api.post(
+      `/api/workspaces/${account.workspaceId}/projects/${slug}/issues`,
+      { data: { title, description: [], stateId: backlog.id } },
+    )
+    expect(issue.ok(), await issue.text()).toBe(true)
+
+    await page.goto(
+      `/${account.workspaceSlug}/projects/${slug}/issues?layout=kanban`,
+    )
+
+    const card = page
+      .locator('[data-slot="kanban-item"]')
+      .filter({ hasText: title })
+    await expect(card).toBeVisible()
+
+    const target = page
+      .locator('[data-slot="kanban-column"]')
+      .filter({ has: page.getByRole('heading', { name: 'Em progresso' }) })
+
+    const from = await card.boundingBox()
+    const to = await target.boundingBox()
+    if (!from || !to) throw new Error('card or column has no box')
+
+    // dnd-kit only starts a drag past its activation distance, which is also
+    // what keeps a plain click opening the issue, so the pointer moves in
+    // steps rather than jumping.
+    await page.mouse.move(from.x + from.width / 2, from.y + from.height / 2)
+    await page.mouse.down()
+    await page.mouse.move(
+      from.x + from.width / 2,
+      from.y + from.height / 2 + 20,
+    )
+    const [patch] = await Promise.all([
+      page.waitForResponse(
+        (r) =>
+          /\/issues\/[^/]+$/.test(r.url()) && r.request().method() === 'PATCH',
+      ),
+      (async () => {
+        await page.mouse.move(to.x + to.width / 2, to.y + 120, { steps: 12 })
+        await page.mouse.up()
+      })(),
+    ])
+    expect(patch.status()).toBe(200)
+
+    // Survives a reload: the move reached the server, not just the board.
+    await page.reload()
+    await expect(target.getByRole('button', { name: title })).toBeVisible()
+    expect(project.slug).toBe(slug)
   })
 })
