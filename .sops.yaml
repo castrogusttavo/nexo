@@ -1,7 +1,7 @@
 creation_rules:
   - path_regex: secrets/.*\.env$
     age: >-
-      age16gwfmnsyt2nze0cgjun2zl6rn2m5cj53kmyk4ctzgm90e8q53aeqqzpxme
-    # Replace the public key above with your actual age public key.
-    # Generate a key pair: age-keygen -o nexo-secrets.key
-    # The public key is printed to stdout during generation.
+      age1ud9han7d07q3t34qfpyzla76z4aqgkwcmj6m5y6suu2hssvtcgqq37ahh9
+    # Public key of the age pair generated on 2026-09-19. The private half
+    # lives in the maintainer's ~/.config/sops/age/keys.txt and in the
+    # SOPS_AGE_KEY GitHub secret the CD uses to decrypt.
