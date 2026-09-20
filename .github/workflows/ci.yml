@@ -132,6 +132,15 @@ jobs:
       MINIO_ENDPOINT: http://localhost:9000
       MINIO_USER: ci-minio-user
       MINIO_PASSWORD: ci-minio-password
+      # NEXT_PUBLIC_* values are inlined into the client bundle at build time,
+      # and SKIP_ENV_VALIDATION is not (it has no NEXT_PUBLIC_ prefix), so the
+      # browser re-runs lib/env/env.ts validation for real. Without these the
+      # bundle throws on every page and Chromium shows "This page couldn't
+      # load" -- which is exactly how production broke once before, over a
+      # missing NEXT_PUBLIC_REALTIME_URL.
+      NEXT_PUBLIC_AXIOM_TOKEN: xaat-ci-token-not-real
+      NEXT_PUBLIC_AXIOM_DATASET: nexo-ci
+      NEXT_PUBLIC_REALTIME_URL: ws://localhost:1234
     steps:
       - name: Checkout repository
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7

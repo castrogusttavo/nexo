@@ -18,7 +18,10 @@ const IS_CI = !!process.env.CI
 // hydrate. Set PLAYWRIGHT_SKIP_BUILD=true to reuse an already-built .next
 // while iterating locally.
 const START =
-  'cp -r .next/static .next/standalone/.next/ && cp -r public .next/standalone/ && node .next/standalone/server.js'
+  'rm -rf .next/standalone/.next/static .next/standalone/public' +
+  ' && cp -r .next/static .next/standalone/.next/' +
+  ' && cp -r public .next/standalone/' +
+  ' && node .next/standalone/server.js'
 const COMMAND =
   process.env.PLAYWRIGHT_SKIP_BUILD === 'true'
     ? START
