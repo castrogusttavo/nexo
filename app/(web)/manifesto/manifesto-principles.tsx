@@ -1,13 +1,6 @@
 'use client'
 
-import {
-  AnimatePresence,
-  type MotionValue,
-  motion,
-  useScroll,
-  useTransform,
-} from 'motion/react'
-import Image from 'next/image'
+import { type MotionValue, motion, useScroll, useTransform } from 'motion/react'
 import { useEffect, useRef, useState } from 'react'
 import { cn } from '@/lib/utils'
 
