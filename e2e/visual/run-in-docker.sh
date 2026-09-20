@@ -57,14 +57,36 @@ fi
 #   ten minutes for a localhost:3000 nothing is listening on.
 # The repo is mounted at its own absolute path, so absolute paths in .env
 # (REDIS_TLS_CA_PATH) resolve to the same file inside the container.
+# A developer has a .env for the server to read; CI has only the job's
+# environment, and none of it crosses into a container by itself. Without this
+# the server inside the container fails env validation on POSTGRES_USER and
+# answers every request with a 500.
+PASSTHROUGH=(
+  CI
+  DATABASE_URL REDIS_URL REDIS_TLS_ENABLED REDIS_TLS_CA_PATH
+  POSTGRES_USER POSTGRES_PASSWORD POSTGRES_DB
+  BETTER_AUTH_SECRET BETTER_AUTH_SECRETS BETTER_AUTH_URL
+  NEXT_PUBLIC_URL NEXT_PUBLIC_AXIOM_TOKEN NEXT_PUBLIC_AXIOM_DATASET
+  NEXT_PUBLIC_REALTIME_URL
+  MINIO_ENDPOINT MINIO_USER MINIO_PASSWORD
+  SKIP_ENV_VALIDATION DISABLE_AUTH_RATE_LIMIT MAIL_DRY_RUN
+  STATUS_COLLECTOR_SECRET ABACATE_PAY_WEBHOOK_SECRET PLATFORM_ADMIN_EMAILS
+  PLAYWRIGHT_HTML_OUTPUT_DIR PLAYWRIGHT_BASE_URL PLAYWRIGHT_PORT
+)
+
+env_args=()
+for name in "${PASSTHROUGH[@]}"; do
+  if [ -n "${!name:-}" ]; then env_args+=(--env "$name"); fi
+done
+
 exec docker run --rm --init \
   --network host \
   --ipc=host \
   --user "$(id -u):$(id -g)" \
   --env HOME=/tmp \
-  --env CI \
   --env HOSTNAME=0.0.0.0 \
   --env PLAYWRIGHT_SKIP_BUILD=true \
+  "${env_args[@]}" \
   --volume "$ROOT:$ROOT" \
   --workdir "$ROOT" \
   "$IMAGE" \
