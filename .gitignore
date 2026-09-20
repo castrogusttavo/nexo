@@ -80,3 +80,9 @@ CLAUDE.md
 /playwright-report/
 /blob-report/
 /playwright/.cache/
+# ...and the visual project's own run artifacts, kept apart so a visual run
+# never wipes the behavioural run's report in the same CI job.
+/test-results-visual/
+/playwright-report-visual/
+# The visual baselines under e2e/visual/__screenshots__/ are NOT ignored:
+# they are the expected output and are meant to be reviewed in the diff.

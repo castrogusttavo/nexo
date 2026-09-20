@@ -65,10 +65,60 @@ export default defineConfig({
         viewport: { width: 1440, height: 900 },
       },
     },
-    // A visual-regression project slots in here without restructuring:
-    // its own testDir (e2e/visual), the same `use` block plus
-    // `snapshotPathTemplate`, and `ignoreSnapshots: !IS_CI` if the
-    // screenshots are only baselined on the runner.
+    // Visual regression. Same server, same fixtures shape, different question:
+    // the chromium project asserts behaviour, this one asserts the picture.
+    //
+    // It is meant to be run through e2e/visual/run-in-docker.sh, which boots
+    // the official Playwright image so the baselines are rasterised by the
+    // same fonts and the same compositor here and on the runner. Nothing in
+    // the path template encodes the platform, on purpose: a run outside that
+    // image must fail loudly on a diff instead of quietly writing a second
+    // tree of baselines nobody reviews.
+    {
+      name: 'visual',
+      testDir: './e2e/visual',
+      // One worker, one fixed identity (the e-mail and the name are printed
+      // on screen), and the specs write shared rows for /status.
+      fullyParallel: false,
+      // No retries: a screenshot that only matches on the second attempt is
+      // the exact flake this suite exists to not have.
+      retries: 0,
+      snapshotPathTemplate: '{testDir}/__screenshots__/{arg}{ext}',
+      use: {
+        ...devices['Desktop Chrome'],
+        // The variants override the viewport; this is only the fallback.
+        viewport: { width: 1440, height: 900 },
+        // Driven as a real preference, not as a CSS override: the `motion`
+        // components and the app's own transitions honour it.
+        reducedMotion: 'reduce',
+      },
+      expect: {
+        // A project-level `expect` replaces the top-level one rather than
+        // merging into it, so the 10s from above has to be repeated here —
+        // the client-side queries behind the members table need more than
+        // the 5s default on a cold context.
+        timeout: 15_000,
+        toHaveScreenshot: {
+          // Strict on purpose. A blanket 1% tolerance hides a whole row of
+          // shifted text. Nothing has needed to relax it yet; if something
+          // ever does, relax it on that single call with a comment naming
+          // the element.
+          //
+          // Not one pixel may differ, and a pixel counts as different as soon
+          // as it moves ~2% in colour. Inside the pinned image the pictures
+          // come out byte-identical, so the tolerance is only insurance
+          // against the runner's software rasteriser landing a level or two
+          // away; it is still tight enough to fail on a #fff -> #f5f5f4 token
+          // slip, which the default 0.2 lets through unnoticed.
+          maxDiffPixelRatio: 0,
+          threshold: 0.02,
+          animations: 'disabled',
+          caret: 'hide',
+          // CSS pixels, so a device-scale change never rewrites every file.
+          scale: 'css',
+        },
+      },
+    },
   ],
 
   webServer: {

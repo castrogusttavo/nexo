@@ -274,6 +274,25 @@ jobs:
           path: playwright-report/
           retention-days: 7
 
+      # Visual regression runs inside the official Playwright image so the
+      # baselines are rasterised the same way here and on a developer's
+      # machine, and reuses this job's build, database and MinIO. It comes
+      # after the browser suite because both want port 3000.
+      - name: Run visual regression tests
+        run: ./e2e/visual/run-in-docker.sh --output=test-results-visual
+        env:
+          PLAYWRIGHT_SKIP_BUILD: 'true'
+          PLAYWRIGHT_HTML_OUTPUT_DIR: playwright-report-visual
+          NODE_OPTIONS: ''
+
+      - name: Upload visual diff report
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        if: ${{ !cancelled() }}
+        with:
+          name: playwright-report-visual
+          path: playwright-report-visual/
+          retention-days: 7
+
   # Single run of unit + integration (with coverage, uploaded to Codecov) and
   # component tests. Separate unit/integration jobs used to repeat the exact
   # same suites without coverage.
