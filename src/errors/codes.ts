@@ -59,7 +59,7 @@ export const ERROR_CODES = {
     status: 404,
   },
   ESTIMATE_SETTINGS_FORBIDDEN: {
-    code: 'ESTIMATE_SETTINGS_NOT_FOUND',
+    code: 'ESTIMATE_SETTINGS_FORBIDDEN',
     status: 403,
   },
   ESTIMATE_VALUE_NOT_FOUND: { code: 'ESTIMATE_VALUE_NOT_FOUND', status: 404 },
