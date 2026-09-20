@@ -46,6 +46,12 @@ async function purgeExpiredCareerApplications(): Promise<CleanupResult> {
     select: { id: true, resumeBucket: true, resumeKey: true },
   })
 
+  // Nothing expired: skip both the storage sweep and the `id IN ()`
+  // deleteMany, which would otherwise hit the DB for a guaranteed 0.
+  if (expired.length === 0) {
+    return { deleted: 0, cutoff: cutoff.toISOString() }
+  }
+
   await Promise.all(
     expired.map((app) =>
       deleteObject({ bucket: app.resumeBucket, key: app.resumeKey }).catch(

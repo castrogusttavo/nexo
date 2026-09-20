@@ -21,42 +21,33 @@ function deleteAccountJobId(userId: string): string {
   return `delete-account-${userId}`
 }
 
-export async function scheduleAccountDeletion(
+// BullMQ's remove() answers 1 whenever the job is not locked — whether or
+// not it ever existed — and 0 when a worker already holds the lock. It never
+// rejects for a missing job, so existence has to be read separately for the
+// return value to mean "there was a job and it is gone now".
+async function removeDeleteAccountJob(
   userId: string,
-  scheduledAt: Date,
-): Promise<void> {
+  jobId: string,
+): Promise<boolean> {
   const queue = getAccountLifecycleQueue()
-  const delay = Math.max(0, scheduledAt.getTime() - Date.now())
-
-  await queue.add(
-    AccountLifecycleJob.DeleteAccount,
-    { userId },
-    { jobId: deleteAccountJobId(userId), delay },
-  )
-
-  logger.info('queue.account_lifecycle.deletion_scheduled', {
-    component: 'AccountLifecycle',
-    userId,
-    scheduledAt: scheduledAt.toISOString(),
-    delayMs: delay,
-  })
-}
-
-export async function cancelAccountDeletion(userId: string): Promise<boolean> {
-  const queue = getAccountLifecycleQueue()
-  const jobId = deleteAccountJobId(userId)
 
   try {
-    await queue.remove(jobId)
-    logger.info('queue.account_lifecycle.deletion_canceled', {
+    const job = await queue.getJob(jobId)
+    if (!job) return false
+
+    const removed = await queue.remove(jobId)
+    if (removed > 0) return true
+
+    // 0 = the job is locked, i.e. a worker is already processing it.
+    logger.warn('queue.account_lifecycle.remove_locked', {
       component: 'AccountLifecycle',
       userId,
       jobId,
     })
-    return true
+    return false
   } catch (error) {
     const message = error instanceof Error ? error.message : String(error)
-    logger.warn('queue.account_lifecycle.cancel_noop', {
+    logger.warn('queue.account_lifecycle.remove_failed', {
       component: 'AccountLifecycle',
       userId,
       jobId,
@@ -64,4 +55,60 @@ export async function cancelAccountDeletion(userId: string): Promise<boolean> {
     })
     return false
   }
+}
+
+export async function scheduleAccountDeletion(
+  userId: string,
+  scheduledAt: Date,
+): Promise<void> {
+  const queue = getAccountLifecycleQueue()
+  const jobId = deleteAccountJobId(userId)
+  const delay = Math.max(0, scheduledAt.getTime() - Date.now())
+
+  // A custom jobId makes BullMQ keep the FIRST job and silently drop the
+  // second add(), so re-scheduling would never move the deadline. Remove
+  // any pending job first: the latest schedule is the authoritative one.
+  const replaced = await removeDeleteAccountJob(userId, jobId)
+
+  await queue.add(
+    AccountLifecycleJob.DeleteAccount,
+    { userId },
+    { jobId, delay },
+  )
+
+  logger.info('queue.account_lifecycle.deletion_scheduled', {
+    component: 'AccountLifecycle',
+    userId,
+    scheduledAt: scheduledAt.toISOString(),
+    delayMs: delay,
+    replaced,
+  })
+}
+
+/**
+ * Removes the pending delete-account job for `userId`.
+ *
+ * @returns `true` when a job was actually removed, `false` when there was
+ * nothing queued (or the removal failed) — callers must not report a
+ * cancellation that did not happen.
+ */
+export async function cancelAccountDeletion(userId: string): Promise<boolean> {
+  const jobId = deleteAccountJobId(userId)
+  const removed = await removeDeleteAccountJob(userId, jobId)
+
+  if (removed) {
+    logger.info('queue.account_lifecycle.deletion_canceled', {
+      component: 'AccountLifecycle',
+      userId,
+      jobId,
+    })
+  } else {
+    logger.warn('queue.account_lifecycle.cancel_noop', {
+      component: 'AccountLifecycle',
+      userId,
+      jobId,
+    })
+  }
+
+  return removed
 }
