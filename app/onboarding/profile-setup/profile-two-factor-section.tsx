@@ -187,6 +187,7 @@ export function ProfileTwoFactorSection({
                   : 'Recomendada para maior segurança.'}
             </p>
             <Switch
+              aria-label='Verificação em duas etapas'
               checked={is2FAEnabled}
               disabled={!hasPassword || twoFABusy || twoFAMode !== 'idle'}
               onCheckedChange={handle2FAToggle}

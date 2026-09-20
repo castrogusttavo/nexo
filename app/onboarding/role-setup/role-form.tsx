@@ -7,11 +7,11 @@ import {
   RepeatIcon,
   Rocket01Icon,
   SourceCodeSquareIcon,
+  Tick02Icon,
 } from '@hugeicons-pro/core-stroke-rounded'
 import { useActionState, useState } from 'react'
 import { NexoIcon } from '@/components/icon/icon'
 import { Button } from '@/components/ui/button'
-import { Checkbox } from '@/components/ui/checkbox'
 import { cn } from '@/lib/utils'
 import { type RoleSetupState, saveRoleSetup } from './actions'
 
@@ -61,6 +61,7 @@ export function RoleForm() {
             size='lg'
             onClick={() => setSelected(role.value)}
             disabled={isPending}
+            aria-pressed={selected === role.value}
             className={cn(
               'justify-between rounded-lg border-2 px-3! py-2! text-left text-sm font-medium transition-colors',
               selected === role.value
@@ -72,10 +73,21 @@ export function RoleForm() {
               <NexoIcon icon={role.icon} strokeWidth={2} />
               {role.label}
             </div>
-            <Checkbox
-              checked={selected === role.value}
-              className={cn(selected === role.value ? 'block' : 'hidden')}
-            />
+            {/*
+              A checkbox look-alike, not a <Checkbox>: the real state lives in
+              `aria-pressed` on the option button, and a nested widget would
+              be both an invalid control inside a button and a second tab
+              stop per option.
+            */}
+            <span
+              aria-hidden
+              className={cn(
+                'size-4 shrink-0 items-center justify-center rounded-[4px] border border-primary bg-primary text-primary-foreground shadow-xs',
+                selected === role.value ? 'flex' : 'hidden',
+              )}
+            >
+              <NexoIcon icon={Tick02Icon} strokeWidth={2} />
+            </span>
           </Button>
         ))}
       </div>

@@ -90,6 +90,7 @@ function ProjectAccordion({
                 <DropdownMenuTrigger
                   render={<span />}
                   nativeButton={false}
+                  aria-label={`Opções do projeto ${project.name}`}
                   className='opacity-0 group-hover/accordion-trigger:opacity-100 transition-opacity size-7 flex items-center justify-center rounded-md hover:bg-accent/80 shrink-0 outline-none'
                   onClick={(e) => e.stopPropagation()}
                 >

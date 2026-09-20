@@ -22,19 +22,26 @@ function ImagesTab({ current }: { current?: string | null }) {
   const updateUser = useUpdateUser()
 
   async function handleSelect(src: string) {
-    await notify.mutate(updateUser.mutateAsync({ coverImage: src }), {
-      loading: 'Atualizando capa...',
-      success: 'Capa atualizada',
-      error: 'Erro ao atualizar capa',
-    })
+    // `onClick` drops the returned promise, so a rejected PATCH would escape
+    // as an unhandled rejection; the toast already tells the user.
+    try {
+      await notify.mutate(updateUser.mutateAsync({ coverImage: src }), {
+        loading: 'Atualizando capa...',
+        success: 'Capa atualizada',
+        error: 'Erro ao atualizar capa',
+      })
+    } catch {
+      //
+    }
   }
 
   return (
     <div className='grid grid-cols-4 gap-4 max-h-130 overflow-y-auto scrollbar-hidden py-1'>
-      {COVER_IMAGES.map((src) => (
+      {COVER_IMAGES.map((src, index) => (
         <button
           key={src}
           type='button'
+          aria-label={`Usar a capa ${index + 1}`}
           disabled={updateUser.isPending}
           onClick={() => handleSelect(src)}
           className='relative h-16 w-full overflow-hidden rounded-md border-2 transition-colors hover:border-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring'

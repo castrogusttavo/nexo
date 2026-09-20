@@ -123,22 +123,25 @@ export function UserStick({ sticky }: UserStickyProps) {
             onColorChange={handleColorChange}
           />
           <StickTextPropsButton
+            aria-label='Negrito'
             onClick={() => editor?.chain().focus().toggleBold().run()}
           >
             <NexoIcon icon={TextBoldIcon} strokeWidth={2} />
           </StickTextPropsButton>
           <StickTextPropsButton
+            aria-label='Itálico'
             onClick={() => editor?.chain().focus().toggleItalic().run()}
           >
             <NexoIcon icon={TextItalicIcon} strokeWidth={2} />
           </StickTextPropsButton>
           <StickTextPropsButton
+            aria-label='Lista de tarefas'
             onClick={() => editor?.chain().focus().toggleTaskList().run()}
           >
             <NexoIcon icon={CheckListIcon} strokeWidth={2} />
           </StickTextPropsButton>
         </div>
-        <StickTextPropsButton onClick={handleDelete}>
+        <StickTextPropsButton aria-label='Excluir nota' onClick={handleDelete}>
           <NexoIcon icon={Delete02Icon} strokeWidth={2} />
         </StickTextPropsButton>
       </div>
@@ -180,7 +183,7 @@ function StickPickerColor({
       onChange={onColorChange}
       shape='square'
       trigger={
-        <StickTextPropsButton>
+        <StickTextPropsButton aria-label='Cor da nota'>
           <NexoIcon icon={PaintBoardIcon} strokeWidth={2} />
         </StickTextPropsButton>
       }

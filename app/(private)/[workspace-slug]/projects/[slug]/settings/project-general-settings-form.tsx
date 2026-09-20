@@ -208,6 +208,9 @@ export function ProjectGeneralSettingsForm({
                       />
                     </InputGroupAddon>
                     <PopoverContent
+                      // The popup is a role="dialog" and has no heading of
+                      // its own, so it needs a name for screen readers.
+                      aria-label='Sobre o ID do projeto'
                       align='start'
                       className='flex flex-col gap-1 rounded-xl text-sm'
                     >

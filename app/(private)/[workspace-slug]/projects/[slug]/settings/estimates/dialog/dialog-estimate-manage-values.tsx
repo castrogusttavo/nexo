@@ -110,7 +110,13 @@ export function EstimateValuesForm({
   return (
     <div className='space-y-6'>
       <DialogHeader className='w-full flex-row items-center h-fit'>
-        <Button type='button' variant='ghost' size='icon-sm' onClick={onBack}>
+        <Button
+          type='button'
+          variant='ghost'
+          size='icon-sm'
+          aria-label='Voltar'
+          onClick={onBack}
+        >
           <NexoIcon icon={ArrowLeft01Icon} strokeWidth={2} />
         </Button>
         <DialogTitle className='text-xl font-medium'>
@@ -149,6 +155,7 @@ export function EstimateValuesForm({
                 <Button
                   size='icon-sm'
                   variant='ghost'
+                  aria-label={`Editar valor ${value.value}`}
                   onClick={() => {
                     setEditingId(value.id)
                     setEditingValue(value.value)
@@ -159,7 +166,11 @@ export function EstimateValuesForm({
                 <AlertDialog>
                   <AlertDialogTrigger
                     render={
-                      <Button size='icon-sm' variant='ghost'>
+                      <Button
+                        size='icon-sm'
+                        variant='ghost'
+                        aria-label={`Excluir valor ${value.value}`}
+                      >
                         <NexoIcon icon={Delete02Icon} strokeWidth={2} />
                       </Button>
                     }

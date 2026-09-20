@@ -781,6 +781,17 @@ function KanbanItem({
     transform: CSS.Transform.toString(transform),
   } as CSSProperties
 
+  // dnd-kit assumes the sortable element is itself the control and hands back
+  // widget semantics for it. The wrapper only positions the item — its content
+  // carries the real controls — so keeping role="button" here would nest one
+  // button inside another on every card.
+  const {
+    role: _role,
+    "aria-pressed": _ariaPressed,
+    "aria-disabled": _ariaDisabled,
+    ...dragAttributes
+  } = attributes
+
   const defaultProps = isOverlay
     ? {
         "data-slot": "kanban-item",
@@ -796,7 +807,7 @@ function KanbanItem({
         "data-disabled": disabled,
         ref: setNodeRef,
         style,
-        ...attributes,
+        ...dragAttributes,
         className: cn(
           isSortableDragging && "opacity-50 z-50",
           disabled && "opacity-50",

@@ -32,6 +32,7 @@ export function OnboardingBackButton() {
     <Button
       variant='ghost'
       size='icon-xs'
+      aria-label='Voltar'
       onClick={handleBack}
       disabled={isPending}
     >

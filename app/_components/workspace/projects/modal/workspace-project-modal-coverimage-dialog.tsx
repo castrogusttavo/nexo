@@ -61,10 +61,11 @@ function ImagesTab({
 }) {
   return (
     <div className='grid grid-cols-4 gap-4 max-h-130 overflow-y-auto scrollbar-hidden py-1'>
-      {COVER_IMAGES.map((src) => (
+      {COVER_IMAGES.map((src, index) => (
         <button
           key={src}
           type='button'
+          aria-label={`Usar a capa ${index + 1}`}
           onClick={() => onSelect?.(src)}
           className='relative h-16 w-full overflow-hidden rounded-md border-2 transition-colors hover:border-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring'
           style={{

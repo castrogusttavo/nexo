@@ -102,6 +102,9 @@ export function EmailValidationWithOtp({
 
       <div className='flex justify-center'>
         <InputOTP
+          // The slots are decorative <div>s: the real field is the single
+          // input `InputOTP` forwards these props to.
+          aria-label='Código de verificação de 6 dígitos'
           maxLength={6}
           pattern={REGEXP_ONLY_DIGITS_AND_CHARS}
           value={otp}

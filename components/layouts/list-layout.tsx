@@ -109,19 +109,22 @@ export function ListLayout({ workspaceId, projectSlug, createDefaults, sectionId
   return (
     <Accordion defaultValue={[sectionId]} className='p-0 m-0'>
       <AccordionItem value={sectionId} className='p-0 m-0'>
-        <AccordionTrigger nativeButton={false} render={
-          <div className='hover:no-underline! flex-1 group bg-card rounded-none w-full pr-3 pl-5 py-1 flex items-center justify-between border-b border-border'>
-            <div className="flex items-center gap-2"
-              onClick={(event) => event.stopPropagation()}
-              onPointerDown={(event) => event.stopPropagation()}
-            >
-              <Checkbox
-                className={`opacity-0 group-hover:opacity-100 ${allSelected ? 'opacity-100' : ''}`}
-                checked={allSelected}
-                indeterminate={someSelected}
-                onCheckedChange={() => onToggleGroup(issueIds)}
-              />
-              <div className="flex items-center gap-2">
+        {/* The checkbox and the create button are siblings of the trigger,
+            never its children: a control nested inside the trigger's
+            role="button" is invalid markup and takes a tab stop of its own. */}
+        <div className='group bg-card rounded-none w-full pr-3 pl-5 py-1 flex items-center gap-2 border-b border-border'>
+          <Checkbox
+            aria-label={`Selecionar todas as issues de ${sectionName}`}
+            className={`opacity-0 group-hover:opacity-100 ${allSelected ? 'opacity-100' : ''}`}
+            checked={allSelected}
+            indeterminate={someSelected}
+            onCheckedChange={() => onToggleGroup(issueIds)}
+          />
+          <AccordionTrigger
+            nativeButton={false}
+            className='flex-1 items-center justify-start gap-2 rounded-none border-0 py-0 hover:no-underline!'
+            render={
+              <div>
                 {sectionAvatar ? (
                   <Tooltip>
                     <TooltipTrigger
@@ -146,22 +149,17 @@ export function ListLayout({ workspaceId, projectSlug, createDefaults, sectionId
                 <h3>{sectionName}</h3>
                 <Badge variant='outline'>{items.length}</Badge>
               </div>
-            </div>
-            <Button
-              size='icon-xs'
-              variant='ghost'
-              aria-label={`Nova issue em ${sectionName}`}
-              // The header is the accordion trigger: without this the click
-              // also collapses the section, hiding the creator it just opened.
-              onClick={(event) => {
-                event.stopPropagation()
-                setIsCreating(true)
-              }}
-            >
-              <NexoIcon icon={Add01Icon} strokeWidth={2} />
-            </Button>
-          </div>
-        } />
+            }
+          />
+          <Button
+            size='icon-xs'
+            variant='ghost'
+            aria-label={`Nova issue em ${sectionName}`}
+            onClick={() => setIsCreating(true)}
+          >
+            <NexoIcon icon={Add01Icon} strokeWidth={2} />
+          </Button>
+        </div>
         <AccordionContent className='p-0 m-0 border-b border-border'>
           {items.map(({ issue, identifier, href }) => (
             <IssueCardList

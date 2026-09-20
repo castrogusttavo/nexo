@@ -97,7 +97,11 @@ export function IssueCardList({
               onClick={(event) => event.stopPropagation()}
               onPointerDown={(event) => event.stopPropagation()}
             >
-              <Checkbox checked={selected} onCheckedChange={onToggleSelected} />
+              <Checkbox
+                aria-label={`Selecionar ${issue.title}`}
+                checked={selected}
+                onCheckedChange={onToggleSelected}
+              />
               <span className='text-muted-foreground font-medium text-xs'>
                 {identifier}
               </span>

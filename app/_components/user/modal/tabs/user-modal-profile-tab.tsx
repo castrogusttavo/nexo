@@ -167,6 +167,7 @@ function UserModalProfileForm({ user }: { user: UserDTO | undefined }) {
       <input
         ref={avatarInputRef}
         type='file'
+        aria-label='Foto de perfil'
         accept='image/jpeg,image/png,image/webp'
         className='hidden'
         onChange={handleAvatarChange}
