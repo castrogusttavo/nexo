@@ -1,4 +1,5 @@
-import path from 'node:path'
+import { existsSync, readFileSync, readdirSync } from 'node:fs'
+import path, { join } from 'node:path'
 import { defineConfig } from 'vitest/config'
 
 // Backend (unit + integration) and frontend (component) coverage are measured
@@ -21,22 +22,31 @@ const BACKEND_COVERAGE = [
   'app/api/**/route.ts',
 ]
 
-// Client code with real logic. `components/ui` (shadcn/Plate primitives) and
-// the marketing pages are left out on purpose.
-const FRONTEND_COVERAGE = [
-  'src/hooks/**',
-  'components/hooks/**',
-  'components/filters/**',
-  'components/layouts/**',
-  'app/_components/**/*.tsx',
-  // Parentheses are escaped: unescaped, the glob engine reads `(public)` as
-  // a pattern group and silently matches nothing.
-  'app/\\(public\\)/sign-in/**/*.tsx',
-  'app/\\(public\\)/sign-up/**/*.tsx',
-  'app/onboarding/**/*.tsx',
-  'app/upgrade/**',
-  'app/\\(private\\)/**/*.tsx',
-]
+// Client code with real logic: every file that ships to the browser
+// ('use client') plus the hooks and pure client modules. Server Components
+// are left out on purpose — Testing Library cannot render them, so counting
+// them would peg the metric below 100 no matter how many tests exist (the
+// e2e suite does exercise them, but v8 cannot instrument `next start`).
+function clientSourceFiles(): string[] {
+  const roots = ['app', 'components/hooks', 'components/filters', 'components/layouts']
+  const files: string[] = []
+  for (const root of roots) {
+    if (!existsSync(root)) continue
+    for (const entry of readdirSync(root, { recursive: true, withFileTypes: true })) {
+      if (!entry.isFile()) continue
+      const path = join(entry.parentPath, entry.name)
+      if (!/\.tsx?$/.test(path) || path.includes('__tests__')) continue
+      // Marketing pages live under app/(web): Lighthouse and the e2e smoke
+      // cover them, and component tests there buy little.
+      if (path.startsWith('app/(web)') || path.startsWith('app/api')) continue
+      if (path.endsWith('.ts') || /^['"]use client['"]/.test(readFileSync(path, 'utf8')))
+        files.push(path)
+    }
+  }
+  return files
+}
+
+const FRONTEND_COVERAGE = ['src/hooks/**', ...clientSourceFiles()]
 
 const isFrontendCoverage = process.env.COVERAGE_SCOPE === 'frontend'
 
