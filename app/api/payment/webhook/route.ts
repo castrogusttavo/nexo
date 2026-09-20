@@ -24,7 +24,11 @@ const WebhookPayloadSchema = z.object({
 })
 
 export const POST = withAxiom(async (request: NextRequest) => {
-  const secret = request.headers.get('x-webhook-secret')
+  // AbacatePay appends the secret to the registered URL
+  // (`...?webhookSecret=<secret>`); the header is kept for other callers.
+  const secret =
+    request.nextUrl.searchParams.get('webhookSecret') ??
+    request.headers.get('x-webhook-secret')
 
   if (!secret || !constantTimeEqual(secret, ABACATE_PAY_WEBHOOK_SECRET)) {
     return Response.json({ error: 'Unauthorized' }, { status: 401 })

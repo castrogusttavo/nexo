@@ -6,10 +6,20 @@ import { prisma } from '@/src/lib/prisma'
 
 const SECRET = process.env.ABACATE_PAY_WEBHOOK_SECRET ?? ''
 
-async function postWebhook(body: unknown, secret: string | null = SECRET) {
+/** AbacatePay sends the secret as `?webhookSecret=`; the header is kept for
+ *  any caller still using it. */
+async function postWebhook(
+  body: unknown,
+  secret: string | null = SECRET,
+  via: 'query' | 'header' = 'header',
+) {
   const headers: Record<string, string> = { 'Content-Type': 'application/json' }
-  if (secret !== null) headers['x-webhook-secret'] = secret
-  return fetch(`${BASE_URL}/api/payment/webhook`, {
+  if (secret !== null && via === 'header') headers['x-webhook-secret'] = secret
+  const query =
+    secret !== null && via === 'query'
+      ? `?webhookSecret=${encodeURIComponent(secret)}`
+      : ''
+  return fetch(`${BASE_URL}/api/payment/webhook${query}`, {
     method: 'POST',
     headers,
     body: JSON.stringify(body),
@@ -47,6 +57,29 @@ describe('POST /api/payment/webhook', () => {
     const res = await postWebhook(
       { event: 'subscription.completed', data: { id: 'bill_x' } },
       'wrong-secret',
+    )
+    expect(res.status).toBe(401)
+  })
+
+  it('should accept the secret as the webhookSecret query param', async () => {
+    const { workspace } = await authenticatedOwner()
+    const billId = `bill_${createId()}`
+    await seedSubscription({ workspaceId: workspace.id, billId })
+
+    const res = await postWebhook(
+      { event: 'billing.paid', data: { id: billId } },
+      SECRET,
+      'query',
+    )
+
+    expect(res.status).toBe(200)
+  })
+
+  it('should return 401 when the webhookSecret query param is wrong', async () => {
+    const res = await postWebhook(
+      { event: 'billing.paid', data: { id: 'bill_x' } },
+      'wrong-secret',
+      'query',
     )
     expect(res.status).toBe(401)
   })
