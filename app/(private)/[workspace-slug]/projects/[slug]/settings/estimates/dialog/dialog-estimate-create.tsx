@@ -100,32 +100,61 @@ export function EstimateSystemForm({
       MODELS_BY_SYSTEM[system].find((m) => m.value === model)?.preview ?? []
     const oldValues = settings?.values ?? []
 
-    async function run() {
-      await updateSettings.mutateAsync({ system, model: selectedModel })
-      for (const value of preset) {
-        await createValue.mutateAsync({ value })
-      }
-      for (const old of oldValues) {
-        await deleteValue.mutateAsync(old.id)
+    // There is no single endpoint that swaps a whole estimate system, so the
+    // switch is staged: the preset is written first and the settings flip
+    // last, which makes the PATCH the commit point. Anything that fails
+    // before it is undone, and the old values are only dropped afterwards.
+    async function migrate() {
+      const created: string[] = []
+      try {
+        for (const value of preset) {
+          const result = await createValue.mutateAsync({ value })
+          created.push(result.id)
+        }
+        await updateSettings.mutateAsync({ system, model: selectedModel })
+      } catch (error) {
+        for (const id of created.reverse()) {
+          await deleteValue.mutateAsync(id).catch(() => undefined)
+        }
+        throw error
       }
     }
 
     try {
-      await notify.mutate(run(), {
+      await notify.mutate(migrate(), {
         loading: 'Atualizando sistema de estimativa...',
-        success: 'Sistema de estimativa atualizando',
-        error: 'Erro ao atualizar sistema de estimativa',
+        success: 'Sistema de estimativa atualizado',
+        error: 'Erro ao atualizar o sistema de estimativa. Nada foi alterado.',
       })
-      onDone()
     } catch {
-      //
+      return
     }
+
+    // The switch already happened, so a leftover old value is worth a
+    // warning, not an error that suggests the change was lost.
+    try {
+      for (const old of oldValues) {
+        await deleteValue.mutateAsync(old.id)
+      }
+    } catch {
+      notify.warning(
+        'O sistema foi atualizado, mas alguns valores antigos não foram removidos.',
+      )
+    }
+
+    onDone()
   }
 
   return (
     <div className='space-y-6'>
       <DialogHeader className='w-full flex-row items-center h-fit'>
-        <Button type='button' variant='ghost' size='icon-sm' onClick={onBack}>
+        <Button
+          type='button'
+          variant='ghost'
+          size='icon-sm'
+          aria-label='Voltar'
+          onClick={onBack}
+        >
           <NexoIcon icon={ArrowLeft01Icon} strokeWidth={2} />
         </Button>
         <DialogTitle className='text-xl font-medium'>
