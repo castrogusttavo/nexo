@@ -133,6 +133,61 @@ describe('InvitationService', () => {
       expect(mockedEmail).toHaveBeenCalledTimes(1)
     })
 
+    it('should set the invite to expire 7 days in the future', async () => {
+      mockedMembership.findByUserAndWorkspace.mockResolvedValue(
+        ok(ownerMembership),
+      )
+      mockedUser.findByEmail.mockResolvedValue(ok(null))
+      mockedInvite.findPendingByWorkspaceAndEmail.mockResolvedValue(ok(null))
+      mockedInvite.create.mockResolvedValue(
+        ok(createFakeInvitation({ workspaceId: 'ws1' })),
+      )
+
+      await InvitationService.create('actor', 'ws1', {
+        email: 'ttl@example.com',
+        role: 'MEMBER',
+      })
+
+      const TTL_MS = 7 * 24 * 60 * 60 * 1000
+      const [payload] = mockedInvite.create.mock.calls[0]
+      const ttl = payload.expiresAt.getTime() - Date.now()
+      // A sign slip would persist an invite that is already expired, so the
+      // link would be dead the moment it reaches the invitee's inbox.
+      expect(ttl).toBeGreaterThan(TTL_MS - 60_000)
+      expect(ttl).toBeLessThanOrEqual(TTL_MS)
+    })
+
+    it('should normalize the invited email before looking it up and storing it', async () => {
+      mockedMembership.findByUserAndWorkspace.mockResolvedValue(
+        ok(ownerMembership),
+      )
+      mockedUser.findByEmail.mockResolvedValue(ok(null))
+      mockedInvite.findPendingByWorkspaceAndEmail.mockResolvedValue(ok(null))
+      mockedInvite.create.mockResolvedValue(
+        ok(createFakeInvitation({ workspaceId: 'ws1' })),
+      )
+
+      await InvitationService.create('actor', 'ws1', {
+        email: '  New.Person@Example.COM  ',
+        role: 'MEMBER',
+      })
+
+      // Without the trim/lowercase the padded address would dodge both the
+      // already-member and the duplicate-invite checks, and land in the DB
+      // as a distinct address from the same person's real one.
+      expect(mockedUser.findByEmail).toHaveBeenCalledWith(
+        'new.person@example.com',
+      )
+      expect(mockedInvite.findPendingByWorkspaceAndEmail).toHaveBeenCalledWith(
+        'ws1',
+        'new.person@example.com',
+      )
+      expect(mockedInvite.create).toHaveBeenCalledWith(
+        expect.objectContaining({ email: 'new.person@example.com' }),
+        expect.anything(),
+      )
+    })
+
     it('should expire a stale pending invite and create a new one', async () => {
       mockedMembership.findByUserAndWorkspace.mockResolvedValue(
         ok(ownerMembership),
@@ -386,6 +441,24 @@ describe('InvitationService', () => {
 
       expectErr(result, 'INVITATION_EMAIL_MISMATCH')
       expect(mockedInvite.accept).not.toHaveBeenCalled()
+    })
+
+    it('should accept when the actor email only differs by surrounding whitespace', async () => {
+      mockedInvite.findByToken.mockResolvedValue(ok(pendingInvite))
+      mockedInvite.accept.mockResolvedValue(
+        ok(createFakeMembership({ userId: 'user', workspaceId: 'ws1' })),
+      )
+
+      const result = await InvitationService.accept(
+        'user',
+        '  invitee@example.com ',
+        'tok',
+      )
+
+      // Sessions can carry a padded address; without the trim the invitee
+      // would be locked out of their own invitation.
+      expectOk(result)
+      expect(mockedInvite.accept).toHaveBeenCalled()
     })
 
     it('should accept and return the workspace slug', async () => {

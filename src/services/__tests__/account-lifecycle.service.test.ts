@@ -63,7 +63,13 @@ describe('AccountLifecycleService', () => {
       const result = await AccountLifecycleService.deleteAccount('user-1')
 
       const value = expectOk(result)
-      expect(typeof value.scheduledAt).toBe('string')
+      // The grace period has to land in the future: a sign slip here would
+      // schedule the account for deletion 30 days in the *past*, i.e. now.
+      const GRACE_MS = 30 * 24 * 60 * 60 * 1000
+      const scheduledAt = new Date(value.scheduledAt).getTime()
+      expect(scheduledAt).toBeGreaterThan(Date.now())
+      expect(scheduledAt - Date.now()).toBeGreaterThan(GRACE_MS - 60_000)
+      expect(scheduledAt - Date.now()).toBeLessThanOrEqual(GRACE_MS)
       expect(mockedUser.scheduleDeletion).toHaveBeenCalledWith(
         'user-1',
         expect.any(Date),

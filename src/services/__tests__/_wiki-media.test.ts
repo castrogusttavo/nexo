@@ -46,6 +46,24 @@ describe('validateWikiMedia()', () => {
     expect(error.code).toBe('VALIDATION_ERROR')
   })
 
+  // Each content-type tier has its own cap and the cap is inclusive. The
+  // message names the limit in MB, so asserting it also pins the tier lookup:
+  // a mutant that collapses every tier onto one limit changes this string.
+  it.each([
+    ['image/png', 10],
+    ['video/mp4', 200],
+    ['audio/mpeg', 50],
+    ['application/pdf', 25],
+  ])('accepts %s at exactly its limit and rejects one byte more', (contentType, limitMb) => {
+    const limit = limitMb * 1024 * 1024
+    expectOk(validateWikiMedia(contentType, Buffer.alloc(limit)))
+
+    const error = expectErr(
+      validateWikiMedia(contentType, Buffer.alloc(limit + 1)),
+    )
+    expect(error.message).toBe(`Arquivo muito grande. Máximo ${limitMb}MB`)
+  })
+
   it('rejects an image larger than the image limit', () => {
     const error = expectErr(
       validateWikiMedia('image/png', Buffer.alloc(10 * 1024 * 1024 + 1)),

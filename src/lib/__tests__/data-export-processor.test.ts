@@ -153,6 +153,19 @@ describe('processDataExport', () => {
         actorId: 'user-1',
       }),
     )
+
+    // The expiry announced to the user (and audited) has to match the TTL the
+    // signed URL was actually minted with, and it has to be in the future —
+    // a sign slip would ship a download link that is already dead.
+    const audited = auditMutationMock.mock.calls.at(-1)?.[0]
+    const expiresAt = new Date(audited.meta.expiresAt).getTime()
+    expect(expiresAt).toBeGreaterThan(Date.now())
+    expect(expiresAt - Date.now()).toBeGreaterThan(
+      SIGNED_URL_TTL_SECONDS * 1000 - 60_000,
+    )
+    expect(expiresAt - Date.now()).toBeLessThanOrEqual(
+      SIGNED_URL_TTL_SECONDS * 1000,
+    )
   })
 
   it('strips session token and account tokens from the export', async () => {

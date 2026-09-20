@@ -39,6 +39,28 @@ beforeEach(() => {
   mockedPrismaIncident.mockResolvedValue([])
 })
 
+function daily(componentKey: string, day: Date, uptimePct: string) {
+  return {
+    id: `d-${componentKey}-${day.toISOString()}`,
+    componentKey,
+    day,
+    worstStatus: 'OPERATIONAL' as const,
+    totalChecks: 100,
+    upChecks: 100,
+    uptimePct: { toString: () => uptimePct } as unknown as never,
+    avgLatencyMs: 10,
+    updatedAt: day,
+  }
+}
+
+function isoDay(date: Date): string {
+  return date.toISOString().slice(0, 10)
+}
+
+function daysBetween(from: Date, to: Date): number {
+  return Math.round((to.getTime() - from.getTime()) / 86_400_000)
+}
+
 describe('StatusService.getCurrentSnapshot()', () => {
   it('should return cached snapshot when present', async () => {
     const snapshot = {
@@ -177,6 +199,43 @@ describe('StatusService.getCurrentSnapshot()', () => {
     expect(db?.history[0]?.incidentId).toBe('inc-db')
   })
 
+  it('averages the daily uptime into uptime90d', async () => {
+    mockedCache.get.mockResolvedValue(null)
+    mockedCache.set.mockResolvedValue(undefined)
+    mockedStatusRepo.findLatestPerComponent.mockResolvedValue(ok([]))
+    mockedStatusRepo.findDailiesForKeys.mockResolvedValue(
+      ok([
+        daily('database', new Date('2025-01-01T00:00:00.000Z'), '100'),
+        daily('database', new Date('2025-01-02T00:00:00.000Z'), '50'),
+        daily('database', new Date('2025-01-03T00:00:00.000Z'), '99'),
+      ]),
+    )
+
+    const result = await StatusService.getCurrentSnapshot()
+
+    const value = expectOk(result)
+    const db = value.components.find((c) => c.key === 'database')
+    // (100 + 50 + 99) / 3, rounded to three decimals. This is the headline
+    // number on the public status page and nothing asserted it before.
+    expect(db?.uptime90d).toBe(83)
+    // A component with no dailies has no uptime to report, not NaN.
+    const app = value.components.find((c) => c.key === 'app')
+    expect(app?.uptime90d).toBe(0)
+  })
+
+  it('asks the repository for exactly the last 90 UTC days', async () => {
+    mockedCache.get.mockResolvedValue(null)
+    mockedCache.set.mockResolvedValue(undefined)
+    mockedStatusRepo.findDailiesForKeys.mockResolvedValue(ok([]))
+    mockedStatusRepo.findLatestPerComponent.mockResolvedValue(ok([]))
+
+    await StatusService.getCurrentSnapshot()
+
+    const [, fromDay, toDay] = mockedStatusRepo.findDailiesForKeys.mock.calls[0]
+    expect(toDay.toISOString()).toBe(`${isoDay(new Date())}T00:00:00.000Z`)
+    expect(daysBetween(fromDay, toDay)).toBe(89)
+  })
+
   it('should still return snapshot when cache write throws', async () => {
     mockedCache.get.mockResolvedValue(null)
     mockedStatusRepo.findDailiesForKeys.mockResolvedValue(ok([]))
@@ -258,6 +317,20 @@ describe('StatusService.getHistory()', () => {
     expect(value[0]?.uptimePct).toBe(100)
   })
 
+  it('queries the window backwards from today, inclusive of today', async () => {
+    mockedStatusRepo.findDailies.mockResolvedValue(ok([]))
+
+    await StatusService.getHistory('app', 30)
+
+    const [, fromDay, toDay] = mockedStatusRepo.findDailies.mock.calls[0]
+    // 30 days inclusive means today minus 29, at UTC midnight. A sign slip
+    // or an off-by-one here silently queries a window in the future.
+    expect(toDay.toISOString()).toBe(`${isoDay(new Date())}T00:00:00.000Z`)
+    expect(fromDay.toISOString()).toBe(
+      `${isoDay(new Date(Date.now() - 29 * 86_400_000))}T00:00:00.000Z`,
+    )
+  })
+
   it('should propagate repo error', async () => {
     mockedStatusRepo.findDailies.mockResolvedValue(err(databaseError()))
 
@@ -298,6 +371,38 @@ describe('StatusService.listIncidents()', () => {
         resolvedAt: resolvedAt.toISOString(),
       },
     ])
+  })
+
+  it('falls back to the raw key when the incident names an unknown component', async () => {
+    mockedIncidentRepo.findInWindow.mockResolvedValue(
+      ok([
+        {
+          id: 'i2',
+          componentKey: 'retired-component',
+          severity: 'MAJOR_OUTAGE',
+          title: 'Fora do ar',
+          startedAt: new Date('2025-01-01T08:00:00.000Z'),
+          resolvedAt: null,
+        },
+      ]),
+    )
+
+    const result = await StatusService.listIncidents(7)
+
+    // A component removed from COMPONENTS still has rows in the DB; the
+    // listing must degrade to the key, not crash on `undefined.name`.
+    expect(expectOk(result)[0]?.componentName).toBe('retired-component')
+  })
+
+  it('queries incidents from the start of the requested window', async () => {
+    mockedIncidentRepo.findInWindow.mockResolvedValue(ok([]))
+
+    await StatusService.listIncidents(7)
+
+    const [fromDay] = mockedIncidentRepo.findInWindow.mock.calls[0]
+    expect(fromDay.toISOString()).toBe(
+      `${isoDay(new Date(Date.now() - 6 * 86_400_000))}T00:00:00.000Z`,
+    )
   })
 
   it('should propagate repo error', async () => {
@@ -516,6 +621,61 @@ describe('StatusService.collect()', () => {
       'open-i',
       'IDENTIFIED',
       expect.any(String),
+    )
+  })
+
+  it('should not bump severity when the probe matches the open severity', async () => {
+    mockedRunProbes.mockResolvedValue({
+      app: { status: 'OPERATIONAL', latencyMs: 5, error: null },
+      database: { status: 'DEGRADED', latencyMs: 10, error: 'slow' },
+      cache: { status: 'OPERATIONAL', latencyMs: 3, error: null },
+      auth: { status: 'OPERATIONAL', latencyMs: 20, error: null },
+    })
+    mockedStatusRepo.recordChecks.mockResolvedValue(ok(undefined))
+    mockedStatusRepo.aggregateForDay.mockResolvedValue(ok(null))
+    mockedIncidentRepo.findOpenByComponent.mockImplementation(async (key) =>
+      key === 'database'
+        ? ok({
+            id: 'open-i',
+            componentKey: 'database',
+            severity: 'DEGRADED',
+            title: 'x',
+            startedAt: new Date(),
+            resolvedAt: null,
+          })
+        : ok(null),
+    )
+    mockedStatusRepo.pruneOldChecks.mockResolvedValue(ok(0))
+    mockedCache.invalidate.mockResolvedValue(undefined)
+
+    const result = await StatusService.collect('core')
+
+    expectOk(result)
+    // Strictly-greater, not >=: an unchanged severity must not spam the
+    // incident timeline with a new "severity updated" entry on every probe.
+    expect(mockedIncidentRepo.bumpSeverity).not.toHaveBeenCalled()
+    expect(mockedIncidentRepo.addUpdate).not.toHaveBeenCalled()
+  })
+
+  it('prunes raw checks older than the retention window, never newer', async () => {
+    mockedRunProbes.mockResolvedValue({
+      app: { status: 'OPERATIONAL', latencyMs: 5, error: null },
+      database: { status: 'OPERATIONAL', latencyMs: 10, error: null },
+      cache: { status: 'OPERATIONAL', latencyMs: 3, error: null },
+      auth: { status: 'OPERATIONAL', latencyMs: 20, error: null },
+    })
+    mockedStatusRepo.recordChecks.mockResolvedValue(ok(undefined))
+    mockedStatusRepo.aggregateForDay.mockResolvedValue(ok(null))
+    mockedIncidentRepo.findOpenByComponent.mockResolvedValue(ok(null))
+    mockedStatusRepo.pruneOldChecks.mockResolvedValue(ok(0))
+    mockedCache.invalidate.mockResolvedValue(undefined)
+
+    await StatusService.collect('core')
+
+    const [cutoff] = mockedStatusRepo.pruneOldChecks.mock.calls[0]
+    // A cutoff in the future would delete every raw health check there is.
+    expect(cutoff.toISOString()).toBe(
+      `${isoDay(new Date(Date.now() - 7 * 86_400_000))}T00:00:00.000Z`,
     )
   })
 

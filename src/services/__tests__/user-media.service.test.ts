@@ -96,6 +96,18 @@ describe('UserMediaService.uploadAvatar()', () => {
     expect(s3Put).not.toHaveBeenCalled()
   })
 
+  it('should accept a file of exactly 5 MB', async () => {
+    // The cap is inclusive; only one byte past it is rejected.
+    expectOk(
+      await UserMediaService.uploadAvatar({
+        userId: 'u1',
+        readBody: vi.fn(fakeBody),
+        contentType: 'image/png',
+        byteSize: 5 * 1024 * 1024,
+      }),
+    )
+  })
+
   it('should propagate repository errors and not invalidate the cache', async () => {
     repo.update.mockResolvedValue(err(databaseError()))
 

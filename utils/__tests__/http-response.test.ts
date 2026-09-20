@@ -150,4 +150,40 @@ describe('handleError()', () => {
     const res = handleError({ code: 'DATABASE_ERROR', message: 'boom' })
     expect(res.status).toBe(500)
   })
+
+  it('should not set Retry-After when retryAfterSeconds is exactly zero', () => {
+    const res = handleError({
+      code: 'RATE_LIMITED',
+      message: 'too many',
+      details: { retryAfterSeconds: 0 },
+    })
+
+    expect(res.status).toBe(429)
+    expect(res.headers.get('Retry-After')).toBeNull()
+  })
+
+  it('should not set Retry-After when retryAfterSeconds is not a number', () => {
+    const res = handleError({
+      code: 'RATE_LIMITED',
+      message: 'too many',
+      // A malformed `details` payload must not leak a non-numeric value into
+      // the header: `'120' > 0` is true in JS, so only the typeof guard stops
+      // it.
+      details: { retryAfterSeconds: '120' },
+    })
+
+    expect(res.status).toBe(429)
+    expect(res.headers.get('Retry-After')).toBeNull()
+  })
+
+  it('should not set Retry-After on non-rate-limit errors carrying the detail', () => {
+    const res = handleError({
+      code: 'CONFLICT',
+      message: 'nope',
+      details: { retryAfterSeconds: 60 },
+    })
+
+    expect(res.status).toBe(409)
+    expect(res.headers.get('Retry-After')).toBeNull()
+  })
 })

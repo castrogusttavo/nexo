@@ -309,4 +309,95 @@ describe('CommentService', () => {
       expectErr(result, 'DATABASE_ERROR')
     })
   })
+
+  // The project gate is `privileged || lead || member`. Every arm has to
+  // grant on its own and the negative case has to hold with a populated
+  // member list, otherwise a mutant that hardcodes any arm still passes.
+  describe('project access gate', () => {
+    function withProject(
+      membership: typeof memberMembership,
+      members: { userId: string }[],
+      leadId = 'lead-1',
+    ) {
+      mockedMembership.findByUserAndWorkspace.mockResolvedValue(ok(membership))
+      mockedProject.findByWorkspaceAndSlug.mockResolvedValue(
+        ok(projectWith({ id: 'proj-1', leadId }, members)),
+      )
+      mockedIssue.findById.mockResolvedValue(
+        ok(createFakeIssue({ projectId: 'proj-1' })),
+      )
+      mockedComment.listByIssue.mockResolvedValue(ok([withAuthor()]))
+    }
+
+    it('allows the project lead who is not on the member list', async () => {
+      withProject(memberMembership, [{ userId: 'someone-else' }], 'actor')
+
+      expectOk(
+        await CommentService.list('actor', 'ws1', 'proj-slug', 'issue-1'),
+      )
+    })
+
+    it('allows a workspace OWNER who is neither lead nor member', async () => {
+      withProject(ownerMembership, [{ userId: 'someone-else' }])
+
+      expectOk(
+        await CommentService.list('actor', 'ws1', 'proj-slug', 'issue-1'),
+      )
+    })
+
+    it('allows one member among several', async () => {
+      withProject(memberMembership, [
+        { userId: 'other-1' },
+        { userId: 'actor' },
+        { userId: 'other-2' },
+      ])
+
+      expectOk(
+        await CommentService.list('actor', 'ws1', 'proj-slug', 'issue-1'),
+      )
+    })
+
+    it('denies an actor absent from a populated member list', async () => {
+      withProject(memberMembership, [
+        { userId: 'other-1' },
+        { userId: 'other-2' },
+      ])
+
+      expectErr(
+        await CommentService.list('actor', 'ws1', 'proj-slug', 'issue-1'),
+        'ISSUE_FORBIDDEN',
+      )
+    })
+
+    it('denies the same actor on update and delete, not just on list', async () => {
+      withProject(memberMembership, [{ userId: 'other-1' }])
+      mockedComment.findById.mockResolvedValue(
+        ok(createFakeComment({ issueId: 'issue-1', authorId: 'actor' })),
+      )
+
+      expectErr(
+        await CommentService.update(
+          'actor',
+          'ws1',
+          'proj-slug',
+          'issue-1',
+          'comment-1',
+          { content },
+        ),
+        'ISSUE_FORBIDDEN',
+      )
+      expectErr(
+        await CommentService.delete(
+          'actor',
+          'ws1',
+          'proj-slug',
+          'issue-1',
+          'comment-1',
+        ),
+        'ISSUE_FORBIDDEN',
+      )
+      expect(mockedComment.update).not.toHaveBeenCalled()
+      expect(mockedComment.delete).not.toHaveBeenCalled()
+    })
+  })
 })

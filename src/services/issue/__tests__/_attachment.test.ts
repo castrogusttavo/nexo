@@ -46,6 +46,13 @@ describe('validateAttachment()', () => {
     expect(error.code).toBe('VALIDATION_ERROR')
   })
 
+  it('accepts a file at exactly the limit', () => {
+    // The cap is inclusive: 25MB on the nose is allowed, 25MB + 1 is not.
+    expectOk(
+      validateAttachment('application/pdf', Buffer.alloc(25 * 1024 * 1024)),
+    )
+  })
+
   it('rejects a file larger than the limit', () => {
     const error = expectErr(
       validateAttachment('application/pdf', Buffer.alloc(25 * 1024 * 1024 + 1)),

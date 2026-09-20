@@ -57,7 +57,35 @@ describe('WikiMediaService.upload()', () => {
       }),
     )
 
-    expect(key).toMatch(/\.pdf$/)
+    // Only the extension, never the whole file name: `report.pdf` would also
+    // satisfy a loose `/\.pdf$/`, but it would leak the candidate's original
+    // file name into the object key.
+    expect(key).toMatch(/^ws1\/[a-z0-9]+\.pdf$/)
+    expect(key).not.toContain('report')
+  })
+
+  it('uses no extension when neither the content type nor the file name has one', async () => {
+    const { key } = expectOk(
+      await WikiMediaService.upload('actor', 'ws1', {
+        buffer: Buffer.from('x'),
+        contentType: 'file',
+        fileName: 'nodotsatall',
+      }),
+    )
+
+    expect(key).toMatch(/^ws1\/[a-z0-9]+$/)
+  })
+
+  it('ignores a leading dot, which marks a hidden file rather than an extension', async () => {
+    const { key } = expectOk(
+      await WikiMediaService.upload('actor', 'ws1', {
+        buffer: Buffer.from('x'),
+        contentType: 'file',
+        fileName: '.env',
+      }),
+    )
+
+    expect(key).toMatch(/^ws1\/[a-z0-9]+$/)
   })
 
   it('returns FORBIDDEN when the actor is not a workspace member', async () => {

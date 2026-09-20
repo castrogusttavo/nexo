@@ -4,6 +4,7 @@ import { createFakeUser } from '@/src/__tests__/factories/user.factory'
 import { createFakeWorkspace } from '@/src/__tests__/factories/workspace.factory'
 import { expectErr, expectOk } from '@/src/__tests__/helpers/result.helpers'
 import {
+  databaseError,
   invitationAlreadyMember,
   invitationDuplicate,
   mailError,
@@ -105,6 +106,66 @@ describe('MemberService.list()', () => {
 
     const { members } = expectOk(result)
     expect(members.map((m) => m.name)).toEqual(['Last', 'First'])
+  })
+
+  it('orders by joinedAt independently of the order the repository returned', async () => {
+    // Three rows in a deliberately non-monotonic order: a comparator that
+    // merely reverses the input (or that compares the wrong field) produces a
+    // different answer than a real joinedAt sort.
+    mockedMembership.listByWorkspaceWithUser.mockResolvedValue(
+      ok([
+        membershipWithUser('MEMBER', 'Feb', new Date('2026-02-01')),
+        membershipWithUser('MEMBER', 'Mar', new Date('2026-03-01')),
+        membershipWithUser('MEMBER', 'Jan', new Date('2026-01-01')),
+      ]),
+    )
+
+    const result = await MemberService.list('actor', 'ws1', {
+      sortBy: 'joinedAt',
+      sortOrder: 'desc',
+      page: 1,
+      pageSize: 20,
+    })
+
+    const { members } = expectOk(result)
+    expect(members.map((m) => m.name)).toEqual(['Mar', 'Feb', 'Jan'])
+  })
+
+  it('sorts by name without falling back to join order', async () => {
+    // Name order and joinedAt order disagree on purpose, so sorting by the
+    // wrong field cannot pass by coincidence.
+    mockedMembership.listByWorkspaceWithUser.mockResolvedValue(
+      ok([
+        membershipWithUser('MEMBER', 'Carla', new Date('2026-01-01')),
+        membershipWithUser('MEMBER', 'Ana', new Date('2026-02-01')),
+        membershipWithUser('MEMBER', 'Bruno', new Date('2026-03-01')),
+      ]),
+    )
+
+    const result = await MemberService.list('actor', 'ws1', {
+      sortBy: 'name',
+      sortOrder: 'asc',
+      page: 1,
+      pageSize: 20,
+    })
+
+    const { members } = expectOk(result)
+    expect(members.map((m) => m.name)).toEqual(['Ana', 'Bruno', 'Carla'])
+  })
+
+  it('propagates a repository failure instead of returning an empty page', async () => {
+    mockedMembership.listByWorkspaceWithUser.mockResolvedValue(
+      err(databaseError()),
+    )
+
+    const result = await MemberService.list('actor', 'ws1', {
+      sortBy: 'name',
+      sortOrder: 'asc',
+      page: 1,
+      pageSize: 20,
+    })
+
+    expectErr(result, 'DATABASE_ERROR')
   })
 
   it('paginates the sorted result', async () => {
@@ -233,5 +294,48 @@ describe('MemberService.import()', () => {
     const summary = expectOk(result)
     expect(summary.errors).toBe(1)
     expect(summary.rows[0].status).toBe('error')
+  })
+
+  it('counts a mixed batch per outcome and numbers every row from 1', async () => {
+    // The all-invited batch cannot tell `filter(invited).length` apart from
+    // `rows.length`, and the skipped/error branches never had their `row`
+    // number asserted at all.
+    mockedWorkspace.findById.mockResolvedValue(
+      ok(createFakeWorkspace({ activePlan: 'PRO' })),
+    )
+    mockedInvitation.create
+      .mockResolvedValueOnce(ok(fakeInvitation()))
+      .mockResolvedValueOnce(err(invitationDuplicate()))
+      .mockResolvedValueOnce(err(mailError()))
+      .mockResolvedValueOnce(err(invitationAlreadyMember()))
+
+    const result = await MemberService.import('actor', 'ws1', [
+      { email: 'a@example.com', role: 'MEMBER' },
+      { email: 'b@example.com', role: 'MEMBER' },
+      { email: 'c@example.com', role: 'MEMBER' },
+      { email: 'd@example.com', role: 'MEMBER' },
+    ])
+
+    const summary = expectOk(result)
+    expect(summary.invited).toBe(1)
+    expect(summary.skipped).toBe(2)
+    expect(summary.errors).toBe(1)
+    expect(summary.rows.map((r) => [r.row, r.status])).toEqual([
+      [1, 'invited'],
+      [2, 'skipped'],
+      [3, 'error'],
+      [4, 'skipped'],
+    ])
+  })
+
+  it('propagates a workspace lookup failure', async () => {
+    mockedWorkspace.findById.mockResolvedValue(err(databaseError()))
+
+    const result = await MemberService.import('actor', 'ws1', [
+      { email: 'a@example.com', role: 'MEMBER' },
+    ])
+
+    expectErr(result, 'DATABASE_ERROR')
+    expect(mockedInvitation.create).not.toHaveBeenCalled()
   })
 })

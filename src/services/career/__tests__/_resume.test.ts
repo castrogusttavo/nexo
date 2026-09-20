@@ -31,6 +31,15 @@ describe('validateResume()', () => {
     expectErr(result, 'VALIDATION_ERROR')
   })
 
+  it('accepts a PDF at exactly the 10MB limit', () => {
+    // The cap is inclusive: a resume that is exactly 10MB must go through.
+    const atLimit = Buffer.concat([
+      Buffer.from('%PDF-'),
+      Buffer.alloc(10 * 1024 * 1024 - 5),
+    ])
+    expectOk(validateResume('application/pdf', atLimit))
+  })
+
   it('rejects a file with the wrong magic number', () => {
     const fake = Buffer.from('not-a-real-pdf')
     const result = validateResume('application/pdf', fake)

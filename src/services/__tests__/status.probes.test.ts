@@ -110,6 +110,28 @@ describe('probe primitives', () => {
     expect(result.latencyMs).toBe(2000)
   })
 
+  it('keeps a probe exactly at the degraded threshold OPERATIONAL', async () => {
+    const nowSpy = vi.spyOn(Date, 'now')
+    nowSpy.mockReturnValueOnce(1000).mockReturnValueOnce(2500)
+
+    const result = await probeDatabase()
+
+    // 1500ms is the boundary and the comparison is strictly greater.
+    expect(result.latencyMs).toBe(1500)
+    expect(result.status).toBe('OPERATIONAL')
+  })
+
+  it('still measures latency on the failure path', async () => {
+    vi.mocked(ensureRedisConnected).mockRejectedValueOnce(new Error('down'))
+    const nowSpy = vi.spyOn(Date, 'now')
+    nowSpy.mockReturnValueOnce(1000).mockReturnValueOnce(1400)
+
+    const result = await probeCache()
+
+    expect(result.status).toBe('MAJOR_OUTAGE')
+    expect(result.latencyMs).toBe(400)
+  })
+
   it('probeAuth() returns OPERATIONAL when getSession resolves', async () => {
     const result = await probeAuth()
     expect(result.status).toBe('OPERATIONAL')
@@ -121,6 +143,14 @@ describe('probe primitives', () => {
     const result = await probeEmail()
     expect(result.status).toBe('MAJOR_OUTAGE')
     expect(result.error).toContain('Resend HTTP 403')
+  })
+
+  it('probeEmail() returns OPERATIONAL when Resend answers 200', async () => {
+    fetchSpy.mockResolvedValue(new Response('ok', { status: 200 }))
+
+    const result = await probeEmail()
+    expect(result.status).toBe('OPERATIONAL')
+    expect(result.error).toBeNull()
   })
 
   it('probeStorage() returns OPERATIONAL when MinIO health is 200', async () => {
@@ -156,5 +186,19 @@ describe('runProbesForTier()', () => {
 
     expect(result.payment?.status).toBe('MAJOR_OUTAGE')
     expect(result.payment?.error).toContain('AbacatePay HTTP 502')
+  })
+
+  it('treats a payment 500 as an outage and a 4xx as operational', async () => {
+    // 500 is the inclusive boundary; 4xx means the gateway answered, which
+    // for a liveness probe counts as up.
+    fetchSpy.mockResolvedValue(new Response('err', { status: 500 }))
+    expect((await runProbesForTier('peripheral')).payment?.status).toBe(
+      'MAJOR_OUTAGE',
+    )
+
+    fetchSpy.mockResolvedValue(new Response('nope', { status: 401 }))
+    expect((await runProbesForTier('peripheral')).payment?.status).toBe(
+      'OPERATIONAL',
+    )
   })
 })

@@ -255,6 +255,112 @@ describe('ProjectService', () => {
       )
     })
 
+    it('should derive the identifier from the name: uppercase, alphanumeric, 6 chars', async () => {
+      mockedMembership.findByUserAndWorkspace.mockResolvedValue(
+        ok(memberMembership),
+      )
+      mockedProject.create.mockResolvedValue(
+        ok(createFakeProject({ leadId: 'actor', workspaceId: 'ws1' })),
+      )
+
+      await ProjectService.create('actor', 'ws1', {
+        name: 'New Project 2!',
+        slug: 'new-project',
+        isPublic: false,
+        issueTypesEnabled: true,
+        modulesEnabled: true,
+        cyclesEnabled: true,
+        estimatesEnabled: true,
+      })
+
+      expect(mockedProject.create).toHaveBeenCalledWith(
+        expect.objectContaining({ identifier: 'NEWPRO' }),
+      )
+    })
+
+    it('should pad a too-short derived identifier to two characters', async () => {
+      mockedMembership.findByUserAndWorkspace.mockResolvedValue(
+        ok(memberMembership),
+      )
+      mockedProject.create.mockResolvedValue(
+        ok(createFakeProject({ leadId: 'actor', workspaceId: 'ws1' })),
+      )
+
+      await ProjectService.create('actor', 'ws1', {
+        name: 'Q *',
+        slug: 'q',
+        isPublic: false,
+        issueTypesEnabled: true,
+        modulesEnabled: true,
+        cyclesEnabled: true,
+        estimatesEnabled: true,
+      })
+
+      expect(mockedProject.create).toHaveBeenCalledWith(
+        expect.objectContaining({ identifier: 'QX' }),
+      )
+    })
+
+    it('should retry with a numbered identifier when the derived one is taken', async () => {
+      mockedMembership.findByUserAndWorkspace.mockResolvedValue(
+        ok(memberMembership),
+      )
+      mockedProject.create
+        .mockResolvedValueOnce(
+          err({
+            code: 'PROJECT_IDENTIFIER_CONFLICT',
+            message: 'taken',
+          }),
+        )
+        .mockResolvedValueOnce(
+          ok(createFakeProject({ leadId: 'actor', workspaceId: 'ws1' })),
+        )
+
+      const result = await ProjectService.create('actor', 'ws1', {
+        name: 'New Project',
+        slug: 'new-project',
+        isPublic: false,
+        issueTypesEnabled: true,
+        modulesEnabled: true,
+        cyclesEnabled: true,
+        estimatesEnabled: true,
+      })
+
+      expectOk(result)
+      expect(mockedProject.create).toHaveBeenNthCalledWith(
+        1,
+        expect.objectContaining({ identifier: 'NEWPRO' }),
+      )
+      expect(mockedProject.create).toHaveBeenNthCalledWith(
+        2,
+        expect.objectContaining({ identifier: 'NEWPRO2' }),
+      )
+    })
+
+    it('should keep a caller-provided identifier instead of deriving one', async () => {
+      mockedMembership.findByUserAndWorkspace.mockResolvedValue(
+        ok(memberMembership),
+      )
+      mockedProject.create.mockResolvedValue(
+        ok(createFakeProject({ leadId: 'actor', workspaceId: 'ws1' })),
+      )
+
+      await ProjectService.create('actor', 'ws1', {
+        name: 'New Project',
+        slug: 'new-project',
+        identifier: 'CUSTOM',
+        isPublic: false,
+        issueTypesEnabled: true,
+        modulesEnabled: true,
+        cyclesEnabled: true,
+        estimatesEnabled: true,
+      })
+
+      expect(mockedProject.create).toHaveBeenCalledWith(
+        expect.objectContaining({ identifier: 'CUSTOM' }),
+      )
+    })
+
     it('should return FORBIDDEN when actor is not a workspace member', async () => {
       mockedMembership.findByUserAndWorkspace.mockResolvedValue(ok(null))
 

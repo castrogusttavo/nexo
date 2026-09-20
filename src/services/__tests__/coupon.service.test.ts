@@ -54,6 +54,15 @@ describe('CouponService.validate()', () => {
     expectErr(await CouponService.validate({ code: 'X' }), 'COUPON_INVALID')
   })
 
+  it('accepts a capped coupon that still has redemptions left', async () => {
+    // Every other case here uses the uncapped default (maxRedeems -1), so the
+    // redeems comparison was only ever seen in its rejecting direction.
+    mockedAbacate.getCoupon.mockResolvedValue(
+      createFakeAbacateCoupon({ id: 'X', maxRedeems: 5, redeemsCount: 4 }),
+    )
+    expect(expectOk(await CouponService.validate({ code: 'X' })).code).toBe('X')
+  })
+
   it('returns PAYMENT_ERROR when the gateway call fails', async () => {
     mockedAbacate.getCoupon.mockRejectedValue(new Error('gateway down'))
     expectErr(await CouponService.validate({ code: 'X' }), 'PAYMENT_ERROR')
