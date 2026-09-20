@@ -21,6 +21,11 @@ jobs:
 
       - name: Setup pnpm
         uses: pnpm/action-setup@d9184bf108216479bc5a137cc391f4d7b14c870b # v6
+        with:
+          # The self-hosted runner ships a broken bundled npm, which the
+          # action's default self-installer shells out to; the standalone
+          # script installs pnpm without touching npm.
+          standalone: true
 
       - name: Setup Node.js
         uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7

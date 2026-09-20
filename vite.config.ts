@@ -39,8 +39,12 @@ function clientSourceFiles(): string[] {
       // Marketing pages live under app/(web): Lighthouse and the e2e smoke
       // cover them, and component tests there buy little.
       if (path.startsWith('app/(web)') || path.startsWith('app/api')) continue
-      if (path.endsWith('.ts') || /^['"]use client['"]/.test(readFileSync(path, 'utf8')))
-        files.push(path)
+      // Inside app/, only files that ship to the browser count: the .ts
+      // files there are server-side (route handlers, robots/sitemap/manifest,
+      // feeds), which Testing Library cannot render. Outside app/ the roots
+      // are hooks and pure client modules, so .ts files are in scope.
+      const isClient = /^['"]use client['"]/.test(readFileSync(path, 'utf8'))
+      if (path.startsWith('app/') ? isClient : true) files.push(path)
     }
   }
   return files
