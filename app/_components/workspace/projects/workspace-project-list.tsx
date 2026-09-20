@@ -2,7 +2,9 @@
 
 import { useQueryStates } from 'nuqs'
 import { useMemo } from 'react'
+import { parseIssueDate } from '@/app/_components/issue/issue-dates'
 import { Card, CardContent, CardHeader } from '@/components/ui/card'
+import { useCacheUser } from '@/src/hooks/cache/use-user'
 import { useProjects } from '@/src/hooks/use-project'
 import {
   accessParser,
@@ -38,8 +40,34 @@ function isWithinDays(dateStr: string, days: number) {
   return new Date(dateStr).getTime() >= Date.now() - days * 86_400_000
 }
 
+/**
+ * The picked day as the instant its *local* calendar day starts. `nuqs`
+ * hands `YYYY-MM-DD` over as UTC midnight, which west of Greenwich still
+ * belongs to the previous local day — comparing it against a locally built
+ * upper bound made the range start a day early.
+ */
+function startOfPickedDay(day: Date) {
+  return parseIssueDate(day.toISOString()).getTime()
+}
+
+/** The same calendar day, closed at its last local millisecond. */
+function endOfPickedDay(day: Date) {
+  const local = parseIssueDate(day.toISOString())
+  return new Date(
+    local.getFullYear(),
+    local.getMonth(),
+    local.getDate(),
+    23,
+    59,
+    59,
+    999,
+  ).getTime()
+}
+
 export function ProjectList({ workspaceId, workspaceSlug }: ProjectListProps) {
   const { data: projects, isLoading, isError } = useProjects(workspaceId)
+  const { data: session } = useCacheUser()
+  const currentUserId = session?.user?.id
   const [{ mine, access, createdAt, dateFrom, dateTo, sortField, sortOrder }] =
     useQueryStates({
       mine: mineParser,
@@ -55,7 +83,9 @@ export function ProjectList({ workspaceId, workspaceSlug }: ProjectListProps) {
     if (!projects) return []
     let result = [...projects]
 
-    if (mine) result = result.filter((p) => p.leadId !== undefined)
+    // "Mine" means the projects this user leads; with no session resolved
+    // yet there is nothing that can be claimed as theirs.
+    if (mine) result = result.filter((p) => p.leadId === currentUserId)
     if (access.includes('public') && !access.includes('private')) {
       result = result.filter((p) => p.isPublic)
     } else if (access.includes('private') && !access.includes('public')) {
@@ -63,17 +93,8 @@ export function ProjectList({ workspaceId, workspaceSlug }: ProjectListProps) {
     }
 
     if (dateFrom) {
-      const from = dateFrom.getTime()
-      const toBase = dateTo ?? dateFrom
-      const to = new Date(
-        toBase.getFullYear(),
-        toBase.getMonth(),
-        toBase.getDate(),
-        23,
-        59,
-        59,
-        999,
-      ).getTime()
+      const from = startOfPickedDay(dateFrom)
+      const to = endOfPickedDay(dateTo ?? dateFrom)
       result = result.filter((p) => {
         const t = new Date(p.createdAt).getTime()
         return t >= from && t <= to
@@ -99,6 +120,7 @@ export function ProjectList({ workspaceId, workspaceSlug }: ProjectListProps) {
     return result
   }, [
     projects,
+    currentUserId,
     mine,
     access,
     createdAt,

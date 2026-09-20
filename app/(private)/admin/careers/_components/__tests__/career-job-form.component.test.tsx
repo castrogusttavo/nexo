@@ -181,6 +181,38 @@ describe('<CareerJobForm /> create mode', () => {
     )
   })
 
+  it('never derives a slug with an edge hyphen', async () => {
+    const fetchSpy = mockFetch().mockResolvedValueOnce(apiSuccess(buildJob()))
+    const { user } = renderWithProviders(<CareerJobForm mode='create' />)
+
+    await user.type(screen.getByLabelText('Título'), ' -Dev ')
+    await user.type(screen.getByLabelText('Resumo'), 'Resumo.')
+    await user.type(screen.getByLabelText('Sobre a vaga'), 'Sobre.')
+    await user.click(screen.getByRole('button', { name: 'Salvar' }))
+
+    await waitFor(() => expect(fetchSpy).toHaveBeenCalledTimes(1))
+    expect(getFetchCall(fetchSpy).body.slug).toBe('dev')
+  })
+
+  it('trims the hyphen a 50-character cut can leave behind', async () => {
+    const fetchSpy = mockFetch().mockResolvedValueOnce(apiSuccess(buildJob()))
+    const { user } = renderWithProviders(<CareerJobForm mode='create' />)
+
+    // 50 characters land exactly on the separator before "Brasil".
+    await user.type(
+      screen.getByLabelText('Título'),
+      'Pessoa Engenheira de Software Backend Senior IIII Brasil',
+    )
+    await user.type(screen.getByLabelText('Resumo'), 'Resumo.')
+    await user.type(screen.getByLabelText('Sobre a vaga'), 'Sobre.')
+    await user.click(screen.getByRole('button', { name: 'Salvar' }))
+
+    await waitFor(() => expect(fetchSpy).toHaveBeenCalledTimes(1))
+    const slug = getFetchCall(fetchSpy).body.slug
+    expect(slug).toBe('pessoa-engenheira-de-software-backend-senior-iiii')
+    expect(slug).not.toMatch(/-$/)
+  })
+
   it('labels each bullet item input with its list', async () => {
     const { user } = renderWithProviders(<CareerJobForm mode='create' />)
 

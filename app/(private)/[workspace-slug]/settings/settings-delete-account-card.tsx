@@ -32,9 +32,9 @@ export function SettingsDeleteAccountCard({
       const res = await fetch('/api/users/me', { method: 'DELETE' })
       if (!res.ok) {
         const json = await res.json().catch(() => null)
-        setDeleteError(
-          json?.error?.message ?? 'Não foi possível agendar a exclusão',
-        )
+        // `errorResponse` puts the human message at the top level; the
+        // nested `error` only carries `{ code, details }`.
+        setDeleteError(json?.message ?? 'Não foi possível agendar a exclusão')
         setDeleteState('confirming')
         return
       }
@@ -56,9 +56,7 @@ export function SettingsDeleteAccountCard({
       const res = await fetch('/api/users/me/deletion', { method: 'DELETE' })
       if (!res.ok) {
         const json = await res.json().catch(() => null)
-        setDeleteError(
-          json?.error?.message ?? 'Não foi possível cancelar a exclusão',
-        )
+        setDeleteError(json?.message ?? 'Não foi possível cancelar a exclusão')
         setCancelState('idle')
         return
       }

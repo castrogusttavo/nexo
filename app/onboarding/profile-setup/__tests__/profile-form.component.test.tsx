@@ -189,12 +189,7 @@ describe('<ProfileForm />', () => {
     })
 
     it('surfaces the server message when the upload is rejected', async () => {
-      mockFetch().mockResolvedValueOnce(
-        Response.json(
-          { success: false, error: { message: 'Arquivo muito grande' } },
-          { status: 413 },
-        ),
-      )
+      mockFetch().mockResolvedValueOnce(apiError(413, 'Arquivo muito grande'))
       const { user, container } = renderWithProviders(
         <ProfileForm {...DEFAULT_PROPS} />,
       )

@@ -31,15 +31,38 @@ import {
 import { notify } from '@/lib/notify'
 import { useCacheUser } from '@/src/hooks/cache/use-user'
 import { useCreateWorkspace } from '@/src/hooks/use-workspace'
+import type { CreateWorkspaceDTO } from '@/src/schemas/workspace.schema'
 
+// The buckets the API accepts (`CreateWorkspaceSchema.teamSize`); the labels
+// stay here, next to the only screen that shows them.
+type TeamSize = NonNullable<CreateWorkspaceDTO['teamSize']>
+
+const TEAM_SIZES: { value: TeamSize; label: string }[] = [
+  { value: '1', label: 'Apenas eu' },
+  { value: '2-10', label: '2-10' },
+  { value: '11-50', label: '11-50' },
+  { value: '51-200', label: '51-200' },
+  { value: '201-500', label: '201-500' },
+  { value: '500+', label: '500+' },
+]
+
+// Keeps a trailing hyphen so a space typed in the URL field survives until
+// the next letter (trimming on every keystroke swallowed it); `toSlug`
+// drops the dangling hyphens for the value that is actually submitted.
 function slugify(value: string) {
   return value
-    .toLowerCase()
     .normalize('NFD')
-    .replace(/[̀-ͯ]/g, '')
-    .replace(/[^a-z0-9]+/g, '-')
-    .replace(/^-+|-+$/g, '')
+    .replace(/[\u0300-\u036f]/g, '')
+    .toLowerCase()
+    .replace(/[^a-z0-9\s-]/g, '')
+    .replace(/\s+/g, '-')
+    .replace(/-+/g, '-')
+    .replace(/^-/, '')
     .slice(0, 50)
+}
+
+function toSlug(value: string) {
+  return slugify(value).replace(/-+$/, '')
 }
 
 export default function CreateWorkspacePage() {
@@ -52,19 +75,21 @@ export default function CreateWorkspacePage() {
   // Only read inside handlers (to stop auto-slugging once the user edits the
   // slug), never in render — a ref avoids a needless re-render on first edit.
   const slugTouchedRef = useRef(false)
-  const [size, setSize] = useState<string | null>(null)
+  const [teamSize, setTeamSize] = useState<TeamSize | null>(null)
   const [fieldErrors, setFieldErrors] = useState<{
     name?: string
     slug?: string
   }>({})
 
   const isPending = createWorkspace.isPending
-  const canSubmit = name.trim().length >= 2 && slug.length >= 2 && !isPending
+  // What the URL field shows while typing keeps its dangling hyphen; what
+  // leaves the form never does.
+  const submittedSlug = toSlug(slug)
 
   function handleNameChange(e: React.ChangeEvent<HTMLInputElement>) {
     const value = e.target.value
     setName(value)
-    if (!slugTouchedRef.current) setSlug(slugify(value))
+    if (!slugTouchedRef.current) setSlug(toSlug(value))
   }
 
   function handleSlugChange(e: React.ChangeEvent<HTMLInputElement>) {
@@ -80,8 +105,9 @@ export default function CreateWorkspacePage() {
     const trimmedName = name.trim()
     if (trimmedName.length < 2)
       errors.name = 'Nome deve ter ao menos 2 caracteres'
-    if (slug.length < 2) errors.slug = 'Slug deve ter ao menos 2 caracteres'
-    if (!/^[a-z0-9-]+$/.test(slug))
+    if (submittedSlug.length < 2)
+      errors.slug = 'Slug deve ter ao menos 2 caracteres'
+    if (!/^[a-z0-9-]+$/.test(submittedSlug))
       errors.slug =
         'Slug deve conter apenas letras minúsculas, números e hífens'
 
@@ -94,7 +120,8 @@ export default function CreateWorkspacePage() {
       const workspace = await notify.mutate(
         createWorkspace.mutateAsync({
           name: trimmedName,
-          slug,
+          slug: submittedSlug,
+          ...(teamSize && { teamSize }),
         }),
         {
           loading: 'Criando workspace...',
@@ -165,18 +192,20 @@ export default function CreateWorkspacePage() {
               <FieldLabel htmlFor='workspace-size'>
                 Quantas pessoas usarão este espaço de trabalho?
               </FieldLabel>
-              <Select value={size ?? ''} onValueChange={setSize}>
-                <SelectTrigger disabled={isPending}>
+              <Select
+                value={teamSize ?? ''}
+                onValueChange={(value) => setTeamSize(value as TeamSize)}
+              >
+                <SelectTrigger id='workspace-size' disabled={isPending}>
                   <SelectValue placeholder='Selecione um intervalo' />
                 </SelectTrigger>
                 <SelectContent alignItemWithTrigger={false} className='w-full'>
                   <SelectGroup>
-                    <SelectItem value='Apenas eu'>Apenas eu</SelectItem>
-                    <SelectItem value='2-10'>2-10</SelectItem>
-                    <SelectItem value='11-50'>11-50</SelectItem>
-                    <SelectItem value='51-200'>51-200</SelectItem>
-                    <SelectItem value='201-500'>201-500</SelectItem>
-                    <SelectItem value='500+'>500+</SelectItem>
+                    {TEAM_SIZES.map((option) => (
+                      <SelectItem key={option.value} value={option.value}>
+                        {option.label}
+                      </SelectItem>
+                    ))}
                   </SelectGroup>
                 </SelectContent>
               </Select>
@@ -187,13 +216,9 @@ export default function CreateWorkspacePage() {
               type='submit'
               variant='default'
               size='sm'
-              aria-disabled={!canSubmit}
-              onClick={(e) => {
-                if (!canSubmit) e.preventDefault()
-              }}
-              className='aria-disabled:opacity-50 aria-disabled:pointer-events-none'
+              disabled={isPending}
             >
-              Criar workspace
+              {isPending ? 'Criando...' : 'Criar workspace'}
             </Button>
             <Button
               type='button'

@@ -35,15 +35,20 @@ import type { CareerJobDTO } from '@/types/career-job'
 // Accents are transliterated (NFD + strip combining marks) so "Sênior"
 // becomes "senior" instead of losing the letter.
 function toSlug(value: string) {
-  return value
-    .toLowerCase()
-    .normalize('NFD')
-    .replace(/[\u0300-\u036f]/g, '')
-    .trim()
-    .replace(/[^a-z0-9\s-]/g, '')
-    .replace(/\s+/g, '-')
-    .replace(/-+/g, '-')
-    .slice(0, 50)
+  return (
+    value
+      .toLowerCase()
+      .normalize('NFD')
+      .replace(/[\u0300-\u036f]/g, '')
+      .trim()
+      .replace(/[^a-z0-9\s-]/g, '')
+      .replace(/\s+/g, '-')
+      .replace(/-+/g, '-')
+      .slice(0, 50)
+      // After the truncation, so a cut that lands on a separator does not
+      // leave the slug ending in a hyphen.
+      .replace(/^-+|-+$/g, '')
+  )
 }
 
 interface BulletListFieldProps {

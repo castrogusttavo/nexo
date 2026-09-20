@@ -58,7 +58,7 @@ export function ProfileForm({
       })
       const json = await res.json()
       if (!res.ok) {
-        throw new ApiError(json?.error?.message ?? 'Erro ao enviar imagem')
+        throw new ApiError(json?.message ?? 'Erro ao enviar imagem')
       }
       setImageUrl(`${json.data.url}?t=${Date.now()}`)
     }

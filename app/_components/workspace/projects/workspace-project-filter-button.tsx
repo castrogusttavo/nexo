@@ -6,6 +6,10 @@ import { ptBR } from 'date-fns/locale'
 import { useQueryStates } from 'nuqs'
 import { useState } from 'react'
 import type { DateRange } from 'react-day-picker'
+import {
+  parseIssueDate,
+  toIssueDateISO,
+} from '@/app/_components/issue/issue-dates'
 import { NexoIcon } from '@/components/icon/icon'
 import { Button } from '@/components/ui/button'
 import { Calendar } from '@/components/ui/calendar'
@@ -37,6 +41,19 @@ import {
 
 export type CreatedAtPreset = 'today' | 'yesterday' | '7days' | '30days'
 
+// The range names calendar days. `parseAsIsoDate` hands the stored day over
+// as UTC midnight, so reading it with the local calendar (the picker and
+// date-fns both do) moved it a day back for every viewer west of UTC. Days
+// cross the boundary the same way issue dates do: local midnight inside the
+// component, UTC midnight in the query string.
+function toCalendarDay(date: Date): Date {
+  return parseIssueDate(date.toISOString())
+}
+
+function fromCalendarDay(day: Date): Date {
+  return new Date(toIssueDateISO(day))
+}
+
 const PRESET_LABELS: Record<NonNullable<CreatedAtPreset>, string> = {
   today: 'Hoje',
   yesterday: 'Ontem',
@@ -56,7 +73,10 @@ export function ProjectFilterButton() {
     })
 
   const dateRange: DateRange | undefined = dateFrom
-    ? { from: dateFrom, to: dateTo ?? undefined }
+    ? {
+        from: toCalendarDay(dateFrom),
+        to: dateTo ? toCalendarDay(dateTo) : undefined,
+      }
     : undefined
 
   const activeCount = [
@@ -82,16 +102,17 @@ export function ProjectFilterButton() {
 
   function handleDateRange(range: DateRange | undefined) {
     setFilters({
-      dateFrom: range?.from ?? null,
-      dateTo: range?.to ?? null,
+      dateFrom: range?.from ? fromCalendarDay(range.from) : null,
+      dateTo: range?.to ? fromCalendarDay(range.to) : null,
       createdAt: null,
     })
   }
 
   function formatDateRange() {
-    if (!dateFrom) return 'Customizar'
-    if (!dateTo) return format(dateFrom, 'dd/MM/yy', { locale: ptBR })
-    return `${format(dateFrom, 'dd/MM/yy', { locale: ptBR })} – ${format(dateTo, 'dd/MM/yy', { locale: ptBR })}`
+    if (!dateRange?.from) return 'Customizar'
+    if (!dateRange.to)
+      return format(dateRange.from, 'dd/MM/yy', { locale: ptBR })
+    return `${format(dateRange.from, 'dd/MM/yy', { locale: ptBR })} – ${format(dateRange.to, 'dd/MM/yy', { locale: ptBR })}`
   }
 
   return (

@@ -1,4 +1,5 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query'
+import type { CreateWorkspaceDTO } from '@/src/schemas/workspace.schema'
 import type { WorkspaceDTO } from '@/types/workspace'
 import { apiFetchJson } from './_fetch'
 
@@ -10,7 +11,7 @@ export function useCreateWorkspace() {
   const queryClient = useQueryClient()
 
   return useMutation({
-    mutationFn: (data: { name: string; slug: string }) =>
+    mutationFn: (data: CreateWorkspaceDTO) =>
       apiFetchJson<WorkspaceDTO>(
         BASE_API_ROUTE,
         'POST',
