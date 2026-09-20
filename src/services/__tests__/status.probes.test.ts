@@ -188,17 +188,36 @@ describe('runProbesForTier()', () => {
     expect(result.payment?.error).toContain('AbacatePay HTTP 502')
   })
 
-  it('treats a payment 500 as an outage and a 4xx as operational', async () => {
-    // 500 is the inclusive boundary; 4xx means the gateway answered, which
-    // for a liveness probe counts as up.
+  it('treats a payment 500 as an outage, and 499 as the boundary below it', async () => {
+    // 500 is the inclusive boundary.
     fetchSpy.mockResolvedValue(new Response('err', { status: 500 }))
     expect((await runProbesForTier('peripheral')).payment?.status).toBe(
       'MAJOR_OUTAGE',
     )
 
-    fetchSpy.mockResolvedValue(new Response('nope', { status: 401 }))
+    // A 4xx that is not about our credential still means the gateway
+    // answered us, which is all this probe claims to know.
+    fetchSpy.mockResolvedValue(new Response('bad query', { status: 400 }))
     expect((await runProbesForTier('peripheral')).payment?.status).toBe(
       'OPERATIONAL',
     )
+  })
+
+  // Regression: an invalid AbacatePay key answered 401, the probe read that
+  // as "the gateway is up" and the status page stayed green while every
+  // checkout returned 502.
+  it.each([
+    401, 403,
+  ])('reports a rejected payment credential (%i) as an outage', async (status) => {
+    fetchSpy.mockResolvedValue(
+      new Response(JSON.stringify({ error: 'Invalid or inactive API key' }), {
+        status,
+      }),
+    )
+
+    const result = await runProbesForTier('peripheral')
+
+    expect(result.payment?.status).toBe('MAJOR_OUTAGE')
+    expect(result.payment?.error).toContain('rejected our credential')
   })
 })

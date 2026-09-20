@@ -96,6 +96,16 @@ async function probePayment(): Promise<ProbeResult> {
         headers: { Authorization: `Bearer ${ABACATE_PAY}` },
       },
     )
+    // A rejected credential used to read as healthy here: the gateway
+    // answered, so a liveness check was satisfied. It cost a production
+    // checkout answering 502 on every attempt with nothing reporting it --
+    // the key had gone invalid and the status page stayed green. From a
+    // customer's side an unusable gateway and a down gateway are the same
+    // outage, so the probe asks whether we can *use* AbacatePay, not whether
+    // it is up.
+    if (res.status === 401 || res.status === 403) {
+      throw new Error(`AbacatePay rejected our credential (HTTP ${res.status})`)
+    }
     if (res.status >= 500) throw new Error(`AbacatePay HTTP ${res.status}`)
   })
 }
