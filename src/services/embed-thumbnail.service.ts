@@ -7,6 +7,23 @@ import {
   persistEmbedThumbnail,
 } from './_embed-thumbnail'
 
+// The oEmbed response decides what gets fetched next, so the host it names
+// is checked before the request goes out: an answer pointing at an internal
+// address would otherwise be fetched by the server on its behalf.
+const YOUTUBE_THUMBNAIL_HOSTS = ['i.ytimg.com', 'img.youtube.com']
+
+function isYoutubeThumbnailUrl(raw: string): boolean {
+  try {
+    const url = new URL(raw)
+    return (
+      url.protocol === 'https:' &&
+      YOUTUBE_THUMBNAIL_HOSTS.includes(url.hostname)
+    )
+  } catch {
+    return false
+  }
+}
+
 async function fetchYoutubeThumbnail(
   sourceUrl: string,
 ): Promise<{ buffer: Buffer; contentType: string } | null> {
@@ -16,8 +33,9 @@ async function fetchYoutubeThumbnail(
 
   const data = (await response.json()) as { thumbnail_url?: string }
   if (!data.thumbnail_url) return null
+  if (!isYoutubeThumbnailUrl(data.thumbnail_url)) return null
 
-  const imageResponse = await fetch(data.thumbnail_url)
+  const imageResponse = await fetch(data.thumbnail_url, { redirect: 'error' })
   if (!imageResponse.ok) return null
 
   return {

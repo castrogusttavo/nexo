@@ -14,6 +14,7 @@ import {
   UpdateCycleSchema,
 } from '@/src/schemas/cycle.schema'
 import { AddCycleMemberSchema } from '@/src/schemas/cycle-member.schema'
+import { EmbedMetadataSchema } from '@/src/schemas/embed-metadata.schema'
 import {
   CreateEstimateValueSchema,
   ReorderEstimateValuesSchema,
@@ -157,6 +158,7 @@ const SPEC_BODY_TO_ZOD: Record<string, ZodType> = {
   UpdateUserInput: UpdateUserSchema,
   UpdateUserPreferenceInput: UpdateUserPreferenceSchema,
   UpdateWikiCommentInput: UpdateWikiCommentSchema,
+  EmbedMetadataInput: EmbedMetadataSchema,
   UpdateWikiPageInput: UpdateWikiPageSchema,
   UpdateWorkspaceInput: UpdateWorkspaceSchema,
 }
@@ -173,8 +175,6 @@ const JSON_BODIES_WITHOUT_SHARED_SCHEMA: Record<string, string> = {
   'POST /payment/webhook':
     "AbacatePay's payload, validated by a route-local Zod schema in " +
     'app/api/payment/webhook/route.ts (only the fields the handler reads)',
-  'POST /workspaces/{id}/projects/{slug}/embed-metadata':
-    'no Zod schema at all — the route hand-checks `typeof body.url`',
 }
 
 /**

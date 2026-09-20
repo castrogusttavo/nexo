@@ -78,6 +78,45 @@ describe('EmbedThumbnailService.getOrFetch()', () => {
     )
   })
 
+  // The oEmbed answer decides the next request's destination, so a payload
+  // pointing anywhere but YouTube's own thumbnail hosts must not be fetched:
+  // the server would be making the request on the caller's behalf.
+  it.each([
+    ['an internal address', 'http://169.254.169.254/latest/meta-data/'],
+    ['a foreign https host', 'https://evil.example.com/x.jpg'],
+    ['a non-http scheme', 'file:///etc/passwd'],
+    ['a malformed url', 'not a url'],
+  ])('refuses a thumbnail_url pointing at %s', async (_label, thumbnailUrl) => {
+    fetchMock.mockResolvedValueOnce(
+      jsonResponse({ thumbnail_url: thumbnailUrl }),
+    )
+
+    const result = await EmbedThumbnailService.getOrFetch(
+      'youtube',
+      'https://youtu.be/abc',
+    )
+
+    expect(expectOk(result)).toBeNull()
+    // Only the oEmbed call happened; the image was never requested.
+    expect(fetchMock).toHaveBeenCalledTimes(1)
+    expect(mockedPersist).not.toHaveBeenCalled()
+  })
+
+  it('does not follow a redirect away from the thumbnail host', async () => {
+    fetchMock
+      .mockResolvedValueOnce(
+        jsonResponse({ thumbnail_url: 'https://i.ytimg.com/x.jpg' }),
+      )
+      .mockResolvedValueOnce(bufferResponse())
+
+    await EmbedThumbnailService.getOrFetch('youtube', 'https://youtu.be/abc')
+
+    expect(fetchMock).toHaveBeenLastCalledWith(
+      'https://i.ytimg.com/x.jpg',
+      expect.objectContaining({ redirect: 'error' }),
+    )
+  })
+
   it('returns null when the oEmbed request fails', async () => {
     fetchMock.mockResolvedValueOnce(jsonResponse({}, false))
 

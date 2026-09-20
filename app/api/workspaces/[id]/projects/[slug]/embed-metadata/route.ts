@@ -2,6 +2,7 @@ import type { NextRequest } from 'next/server'
 import { withAxiom } from '@/lib/axiom/server'
 import { getAuthSession } from '@/src/lib/auth-session'
 import { apiLimiter, consume } from '@/src/lib/rate-limit'
+import { EmbedMetadataSchema } from '@/src/schemas/embed-metadata.schema'
 import { EmbedMetadataService } from '@/src/services/embed-metadata.service'
 import {
   handleError,
@@ -20,15 +21,20 @@ export const POST = withAxiom(async (request: NextRequest, ctx: Params) => {
 
   const { id, slug } = await ctx.params
   const body = await request.json().catch(() => null)
-  if (typeof body?.url !== 'string') {
-    return standardError('VALIDATION_ERROR', 'URL é obrigatória')
+  const parsed = EmbedMetadataSchema.safeParse(body)
+  if (!parsed.success) {
+    return standardError(
+      'VALIDATION_ERROR',
+      'Dados inválidos',
+      parsed.error.issues,
+    )
   }
 
   const result = await EmbedMetadataService.resolve(
     auth.value.user.id,
     id,
     slug,
-    body.url,
+    parsed.data.url,
   )
   if (!result.ok) return handleError(result.error)
 
