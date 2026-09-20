@@ -228,7 +228,19 @@ jobs:
       # standalone artifact production runs), so the `next start` above has to
       # let go of the port first.
       - name: Stop the API test server
-        run: pkill -f 'next start' || true
+        run: |
+          # `pnpm start &` leaves a next-server child, so match the port, not
+          # the command name, and wait for it to actually let go.
+          fuser -k 3000/tcp 2>/dev/null || true
+          for i in $(seq 1 20); do
+            if ! curl -s --max-time 2 http://localhost:3000/api/health > /dev/null 2>&1; then
+              echo "Port 3000 is free"
+              exit 0
+            fi
+            sleep 1
+          done
+          echo "Something is still listening on port 3000"
+          exit 1
 
       - name: Cache Playwright browsers
         uses: actions/cache@0400d5f644dc74513175e3cd8d07132dd4860809 # v4
