@@ -4,6 +4,14 @@
 # without it) and is also baked into the client bundle via the CD build-args.
 # nginx proxies /realtime (same origin, so the session cookie reaches the
 # Hocuspocus server) to the realtime service on 127.0.0.1:1234.
+# The router does not hairpin: a container resolving the public names to the
+# public IP times out. Point them at the host's LAN address instead, where
+# nginx terminates TLS with the same certificates, so presigned storage URLs
+# (signed for the public host) and any self-call work from inside too.
+x-internal-hosts: &internal-hosts
+  - 'storage.nexopm.com:192.168.100.197'
+  - 'nexopm.com:192.168.100.197'
+
 x-public-env: &public-env
   NEXT_PUBLIC_URL: https://nexopm.com
   BETTER_AUTH_URL: https://nexopm.com
@@ -19,6 +27,7 @@ services:
     env_file:
       - .env
     environment: *public-env
+    extra_hosts: *internal-hosts
     volumes:
       - ./redis-tls/ca.crt:/etc/redis-tls/ca.crt:ro
     dns:
@@ -35,6 +44,7 @@ services:
     env_file:
       - .env
     environment: *public-env
+    extra_hosts: *internal-hosts
     volumes:
       - ./redis-tls/ca.crt:/etc/redis-tls/ca.crt:ro
     dns:
@@ -54,6 +64,7 @@ services:
     env_file:
       - .env
     environment: *public-env
+    extra_hosts: *internal-hosts
     volumes:
       - ./redis-tls/ca.crt:/etc/redis-tls/ca.crt:ro
     dns:
