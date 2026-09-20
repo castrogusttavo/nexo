@@ -11,6 +11,8 @@
 			"app/**/*",
 			"src/**/*",
 			"worker/**/*",
+			"e2e/**/*",
+			"playwright.config.ts",
 			"!!**/.next",
 			"!!**/node_modules",
 			"!!**/app/globals.css"

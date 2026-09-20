@@ -85,7 +85,7 @@ jobs:
         run: pnpm test:contract --run
 
   e2e-tests:
-    name: E2E Tests
+    name: E2E Tests (API + Browser)
     runs-on: avrea-ubuntu-latest-2-vcpu
     services:
       postgres:
@@ -222,6 +222,36 @@ jobs:
 
       - name: Run e2e tests
         run: pnpm test:e2e
+
+      # The browser suite reuses this job's build, database and MinIO instead
+      # of paying for a second `next build`. It boots its own server (the
+      # standalone artifact production runs), so the `next start` above has to
+      # let go of the port first.
+      - name: Stop the API test server
+        run: pkill -f 'next start' || true
+
+      - name: Cache Playwright browsers
+        uses: actions/cache@0400d5f644dc74513175e3cd8d07132dd4860809 # v4
+        with:
+          path: ~/.cache/ms-playwright
+          key: playwright-${{ runner.os }}-${{ hashFiles('pnpm-lock.yaml') }}
+
+      - name: Install Chromium
+        run: pnpm exec playwright install --with-deps chromium
+
+      - name: Run browser tests
+        run: pnpm test:browser
+        env:
+          PLAYWRIGHT_SKIP_BUILD: 'true'
+          NODE_OPTIONS: ''
+
+      - name: Upload Playwright report
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        if: ${{ !cancelled() }}
+        with:
+          name: playwright-report
+          path: playwright-report/
+          retention-days: 7
 
   # Single run of unit + integration (with coverage, uploaded to Codecov) and
   # component tests. Separate unit/integration jobs used to repeat the exact
