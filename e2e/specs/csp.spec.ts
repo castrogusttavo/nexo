@@ -1,3 +1,5 @@
+import { readdirSync } from 'node:fs'
+import path from 'node:path'
 import { expect, test } from '@playwright/test'
 
 // Regression guard for the pair of bugs that left production unprotected and
@@ -55,5 +57,40 @@ test.describe('content security policy', () => {
     // private shell instead of bouncing to sign-in.
     await page.goto('/any-workspace/projects')
     await expect(page).toHaveURL(/\/sign-in\?redirect=/)
+  })
+
+  // Static assets stay outside the proxy. The excalidraw fonts are copied
+  // into public/ at build time, and the matcher used to let them through
+  // the auth gate: a visitor without a session got a redirect instead of the
+  // font. The file is picked from disk because its name is hashed per
+  // excalidraw version.
+  test('serves self-hosted fonts without the auth gate', async ({
+    request,
+    baseURL,
+  }) => {
+    const dir = path.join(
+      'public',
+      'static',
+      'excalidraw',
+      'fonts',
+      'Excalifont',
+    )
+    const font = readdirSync(dir).find((name) => name.endsWith('.woff2'))
+    expect(
+      font,
+      `no .woff2 in ${dir}: did the build sync the fonts?`,
+    ).toBeTruthy()
+
+    const response = await request.get(
+      `${baseURL}/static/excalidraw/fonts/Excalifont/${font}`,
+      { maxRedirects: 0 },
+    )
+
+    expect(response.status()).toBe(200)
+    // Static files get next.config.ts's asset policy (default-src 'none'),
+    // not the page policy the proxy stamps -- proof the proxy was skipped.
+    const csp = response.headers()['content-security-policy'] ?? ''
+    expect(csp).toContain("default-src 'none'")
+    expect(csp).not.toContain("'unsafe-inline'; style-src")
   })
 })

@@ -111,6 +111,10 @@ export function proxy(request: NextRequest, event: NextFetchEvent) {
   return withSecurityHeaders(NextResponse.next())
 }
 
+// Static files never need the session check, the CSP or an Axiom log line.
+// Fonts were missing from this list: the wiki's self-hosted excalidraw set
+// (234 files under /static/excalidraw) went through the auth gate on every
+// request, and an anonymous one was redirected to /sign-in.
 export const config = {
-  matcher: ['/((?!_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp|avif|ico)$).*)'],
+  matcher: ['/((?!_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp|avif|ico|woff2?|ttf|otf)$).*)'],
 }
