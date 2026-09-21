@@ -112,11 +112,13 @@ export default {
   },
   logLevel: 'info',
 
-  // Measured score at the time of writing: 72.35% (up from 70.34% before the
-  // first round of gap-closing tests — see .stryker/reports). `break` sits a
-  // couple of points under that so CI fails on a genuine regression without
-  // tripping over the handful of mutants whose verdict shifts run to run.
-  // `high`/`low` are the colour bands in the HTML report and the direction of
-  // travel, not a gate: raise `break` as the score climbs.
-  thresholds: { high: 85, low: 65, break: 70 },
+  // Score history: 70.34% at first measurement, 72.35% after the first
+  // round of gap-closing tests, 80.09% on the first CI run (2026-09-21) after
+  // the project authorization matrix took the gate's 392 survivors to zero.
+  // `break` sits ~3 points under the latest score so CI fails on a genuine
+  // regression without tripping over the handful of mutants whose verdict
+  // shifts run to run. `high`/`low` are the colour bands in the HTML report
+  // and the direction of travel, not a gate: raise `break` as the score
+  // climbs -- a break left far below the score guards nothing.
+  thresholds: { high: 85, low: 65, break: 77 },
 }
