@@ -19,7 +19,7 @@ export function UserHeader({ slug }: { slug: string }) {
             Comece agora
           </Button>
         </Link>
-        <ShortCutButton href={`/${slug}/inbox`}>
+        <ShortCutButton href={`/${slug}/inbox`} label='Caixa de entrada'>
           <NexoIcon icon={InboxIcon} strokeWidth={2} size={20} />
         </ShortCutButton>
         <UserDropdownHelper />

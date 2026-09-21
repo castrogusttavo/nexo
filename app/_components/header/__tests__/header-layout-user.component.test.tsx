@@ -30,10 +30,21 @@ describe('<UserHeader />', () => {
   it('links the get-started and inbox shortcuts to the current workspace', () => {
     renderWithProviders(<UserHeader slug='nexo' />)
 
-    // The inbox shortcut is icon-only, so it is matched by destination.
+    expect(screen.getByRole('link', { name: 'Comece agora' })).toHaveAttribute(
+      'href',
+      '/nexo/get-started',
+    )
     expect(
-      screen.getAllByRole('link').map((link) => link.getAttribute('href')),
-    ).toEqual(['/nexo/get-started', '/nexo/inbox'])
+      screen.getByRole('link', { name: 'Caixa de entrada' }),
+    ).toHaveAttribute('href', '/nexo/inbox')
+  })
+
+  it('does not nest the icon-only inbox link inside a button', () => {
+    renderWithProviders(<UserHeader slug='nexo' />)
+
+    const inbox = screen.getByRole('link', { name: 'Caixa de entrada' })
+    expect(inbox.closest('button')).toBeNull()
+    expect(inbox.querySelector('button')).toBeNull()
   })
 
   it('re-points every link when the workspace changes', () => {
@@ -43,6 +54,9 @@ describe('<UserHeader />', () => {
       'href',
       '/atlas/get-started',
     )
+    expect(
+      screen.getByRole('link', { name: 'Caixa de entrada' }),
+    ).toHaveAttribute('href', '/atlas/inbox')
     expect(screen.getByText('Workspace atlas')).toBeInTheDocument()
   })
 

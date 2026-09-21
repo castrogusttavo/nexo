@@ -1,17 +1,23 @@
 import Link from 'next/link'
-import { Button } from '@/components/ui/button'
+import { buttonVariants } from '@/components/ui/button'
 
 interface ShortCutButtonProps {
   children?: React.ReactNode
-  href?: string
+  href: string
+  /** pt-BR name of the destination; the link shows only an icon. */
+  label: string
 }
 
-export function ShortCutButton({ children, href }: ShortCutButtonProps) {
+// A link styled as an icon button, not a link inside a <button>: nesting
+// them made two tab stops and left the icon-only link without a name.
+export function ShortCutButton({ children, href, label }: ShortCutButtonProps) {
   return (
-    <Button variant='ghost' size='icon-sm'>
-      <Link href={href ?? '#'}>
-        {children}
-      </Link>
-    </Button>
+    <Link
+      href={href}
+      aria-label={label}
+      className={buttonVariants({ variant: 'ghost', size: 'icon-sm' })}
+    >
+      {children}
+    </Link>
   )
 }

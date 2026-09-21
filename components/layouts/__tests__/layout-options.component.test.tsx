@@ -1,4 +1,4 @@
-import { screen } from '@testing-library/react'
+import { screen, waitFor } from '@testing-library/react'
 import { describe, expect, it, vi } from 'vitest'
 import { renderWithProviders } from '@/src/__tests__/helpers/component'
 import { LayoutOptions, OptionButton } from '../layout-options'
@@ -52,10 +52,15 @@ describe('<LayoutOptions />', () => {
       </LayoutOptions>,
     )
 
-    await user.hover(screen.getByRole('button', { name: 'Lista' }))
+    const option = screen.getByRole('button', { name: 'Lista' })
+    await user.hover(option)
 
-    // The Base UI tooltip popup carries no role, so it is found by its text.
-    expect(await screen.findByText('Visão em lista')).toBeInTheDocument()
+    expect(await screen.findByRole('tooltip')).toHaveTextContent(
+      'Visão em lista',
+    )
+    await waitFor(() =>
+      expect(option).toHaveAccessibleDescription('Visão em lista'),
+    )
   })
 
   it('tells the active option apart from the inactive ones', () => {

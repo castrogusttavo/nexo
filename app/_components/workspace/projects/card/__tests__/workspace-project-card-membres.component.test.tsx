@@ -1,4 +1,4 @@
-import { screen } from '@testing-library/react'
+import { screen, waitFor } from '@testing-library/react'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { renderWithProviders } from '@/src/__tests__/helpers/component'
 import { ProjectCardMembers } from '../workspace-project-card-membres'
@@ -26,9 +26,10 @@ function avatar() {
   return el
 }
 
-// The Base UI tooltip popup carries no role, so it is found by its text.
+/** Hovers the avatar and returns the tooltip it opens. */
 async function hoverAvatar(user: ReturnType<typeof renderMembers>['user']) {
   await user.hover(avatar())
+  return screen.findByRole('tooltip')
 }
 
 beforeEach(() => {
@@ -98,17 +99,17 @@ describe('<ProjectCardMembers />', () => {
   it('names the lead on hover', async () => {
     const { user } = renderMembers(SIGNED_IN_USER)
 
-    await hoverAvatar(user)
-
-    expect(await screen.findByText('Ana Souza')).toBeInTheDocument()
+    expect(await hoverAvatar(user)).toHaveTextContent('Ana Souza')
+    await waitFor(() =>
+      expect(avatar()).toHaveAccessibleDescription('Ana Souza'),
+    )
   })
 
   it('calls an unknown lead a member on hover', async () => {
     const { user } = renderMembers('user-2')
 
-    await hoverAvatar(user)
-
-    expect(await screen.findByText('Membro')).toBeInTheDocument()
+    expect(await hoverAvatar(user)).toHaveTextContent('Membro')
+    await waitFor(() => expect(avatar()).toHaveAccessibleDescription('Membro'))
   })
 
   // Deleting a user nulls `leadId` rather than deleting the project, so the
@@ -136,9 +137,10 @@ describe('<ProjectCardMembers />', () => {
     it('says there is no lead on hover', async () => {
       const { user } = renderMembers(null)
 
-      await hoverAvatar(user)
-
-      expect(await screen.findByText('Sem líder')).toBeInTheDocument()
+      expect(await hoverAvatar(user)).toHaveTextContent('Sem líder')
+      await waitFor(() =>
+        expect(avatar()).toHaveAccessibleDescription('Sem líder'),
+      )
     })
   })
 })

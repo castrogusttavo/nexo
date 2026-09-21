@@ -140,8 +140,10 @@ describe('<ProjectCard /> content', () => {
 
     await user.hover(visibilityBadge())
 
-    // The Base UI tooltip popup carries no role, so it is found by its text.
-    expect(await screen.findByText('Privado')).toBeInTheDocument()
+    expect(await screen.findByRole('tooltip')).toHaveTextContent('Privado')
+    await waitFor(() =>
+      expect(visibilityBadge()).toHaveAccessibleDescription('Privado'),
+    )
   })
 
   it('calls a public project public', async () => {
@@ -149,7 +151,10 @@ describe('<ProjectCard /> content', () => {
 
     await user.hover(visibilityBadge())
 
-    expect(await screen.findByText('Público')).toBeInTheDocument()
+    expect(await screen.findByRole('tooltip')).toHaveTextContent('Público')
+    await waitFor(() =>
+      expect(visibilityBadge()).toHaveAccessibleDescription('Público'),
+    )
   })
 })
 
