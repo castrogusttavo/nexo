@@ -27,6 +27,15 @@ overrides:
   # Snyk URI-parsing advisories (SNYK-JS-FASTURI-19256867/69/71/73, -19502739).
   fast-uri: '>=4.1.4'
   'gray-matter>js-yaml': '>=4.3.2 <5'
+  # @platejs/excalidraw 53.0.0 (still the latest) pins @excalidraw/excalidraw
+  # 0.18.0 exactly, which drags in mermaid-to-excalidraw 1.1.2 -> mermaid 10.9.3
+  # -> dompurify 3.1.6 / uuid 9 (GHSA-39h7-pwv7-rc3x plus the mermaid 10 and
+  # dompurify XSS advisories). This code runs in the browser (wiki excalidraw
+  # embed). 0.18.1 is the patch release that fixes GHSA-39h7-pwv7-rc3x by moving
+  # to mermaid-to-excalidraw 2.2.2 / mermaid 11, and it is what Nexo already
+  # lists directly (the excalidraw-node CSS import resolved 0.18.1 while the
+  # component rendered 0.18.0). Drop once @platejs/excalidraw depends on >=0.18.1.
+  '@platejs/excalidraw>@excalidraw/excalidraw': '0.18.1'
   # 4.13.5 fixes SNYK-JS-HONO-19499068/-19499091. Pulled in only by tooling
   # (@getworkbench/core, @modelcontextprotocol/sdk via shadcn, @prisma/dev).
   hono: '>=4.13.5'
@@ -54,6 +63,12 @@ overrides:
   'minimatch@3>brace-expansion': '>=5.0.9'
   nanoid: '>=3.3.18'
   postcss: '>=8.5.23'
+  # prisma 7.8.0 pins @prisma/dev 0.24.3, which pins valibot 1.2.0 exactly
+  # (GHSA-5qjj-4xww-7phc, fixed in 1.4.2). @prisma/dev backs only the
+  # `prisma dev` local-database command, which Nexo never runs (Postgres comes
+  # from docker), and prisma is a devDependency. Same major. Drop once prisma
+  # is bumped to >=7.10.0 (pins @prisma/dev 0.24.17 -> valibot 1.4.2).
+  '@prisma/dev>valibot': '^1.4.2'
   # Deliberate: esbuild 0.28.1+ breaks the react-email dev preview, so pin the
   # preview to 0.28.0. The advisory (GHSA-g7r4-m6w7-qqqr) affects only esbuild's
   # local dev server, never production, and Snyk is non-blocking in CI. Snyk
@@ -63,6 +78,12 @@ overrides:
   # 0.35.3 (SNYK-JS-SHARP-19653587, libheif heap overflow).
   sharp: '>=0.35.4'
   socket.io-parser: '>=4.2.7'
+  # @stryker-mutator/core 10.0.0 (latest) asks typed-rest-client ~2.3.0, and
+  # 2.3.1 pins qs 6.15.1 exactly (GHSA-q8mj-m7cp-5q26, -x5fp-wj9c-mxmx,
+  # -4mjr-xmp4-gh2g; fixed in 6.16.0). Dev-only (mutation testing), and
+  # typed-rest-client only stringifies its own query params. Same major. Drop
+  # once stryker moves to typed-rest-client >=3.1.2 (asks qs ^6.16.0).
+  'typed-rest-client>qs': '^6.16.0'
   # Sem teto, o pnpm resolve isso pra 8.x, que quebra o jsdom (depende de
   # undici ^7.25.0 — a 8.x moveu/removeu internals que o jsdom importa
   # direto, ex. lib/handler/wrap-handler.js). Mesmo padrão do js-yaml acima.
@@ -80,6 +101,7 @@ trustPolicyExclude:
   # @excalidraw/excalidraw for Fase 6 do wiki) lost trusted-publisher
   # evidence across three unrelated transitive deps at once. Excepted after
   # explicit approval; revisit if a newer trusted version lands.
+  # (mermaid@10.9.3 left the tree once @platejs/excalidraw was overridden to
+  # excalidraw 0.18.1, so its exception was dropped.)
   - 'cytoscape@3.34.1'
   - 'langium@3.3.1'
-  - 'mermaid@10.9.3'
