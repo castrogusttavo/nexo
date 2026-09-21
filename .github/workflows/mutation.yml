@@ -14,6 +14,13 @@ jobs:
     name: Stryker
     runs-on: self-hosted
     timeout-minutes: 60
+    env:
+      # prisma.config.ts resolves DATABASE_URL on load, even for `prisma
+      # generate`, which never connects. The mutated code runs against mocks,
+      # so the URL only has to exist; the first manual run died here before
+      # Stryker even started.
+      DATABASE_URL: postgresql://unused:unused@localhost:5432/unused
+      SKIP_ENV_VALIDATION: 'true'
     steps:
       - name: Checkout repository
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
