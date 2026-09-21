@@ -11,6 +11,10 @@ import { IssueRepository } from '@/src/repositories/issue.repository'
 import { MembershipRepository } from '@/src/repositories/membership.repository'
 import { ProjectRepository } from '@/src/repositories/project.repository'
 import { CommentService } from '../comment.service'
+import {
+  describeProjectAccessGate,
+  GATE_PROJECT_ID,
+} from './_project-access-gate'
 
 vi.mock('@/src/repositories/membership.repository')
 vi.mock('@/src/repositories/project.repository')
@@ -310,94 +314,101 @@ describe('CommentService', () => {
     })
   })
 
-  // The project gate is `privileged || lead || member`. Every arm has to
-  // grant on its own and the negative case has to hold with a populated
-  // member list, otherwise a mutant that hardcodes any arm still passes.
-  describe('project access gate', () => {
-    function withProject(
-      membership: typeof memberMembership,
-      members: { userId: string }[],
-      leadId = 'lead-1',
-    ) {
-      mockedMembership.findByUserAndWorkspace.mockResolvedValue(ok(membership))
-      mockedProject.findByWorkspaceAndSlug.mockResolvedValue(
-        ok(projectWith({ id: 'proj-1', leadId }, members)),
-      )
-      mockedIssue.findById.mockResolvedValue(
-        ok(createFakeIssue({ projectId: 'proj-1' })),
-      )
-      mockedComment.listByIssue.mockResolvedValue(ok([withAuthor()]))
-    }
+  // Moderation is a second gate after the project one: the project lead may
+  // delete someone else's comment even without a privileged workspace role.
+  it('should let the project lead moderate someone else comment', async () => {
+    mockedMembership.findByUserAndWorkspace.mockResolvedValue(
+      ok(memberMembership),
+    )
+    mockedProject.findByWorkspaceAndSlug.mockResolvedValue(
+      ok(projectWith({ id: 'proj-1', leadId: 'actor' }, [{ userId: 'other' }])),
+    )
+    mockedIssue.findById.mockResolvedValue(
+      ok(createFakeIssue({ projectId: 'proj-1' })),
+    )
+    mockedComment.findById.mockResolvedValue(
+      ok(createFakeComment({ issueId: 'issue-1', authorId: 'other' })),
+    )
+    mockedComment.delete.mockResolvedValue(ok(undefined))
 
-    it('allows the project lead who is not on the member list', async () => {
-      withProject(memberMembership, [{ userId: 'someone-else' }], 'actor')
-
-      expectOk(
-        await CommentService.list('actor', 'ws1', 'proj-slug', 'issue-1'),
-      )
-    })
-
-    it('allows a workspace OWNER who is neither lead nor member', async () => {
-      withProject(ownerMembership, [{ userId: 'someone-else' }])
-
-      expectOk(
-        await CommentService.list('actor', 'ws1', 'proj-slug', 'issue-1'),
-      )
-    })
-
-    it('allows one member among several', async () => {
-      withProject(memberMembership, [
-        { userId: 'other-1' },
-        { userId: 'actor' },
-        { userId: 'other-2' },
-      ])
-
-      expectOk(
-        await CommentService.list('actor', 'ws1', 'proj-slug', 'issue-1'),
-      )
-    })
-
-    it('denies an actor absent from a populated member list', async () => {
-      withProject(memberMembership, [
-        { userId: 'other-1' },
-        { userId: 'other-2' },
-      ])
-
-      expectErr(
-        await CommentService.list('actor', 'ws1', 'proj-slug', 'issue-1'),
-        'ISSUE_FORBIDDEN',
-      )
-    })
-
-    it('denies the same actor on update and delete, not just on list', async () => {
-      withProject(memberMembership, [{ userId: 'other-1' }])
-      mockedComment.findById.mockResolvedValue(
-        ok(createFakeComment({ issueId: 'issue-1', authorId: 'actor' })),
-      )
-
-      expectErr(
-        await CommentService.update(
-          'actor',
-          'ws1',
-          'proj-slug',
-          'issue-1',
-          'comment-1',
-          { content },
-        ),
-        'ISSUE_FORBIDDEN',
-      )
-      expectErr(
-        await CommentService.delete(
-          'actor',
-          'ws1',
-          'proj-slug',
-          'issue-1',
-          'comment-1',
-        ),
-        'ISSUE_FORBIDDEN',
-      )
-      expect(mockedComment.update).not.toHaveBeenCalled()
-      expect(mockedComment.delete).not.toHaveBeenCalled()
-    })
+    expectOk(
+      await CommentService.delete(
+        'actor',
+        'ws1',
+        'proj-slug',
+        'issue-1',
+        'comment-1',
+      ),
+    )
+    expect(mockedComment.delete).toHaveBeenCalledWith('comment-1')
   })
 })
+
+describeProjectAccessGate('CommentService', [
+  {
+    name: 'list()',
+    grants: 'member',
+    forbiddenCode: 'ISSUE_FORBIDDEN',
+    arrange: arrangeCommentRoundTrip,
+    call: (actorId) =>
+      CommentService.list(actorId, 'ws1', 'proj-slug', 'issue-1'),
+    sideEffects: () => [mockedComment.listByIssue],
+  },
+  {
+    name: 'create()',
+    grants: 'member',
+    forbiddenCode: 'ISSUE_FORBIDDEN',
+    arrange: arrangeCommentRoundTrip,
+    call: (actorId) =>
+      CommentService.create(actorId, 'ws1', 'proj-slug', 'issue-1', {
+        content,
+      }),
+    sideEffects: () => [mockedComment.create],
+  },
+  {
+    name: 'update()',
+    grants: 'member',
+    forbiddenCode: 'ISSUE_FORBIDDEN',
+    arrange: arrangeCommentRoundTrip,
+    call: (actorId) =>
+      CommentService.update(
+        actorId,
+        'ws1',
+        'proj-slug',
+        'issue-1',
+        'comment-1',
+        { content },
+      ),
+    sideEffects: () => [mockedComment.update],
+  },
+  {
+    name: 'delete()',
+    grants: 'member',
+    forbiddenCode: 'ISSUE_FORBIDDEN',
+    arrange: arrangeCommentRoundTrip,
+    call: (actorId) =>
+      CommentService.delete(
+        actorId,
+        'ws1',
+        'proj-slug',
+        'issue-1',
+        'comment-1',
+      ),
+    sideEffects: () => [mockedComment.delete],
+  },
+])
+
+// The actor authors the comment, so update/delete pass the ownership check
+// and the project gate is the only thing that can say no.
+function arrangeCommentRoundTrip() {
+  mockedIssue.findById.mockResolvedValue(
+    ok(createFakeIssue({ projectId: GATE_PROJECT_ID })),
+  )
+  mockedComment.findById.mockResolvedValue(
+    ok(createFakeComment({ issueId: 'issue-1', authorId: 'actor' })),
+  )
+  mockedComment.listByIssue.mockResolvedValue(ok([withAuthor()]))
+  mockedComment.create.mockResolvedValue(ok(withAuthor()))
+  mockedComment.update.mockResolvedValue(ok(withAuthor()))
+  mockedComment.delete.mockResolvedValue(ok(undefined))
+}

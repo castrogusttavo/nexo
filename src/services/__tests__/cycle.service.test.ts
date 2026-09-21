@@ -10,6 +10,10 @@ import { MembershipRepository } from '@/src/repositories/membership.repository'
 import { ProjectRepository } from '@/src/repositories/project.repository'
 import { ActivityService } from '../activity.service'
 import { CycleService } from '../cycle.service'
+import {
+  describeProjectAccessGate,
+  GATE_PROJECT_ID,
+} from './_project-access-gate'
 
 vi.mock('@/src/repositories/membership.repository')
 vi.mock('@/src/repositories/project.repository')
@@ -693,3 +697,100 @@ describe('CycleService', () => {
     expectErr(result, 'DATABASE_ERROR')
   })
 })
+
+function arrangeCycleInProject() {
+  const cycle = createFakeCycle({
+    id: 'cyc-1',
+    projectId: GATE_PROJECT_ID,
+    leadId: 'lead-1',
+    status: 'NOT_STARTED',
+  })
+  const cycleMember = {
+    id: 'cm-2',
+    cycleId: 'cyc-1',
+    userId: 'other',
+    createdAt: new Date(),
+    user: { id: 'other', name: 'Other', username: 'other', image: null },
+  }
+  mockedCycle.listByProject.mockResolvedValue(ok([cycle]))
+  mockedCycle.findActiveByProject.mockResolvedValue(ok(null))
+  mockedCycle.create.mockResolvedValue(ok(cycle))
+  mockedCycle.findById.mockResolvedValue(ok(cycle))
+  mockedCycle.update.mockResolvedValue(ok(cycle))
+  mockedCycle.delete.mockResolvedValue(ok(undefined))
+  mockedCycle.listmembers.mockResolvedValue(ok([cycleMember]))
+  mockedCycle.addMember.mockResolvedValue(ok(cycleMember))
+  mockedCycle.removeMember.mockResolvedValue(ok(undefined))
+}
+
+describeProjectAccessGate('CycleService', [
+  {
+    name: 'list()',
+    grants: 'member',
+    publicGrants: true,
+    forbiddenCode: 'PROJECT_FORBIDDEN',
+    arrange: arrangeCycleInProject,
+    call: (actorId) => CycleService.list(actorId, 'ws1', 'proj-slug'),
+    sideEffects: () => [mockedCycle.listByProject],
+  },
+  {
+    name: 'create()',
+    grants: 'lead',
+    forbiddenCode: 'CYCLE_FORBIDDEN',
+    arrange: arrangeCycleInProject,
+    call: (actorId) =>
+      CycleService.create(actorId, 'ws1', 'proj-slug', {
+        name: 'Sprint 1',
+        status: 'NOT_STARTED',
+      }),
+    sideEffects: () => [mockedCycle.create],
+  },
+  {
+    name: 'update()',
+    grants: 'lead',
+    forbiddenCode: 'CYCLE_FORBIDDEN',
+    arrange: arrangeCycleInProject,
+    call: (actorId) =>
+      CycleService.update(actorId, 'ws1', 'proj-slug', 'cyc-1', {
+        name: 'Sprint 2',
+      }),
+    sideEffects: () => [mockedCycle.update],
+  },
+  {
+    name: 'delete()',
+    grants: 'lead',
+    forbiddenCode: 'CYCLE_FORBIDDEN',
+    arrange: arrangeCycleInProject,
+    call: (actorId) =>
+      CycleService.delete(actorId, 'ws1', 'proj-slug', 'cyc-1'),
+    sideEffects: () => [mockedCycle.delete],
+  },
+  {
+    name: 'listMembers()',
+    grants: 'member',
+    publicGrants: true,
+    forbiddenCode: 'PROJECT_FORBIDDEN',
+    arrange: arrangeCycleInProject,
+    call: (actorId) =>
+      CycleService.listMembers(actorId, 'ws1', 'proj-slug', 'cyc-1'),
+    sideEffects: () => [mockedCycle.listmembers],
+  },
+  {
+    name: 'addMember()',
+    grants: 'lead',
+    forbiddenCode: 'CYCLE_FORBIDDEN',
+    arrange: arrangeCycleInProject,
+    call: (actorId) =>
+      CycleService.addMember(actorId, 'ws1', 'proj-slug', 'cyc-1', 'other'),
+    sideEffects: () => [mockedCycle.addMember],
+  },
+  {
+    name: 'removeMember()',
+    grants: 'lead',
+    forbiddenCode: 'CYCLE_FORBIDDEN',
+    arrange: arrangeCycleInProject,
+    call: (actorId) =>
+      CycleService.removeMember(actorId, 'ws1', 'proj-slug', 'cyc-1', 'other'),
+    sideEffects: () => [mockedCycle.removeMember],
+  },
+])

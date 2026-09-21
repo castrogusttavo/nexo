@@ -12,6 +12,10 @@ import { MembershipRepository } from '@/src/repositories/membership.repository'
 import { ProjectRepository } from '@/src/repositories/project.repository'
 import { AttachmentService } from '../attachment.service'
 import * as attachmentStorage from '../issue/_attachment'
+import {
+  describeProjectAccessGate,
+  GATE_PROJECT_ID,
+} from './_project-access-gate'
 
 vi.mock('@/src/repositories/membership.repository')
 vi.mock('@/src/repositories/project.repository')
@@ -240,3 +244,67 @@ describe('AttachmentService', () => {
     })
   })
 })
+
+describeProjectAccessGate('AttachmentService', [
+  {
+    name: 'list()',
+    grants: 'member',
+    forbiddenCode: 'ISSUE_FORBIDDEN',
+    arrange: arrangeAttachmentRoundTrip,
+    call: (actorId) =>
+      AttachmentService.list(actorId, 'ws1', 'proj-slug', 'issue-1'),
+    sideEffects: () => [mockedAttachment.listByIssue],
+  },
+  {
+    name: 'upload()',
+    grants: 'member',
+    forbiddenCode: 'ISSUE_FORBIDDEN',
+    arrange: arrangeAttachmentRoundTrip,
+    call: (actorId) =>
+      AttachmentService.upload(
+        actorId,
+        'ws1',
+        'proj-slug',
+        'issue-1',
+        pngFile(),
+      ),
+    sideEffects: () => [
+      attachmentStorage.persistAttachment,
+      mockedAttachment.create,
+    ],
+  },
+  {
+    name: 'remove()',
+    grants: 'member',
+    forbiddenCode: 'ISSUE_FORBIDDEN',
+    arrange: arrangeAttachmentRoundTrip,
+    call: (actorId) =>
+      AttachmentService.remove(
+        actorId,
+        'ws1',
+        'proj-slug',
+        'issue-1',
+        'attachment-1',
+      ),
+    sideEffects: () => [
+      mockedAttachment.delete,
+      attachmentStorage.removeAttachmentObject,
+    ],
+  },
+])
+
+function arrangeAttachmentRoundTrip() {
+  mockedIssue.findById.mockResolvedValue(
+    ok(createFakeIssue({ projectId: GATE_PROJECT_ID })),
+  )
+  mockedAttachment.listByIssue.mockResolvedValue(
+    ok([createFakeAttachment({ issueId: 'issue-1' })]),
+  )
+  mockedAttachment.create.mockResolvedValue(
+    ok(createFakeAttachment({ issueId: 'issue-1' })),
+  )
+  mockedAttachment.findById.mockResolvedValue(
+    ok(createFakeAttachment({ id: 'attachment-1', issueId: 'issue-1' })),
+  )
+  mockedAttachment.delete.mockResolvedValue(ok(undefined))
+}

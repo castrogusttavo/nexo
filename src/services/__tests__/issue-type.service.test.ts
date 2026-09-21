@@ -9,6 +9,10 @@ import { IssueTypeRepository } from '@/src/repositories/issue-type.repository'
 import { MembershipRepository } from '@/src/repositories/membership.repository'
 import { ProjectRepository } from '@/src/repositories/project.repository'
 import { IssueTypeService } from '../issue-type.service'
+import {
+  describeProjectAccessGate,
+  GATE_PROJECT_ID,
+} from './_project-access-gate'
 
 vi.mock('@/src/repositories/membership.repository')
 vi.mock('@/src/repositories/project.repository')
@@ -395,3 +399,73 @@ describe('IssueTypeService', () => {
     expectErr(result, 'DATABASE_ERROR')
   })
 })
+
+function arrangeCustomTypeInProject() {
+  const type = createFakeIssueType({
+    id: 'type-1',
+    projectId: GATE_PROJECT_ID,
+    isSystem: false,
+  })
+  mockedIssueType.listByProject.mockResolvedValue(ok([type]))
+  mockedIssueType.create.mockResolvedValue(ok(type))
+  mockedIssueType.findById.mockResolvedValue(ok(type))
+  mockedIssueType.update.mockResolvedValue(ok(type))
+  mockedIssueType.delete.mockResolvedValue(ok(undefined))
+  mockedIssueType.reorder.mockResolvedValue(ok([type]))
+}
+
+describeProjectAccessGate('IssueTypeService', [
+  {
+    name: 'list()',
+    grants: 'member',
+    publicGrants: true,
+    forbiddenCode: 'PROJECT_FORBIDDEN',
+    arrange: arrangeCustomTypeInProject,
+    call: (actorId) => IssueTypeService.list(actorId, 'ws1', 'proj-slug'),
+    sideEffects: () => [mockedIssueType.listByProject],
+  },
+  {
+    name: 'create()',
+    grants: 'lead',
+    forbiddenCode: 'ISSUE_TYPE_FORBIDDEN',
+    arrange: arrangeCustomTypeInProject,
+    call: (actorId) =>
+      IssueTypeService.create(actorId, 'ws1', 'proj-slug', {
+        name: 'Bug',
+        color: 'RED',
+        icon: 'bug-icon',
+      }),
+    sideEffects: () => [mockedIssueType.create],
+  },
+  {
+    name: 'update()',
+    grants: 'lead',
+    forbiddenCode: 'ISSUE_TYPE_FORBIDDEN',
+    arrange: arrangeCustomTypeInProject,
+    call: (actorId) =>
+      IssueTypeService.update(actorId, 'ws1', 'proj-slug', 'type-1', {
+        name: 'Defect',
+      }),
+    sideEffects: () => [mockedIssueType.update],
+  },
+  {
+    name: 'delete()',
+    grants: 'lead',
+    forbiddenCode: 'ISSUE_TYPE_FORBIDDEN',
+    arrange: arrangeCustomTypeInProject,
+    call: (actorId) =>
+      IssueTypeService.delete(actorId, 'ws1', 'proj-slug', 'type-1'),
+    sideEffects: () => [mockedIssueType.delete],
+  },
+  {
+    name: 'reorder()',
+    grants: 'lead',
+    forbiddenCode: 'ISSUE_TYPE_FORBIDDEN',
+    arrange: arrangeCustomTypeInProject,
+    call: (actorId) =>
+      IssueTypeService.reorder(actorId, 'ws1', 'proj-slug', {
+        typeIds: ['type-1'],
+      }),
+    sideEffects: () => [mockedIssueType.reorder],
+  },
+])

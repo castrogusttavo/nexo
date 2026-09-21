@@ -26,6 +26,10 @@ import { StateRepository } from '@/src/repositories/state.repository'
 import type { IssueDTO } from '@/types/issue'
 import { ActivityService } from '../activity.service'
 import { IssueService } from '../issue.service'
+import {
+  describeProjectAccessGate,
+  GATE_PROJECT_ID,
+} from './_project-access-gate'
 
 vi.mock('@/src/repositories/membership.repository')
 vi.mock('@/src/repositories/project.repository')
@@ -404,84 +408,6 @@ describe('IssueService', () => {
       )
       mockedProject.findByWorkspaceAndSlug.mockResolvedValue(
         ok(projectWith({ isPublic: false }, [])),
-      )
-
-      const result = await IssueService.getByIdentifier(
-        'actor',
-        'ws1',
-        'proj-slug',
-        'ENG-42',
-      )
-
-      expectErr(result, 'PROJECT_FORBIDDEN')
-    })
-
-    // The read gate is `isPublic || privileged || lead || member`. Each arm
-    // has to be shown to grant on its own, otherwise a mutant that hardcodes
-    // any of them still passes the suite.
-    it.each([
-      [
-        'the project lead, who is not in the member list',
-        'lead-1',
-        memberMembership,
-        { isPublic: false },
-        [{ userId: 'someone-else' }],
-      ],
-      [
-        'a workspace OWNER who is neither lead nor member',
-        'actor',
-        createFakeMembership({
-          userId: 'actor',
-          workspaceId: 'ws1',
-          role: 'OWNER',
-        }),
-        { isPublic: false },
-        [{ userId: 'someone-else' }],
-      ],
-      [
-        'one member among several on a private project',
-        'actor',
-        memberMembership,
-        { isPublic: false },
-        [{ userId: 'other-1' }, { userId: 'actor' }, { userId: 'other-2' }],
-      ],
-      [
-        'any workspace member when the project is public',
-        'actor',
-        memberMembership,
-        { isPublic: true },
-        [],
-      ],
-    ])('should allow %s to read an issue', async (_label, actorId, membership, projectOverrides, members) => {
-      mockedMembership.findByUserAndWorkspace.mockResolvedValue(ok(membership))
-      mockedProject.findByWorkspaceAndSlug.mockResolvedValue(
-        ok(projectWith(projectOverrides, members)),
-      )
-      mockedIssue.findByProjectAndNumber.mockResolvedValue(
-        ok(createFakeIssue({ id: 'issue-1', number: 42, projectId: 'proj-1' })),
-      )
-
-      const result = await IssueService.getByIdentifier(
-        actorId as string,
-        'ws1',
-        'proj-slug',
-        'ENG-42',
-      )
-
-      expect(expectOk(result).id).toBe('issue-1')
-    })
-
-    it('should deny an actor who is absent from a multi-member private project', async () => {
-      mockedMembership.findByUserAndWorkspace.mockResolvedValue(
-        ok(memberMembership),
-      )
-      mockedProject.findByWorkspaceAndSlug.mockResolvedValue(
-        ok(
-          projectWith({ isPublic: false, leadId: 'lead-1' }, [
-            { userId: 'other-1' },
-            { userId: 'other-2' },
-          ]),
-        ),
       )
 
       const result = await IssueService.getByIdentifier(
@@ -1674,3 +1600,112 @@ describe('IssueService', () => {
     expectErr(result, 'DATABASE_ERROR')
   })
 })
+
+describeProjectAccessGate('IssueService', [
+  {
+    name: 'list()',
+    grants: 'member',
+    publicGrants: true,
+    forbiddenCode: 'PROJECT_FORBIDDEN',
+    arrange: arrangeIssueRoundTrip,
+    call: (actorId) => IssueService.list(actorId, 'ws1', 'proj-slug'),
+    sideEffects: () => [mockedIssue.listByProject],
+  },
+  {
+    name: 'getById()',
+    grants: 'member',
+    publicGrants: true,
+    forbiddenCode: 'PROJECT_FORBIDDEN',
+    arrange: arrangeIssueRoundTrip,
+    call: (actorId) =>
+      IssueService.getById(actorId, 'ws1', 'proj-slug', 'issue-1'),
+    sideEffects: () => [mockedIssue.findById],
+  },
+  {
+    name: 'getByIdentifier()',
+    grants: 'member',
+    publicGrants: true,
+    forbiddenCode: 'PROJECT_FORBIDDEN',
+    arrange: arrangeIssueRoundTrip,
+    call: (actorId) =>
+      IssueService.getByIdentifier(actorId, 'ws1', 'proj-slug', 'ENG-42'),
+    sideEffects: () => [mockedIssue.findByProjectAndNumber],
+  },
+  {
+    name: 'listChildren()',
+    grants: 'member',
+    publicGrants: true,
+    forbiddenCode: 'PROJECT_FORBIDDEN',
+    arrange: arrangeIssueRoundTrip,
+    call: (actorId) =>
+      IssueService.listChildren(actorId, 'ws1', 'proj-slug', 'issue-1'),
+    sideEffects: () => [mockedIssue.findById, mockedIssue.listChildren],
+  },
+  {
+    name: 'count()',
+    grants: 'member',
+    publicGrants: true,
+    forbiddenCode: 'PROJECT_FORBIDDEN',
+    arrange: arrangeIssueRoundTrip,
+    call: (actorId) => IssueService.count(actorId, 'ws1', 'proj-slug'),
+    sideEffects: () => [mockedIssue.countByProject],
+  },
+  {
+    name: 'create()',
+    grants: 'member',
+    forbiddenCode: 'ISSUE_FORBIDDEN',
+    arrange: arrangeIssueRoundTrip,
+    call: (actorId) =>
+      IssueService.create(actorId, 'ws1', 'proj-slug', {
+        title: 'Bug',
+        description: [],
+        stateId: 'state-1',
+        priority: 'NONE',
+      }),
+    sideEffects: () => [mockedIssue.create, mockedIssueListCache.invalidate],
+  },
+  {
+    name: 'update()',
+    grants: 'member',
+    forbiddenCode: 'ISSUE_FORBIDDEN',
+    arrange: arrangeIssueRoundTrip,
+    call: (actorId) =>
+      IssueService.update(actorId, 'ws1', 'proj-slug', 'issue-1', {
+        title: 'Renamed',
+      }),
+    sideEffects: () => [mockedIssue.update, mockedIssueListCache.invalidate],
+  },
+  {
+    name: 'delete()',
+    grants: 'member',
+    forbiddenCode: 'ISSUE_FORBIDDEN',
+    arrange: arrangeIssueRoundTrip,
+    call: (actorId) =>
+      IssueService.delete(actorId, 'ws1', 'proj-slug', 'issue-1'),
+    sideEffects: () => [mockedIssue.delete, mockedIssueListCache.invalidate],
+  },
+])
+
+function arrangeIssueRoundTrip() {
+  const issue = createFakeIssue({
+    id: 'issue-1',
+    number: 42,
+    projectId: GATE_PROJECT_ID,
+  })
+  mockedIssue.listByProject.mockResolvedValue(
+    ok([{ ...issue, labels: [], assignees: [] }]),
+  )
+  mockedIssue.findById.mockResolvedValue(ok(issue))
+  mockedIssue.findByProjectAndNumber.mockResolvedValue(ok(issue))
+  mockedIssue.listChildren.mockResolvedValue(ok([]))
+  mockedIssue.countByProject.mockResolvedValue(ok(3))
+  mockedIssue.create.mockResolvedValue(ok(issue))
+  mockedIssue.update.mockResolvedValue(ok(issue))
+  mockedIssue.delete.mockResolvedValue(ok(undefined))
+  mockedState.findById.mockResolvedValue(
+    ok(createFakeState({ projectId: GATE_PROJECT_ID })),
+  )
+  mockedIssueType.listByProject.mockResolvedValue(
+    ok([{ ...taskType, projectId: GATE_PROJECT_ID }]),
+  )
+}

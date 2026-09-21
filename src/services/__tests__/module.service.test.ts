@@ -10,6 +10,10 @@ import { ModuleRepository } from '@/src/repositories/module.repository'
 import { ProjectRepository } from '@/src/repositories/project.repository'
 import { ActivityService } from '../activity.service'
 import { ModuleService } from '../module.service'
+import {
+  describeProjectAccessGate,
+  GATE_PROJECT_ID,
+} from './_project-access-gate'
 
 vi.mock('@/src/repositories/membership.repository')
 vi.mock('@/src/repositories/project.repository')
@@ -765,3 +769,120 @@ describe('ModuleService', () => {
     })
   })
 })
+
+function arrangeModuleInProject() {
+  const mod = createFakeModule({
+    id: 'mod-1',
+    projectId: GATE_PROJECT_ID,
+    leadId: 'lead-1',
+  })
+  const moduleMember = {
+    id: 'mm-1',
+    userId: 'other',
+    moduleId: 'mod-1',
+    createdAt: new Date(),
+    user: { id: 'other', name: 'Other', username: 'other', image: null },
+  }
+  mockedModule.listByProject.mockResolvedValue(ok([mod]))
+  mockedModule.create.mockResolvedValue(ok(mod))
+  mockedModule.findById.mockResolvedValue(ok(mod))
+  mockedModule.update.mockResolvedValue(ok(mod))
+  mockedModule.delete.mockResolvedValue(ok(undefined))
+  mockedModule.listMembers.mockResolvedValue(ok([moduleMember]))
+  mockedModule.addMember.mockResolvedValue(ok(moduleMember))
+  mockedModule.removeMember.mockResolvedValue(ok(undefined))
+  mockedModule.addFavorite.mockResolvedValue(ok(undefined))
+  mockedModule.removeFavorite.mockResolvedValue(ok(undefined))
+}
+
+describeProjectAccessGate('ModuleService', [
+  {
+    name: 'list()',
+    grants: 'member',
+    publicGrants: true,
+    forbiddenCode: 'PROJECT_FORBIDDEN',
+    arrange: arrangeModuleInProject,
+    call: (actorId) => ModuleService.list(actorId, 'ws1', 'proj-slug'),
+    sideEffects: () => [mockedModule.listByProject],
+  },
+  {
+    name: 'create()',
+    grants: 'lead',
+    forbiddenCode: 'MODULE_FORBIDDEN',
+    arrange: arrangeModuleInProject,
+    call: (actorId) =>
+      ModuleService.create(actorId, 'ws1', 'proj-slug', {
+        name: 'Auth',
+        status: 'BACKLOG',
+      }),
+    sideEffects: () => [mockedModule.create],
+  },
+  {
+    name: 'update()',
+    grants: 'lead',
+    forbiddenCode: 'MODULE_FORBIDDEN',
+    arrange: arrangeModuleInProject,
+    call: (actorId) =>
+      ModuleService.update(actorId, 'ws1', 'proj-slug', 'mod-1', {
+        name: 'Billing',
+      }),
+    sideEffects: () => [mockedModule.update],
+  },
+  {
+    name: 'delete()',
+    grants: 'lead',
+    forbiddenCode: 'MODULE_FORBIDDEN',
+    arrange: arrangeModuleInProject,
+    call: (actorId) =>
+      ModuleService.delete(actorId, 'ws1', 'proj-slug', 'mod-1'),
+    sideEffects: () => [mockedModule.delete],
+  },
+  {
+    name: 'listMembers()',
+    grants: 'member',
+    publicGrants: true,
+    forbiddenCode: 'PROJECT_FORBIDDEN',
+    arrange: arrangeModuleInProject,
+    call: (actorId) =>
+      ModuleService.listMembers(actorId, 'ws1', 'proj-slug', 'mod-1'),
+    sideEffects: () => [mockedModule.listMembers],
+  },
+  {
+    name: 'addMember()',
+    grants: 'lead',
+    forbiddenCode: 'MODULE_FORBIDDEN',
+    arrange: arrangeModuleInProject,
+    call: (actorId) =>
+      ModuleService.addMember(actorId, 'ws1', 'proj-slug', 'mod-1', 'other'),
+    sideEffects: () => [mockedModule.addMember],
+  },
+  {
+    name: 'removeMember()',
+    grants: 'lead',
+    forbiddenCode: 'MODULE_FORBIDDEN',
+    arrange: arrangeModuleInProject,
+    call: (actorId) =>
+      ModuleService.removeMember(actorId, 'ws1', 'proj-slug', 'mod-1', 'other'),
+    sideEffects: () => [mockedModule.removeMember],
+  },
+  {
+    name: 'favorite()',
+    grants: 'member',
+    publicGrants: true,
+    forbiddenCode: 'PROJECT_FORBIDDEN',
+    arrange: arrangeModuleInProject,
+    call: (actorId) =>
+      ModuleService.favorite(actorId, 'ws1', 'proj-slug', 'mod-1'),
+    sideEffects: () => [mockedModule.addFavorite],
+  },
+  {
+    name: 'unfavorite()',
+    grants: 'member',
+    publicGrants: true,
+    forbiddenCode: 'PROJECT_FORBIDDEN',
+    arrange: arrangeModuleInProject,
+    call: (actorId) =>
+      ModuleService.unfavorite(actorId, 'ws1', 'proj-slug', 'mod-1'),
+    sideEffects: () => [mockedModule.removeFavorite],
+  },
+])

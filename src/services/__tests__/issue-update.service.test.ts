@@ -11,6 +11,10 @@ import { IssueUpdateRepository } from '@/src/repositories/issue-update.repositor
 import { MembershipRepository } from '@/src/repositories/membership.repository'
 import { ProjectRepository } from '@/src/repositories/project.repository'
 import { IssueUpdateService } from '../issue-update.service'
+import {
+  describeProjectAccessGate,
+  GATE_PROJECT_ID,
+} from './_project-access-gate'
 
 vi.mock('@/src/repositories/membership.repository')
 vi.mock('@/src/repositories/project.repository')
@@ -219,6 +223,35 @@ describe('IssueUpdateService', () => {
       expectErr(result, 'ISSUE_UPDATE_FORBIDDEN')
       expect(mockedIssueUpdate.delete).not.toHaveBeenCalled()
     })
+
+    // Moderation is a second gate after the project one. The lead passes it
+    // on their own: not the author, not privileged, not on the member list.
+    it('should let the project lead moderate someone else update', async () => {
+      mockedMembership.findByUserAndWorkspace.mockResolvedValue(
+        ok(memberMembership),
+      )
+      mockedProject.findByWorkspaceAndSlug.mockResolvedValue(
+        ok(projectWith({ leadId: 'actor' }, [{ userId: 'other' }])),
+      )
+      mockedIssue.findById.mockResolvedValue(
+        ok(createFakeIssue({ projectId: 'proj-1' })),
+      )
+      mockedIssueUpdate.findById.mockResolvedValue(
+        ok(withAuthor({ issueId: 'issue-1', authorId: 'other' })),
+      )
+      mockedIssueUpdate.delete.mockResolvedValue(ok(undefined))
+
+      const result = await IssueUpdateService.delete(
+        'actor',
+        'ws1',
+        'proj-slug',
+        'issue-1',
+        'update-1',
+      )
+
+      expectOk(result)
+      expect(mockedIssueUpdate.delete).toHaveBeenCalledWith('update-1')
+    })
   })
 
   describe('list()', () => {
@@ -251,3 +284,73 @@ describe('IssueUpdateService', () => {
     })
   })
 })
+
+// update()/delete() also check authorship; the actor authors the update here
+// so the project gate is the only thing that can say no.
+describeProjectAccessGate('IssueUpdateService', [
+  {
+    name: 'list()',
+    grants: 'member',
+    forbiddenCode: 'ISSUE_FORBIDDEN',
+    arrange: arrangeOwnUpdate,
+    call: (actorId) =>
+      IssueUpdateService.list(actorId, 'ws1', 'proj-slug', 'issue-1'),
+    sideEffects: () => [mockedIssueUpdate.listByIssue],
+  },
+  {
+    name: 'create()',
+    grants: 'member',
+    forbiddenCode: 'ISSUE_FORBIDDEN',
+    arrange: arrangeOwnUpdate,
+    call: (actorId) =>
+      IssueUpdateService.create(actorId, 'ws1', 'proj-slug', 'issue-1', {
+        status: 'ON_TRACK',
+        content: 'Tudo certo',
+      }),
+    sideEffects: () => [mockedIssueUpdate.create],
+  },
+  {
+    name: 'update()',
+    grants: 'member',
+    forbiddenCode: 'ISSUE_FORBIDDEN',
+    arrange: arrangeOwnUpdate,
+    call: (actorId) =>
+      IssueUpdateService.update(
+        actorId,
+        'ws1',
+        'proj-slug',
+        'issue-1',
+        'update-1',
+        { status: 'AT_RISK' },
+      ),
+    sideEffects: () => [mockedIssueUpdate.update],
+  },
+  {
+    name: 'delete()',
+    grants: 'member',
+    forbiddenCode: 'ISSUE_FORBIDDEN',
+    arrange: arrangeOwnUpdate,
+    call: (actorId) =>
+      IssueUpdateService.delete(
+        actorId,
+        'ws1',
+        'proj-slug',
+        'issue-1',
+        'update-1',
+      ),
+    sideEffects: () => [mockedIssueUpdate.delete],
+  },
+])
+
+function arrangeOwnUpdate() {
+  mockedIssue.findById.mockResolvedValue(
+    ok(createFakeIssue({ projectId: GATE_PROJECT_ID })),
+  )
+  mockedIssueUpdate.listByIssue.mockResolvedValue(ok([withAuthor()]))
+  mockedIssueUpdate.create.mockResolvedValue(ok(withAuthor()))
+  mockedIssueUpdate.findById.mockResolvedValue(
+    ok(createFakeIssueUpdate({ issueId: 'issue-1', authorId: 'actor' })),
+  )
+  mockedIssueUpdate.update.mockResolvedValue(ok(withAuthor()))
+  mockedIssueUpdate.delete.mockResolvedValue(ok(undefined))
+}

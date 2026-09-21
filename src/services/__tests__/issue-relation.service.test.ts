@@ -13,6 +13,10 @@ import { IssueRelationRepository } from '@/src/repositories/issue-relation.repos
 import { MembershipRepository } from '@/src/repositories/membership.repository'
 import { ProjectRepository } from '@/src/repositories/project.repository'
 import { IssueRelationService } from '../issue-relation.service'
+import {
+  describeProjectAccessGate,
+  GATE_PROJECT_ID,
+} from './_project-access-gate'
 
 vi.mock('@/src/repositories/membership.repository')
 vi.mock('@/src/repositories/project.repository')
@@ -250,3 +254,58 @@ describe('IssueRelationService', () => {
     })
   })
 })
+
+describeProjectAccessGate('IssueRelationService', [
+  {
+    name: 'list()',
+    grants: 'member',
+    forbiddenCode: 'ISSUE_FORBIDDEN',
+    arrange: arrangeRelationRoundTrip,
+    call: (actorId) =>
+      IssueRelationService.list(actorId, 'ws1', 'proj-slug', 'issue-1'),
+    sideEffects: () => [mockedRelation.listByIssue],
+  },
+  {
+    name: 'create()',
+    grants: 'member',
+    forbiddenCode: 'ISSUE_FORBIDDEN',
+    arrange: arrangeRelationRoundTrip,
+    call: (actorId) =>
+      IssueRelationService.create(actorId, 'ws1', 'proj-slug', 'issue-1', {
+        targetId: 'issue-2',
+        type: 'RELATES_TO',
+      }),
+    sideEffects: () => [mockedRelation.create],
+  },
+  {
+    name: 'remove()',
+    grants: 'member',
+    forbiddenCode: 'ISSUE_FORBIDDEN',
+    arrange: arrangeRelationRoundTrip,
+    call: (actorId) =>
+      IssueRelationService.remove(
+        actorId,
+        'ws1',
+        'proj-slug',
+        'issue-1',
+        'rel-1',
+      ),
+    sideEffects: () => [mockedRelation.remove],
+  },
+])
+
+function arrangeRelationRoundTrip() {
+  const relation = createFakeIssueRelation({
+    id: 'rel-1',
+    sourceId: 'issue-1',
+    targetId: 'issue-2',
+  })
+  mockedIssue.findById.mockResolvedValue(
+    ok(createFakeIssue({ projectId: GATE_PROJECT_ID })),
+  )
+  mockedRelation.listByIssue.mockResolvedValue(ok([relation]))
+  mockedRelation.findBetween.mockResolvedValue(ok(null))
+  mockedRelation.create.mockResolvedValue(ok(relation))
+  mockedRelation.findById.mockResolvedValue(ok(relation))
+  mockedRelation.remove.mockResolvedValue(ok(undefined))
+}

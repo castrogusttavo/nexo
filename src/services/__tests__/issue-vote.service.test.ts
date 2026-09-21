@@ -13,6 +13,10 @@ import { IssueVoteRepository } from '@/src/repositories/issue-vote.repository'
 import { MembershipRepository } from '@/src/repositories/membership.repository'
 import { ProjectRepository } from '@/src/repositories/project.repository'
 import { IssueVoteService } from '../issue-vote.service'
+import {
+  describeProjectAccessGate,
+  GATE_PROJECT_ID,
+} from './_project-access-gate'
 
 vi.mock('@/src/repositories/membership.repository')
 vi.mock('@/src/repositories/project.repository')
@@ -182,3 +186,47 @@ describe('IssueVoteService', () => {
     })
   })
 })
+
+describeProjectAccessGate('IssueVoteService', [
+  {
+    name: 'summary()',
+    grants: 'member',
+    forbiddenCode: 'ISSUE_FORBIDDEN',
+    arrange: arrangeVoteRoundTrip,
+    call: (actorId) =>
+      IssueVoteService.summary(actorId, 'ws1', 'proj-slug', 'issue-1'),
+    sideEffects: () => [mockedVote.tallyByIssue],
+  },
+  {
+    name: 'cast()',
+    grants: 'member',
+    forbiddenCode: 'ISSUE_FORBIDDEN',
+    arrange: arrangeVoteRoundTrip,
+    call: (actorId) =>
+      IssueVoteService.cast(actorId, 'ws1', 'proj-slug', 'issue-1', {
+        type: 'UP',
+      }),
+    sideEffects: () => [mockedVote.upsert],
+  },
+  {
+    name: 'retract()',
+    grants: 'member',
+    forbiddenCode: 'ISSUE_FORBIDDEN',
+    arrange: arrangeVoteRoundTrip,
+    call: (actorId) =>
+      IssueVoteService.retract(actorId, 'ws1', 'proj-slug', 'issue-1'),
+    sideEffects: () => [mockedVote.delete],
+  },
+])
+
+function arrangeVoteRoundTrip() {
+  mockedIssue.findById.mockResolvedValue(
+    ok(createFakeIssue({ projectId: GATE_PROJECT_ID })),
+  )
+  mockedVote.upsert.mockResolvedValue(
+    ok(createFakeIssueVote({ userId: 'actor', type: 'UP' })),
+  )
+  mockedVote.delete.mockResolvedValue(ok(undefined))
+  mockedVote.tallyByIssue.mockResolvedValue(ok({ up: 1, down: 0 }))
+  mockedVote.findByIssueAndUser.mockResolvedValue(ok(null))
+}

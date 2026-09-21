@@ -8,6 +8,9 @@ vi.mock('@/src/lib/storage/s3', () => ({
   getPresignedDownloadUrl: vi.fn(async () => 'https://signed.example/file'),
 }))
 vi.mock('../_project-scope')
+// The access matrix at the bottom runs the real resolveProject against these.
+vi.mock('@/src/repositories/membership.repository')
+vi.mock('@/src/repositories/project.repository')
 vi.mock('../_editor-media', () => ({
   ISSUE_EDITOR_MEDIA_BUCKET: 'issue-editor-media',
   persistEditorMedia: vi.fn(),
@@ -18,6 +21,13 @@ import { getPresignedDownloadUrl } from '@/src/lib/storage/s3'
 import { persistEditorMedia, validateEditorMedia } from '../_editor-media'
 import { resolveProject } from '../_project-scope'
 import { EditorMediaService } from '../editor-media.service'
+import {
+  describeProjectAccessGate,
+  GATE_PROJECT_ID,
+} from './_project-access-gate'
+
+const { resolveProject: realResolveProject } =
+  await vi.importActual<typeof import('../_project-scope')>('../_project-scope')
 
 const mockedResolve = vi.mocked(resolveProject)
 const mockedPersist = vi.mocked(persistEditorMedia)
@@ -233,3 +243,36 @@ describe('EditorMediaService.getDownloadUrl()', () => {
     expectErr(result, 'FORBIDDEN')
   })
 })
+
+// Everything else in this file stubs resolveProject; here it runs for real
+// (against the mocked repositories) so the gate sees a genuine membership.
+function arrangeRealProjectScope() {
+  mockedResolve.mockImplementation(realResolveProject)
+}
+
+describeProjectAccessGate('EditorMediaService', [
+  {
+    name: 'upload()',
+    grants: 'member',
+    forbiddenCode: 'PROJECT_FORBIDDEN',
+    arrange: arrangeRealProjectScope,
+    call: (actorId) =>
+      EditorMediaService.upload(actorId, 'ws1', 'proj-slug', file),
+    sideEffects: () => [mockedValidate, mockedPersist, mockedPresign],
+  },
+  {
+    name: 'getDownloadUrl()',
+    grants: 'member',
+    publicGrants: true,
+    forbiddenCode: 'PROJECT_FORBIDDEN',
+    arrange: arrangeRealProjectScope,
+    call: (actorId) =>
+      EditorMediaService.getDownloadUrl(
+        actorId,
+        'ws1',
+        'proj-slug',
+        `${GATE_PROJECT_ID}/file.png`,
+      ),
+    sideEffects: () => [mockedPresign],
+  },
+])

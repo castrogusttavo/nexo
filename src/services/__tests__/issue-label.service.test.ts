@@ -12,6 +12,10 @@ import { LabelRepository } from '@/src/repositories/label.repository'
 import { MembershipRepository } from '@/src/repositories/membership.repository'
 import { ProjectRepository } from '@/src/repositories/project.repository'
 import { IssueLabelService } from '../issue-label.service'
+import {
+  describeProjectAccessGate,
+  GATE_PROJECT_ID,
+} from './_project-access-gate'
 
 vi.mock('@/src/repositories/membership.repository')
 vi.mock('@/src/repositories/project.repository')
@@ -218,3 +222,51 @@ describe('IssueLabelService', () => {
     })
   })
 })
+
+describeProjectAccessGate('IssueLabelService', [
+  {
+    name: 'list()',
+    grants: 'member',
+    forbiddenCode: 'ISSUE_FORBIDDEN',
+    arrange: arrangeIssueLabelRoundTrip,
+    call: (actorId) =>
+      IssueLabelService.list(actorId, 'ws1', 'proj-slug', 'issue-1'),
+    sideEffects: () => [mockedIssueLabel.list],
+  },
+  {
+    name: 'add()',
+    grants: 'member',
+    forbiddenCode: 'ISSUE_FORBIDDEN',
+    arrange: arrangeIssueLabelRoundTrip,
+    call: (actorId) =>
+      IssueLabelService.add(actorId, 'ws1', 'proj-slug', 'issue-1', 'label-1'),
+    sideEffects: () => [mockedIssueLabel.add],
+  },
+  {
+    name: 'remove()',
+    grants: 'member',
+    forbiddenCode: 'ISSUE_FORBIDDEN',
+    arrange: arrangeIssueLabelRoundTrip,
+    call: (actorId) =>
+      IssueLabelService.remove(
+        actorId,
+        'ws1',
+        'proj-slug',
+        'issue-1',
+        'label-1',
+      ),
+    sideEffects: () => [mockedIssueLabel.remove],
+  },
+])
+
+function arrangeIssueLabelRoundTrip() {
+  mockedIssue.findById.mockResolvedValue(
+    ok(createFakeIssue({ id: 'issue-1', projectId: GATE_PROJECT_ID })),
+  )
+  mockedLabel.findById.mockResolvedValue(
+    ok(createFakeLabel({ id: 'label-1', projectId: GATE_PROJECT_ID })),
+  )
+  mockedIssueLabel.list.mockResolvedValue(ok([fakeIssueLabel]))
+  mockedIssueLabel.add.mockResolvedValue(ok(fakeIssueLabel))
+  mockedIssueLabel.remove.mockResolvedValue(ok(undefined))
+}

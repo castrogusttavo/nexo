@@ -13,6 +13,10 @@ import { EstimateValueRepository } from '@/src/repositories/estimate-value.repos
 import { MembershipRepository } from '@/src/repositories/membership.repository'
 import { ProjectRepository } from '@/src/repositories/project.repository'
 import { EstimateService } from '../estimate.service'
+import {
+  describeProjectAccessGate,
+  GATE_PROJECT_ID,
+} from './_project-access-gate'
 
 vi.mock('@/src/repositories/membership.repository')
 vi.mock('@/src/repositories/project.repository')
@@ -542,3 +546,89 @@ describe('EstimateService', () => {
     expectErr(result, 'DATABASE_ERROR')
   })
 })
+
+function arrangeEstimateInProject() {
+  const settings = createFakeEstimateSettings({
+    id: 'settings-1',
+    projectId: GATE_PROJECT_ID,
+  })
+  const value = createFakeEstimateValue({
+    id: 'value-1',
+    estimateSettingsId: 'settings-1',
+  })
+  mockedEstimate.findByProjectId.mockResolvedValue(ok(settings))
+  mockedEstimate.update.mockResolvedValue(ok(settings))
+  mockedEstimateValue.listByEstimateSettingsId.mockResolvedValue(ok([value]))
+  mockedEstimateValue.findById.mockResolvedValue(ok(value))
+  mockedEstimateValue.create.mockResolvedValue(ok(value))
+  mockedEstimateValue.update.mockResolvedValue(ok(value))
+  mockedEstimateValue.countByEstimateSettingsId.mockResolvedValue(ok(2))
+  mockedEstimateValue.delete.mockResolvedValue(ok(undefined))
+  mockedEstimateValue.reorder.mockResolvedValue(ok([value]))
+}
+
+describeProjectAccessGate('EstimateService', [
+  {
+    name: 'get()',
+    grants: 'member',
+    publicGrants: true,
+    forbiddenCode: 'PROJECT_FORBIDDEN',
+    arrange: arrangeEstimateInProject,
+    call: (actorId) => EstimateService.get(actorId, 'ws1', 'proj-slug'),
+    sideEffects: () => [mockedEstimate.findByProjectId],
+  },
+  {
+    name: 'update()',
+    grants: 'lead',
+    forbiddenCode: 'ESTIMATE_SETTINGS_FORBIDDEN',
+    arrange: arrangeEstimateInProject,
+    call: (actorId) =>
+      EstimateService.update(actorId, 'ws1', 'proj-slug', {
+        system: 'TIME',
+        model: 'HOURS',
+      }),
+    sideEffects: () => [mockedEstimate.update],
+  },
+  {
+    name: 'createValue()',
+    grants: 'lead',
+    forbiddenCode: 'ESTIMATE_SETTINGS_FORBIDDEN',
+    arrange: arrangeEstimateInProject,
+    call: (actorId) =>
+      EstimateService.createValue(actorId, 'ws1', 'proj-slug', {
+        value: '3',
+      }),
+    sideEffects: () => [mockedEstimateValue.create],
+  },
+  {
+    name: 'updateValue()',
+    grants: 'lead',
+    forbiddenCode: 'ESTIMATE_SETTINGS_FORBIDDEN',
+    arrange: arrangeEstimateInProject,
+    call: (actorId) =>
+      EstimateService.updateValue(actorId, 'ws1', 'proj-slug', 'value-1', {
+        value: '5',
+      }),
+    sideEffects: () => [mockedEstimateValue.update],
+  },
+  {
+    name: 'deleteValue()',
+    grants: 'lead',
+    forbiddenCode: 'ESTIMATE_SETTINGS_FORBIDDEN',
+    arrange: arrangeEstimateInProject,
+    call: (actorId) =>
+      EstimateService.deleteValue(actorId, 'ws1', 'proj-slug', 'value-1'),
+    sideEffects: () => [mockedEstimateValue.delete],
+  },
+  {
+    name: 'reorderValues()',
+    grants: 'lead',
+    forbiddenCode: 'ESTIMATE_SETTINGS_FORBIDDEN',
+    arrange: arrangeEstimateInProject,
+    call: (actorId) =>
+      EstimateService.reorderValues(actorId, 'ws1', 'proj-slug', {
+        valueIds: ['value-1'],
+      }),
+    sideEffects: () => [mockedEstimateValue.reorder],
+  },
+])

@@ -13,6 +13,10 @@ import {
 import { MembershipRepository } from '@/src/repositories/membership.repository'
 import { ProjectRepository } from '@/src/repositories/project.repository'
 import { IssueAssigneeService } from '../issue-assignee.service'
+import {
+  describeProjectAccessGate,
+  GATE_PROJECT_ID,
+} from './_project-access-gate'
 
 vi.mock('@/src/repositories/membership.repository')
 vi.mock('@/src/repositories/project.repository')
@@ -283,3 +287,84 @@ describe('IssueAssigneeService', () => {
     })
   })
 })
+
+// `assign()` also requires the target to be a project member. Every member
+// list the matrix builds contains `other-1`, so it is the target here and
+// only the actor's own standing decides the outcome.
+describeProjectAccessGate('IssueAssigneeService', [
+  {
+    name: 'list()',
+    grants: 'member',
+    forbiddenCode: 'ISSUE_FORBIDDEN',
+    arrange: arrangeAssigneeRoundTrip,
+    call: (actorId) =>
+      IssueAssigneeService.list(actorId, 'ws1', 'proj-slug', 'issue-1'),
+    sideEffects: () => [mockedAssignee.list],
+  },
+  {
+    name: 'assign()',
+    grants: 'member',
+    forbiddenCode: 'ISSUE_FORBIDDEN',
+    arrange: arrangeAssigneeRoundTrip,
+    call: (actorId) =>
+      IssueAssigneeService.assign(
+        actorId,
+        'ws1',
+        'proj-slug',
+        'issue-1',
+        'other-1',
+      ),
+    sideEffects: () => [mockedAssignee.assign, mockedSubscriber.subscribe],
+  },
+  {
+    name: 'unassign()',
+    grants: 'member',
+    forbiddenCode: 'ISSUE_FORBIDDEN',
+    arrange: arrangeAssigneeRoundTrip,
+    call: (actorId) =>
+      IssueAssigneeService.unassign(
+        actorId,
+        'ws1',
+        'proj-slug',
+        'issue-1',
+        'other-1',
+      ),
+    sideEffects: () => [mockedAssignee.unassign],
+  },
+  {
+    name: 'subscribe()',
+    grants: 'member',
+    forbiddenCode: 'ISSUE_FORBIDDEN',
+    arrange: arrangeAssigneeRoundTrip,
+    call: (actorId) =>
+      IssueAssigneeService.subscribe(actorId, 'ws1', 'proj-slug', 'issue-1'),
+    sideEffects: () => [mockedSubscriber.subscribe],
+  },
+  {
+    name: 'unsubscribe()',
+    grants: 'member',
+    forbiddenCode: 'ISSUE_FORBIDDEN',
+    arrange: arrangeAssigneeRoundTrip,
+    call: (actorId) =>
+      IssueAssigneeService.unsubscribe(actorId, 'ws1', 'proj-slug', 'issue-1'),
+    sideEffects: () => [mockedSubscriber.unsubscribe],
+  },
+])
+
+function arrangeAssigneeRoundTrip() {
+  mockedIssue.findById.mockResolvedValue(
+    ok(createFakeIssue({ projectId: GATE_PROJECT_ID })),
+  )
+  mockedAssignee.list.mockResolvedValue(ok([fakeAssigneeWithUser]))
+  mockedAssignee.assign.mockResolvedValue(ok(fakeAssigneeWithUser))
+  mockedAssignee.unassign.mockResolvedValue(ok(undefined))
+  mockedSubscriber.subscribe.mockResolvedValue(
+    ok({
+      id: 'sub-1',
+      issueId: 'issue-1',
+      userId: 'actor',
+      createdAt: new Date(),
+    }),
+  )
+  mockedSubscriber.unsubscribe.mockResolvedValue(ok(undefined))
+}

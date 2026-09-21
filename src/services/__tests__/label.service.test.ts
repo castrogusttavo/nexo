@@ -9,6 +9,10 @@ import { LabelRepository } from '@/src/repositories/label.repository'
 import { MembershipRepository } from '@/src/repositories/membership.repository'
 import { ProjectRepository } from '@/src/repositories/project.repository'
 import { LabelService } from '../label.service'
+import {
+  describeProjectAccessGate,
+  GATE_PROJECT_ID,
+} from './_project-access-gate'
 
 vi.mock('@/src/repositories/membership.repository')
 vi.mock('@/src/repositories/project.repository')
@@ -310,3 +314,56 @@ describe('LabelService', () => {
     expectErr(result, 'DATABASE_ERROR')
   })
 })
+
+function arrangeLabelInProject() {
+  const label = createFakeLabel({ id: 'label-1', projectId: GATE_PROJECT_ID })
+  mockedLabel.listByProject.mockResolvedValue(ok([label]))
+  mockedLabel.create.mockResolvedValue(ok(label))
+  mockedLabel.findById.mockResolvedValue(ok(label))
+  mockedLabel.update.mockResolvedValue(ok(label))
+  mockedLabel.delete.mockResolvedValue(ok(undefined))
+}
+
+describeProjectAccessGate('LabelService', [
+  {
+    name: 'list()',
+    grants: 'member',
+    publicGrants: true,
+    forbiddenCode: 'PROJECT_FORBIDDEN',
+    arrange: arrangeLabelInProject,
+    call: (actorId) => LabelService.list(actorId, 'ws1', 'proj-slug'),
+    sideEffects: () => [mockedLabel.listByProject],
+  },
+  {
+    name: 'create()',
+    grants: 'lead',
+    forbiddenCode: 'LABEL_FORBIDDEN',
+    arrange: arrangeLabelInProject,
+    call: (actorId) =>
+      LabelService.create(actorId, 'ws1', 'proj-slug', {
+        name: 'Bug',
+        color: 'RED',
+      }),
+    sideEffects: () => [mockedLabel.create],
+  },
+  {
+    name: 'update()',
+    grants: 'lead',
+    forbiddenCode: 'LABEL_FORBIDDEN',
+    arrange: arrangeLabelInProject,
+    call: (actorId) =>
+      LabelService.update(actorId, 'ws1', 'proj-slug', 'label-1', {
+        name: 'Bug',
+      }),
+    sideEffects: () => [mockedLabel.update],
+  },
+  {
+    name: 'delete()',
+    grants: 'lead',
+    forbiddenCode: 'LABEL_FORBIDDEN',
+    arrange: arrangeLabelInProject,
+    call: (actorId) =>
+      LabelService.delete(actorId, 'ws1', 'proj-slug', 'label-1'),
+    sideEffects: () => [mockedLabel.delete],
+  },
+])

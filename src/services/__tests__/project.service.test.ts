@@ -8,6 +8,10 @@ import { err, ok } from '@/src/lib/result'
 import { MembershipRepository } from '@/src/repositories/membership.repository'
 import { ProjectRepository } from '@/src/repositories/project.repository'
 import { ProjectService } from '../project.service'
+import {
+  describeProjectAccessGate,
+  GATE_PROJECT_ID,
+} from './_project-access-gate'
 
 vi.mock('@/src/repositories/membership.repository')
 vi.mock('@/src/repositories/project.repository')
@@ -998,3 +1002,92 @@ describe('ProjectService', () => {
     })
   })
 })
+
+describeProjectAccessGate('ProjectService', [
+  {
+    name: 'getBySlug()',
+    grants: 'member',
+    publicGrants: true,
+    forbiddenCode: 'PROJECT_FORBIDDEN',
+    arrange: arrangeProjectRoundTrip,
+    call: (actorId) => ProjectService.getBySlug(actorId, 'ws1', 'proj-slug'),
+  },
+  {
+    name: 'listMembers()',
+    grants: 'member',
+    publicGrants: true,
+    forbiddenCode: 'PROJECT_FORBIDDEN',
+    arrange: arrangeProjectRoundTrip,
+    call: (actorId) => ProjectService.listMembers(actorId, 'ws1', 'proj-slug'),
+    sideEffects: () => [mockedProject.listMembers],
+  },
+  {
+    name: 'favorite()',
+    grants: 'member',
+    publicGrants: true,
+    forbiddenCode: 'PROJECT_FORBIDDEN',
+    arrange: arrangeProjectRoundTrip,
+    call: (actorId) => ProjectService.favorite(actorId, 'ws1', 'proj-slug'),
+    sideEffects: () => [mockedProject.addFavorite],
+  },
+  {
+    name: 'unfavorite()',
+    grants: 'member',
+    publicGrants: true,
+    forbiddenCode: 'PROJECT_FORBIDDEN',
+    arrange: arrangeProjectRoundTrip,
+    call: (actorId) => ProjectService.unfavorite(actorId, 'ws1', 'proj-slug'),
+    sideEffects: () => [mockedProject.removeFavorite],
+  },
+  {
+    name: 'addMember()',
+    grants: 'lead',
+    forbiddenCode: 'PROJECT_FORBIDDEN',
+    arrange: arrangeProjectRoundTrip,
+    call: (actorId) =>
+      ProjectService.addMember(actorId, 'ws1', 'proj-slug', 'target-user'),
+    sideEffects: () => [mockedProject.addMember],
+  },
+  {
+    name: 'removeMember()',
+    grants: 'lead',
+    forbiddenCode: 'PROJECT_FORBIDDEN',
+    arrange: arrangeProjectRoundTrip,
+    call: (actorId) =>
+      ProjectService.removeMember(actorId, 'ws1', 'proj-slug', 'target-user'),
+    sideEffects: () => [mockedProject.removeMember],
+  },
+  {
+    name: 'update()',
+    grants: 'lead',
+    forbiddenCode: 'PROJECT_FORBIDDEN',
+    arrange: arrangeProjectRoundTrip,
+    call: (actorId) =>
+      ProjectService.update(actorId, 'ws1', 'proj-slug', { name: 'Renamed' }),
+    sideEffects: () => [mockedProject.update],
+  },
+])
+
+function arrangeProjectRoundTrip() {
+  const targetMember = {
+    id: 'pm-1',
+    userId: 'target-user',
+    projectId: GATE_PROJECT_ID,
+    createdAt: new Date(),
+    user: {
+      id: 'target-user',
+      name: 'Bia',
+      username: 'bia',
+      image: null,
+      email: 'bia@example.com',
+    },
+  }
+  mockedProject.listMembers.mockResolvedValue(ok([targetMember]))
+  mockedProject.addMember.mockResolvedValue(ok(targetMember))
+  mockedProject.removeMember.mockResolvedValue(ok(undefined))
+  mockedProject.addFavorite.mockResolvedValue(ok(undefined))
+  mockedProject.removeFavorite.mockResolvedValue(ok(undefined))
+  mockedProject.update.mockResolvedValue(
+    ok(createFakeProject({ id: GATE_PROJECT_ID, name: 'Renamed' })),
+  )
+}

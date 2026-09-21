@@ -9,6 +9,10 @@ import { MembershipRepository } from '@/src/repositories/membership.repository'
 import { ProjectRepository } from '@/src/repositories/project.repository'
 import { StateRepository } from '@/src/repositories/state.repository'
 import { StateService } from '../state.service'
+import {
+  describeProjectAccessGate,
+  GATE_PROJECT_ID,
+} from './_project-access-gate'
 
 vi.mock('@/src/repositories/membership.repository')
 vi.mock('@/src/repositories/project.repository')
@@ -466,3 +470,72 @@ describe('StateService', () => {
     expectErr(result, 'DATABASE_ERROR')
   })
 })
+
+function arrangeStateInProject() {
+  const state = createFakeState({
+    id: 'state-1',
+    projectId: GATE_PROJECT_ID,
+    isDefault: false,
+  })
+  mockedState.listByProject.mockResolvedValue(ok([state]))
+  mockedState.create.mockResolvedValue(ok(state))
+  mockedState.findById.mockResolvedValue(ok(state))
+  mockedState.update.mockResolvedValue(ok(state))
+  mockedState.countByGroup.mockResolvedValue(ok(2))
+  mockedState.delete.mockResolvedValue(ok(undefined))
+  mockedState.setDefault.mockResolvedValue(ok({ ...state, isDefault: true }))
+}
+
+describeProjectAccessGate('StateService', [
+  {
+    name: 'list()',
+    grants: 'member',
+    publicGrants: true,
+    forbiddenCode: 'PROJECT_FORBIDDEN',
+    arrange: arrangeStateInProject,
+    call: (actorId) => StateService.list(actorId, 'ws1', 'proj-slug'),
+    sideEffects: () => [mockedState.listByProject],
+  },
+  {
+    name: 'create()',
+    grants: 'lead',
+    forbiddenCode: 'STATE_FORBIDDEN',
+    arrange: arrangeStateInProject,
+    call: (actorId) =>
+      StateService.create(actorId, 'ws1', 'proj-slug', {
+        name: 'Custom',
+        group: 'STARTED',
+        color: 'ZINC',
+      }),
+    sideEffects: () => [mockedState.create],
+  },
+  {
+    name: 'update()',
+    grants: 'lead',
+    forbiddenCode: 'STATE_FORBIDDEN',
+    arrange: arrangeStateInProject,
+    call: (actorId) =>
+      StateService.update(actorId, 'ws1', 'proj-slug', 'state-1', {
+        name: 'Renamed',
+      }),
+    sideEffects: () => [mockedState.update],
+  },
+  {
+    name: 'delete()',
+    grants: 'lead',
+    forbiddenCode: 'STATE_FORBIDDEN',
+    arrange: arrangeStateInProject,
+    call: (actorId) =>
+      StateService.delete(actorId, 'ws1', 'proj-slug', 'state-1'),
+    sideEffects: () => [mockedState.delete],
+  },
+  {
+    name: 'setDefault()',
+    grants: 'lead',
+    forbiddenCode: 'STATE_FORBIDDEN',
+    arrange: arrangeStateInProject,
+    call: (actorId) =>
+      StateService.setDefault(actorId, 'ws1', 'proj-slug', 'state-1'),
+    sideEffects: () => [mockedState.setDefault],
+  },
+])

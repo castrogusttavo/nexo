@@ -15,6 +15,10 @@ import { MembershipRepository } from '@/src/repositories/membership.repository'
 import { ModuleRepository } from '@/src/repositories/module.repository'
 import { ProjectRepository } from '@/src/repositories/project.repository'
 import { ActivityService } from '../activity.service'
+import {
+  describeProjectAccessGate,
+  GATE_PROJECT_ID,
+} from './_project-access-gate'
 
 vi.mock('@/src/repositories/membership.repository')
 vi.mock('@/src/repositories/project.repository')
@@ -191,3 +195,21 @@ describe('ActivityService', () => {
     })
   })
 })
+
+describeProjectAccessGate('ActivityService', [
+  {
+    name: 'list()',
+    grants: 'member',
+    publicGrants: true,
+    forbiddenCode: 'PROJECT_FORBIDDEN',
+    arrange: () => {
+      mockedIssue.findById.mockResolvedValue(
+        ok(createFakeIssue({ projectId: GATE_PROJECT_ID })),
+      )
+      mockedActivity.listByEntity.mockResolvedValue(ok([]))
+    },
+    call: (actorId) =>
+      ActivityService.list(actorId, 'ws1', 'proj-slug', 'ISSUE', 'issue-1'),
+    sideEffects: () => [mockedIssue.findById, mockedActivity.listByEntity],
+  },
+])

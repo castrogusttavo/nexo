@@ -13,6 +13,10 @@ import { IssueDependencyRepository } from '@/src/repositories/issue-dependency.r
 import { MembershipRepository } from '@/src/repositories/membership.repository'
 import { ProjectRepository } from '@/src/repositories/project.repository'
 import { IssueDependencyService } from '../issue-dependency.service'
+import {
+  describeProjectAccessGate,
+  GATE_PROJECT_ID,
+} from './_project-access-gate'
 
 vi.mock('@/src/repositories/membership.repository')
 vi.mock('@/src/repositories/project.repository')
@@ -252,3 +256,59 @@ describe('IssueDependencyService', () => {
     })
   })
 })
+
+describeProjectAccessGate('IssueDependencyService', [
+  {
+    name: 'list()',
+    grants: 'member',
+    forbiddenCode: 'ISSUE_FORBIDDEN',
+    arrange: arrangeDependencyRoundTrip,
+    call: (actorId) =>
+      IssueDependencyService.list(actorId, 'ws1', 'proj-slug', 'issue-1'),
+    sideEffects: () => [mockedDependency.listByIssue],
+  },
+  {
+    name: 'create()',
+    grants: 'member',
+    forbiddenCode: 'ISSUE_FORBIDDEN',
+    arrange: arrangeDependencyRoundTrip,
+    call: (actorId) =>
+      IssueDependencyService.create(actorId, 'ws1', 'proj-slug', 'issue-1', {
+        targetId: 'issue-2',
+        type: 'BLOCKS',
+      }),
+    sideEffects: () => [mockedDependency.create],
+  },
+  {
+    name: 'remove()',
+    grants: 'member',
+    forbiddenCode: 'ISSUE_FORBIDDEN',
+    arrange: arrangeDependencyRoundTrip,
+    call: (actorId) =>
+      IssueDependencyService.remove(
+        actorId,
+        'ws1',
+        'proj-slug',
+        'issue-1',
+        'dep-1',
+      ),
+    sideEffects: () => [mockedDependency.remove],
+  },
+])
+
+function arrangeDependencyRoundTrip() {
+  mockedIssue.findById.mockResolvedValue(
+    ok(createFakeIssue({ projectId: GATE_PROJECT_ID })),
+  )
+  mockedDependency.listByIssue.mockResolvedValue(
+    ok([createFakeIssueDependency({ sourceId: 'issue-1' })]),
+  )
+  mockedDependency.listOutgoing.mockResolvedValue(ok([]))
+  mockedDependency.create.mockResolvedValue(
+    ok(createFakeIssueDependency({ sourceId: 'issue-1' })),
+  )
+  mockedDependency.findById.mockResolvedValue(
+    ok(createFakeIssueDependency({ id: 'dep-1', sourceId: 'issue-1' })),
+  )
+  mockedDependency.remove.mockResolvedValue(ok(undefined))
+}
