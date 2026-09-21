@@ -22,11 +22,35 @@ overrides:
   browserslist: '>=4.28.8'
   effect: '^3.21.0'
   esbuild: '>=0.28.1'
-  fast-uri: '>=4.1.2'
-  'gray-matter>js-yaml': '>=4.3.1 <5'
-  hono: '>=4.12.34'
+  # ajv 8.20.0 (commitlint, stryker, conf, @modelcontextprotocol/sdk,
+  # @prisma/streams-local) still resolves fast-uri 4.1.2; 4.1.4 closes the five
+  # Snyk URI-parsing advisories (SNYK-JS-FASTURI-19256867/69/71/73, -19502739).
+  fast-uri: '>=4.1.4'
+  'gray-matter>js-yaml': '>=4.3.2 <5'
+  # 4.13.5 fixes SNYK-JS-HONO-19499068/-19499091. Pulled in only by tooling
+  # (@getworkbench/core, @modelcontextprotocol/sdk via shadcn, @prisma/dev).
+  hono: '>=4.13.5'
   ioredis: '5.10.1'
-  js-yaml: '>=4.3.1 <5'
+  # 4.3.2 fixes SNYK-JS-JSYAML-19496768 (merge-key CPU DoS). Still capped <5:
+  # js-yaml 5 broke blog/[slug] via gray-matter (see 7245999).
+  js-yaml: '>=4.3.2 <5'
+  # chevrotain 11.0.3 pins lodash-es 4.17.21 exactly and langium 3.3.1 pins
+  # chevrotain ~11.0.3 (excalidraw -> mermaid-to-excalidraw -> @mermaid-js/parser),
+  # so no parent bump reaches it. 4.18.1 fixes SNYK-JS-LODASHES-15869627 and is
+  # what every other consumer in the tree already resolves. Drop once langium
+  # moves off chevrotain 11.0.x.
+  lodash-es: '^4.18.1'
+  # prisma 7.8.0 (and still 7.10.0) pins mysql2 3.15.3 exactly; better-auth only
+  # lists it as an optional peer. Nexo is Postgres-only so the code path is
+  # dead, but the pin keeps SNYK-JS-MYSQL2-19498545/-19512510 open. Same major,
+  # drop once prisma ships a newer pin.
+  mysql2: '>=3.23.1 <4'
+  # @prisma/config pins deepmerge-ts 7.1.5 exactly (SNYK-JS-DEEPMERGETS-18912249,
+  # fixed only in 8.x). @prisma/config calls just the plain `deepmerge()` export
+  # to merge prisma.config.ts with defaults, which 8.x keeps unchanged (the
+  # breaking changes are Map merging and renamed custom-merger types). Scoped
+  # to @prisma/config; drop once prisma ships deepmerge-ts 8.
+  '@prisma/config>deepmerge-ts': '^8.0.2'
   'minimatch@3>brace-expansion': '>=5.0.9'
   nanoid: '>=3.3.18'
   postcss: '>=8.5.23'
@@ -35,12 +59,15 @@ overrides:
   # local dev server, never production, and Snyk is non-blocking in CI. Snyk
   # alert #131 is accepted for this reason.
   'react-email>esbuild': '0.28.0'
-  sharp: '>=0.35.0'
+  # next 16.3.5 already asks for ^0.35.4; the floor keeps the lockfile off
+  # 0.35.3 (SNYK-JS-SHARP-19653587, libheif heap overflow).
+  sharp: '>=0.35.4'
   socket.io-parser: '>=4.2.7'
   # Sem teto, o pnpm resolve isso pra 8.x, que quebra o jsdom (depende de
   # undici ^7.25.0 — a 8.x moveu/removeu internals que o jsdom importa
   # direto, ex. lib/handler/wrap-handler.js). Mesmo padrão do js-yaml acima.
-  undici: '>=7.29.0 <8.0.0'
+  # 7.29.1 fixes SNYK-JS-UNDICI-19635206/08/10/16/18/22/26.
+  undici: '>=7.29.1 <8.0.0'
   ws: '>=8.21.0'
 patchedDependencies:
   gray-matter@4.0.3: patches/gray-matter@4.0.3.patch
