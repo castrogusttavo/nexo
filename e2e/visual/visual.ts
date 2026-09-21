@@ -19,6 +19,9 @@ export const FROZEN_NOW = new Date('2026-03-12T17:30:00.000Z')
 /** The date the members table renders in its "Entrou em" column. */
 export const JOINED_AT = new Date('2026-01-08T12:00:00.000Z')
 
+/** The date the project settings form renders as "Criado em". */
+export const PROJECT_CREATED_AT = new Date('2026-01-09T12:00:00.000Z')
+
 /**
  * One fixed identity for the whole suite. The e-mail and the name are printed
  * on screen (members table, account modal, avatar initials), so they cannot
@@ -254,7 +257,7 @@ async function seedShowcase(
   api: APIRequestContext,
   workspaceId: string,
 ): Promise<Showcase> {
-  for (const project of PROJECTS) {
+  for (const [index, project] of PROJECTS.entries()) {
     const created = await api.post(`/api/workspaces/${workspaceId}/projects`, {
       data: project,
     })
@@ -263,6 +266,15 @@ async function seedShowcase(
         `project ${project.slug} failed (${created.status()}): ${await created.text()}`,
       )
     }
+    // The general settings form prints "Criado em <date>": left at the real
+    // clock, the baseline only matches on the day it was recorded. A minute
+    // apart per project keeps any creation-ordered list in seed order.
+    await db.project.update({
+      where: { workspaceId_slug: { workspaceId, slug: project.slug } },
+      data: {
+        createdAt: new Date(PROJECT_CREATED_AT.getTime() + index * 60_000),
+      },
+    })
   }
 
   const projectSlug = PROJECTS[0].slug

@@ -1,19 +1,9 @@
-import { ZapIcon } from '@hugeicons-pro/core-solid-rounded'
 import {
-  ArchiveArrowDownIcon,
   BlocksIcon,
-  DiamondIcon,
-  EnergyEllipseIcon,
-  File02Icon,
-  FlowSquareIcon,
-  GeometricShapes01Icon,
-  KeyframesMultipleIcon,
-  Layers01Icon,
   MountainIcon,
   Progress03Icon,
   Settings01Icon,
   StatusIcon,
-  StopWatchIcon,
   Tag01Icon,
   UserMultipleIcon,
 } from '@hugeicons-pro/core-stroke-rounded'
@@ -53,9 +43,6 @@ export default async function ProjectSettingsLayout({
           <NavItem href={`${base}/members`} icon={UserMultipleIcon}>
             Membros
           </NavItem>
-          <NavItem href={`${base}/worklogs`} icon={StopWatchIcon}>
-            Registros de trabalho
-          </NavItem>
         </NavGroup>
         <NavGroup>
           <Muted>Funcionalidades</Muted>
@@ -64,27 +51,6 @@ export default async function ProjectSettingsLayout({
           </NavItem>
           <NavItem href={`${base}/features/modules`} icon={BlocksIcon}>
             Módulos
-          </NavItem>
-          <NavItem href={`${base}/features/views`} icon={Layers01Icon}>
-            Visualizações
-          </NavItem>
-          <NavItem href={`${base}/features/pages`} icon={File02Icon}>
-            Páginas
-          </NavItem>
-          <NavItem href={`${base}/features/intake`} icon={ArchiveArrowDownIcon}>
-            Recepção
-          </NavItem>
-          <NavItem href={`${base}/features/time-tracking`} icon={StopWatchIcon}>
-            Rastreamento de tempo
-          </NavItem>
-          <NavItem href={`${base}/features/milestones`} icon={DiamondIcon}>
-            Marcos
-          </NavItem>
-          <NavItem
-            href={`${base}/features/project-updates`}
-            icon={EnergyEllipseIcon}
-          >
-            Atualizações do projeto
           </NavItem>
         </NavGroup>
         <NavGroup>
@@ -97,30 +63,6 @@ export default async function ProjectSettingsLayout({
           </NavItem>
           <NavItem href={`${base}/estimates`} icon={MountainIcon}>
             Estimativas
-          </NavItem>
-          <NavItem
-            href={`${base}/work-item-types`}
-            icon={KeyframesMultipleIcon}
-          >
-            Tipos de item de trabalho
-          </NavItem>
-          <NavItem href={`${base}/templates`} icon={GeometricShapes01Icon}>
-            Modelos
-          </NavItem>
-        </NavGroup>
-        <NavGroup>
-          <Muted>Execução</Muted>
-          <NavItem href={`${base}/workflows`} icon={FlowSquareIcon}>
-            Fluxos de trablho
-          </NavItem>
-          <NavItem href={`${base}/automations`} icon={ZapIcon}>
-            Automações
-          </NavItem>
-          <NavItem
-            href={`${base}/recurring-work-items`}
-            icon={KeyframesMultipleIcon}
-          >
-            Issues recorrentes
           </NavItem>
         </NavGroup>
       </ContextSidebar>
