@@ -2,8 +2,8 @@ import type { Job } from 'bullmq'
 import { logger } from '@/lib/axiom/logger'
 
 /**
- * Emitted once per job when BullMQ gives up on it and moves it to the
- * `failed` set. A retry that will still happen never emits this.
+ * Emitted once per job death -- when BullMQ gives up on a job and moves it to
+ * the `failed` set. A retry that will still happen never emits this.
  *
  * STABLE CONTRACT: an Axiom monitor alerts on this event name and reads the
  * fields of `JobExhaustedFields`. Renaming the event or any field silently
@@ -19,7 +19,26 @@ export const JOB_EXHAUSTED_EVENT = 'queue.job.exhausted'
 /** Per-attempt failure log (retries included). Informational, not the alarm. */
 export const JOB_FAILED_EVENT = 'queue.job.failed'
 
-export type JobExhaustedReason = 'attempts_exhausted' | 'unrecoverable'
+/**
+ * A job lost its lock and BullMQ requeued it. Warning only: the job runs
+ * again, and if it has now stalled more than `maxStalledCount` times the next
+ * pickup fails it, which ends in `queue.job.exhausted` with reason `stalled`.
+ */
+export const JOB_STALLED_EVENT = 'queue.job.stalled'
+
+/**
+ * The `failedReason` BullMQ 5.x records for a job that exceeded the worker's
+ * `maxStalledCount` (`moveStalledJobsToWait.lua`). The stall checker does not
+ * fail the job itself: it stores this string as a deferred failure and moves
+ * the job back to `wait`; the next worker to pick it up throws it as an
+ * `UnrecoverableError` without running the processor.
+ */
+export const STALLED_FAILURE_REASON = 'job stalled more than allowable limit'
+
+export type JobExhaustedReason =
+  | 'attempts_exhausted'
+  | 'unrecoverable'
+  | 'stalled'
 
 export interface JobExhaustedFields {
   component: 'Worker'
@@ -62,6 +81,9 @@ export function exhaustionReason(
   job: Job,
   error: Error,
 ): JobExhaustedReason | null {
+  // Checked before the generic UnrecoverableError branch: BullMQ throws the
+  // stall verdict as an UnrecoverableError carrying this exact message.
+  if (error.message === STALLED_FAILURE_REASON) return 'stalled'
   // Mirrors BullMQ's own `shouldRetryJob`: an UnrecoverableError skips the
   // remaining attempts. (The deprecated `job.discard()` does too, but its flag
   // is protected and nothing here calls it.)
@@ -71,40 +93,173 @@ export function exhaustionReason(
   return null
 }
 
-/** Handler for a BullMQ `Worker` `failed` event. */
-export function reportJobFailure(
-  queue: string,
-  job: Job | undefined,
-  error: Error,
-): void {
-  const reason = job ? exhaustionReason(job, error) : null
+/**
+ * Remembers which deaths were already reported so the Worker `failed` event
+ * and the `QueueEvents` `failed` event for the same death alarm once.
+ *
+ * Keyed by queue + job id, valued by `finishedOn` so a job that is retried by
+ * hand and dies again is a new death. `undefined` means "finishedOn unknown"
+ * (the job record could not be read) and matches any death of that job.
+ * Bounded: past `capacity` entries the oldest is dropped. Both paths report a
+ * death within milliseconds of each other, so only recent entries matter.
+ */
+class DeathLedger {
+  private readonly entries = new Map<string, number | undefined>()
 
-  logger.error(JOB_FAILED_EVENT, {
-    component: 'Worker',
-    queue,
-    jobName: job?.name,
-    jobId: job?.id,
-    attemptsMade: job?.attemptsMade,
-    willRetry: job ? reason === null : undefined,
-    message: error.message,
-    stack: error.stack,
-  })
+  constructor(private readonly capacity: number) {}
 
-  if (!job || reason === null) return
-
-  const fields: JobExhaustedFields = {
-    component: 'Worker',
-    queue,
-    jobName: job.name,
-    jobId: job.id,
-    attemptsMade: job.attemptsMade,
-    maxAttempts: job.opts.attempts ?? 1,
-    reason,
-    message: error.message,
-    stack: error.stack,
+  /** True when the caller is the first to report this death. */
+  claim(key: string, finishedOn: number | undefined): boolean {
+    if (this.entries.has(key)) {
+      const seen = this.entries.get(key)
+      if (seen === undefined || finishedOn === undefined || seen === finishedOn)
+        return false
+      this.entries.delete(key)
+    }
+    this.entries.set(key, finishedOn)
+    if (this.entries.size > this.capacity) {
+      const oldest = this.entries.keys().next().value
+      if (oldest !== undefined) this.entries.delete(oldest)
+    }
+    return true
   }
-  const payload = pickPayloadIdentifiers(job.data)
-  if (payload) fields.payload = payload
 
-  logger.error(JOB_EXHAUSTED_EVENT, { ...fields })
+  get size(): number {
+    return this.entries.size
+  }
+}
+
+export const DEFAULT_LEDGER_CAPACITY = 1000
+
+export interface JobFailureAlarm {
+  /** Handler for a BullMQ `Worker` `failed` event. */
+  workerFailed(queue: string, job: Job | undefined, error: Error): void
+  /**
+   * Handler for a `QueueEvents` `failed` event, after the job was read back.
+   * That event only fires when a job reaches the failed set, so every call is
+   * a death; `job` is undefined when the record is already gone.
+   */
+  queueEventFailed(
+    queue: string,
+    jobId: string,
+    failedReason: string,
+    job: Job | undefined,
+  ): void
+  /** Handler for a BullMQ `Worker` `stalled` event. Never alarms. */
+  stalled(queue: string, jobId: string): void
+  /** Deaths currently remembered for deduplication (for tests). */
+  readonly ledgerSize: number
+}
+
+function lastStackEntry(job: Job): string | undefined {
+  const stacktrace = job.stacktrace
+  return Array.isArray(stacktrace) && stacktrace.length > 0
+    ? (stacktrace[stacktrace.length - 1] ?? undefined)
+    : undefined
+}
+
+export function createJobFailureAlarm({
+  capacity = DEFAULT_LEDGER_CAPACITY,
+}: {
+  capacity?: number
+} = {}): JobFailureAlarm {
+  const ledger = new DeathLedger(capacity)
+
+  function alarm(fields: JobExhaustedFields, finishedOn: number | undefined) {
+    if (!ledger.claim(`${fields.queue}:${fields.jobId}`, finishedOn)) return
+    logger.error(JOB_EXHAUSTED_EVENT, { ...fields })
+  }
+
+  return {
+    workerFailed(queue, job, error) {
+      const reason = job ? exhaustionReason(job, error) : null
+
+      logger.error(JOB_FAILED_EVENT, {
+        component: 'Worker',
+        queue,
+        jobName: job?.name,
+        jobId: job?.id,
+        attemptsMade: job?.attemptsMade,
+        willRetry: job ? reason === null : undefined,
+        message: error.message,
+        stack: error.stack,
+      })
+
+      // No job means no id to deduplicate on; the QueueEvents path reports
+      // that death instead.
+      if (!job || reason === null) return
+
+      const fields: JobExhaustedFields = {
+        component: 'Worker',
+        queue,
+        jobName: job.name,
+        jobId: job.id,
+        attemptsMade: job.attemptsMade,
+        maxAttempts: job.opts.attempts ?? 1,
+        reason,
+        message: error.message,
+        stack: error.stack,
+      }
+      const payload = pickPayloadIdentifiers(job.data)
+      if (payload) fields.payload = payload
+
+      alarm(fields, job.finishedOn)
+    },
+
+    queueEventFailed(queue, jobId, failedReason, job) {
+      const stalled = failedReason === STALLED_FAILURE_REASON
+
+      if (!job) {
+        // Removed between failing and being read: report what is known.
+        alarm(
+          {
+            component: 'Worker',
+            queue,
+            jobName: 'unknown',
+            jobId,
+            attemptsMade: 0,
+            maxAttempts: 0,
+            reason: stalled ? 'stalled' : 'unrecoverable',
+            message: failedReason,
+            stack: undefined,
+          },
+          undefined,
+        )
+        return
+      }
+
+      const maxAttempts = job.opts.attempts ?? 1
+      // In the failed set with attempts to spare means BullMQ skipped them,
+      // which only an UnrecoverableError does.
+      const reason: JobExhaustedReason = stalled
+        ? 'stalled'
+        : job.attemptsMade >= maxAttempts
+          ? 'attempts_exhausted'
+          : 'unrecoverable'
+
+      const fields: JobExhaustedFields = {
+        component: 'Worker',
+        queue,
+        jobName: job.name,
+        jobId,
+        attemptsMade: job.attemptsMade,
+        maxAttempts,
+        reason,
+        message: failedReason,
+        stack: lastStackEntry(job),
+      }
+      const payload = pickPayloadIdentifiers(job.data)
+      if (payload) fields.payload = payload
+
+      alarm(fields, job.finishedOn)
+    },
+
+    stalled(queue, jobId) {
+      logger.warn(JOB_STALLED_EVENT, { component: 'Worker', queue, jobId })
+    },
+
+    get ledgerSize() {
+      return ledger.size
+    },
+  }
 }

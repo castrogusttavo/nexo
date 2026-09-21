@@ -108,3 +108,17 @@ export async function closeQueues(): Promise<void> {
   dataExportQueue = null
   trialLifecycleQueue = null
 }
+
+/** Resolves a queue singleton by name, for code that is generic over queues. */
+export function getQueueByName(name: QueueName): Queue {
+  switch (name) {
+    case QueueName.DataRetention:
+      return getDataRetentionQueue() as unknown as Queue
+    case QueueName.AccountLifecycle:
+      return getAccountLifecycleQueue() as unknown as Queue
+    case QueueName.DataExport:
+      return getDataExportQueue() as unknown as Queue
+    case QueueName.TrialLifecycle:
+      return getTrialLifecycleQueue() as unknown as Queue
+  }
+}
