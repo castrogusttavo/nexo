@@ -276,4 +276,33 @@ describe('<ProjectFilterButton /> custom range', () => {
     )
     expect(activeCount()).toBe('1')
   })
+
+  it('clears the range when its only day is clicked again', async () => {
+    const { user } = renderButton({
+      dateFrom: '2026-09-20',
+      dateTo: '2026-09-20',
+    })
+
+    await openMenu(user)
+    expect(activeCount()).toBe('1')
+    await user.click(dateTrigger())
+    await user.click(
+      await screen.findByRole('button', { name: /20 de setembro de 2026/ }),
+    )
+
+    await waitFor(() => expect(dateTrigger()).toHaveTextContent('Customizar'))
+    expect(activeCount()).toBe('')
+  })
+})
+
+describe('<ProjectFilterButton /> preset toggle', () => {
+  it('drops the preset when the picked one is clicked again', async () => {
+    const { user } = renderButton({ createdAt: 'today' })
+
+    const menu = await openMenu(user)
+    expect(activeCount()).toBe('1')
+    await user.click(menu.getByRole('menuitemradio', { name: 'Hoje' }))
+
+    await waitFor(() => expect(activeCount()).toBe(''))
+  })
 })

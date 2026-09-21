@@ -798,3 +798,133 @@ describe('applyIssueFilters with an author that was removed', () => {
     ).toEqual(['i-mine', 'i-orphan'])
   })
 })
+
+// Data the list can carry that the fixtures above never do: ids that no
+// longer resolve (a deleted state, module or member), descriptions that are
+// not a well-formed Plate tree, a context that has not loaded yet, and
+// literals the parser accepts but that mean nothing for the field.
+describe('applyIssueFilters with loose or missing data', () => {
+  const ORPHAN = buildIssue({
+    id: 'i-orphan',
+    number: 9,
+    title: 'Órfã',
+    stateId: 'state-deleted',
+    moduleId: 'module-deleted',
+    assigneeIds: ['user-gone'],
+    dueDate: issueDay(2026, 9, 18),
+  })
+
+  it('orders by description text, walking nested nodes and skipping junk', () => {
+    const issues = [
+      buildIssue({ id: 'i-empty', description: [] }),
+      buildIssue({
+        id: 'i-nested',
+        description: [
+          null,
+          'solto',
+          { type: 'p', children: [{ text: 'Beta' }, 42] },
+        ] as unknown as IssueDTO['description'],
+      }),
+      buildIssue({
+        id: 'i-not-array',
+        description: { text: 'Zeta' } as unknown as IssueDTO['description'],
+      }),
+      buildIssue({ id: 'i-alpha', description: [paragraph('Alfa')] }),
+    ]
+
+    const result = applyIssueFilters(issues, pql('order-by description'), CTX)
+
+    // Only real text counts; the empty and malformed ones sink to the end.
+    expect(ids(result.issues)).toEqual([
+      'i-alpha',
+      'i-nested',
+      'i-empty',
+      'i-not-array',
+    ])
+  })
+
+  it('searches the text of nested description nodes', () => {
+    const issues = [
+      buildIssue({
+        id: 'i-nested',
+        description: [
+          { type: 'ul', children: [{ type: 'li', children: [{ text: 'OAuth' }] }] },
+        ] as unknown as IssueDTO['description'],
+      }),
+      buildIssue({ id: 'i-other', description: [paragraph('Nada')] }),
+    ]
+
+    expect(
+      ids(applyIssueFilters(issues, pql('description ~ "oauth"'), CTX).issues),
+    ).toEqual(['i-nested'])
+  })
+
+  it.each([
+    // A state/module that was deleted has no order or name: it sinks.
+    ['order-by state', ['i-sub', 'i-api', 'i-login', 'i-docs', 'i-orphan']],
+    ['order-by state-group', ['i-sub', 'i-api', 'i-login', 'i-docs', 'i-orphan']],
+    // An unknown module falls back to its id, which still sorts as text.
+    ['order-by module', ['i-login', 'i-orphan', 'i-api', 'i-docs', 'i-sub']],
+    // An assignee who left the project sorts by id, after the named ones.
+    ['order-by assignees', ['i-login', 'i-sub', 'i-api', 'i-orphan', 'i-docs']],
+  ])('%s with ids that no longer resolve', (query, expected) => {
+    const result = applyIssueFilters([...ISSUES, ORPHAN], pql(query), CTX)
+    expect(ids(result.issues)).toEqual(expected)
+  })
+
+  it('never puts an issue in a state group when its state is unknown', () => {
+    const result = applyIssueFilters(
+      [...ISSUES, ORPHAN],
+      pql('state-group IN (started, backlog)'),
+      CTX,
+    )
+    expect(ids(result.issues)).toEqual(['i-login', 'i-sub'])
+  })
+
+  it('still matches by raw id and number before the project context loads', () => {
+    expect(runPql('labels IN ("label-front")', {})).toEqual(['i-login', 'i-api'])
+    expect(runPql('labels IN (Frontend)', {})).toEqual([])
+    expect(runPql('assignees IN ("user-bia")', {})).toEqual(['i-api', 'i-sub'])
+    expect(runPql('assignees IN (ana)', {})).toEqual([])
+    // Without the project identifier only the bare number resolves.
+    expect(runPql('childrenof(1)', {})).toEqual(['i-sub'])
+    expect(runPql('childrenof(NEX-1)', {})).toEqual([])
+  })
+
+  it('orders by the raw id when the names have not loaded', () => {
+    const result = applyIssueFilters(ISSUES, pql('order-by cycle'), {})
+    expect(ids(result.issues)).toEqual(['i-login', 'i-api', 'i-docs', 'i-sub'])
+  })
+
+  it('matches no issue for a date literal that is not a day', () => {
+    expect(runPql('due-date = "ontem"')).toEqual([])
+    expect(runPql('due-date != "ontem"')).toEqual([])
+  })
+
+  it('matches no issue when a priority comparison names no priority', () => {
+    expect(runPql('priority > "altissima"')).toEqual([])
+    expect(runPql('priority >= low')).toEqual(['i-login', 'i-api', 'i-sub'])
+  })
+
+  it('ignores an unparseable day in a basic date clause', () => {
+    // "between" with one bad bound compares against nothing and matches none;
+    // a lone bad value leaves `is` with nothing to equal.
+    expect(runBasic('due-date', 'is', 'não é data')).toEqual([])
+    expect(runBasic('due-date', 'is-not', 'não é data')).toEqual([
+      'i-login',
+      'i-api',
+      'i-docs',
+    ])
+  })
+
+  it('treats a date operator it does not know as no constraint on dated issues', () => {
+    expect(
+      runBasic('due-date', 'contains' as BasicOperator, issueDay(2026, 9, 1)),
+    ).toEqual(['i-login', 'i-api', 'i-docs'])
+  })
+
+  it('counts a bare limit as an active query', () => {
+    expect(isIssueFilterActive(pql('limit 2'))).toBe(true)
+    expect(isIssueFilterActive(pql('   '))).toBe(false)
+  })
+})

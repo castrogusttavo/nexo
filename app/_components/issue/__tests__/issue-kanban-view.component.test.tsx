@@ -37,10 +37,23 @@ vi.mock('@/components/ui/kanban', async (importOriginal) => {
 
 // The real panel mounts the Plate rich editor; a marker is enough to know
 // which issue the board opened.
+// It exposes the drawer's close so the view's handling of it can be driven.
 vi.mock('../panel/issue-details-panel', () => ({
-  IssueDetailsPanel: ({ issue }: { issue: IssueDTO }) => (
+  IssueDetailsPanel: ({
+    issue,
+    onOpenChange,
+  }: {
+    issue: IssueDTO
+    onOpenChange: (open: boolean) => void
+  }) => (
     <div role='dialog' aria-label='Detalhes da issue'>
       {issue.title}
+      <button type='button' onClick={() => onOpenChange(true)}>
+        Manter aberto
+      </button>
+      <button type='button' onClick={() => onOpenChange(false)}>
+        Fechar detalhes
+      </button>
     </div>
   ),
 }))
@@ -329,7 +342,7 @@ describe('<IssueKanbanView /> cards', () => {
     )
   })
 
-  it('opens the details panel for the clicked card', async () => {
+  it('opens the details panel for the clicked card and closes it again', async () => {
     mockProjectApi({
       issues: [
         buildIssue({ id: 'i-1', title: 'Login' }),
@@ -342,6 +355,16 @@ describe('<IssueKanbanView /> cards', () => {
 
     const panel = screen.getByRole('dialog', { name: 'Detalhes da issue' })
     expect(panel).toHaveTextContent('Cadastro')
+
+    await user.click(screen.getByRole('button', { name: 'Manter aberto' }))
+    expect(
+      screen.getByRole('dialog', { name: 'Detalhes da issue' }),
+    ).toBeInTheDocument()
+
+    await user.click(screen.getByRole('button', { name: 'Fechar detalhes' }))
+    expect(
+      screen.queryByRole('dialog', { name: 'Detalhes da issue' }),
+    ).not.toBeInTheDocument()
   })
 })
 

@@ -21,10 +21,23 @@ import { toIssueDateISO } from '../issue-dates'
 
 // The real panel mounts the Plate rich editor; a marker is enough to know
 // which issue the calendar opened.
+// It exposes the drawer's close so the view's handling of it can be driven.
 vi.mock('../panel/issue-details-panel', () => ({
-  IssueDetailsPanel: ({ issue }: { issue: IssueDTO }) => (
+  IssueDetailsPanel: ({
+    issue,
+    onOpenChange,
+  }: {
+    issue: IssueDTO
+    onOpenChange: (open: boolean) => void
+  }) => (
     <div role='dialog' aria-label='Detalhes da issue'>
       {issue.title}
+      <button type='button' onClick={() => onOpenChange(true)}>
+        Manter aberto
+      </button>
+      <button type='button' onClick={() => onOpenChange(false)}>
+        Fechar detalhes
+      </button>
     </div>
   ),
 }))
@@ -262,7 +275,7 @@ describe('<IssueCalendarView /> navigation', () => {
     ).toBeInTheDocument()
   })
 
-  it('opens the details panel of the clicked issue', async () => {
+  it('opens the details panel of the clicked issue and closes it again', async () => {
     mockIssues([
       buildIssue({ id: 'i-1', title: 'Login', dueDate: localDay(2026, 3, 3) }),
       buildIssue({ id: 'i-2', number: 2, title: 'Backlog solto' }),
@@ -276,6 +289,16 @@ describe('<IssueCalendarView /> navigation', () => {
     expect(
       screen.getByRole('dialog', { name: 'Detalhes da issue' }),
     ).toHaveTextContent('Backlog solto')
+
+    await user.click(screen.getByRole('button', { name: 'Manter aberto' }))
+    expect(
+      screen.getByRole('dialog', { name: 'Detalhes da issue' }),
+    ).toBeInTheDocument()
+
+    await user.click(screen.getByRole('button', { name: 'Fechar detalhes' }))
+    expect(
+      screen.queryByRole('dialog', { name: 'Detalhes da issue' }),
+    ).not.toBeInTheDocument()
   })
 })
 

@@ -114,4 +114,33 @@ describe('PQL registry metadata', () => {
       expect(keyword in PQL_FUNCTIONS).toBe(false)
     }
   })
+
+  // Each message names what was wrong: it is shown under the PQL input as
+  // the only explanation the user gets for an unfiltered list.
+  it.each([
+    ['order-by prioridade', 'Campo desconhecido "prioridade"'],
+    ['due-date BETWEEN (2026-01-01)', 'BETWEEN espera exatamente 2 valores'],
+    [
+      'due-date BETWEEN (2026-01-01, 2026-01-02, 2026-01-03)',
+      'BETWEEN espera exatamente 2 valores',
+    ],
+    ['labels NOT EM (a)', 'Esperado "IN" depois de "NOT"'],
+    ['assignees IS NADA', 'Esperado "NULL" depois de "IS"'],
+  ])('rejects "%s" with "%s"', (query, message) => {
+    expect(() => parsePql(query)).toThrow(message)
+  })
+
+  it('accepts the well-formed versions of those queries', () => {
+    expect(parsePql('order-by priority desc').orderBy).toEqual({
+      field: 'priority',
+      direction: 'desc',
+    })
+    expect(parsePql('labels NOT IN (a)').clauses[0]).toMatchObject({
+      operator: 'NOT IN',
+    })
+    expect(parsePql('assignees IS NULL').clauses[0]).toMatchObject({
+      operator: 'IS NULL',
+      value: null,
+    })
+  })
 })
