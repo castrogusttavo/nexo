@@ -6,16 +6,14 @@ type SocialProvider = 'google' | 'github'
 
 const PROVIDERS: Record<
   SocialProvider,
-  { label: string; logoAlt: string; logoSrc: string }
+  { label: string; logoSrc: string }
 > = {
   google: {
     label: 'Continuar com Google',
-    logoAlt: 'google-logo',
     logoSrc: 'https://cdn.brandfetch.io/id6O2oGzv-/theme/dark/symbol.svg?c=1bxid64Mup7aczewSAYMX&t=1755835725776',
   },
   github: {
     label: 'Continuar com GitHub',
-    logoAlt: 'github-logo',
     logoSrc: 'https://cdn.brandfetch.io/idZAyF9rlg/theme/light/symbol.svg?c=1bxid64Mup7aczewSAYMX&t=1719469980826',
   }
 }
@@ -31,7 +29,7 @@ export function SocialLoginButtonProps({
   isPending,
   callbackURL = '/'
 }: SocialLoginButtonProps) {
-  const { label, logoAlt, logoSrc } = PROVIDERS[provider]
+  const { label, logoSrc } = PROVIDERS[provider]
 
   async function handleSocialSignIn() {
     await authClient.signIn.social({
@@ -48,7 +46,10 @@ export function SocialLoginButtonProps({
       onClick={handleSocialSignIn}
       disabled={isPending}
     >
-      <Image alt={logoAlt} src={logoSrc} width={14} height={14} />
+      {/* Decorative: the label already names the provider. An alt text here
+          became part of the button's accessible name, so screen readers
+          announced "google-logo Continuar com Google". */}
+      <Image alt='' src={logoSrc} width={14} height={14} />
       {label}
     </Button>
   )

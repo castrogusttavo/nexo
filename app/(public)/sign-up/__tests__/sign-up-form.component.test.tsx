@@ -242,7 +242,7 @@ describe('<SignUpForm /> form step', () => {
 
     await user.click(
       screen.getByRole('button', {
-        name: new RegExp(`continuar com ${label}`, 'i'),
+        name: `Continuar com ${label}`,
       }),
     )
 
