@@ -1,6 +1,11 @@
 import { expect } from '@playwright/test'
 import { db, dropAccount, waitForEmailOtp } from '../fixtures/db'
-import { TEST_PASSWORD, anonTest as test, uniqueSuffix } from '../fixtures/test'
+import {
+  atPath,
+  TEST_PASSWORD,
+  anonTest as test,
+  uniqueSuffix,
+} from '../fixtures/test'
 
 // Sign-up → e-mail verification → onboarding → landing in the workspace.
 // The OTP e-mail is never delivered under MAIL_DRY_RUN, so the code is read
@@ -79,7 +84,7 @@ test.describe('sign-up and onboarding', () => {
     await page.getByRole('button', { name: 'Apenas eu' }).click()
     await page.getByRole('button', { name: 'Criar workspace' }).click()
 
-    await expect(page).toHaveURL(new RegExp(`/${workspaceSlug}$`))
+    await expect(page).toHaveURL(atPath(`/${workspaceSlug}`))
 
     const user = await db.user.findUnique({
       where: { email },

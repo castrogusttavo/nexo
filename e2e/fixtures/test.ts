@@ -24,6 +24,16 @@ export function uniqueSuffix(): string {
   return `${Date.now().toString(36)}${randomInt(1000, 9999)}`
 }
 
+/**
+ * `toHaveURL` predicate: the pathname is exactly `path`. Use it instead of
+ * interpolating a slug into `new RegExp(...)`, which reads the slug as a
+ * pattern (a `.` in it would match any character) and trips Semgrep's
+ * detect-non-literal-regexp rule.
+ */
+export function atPath(path: string): (url: URL) => boolean {
+  return (url) => url.pathname === path
+}
+
 export interface Account {
   id: string
   name: string

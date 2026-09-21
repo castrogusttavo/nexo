@@ -14,7 +14,9 @@ test.describe('settings', () => {
       page.getByText('Gerencie o acesso a este workspace.'),
     ).toBeVisible()
 
-    const ownerRow = page.getByRole('row', { name: new RegExp(account.email) })
+    // A string name is a case-insensitive substring match, which is what the
+    // row needs; a RegExp built from the address would read its `.` as "any".
+    const ownerRow = page.getByRole('row', { name: account.email })
     await expect(ownerRow).toBeVisible()
     await expect(ownerRow.getByRole('cell', { name: 'Dono' })).toBeVisible()
     await expect(ownerRow.getByRole('cell', { name: 'Ativo' })).toBeVisible()

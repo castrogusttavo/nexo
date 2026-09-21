@@ -11,8 +11,14 @@ vi.mock('../actions', () => ({ saveRoleSetup }))
 const continueButton = () => screen.getByRole('button', { name: 'Continuar' })
 const skipButton = () =>
   screen.getByRole('button', { name: 'Pular esta etapa' })
+// Whole-name, case-insensitive match. A function matcher instead of a RegExp
+// built from `name`, so a label like "Fundador / Executivo" is compared as
+// text rather than parsed as a pattern.
 const roleButton = (name: string) =>
-  screen.getByRole('button', { name: new RegExp(`^${name}$`, 'i') })
+  screen.getByRole('button', {
+    name: (accessibleName) =>
+      accessibleName.toLowerCase() === name.toLowerCase(),
+  })
 
 function submittedFormData(call = 0): FormData {
   return saveRoleSetup.mock.calls[call]?.[1]

@@ -1,4 +1,5 @@
 import {
+  atPath,
   expect,
   profileMenuTrigger,
   signedOutTest as test,
@@ -31,7 +32,7 @@ test.describe('sign-in', () => {
     await page.getByLabel('Senha').fill(account.password)
     await page.getByRole('button', { name: 'Continuar', exact: true }).click()
 
-    await expect(page).toHaveURL(new RegExp(`/${account.workspaceSlug}$`))
+    await expect(page).toHaveURL(atPath(`/${account.workspaceSlug}`))
     await expect(page.getByRole('link', { name: 'Wiki' }).first()).toBeVisible()
 
     await profileMenuTrigger(page, account).click()

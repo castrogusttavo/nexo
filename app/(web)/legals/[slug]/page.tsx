@@ -66,7 +66,12 @@ export default async function LegalDocPage({ params }: Props) {
       <div
         className='legal-content prose prose-neutral dark:prose-invert max-w-none prose-headings:font-semibold prose-headings:text-primary prose-p:text-primary'
         // html is sanitized via rehype-sanitize in src/lib/legal/legal-doc.ts
-        // before it gets here
+        // before it gets here. The source is content/legals/*.md committed to
+        // this repo (no user input), remark-rehype runs without
+        // allowDangerousHtml so raw HTML is dropped, and rehype-sanitize then
+        // applies the GitHub schema. Semgrep cannot see that pipeline, hence
+        // the suppression (same analysis as the dismissed blog alerts #135/#136).
+        // nosemgrep: typescript.react.security.audit.react-dangerouslysetinnerhtml.react-dangerouslysetinnerhtml, typescript.react.react-dangerouslysetinnerhtml-prop.react-dangerouslysetinnerhtml-prop
         dangerouslySetInnerHTML={{ __html: doc.contentHtml }}
       />
     </main>

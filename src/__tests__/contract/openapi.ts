@@ -44,17 +44,35 @@ export function isAuthSpecPath(path: string): boolean {
   return path.startsWith(AUTH_SPEC_PREFIX)
 }
 
+/**
+ * Pointer segments that would walk off the parsed JSON and onto the object
+ * machinery (`#/__proto__/...` reaches `Object.prototype`). A spec never
+ * legitimately names these, so they resolve to nothing.
+ */
+const FORBIDDEN_POINTER_SEGMENTS = new Set([
+  '__proto__',
+  'constructor',
+  'prototype',
+])
+
 /** Resolves a JSON pointer (`#/components/...`) against the document. */
 export function resolvePointer(ref: string): SpecNode | undefined {
   if (!ref.startsWith('#/')) return undefined
-  let current: any = spec
-  for (const raw of ref.slice(2).split('/')) {
-    const segment = raw.replace(/~1/g, '/').replace(/~0/g, '~')
-    if (current === null || typeof current !== 'object') return undefined
-    if (!(segment in current)) return undefined
-    current = current[segment]
+  const segments = ref
+    .slice(2)
+    .split('/')
+    .map((raw) => raw.replace(/~1/g, '/').replace(/~0/g, '~'))
+  if (segments.some((segment) => FORBIDDEN_POINTER_SEGMENTS.has(segment))) {
+    return undefined
   }
-  return current
+  // Own properties only: `in` would also follow inherited keys.
+  return segments.reduce<unknown>(
+    (node, segment) =>
+      node !== null && typeof node === 'object' && Object.hasOwn(node, segment)
+        ? (node as SpecNode)[segment]
+        : undefined,
+    spec,
+  ) as SpecNode | undefined
 }
 
 /** Follows `$ref` chains until a concrete node is reached. */
@@ -149,12 +167,17 @@ function routePathFromFile(file: string): { path: string; catchAll: boolean } {
   return { path: `/${mapped.join('/')}`.replace(/\/$/, '') || '/', catchAll }
 }
 
+const EXPORTED_UPPERCASE_BINDING =
+  /export\s+(?:const|async\s+function|function)\s+([A-Z]+)\b/g
+
 function exportedMethods(source: string): string[] {
-  return HTTP_METHODS_UPPER.filter((method) =>
-    new RegExp(
-      `export\\s+(?:const|async\\s+function|function)\\s+${method}\\b`,
-    ).test(source),
+  const exported = new Set(
+    Array.from(
+      source.matchAll(EXPORTED_UPPERCASE_BINDING),
+      (match) => match[1],
+    ),
   )
+  return HTTP_METHODS_UPPER.filter((method) => exported.has(method))
 }
 
 /** Every `app/api/**\/route.ts`, with its url and the verbs it exports. */

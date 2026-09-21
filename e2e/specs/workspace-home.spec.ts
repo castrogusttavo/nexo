@@ -1,4 +1,4 @@
-import { expect, test } from '../fixtures/test'
+import { atPath, expect, test } from '../fixtures/test'
 
 test.describe('workspace home', () => {
   test('lands on the workspace and shows its shell', async ({
@@ -7,7 +7,7 @@ test.describe('workspace home', () => {
   }) => {
     await page.goto('/')
     // The root bounces a signed-in member into their first workspace.
-    await expect(page).toHaveURL(new RegExp(`/${account.workspaceSlug}$`))
+    await expect(page).toHaveURL(atPath(`/${account.workspaceSlug}`))
 
     await expect(page.getByText('Links rápidos')).toBeVisible()
     await expect(page.getByText('Suas anotações')).toBeVisible()
@@ -22,10 +22,10 @@ test.describe('workspace home', () => {
   test('greets the signed-in user by first name', async ({ page, account }) => {
     await page.goto(`/${account.workspaceSlug}`)
     const [firstName] = account.name.split(' ')
-    await expect(
-      page.getByRole('heading', {
-        name: new RegExp(`(Bom dia|Boa tarde|Boa noite), ${firstName}`),
-      }),
-    ).toBeVisible()
+    const greeting = page.getByRole('heading', {
+      name: /(Bom dia|Boa tarde|Boa noite), /,
+    })
+    await expect(greeting).toBeVisible()
+    await expect(greeting).toContainText(`, ${firstName}`)
   })
 })

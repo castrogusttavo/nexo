@@ -55,8 +55,11 @@ test.describe('stickies and wiki', () => {
     ).toBeVisible()
 
     await page.getByRole('button', { name: 'Nova Página' }).click()
+    const wikiPrefix = `/${account.workspaceSlug}/wiki/`
     await expect(page).toHaveURL(
-      new RegExp(`/${account.workspaceSlug}/wiki/[a-z0-9]+$`),
+      ({ pathname }) =>
+        pathname.startsWith(wikiPrefix) &&
+        /^[a-z0-9]+$/.test(pathname.slice(wikiPrefix.length)),
     )
 
     const titleInput = page.getByPlaceholder('Sem título')
