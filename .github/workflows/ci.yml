@@ -260,6 +260,12 @@ jobs:
       - name: Install Chromium
         run: pnpm exec playwright install --with-deps chromium
 
+      # playwright.config.ts also boots the realtime server (Hocuspocus,
+      # `pnpm realtime:build && node dist/realtime.cjs`) for the wiki editor
+      # specs. It reads this job's env: it listens on NEXT_PUBLIC_REALTIME_URL's
+      # port (1234, the URL baked into the build above), authenticates with
+      # BETTER_AUTH_SECRET against DATABASE_URL, and uses the plain-TCP Redis
+      # service (REDIS_TLS_ENABLED is unset, so no TLS).
       - name: Run browser tests
         run: pnpm test:browser
         env:

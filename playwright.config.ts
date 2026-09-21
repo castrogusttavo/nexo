@@ -27,6 +27,38 @@ const COMMAND =
     ? START
     : `pnpm build && ${START}`
 
+// The wiki's rich editor only mounts its body once Yjs has synced with the
+// realtime server (Hocuspocus, realtime/index.ts), so the suite boots that too.
+// Same reasoning as above: it runs the bundle production runs
+// (`node dist/realtime.cjs`, see the Dockerfile and docker-compose.yml's
+// nexo-realtime). esbuild takes a couple of seconds, so it is rebuilt on every
+// run even with PLAYWRIGHT_SKIP_BUILD — a stale bundle would test old code.
+// The browser connects to NEXT_PUBLIC_REALTIME_URL, which is inlined into the
+// client bundle at build time, so the server listens on that URL's port.
+const REALTIME_URL = new URL(
+  process.env.NEXT_PUBLIC_REALTIME_URL ?? 'ws://localhost:1234',
+)
+const REALTIME_PORT = REALTIME_URL.port || '1234'
+// The visual project runs inside the Playwright image, which has no pnpm and
+// photographs no wiki page; e2e/visual/run-in-docker.sh turns this off.
+const WITH_REALTIME = process.env.PLAYWRIGHT_REALTIME !== 'false'
+
+// Same two switches CI sets for the vitest e2e job: `next start` runs in
+// production mode, where better-auth's own limiter would 429 the suite's
+// repeated sign-ups (the app keeps its own Redis limiter), and no test user
+// should ever cost a real Resend delivery.
+//
+// The local .env pins NODE_ENV=development and `dotenv/config` above puts it
+// in this process, which the servers would inherit — `next build` then builds
+// a development bundle and dies while prerendering (`Cannot read properties
+// of null (reading 'useContext')` on /_global-error). CI has no NODE_ENV at
+// all, so pin the value the build expects.
+const SERVER_ENV = {
+  DISABLE_AUTH_RATE_LIMIT: 'true',
+  MAIL_DRY_RUN: 'true',
+  NODE_ENV: 'production',
+}
+
 export default defineConfig({
   testDir: './e2e',
   // Specs create their own data with unique names, so they are safe in
@@ -138,29 +170,31 @@ export default defineConfig({
     },
   ],
 
-  webServer: {
-    command: COMMAND,
-    url: `${BASE_URL}/api/health`,
-    reuseExistingServer: !IS_CI,
-    // `pnpm build` is part of the command, so the first boot is slow.
-    timeout: 10 * 60_000,
-    stdout: 'ignore',
-    stderr: 'pipe',
-    env: {
-      // Same two switches CI sets for the vitest e2e job: `next start` runs in
-      // production mode, where better-auth's own limiter would 429 the suite's
-      // repeated sign-ups (the app keeps its own Redis limiter), and no test
-      // user should ever cost a real Resend delivery.
-      DISABLE_AUTH_RATE_LIMIT: 'true',
-      MAIL_DRY_RUN: 'true',
-      PORT: String(PORT),
-      // The local .env pins NODE_ENV=development and `dotenv/config` above
-      // puts it in this process, which the web server would inherit —
-      // `next build` then builds a development bundle and dies while
-      // prerendering (`Cannot read properties of null (reading 'useContext')`
-      // on /_global-error). CI has no NODE_ENV at all, so pin the value the
-      // build expects.
-      NODE_ENV: 'production',
+  webServer: [
+    {
+      command: COMMAND,
+      url: `${BASE_URL}/api/health`,
+      reuseExistingServer: !IS_CI,
+      // `pnpm build` is part of the command, so the first boot is slow.
+      timeout: 10 * 60_000,
+      stdout: 'ignore',
+      stderr: 'pipe',
+      env: { ...SERVER_ENV, PORT: String(PORT) },
     },
-  },
+    ...(WITH_REALTIME
+      ? [
+          {
+            command: 'pnpm realtime:build && node dist/realtime.cjs',
+            // Hocuspocus answers plain HTTP on its WebSocket port, so a GET
+            // is a real readiness check: it only answers once listen() ran.
+            url: `http://${REALTIME_URL.hostname}:${REALTIME_PORT}`,
+            reuseExistingServer: !IS_CI,
+            timeout: 2 * 60_000,
+            stdout: 'ignore' as const,
+            stderr: 'pipe' as const,
+            env: { ...SERVER_ENV, REALTIME_PORT },
+          },
+        ]
+      : []),
+  ],
 })

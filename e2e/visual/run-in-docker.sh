@@ -55,6 +55,8 @@ fi
 # HOSTNAME=0.0.0.0 because next's standalone server binds to $HOSTNAME, which
 #   docker otherwise sets to the container's name — the suite would then wait
 #   ten minutes for a localhost:3000 nothing is listening on.
+# PLAYWRIGHT_REALTIME=false because the image has no pnpm to build the realtime
+#   server with, and no visual spec opens the wiki editor it serves.
 # The repo is mounted at its own absolute path, so absolute paths in .env
 # (REDIS_TLS_CA_PATH) resolve to the same file inside the container.
 # A developer has a .env for the server to read; CI has only the job's
@@ -86,6 +88,7 @@ exec docker run --rm --init \
   --env HOME=/tmp \
   --env HOSTNAME=0.0.0.0 \
   --env PLAYWRIGHT_SKIP_BUILD=true \
+  --env PLAYWRIGHT_REALTIME=false \
   "${env_args[@]}" \
   --volume "$ROOT:$ROOT" \
   --workdir "$ROOT" \
