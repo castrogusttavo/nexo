@@ -174,6 +174,9 @@ export function WikiPageRichEditor({
               propagate the new editor.children to this tree on its own. */}
           <EditorContainer
             key={isSynced ? 'synced' : 'pending'}
+            // What the browser suite waits on before typing: keystrokes made
+            // before the first sync are thrown away by the remount above.
+            data-sync-state={isSynced ? 'synced' : 'pending'}
             className='min-h-0 flex-1 no-scrollbar'
           >
             <Editor placeholder='Digite algo...' />

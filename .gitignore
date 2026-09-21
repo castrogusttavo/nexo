@@ -15,6 +15,10 @@
 /.next/
 /out/
 
+# excalidraw fonts, copied from node_modules by next.config.ts
+/public/static/excalidraw/
+/public/static/excalidraw.tmp-*/
+
 # production
 /build
 /dist

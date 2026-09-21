@@ -1,5 +1,23 @@
+import { createRequire } from "node:module";
 import path from "node:path";
 import type { NextConfig } from "next";
+import { EXCALIDRAW_ASSET_PATH } from "./lib/excalidraw/asset-path";
+import { syncExcalidrawFonts } from "./lib/excalidraw/sync-fonts";
+
+// Self-host excalidraw's fonts (the wiki's drawing block) instead of letting
+// it fetch them from esm.sh, which `font-src 'self'` blocks. Runs whenever
+// Next loads this config (`next dev`, `next build`, the Dockerfile's build),
+// before public/ is read, and re-copies only when the installed package
+// version changes. The standalone server inlines the config, so production
+// never touches the filesystem for this.
+syncExcalidrawFonts({
+  packageDir: path.dirname(
+    path.dirname(
+      path.dirname(createRequire(__filename).resolve("@excalidraw/excalidraw")),
+    ),
+  ),
+  targetDir: path.join(__dirname, "public", EXCALIDRAW_ASSET_PATH),
+});
 
 const securityHeaders = [
   { key: 'X-Content-Type-Options', value: 'nosniff' },
@@ -57,6 +75,25 @@ const nextConfig: NextConfig = {
   // breaking React Server Components manifest module resolution.
   turbopack: {
     root: path.join(__dirname),
+    rules: {
+      // Points excalidraw's hard-coded esm.sh font fallback at the
+      // self-hosted copy above; see lib/excalidraw/cdn-fallback-loader.cjs.
+      "*.js": {
+        condition: {
+          all: [
+            "browser",
+            { path: /@excalidraw\/excalidraw\/dist\// },
+            { content: /ASSETS_FALLBACK_URL/ },
+          ],
+        },
+        loaders: [
+          {
+            loader: path.join(__dirname, "lib/excalidraw/cdn-fallback-loader.cjs"),
+            options: { assetPath: EXCALIDRAW_ASSET_PATH },
+          },
+        ],
+      },
+    },
   },
   experimental: {
     webpackMemoryOptimizations: true
