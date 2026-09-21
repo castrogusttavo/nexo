@@ -10,18 +10,6 @@ for (const variant of VARIANTS) {
 
     // The workspace shell: sidebar, header, quick links and the notes widget.
     test('home', async ({ page, showcase }) => {
-      // FIXME(visual-flake): on a 390px viewport the header breadcrumb
-      // ("Página inicial") wraps to two lines in a cramped row and lands on a
-      // different layout between runs -- ~340px differing in 5 of 8 runs,
-      // always in that pill, never elsewhere. Desktop is stable. Skipped
-      // rather than loosened: a flaky shot in the CI gate blocks deploys and
-      // teaches everyone to ignore the suite. Fix the header row, then drop
-      // this line and re-record the two mobile baselines.
-      test.fixme(
-        variant.id.startsWith('mobile'),
-        'mobile header breadcrumb wraps nondeterministically',
-      )
-
       await page.goto(`/${showcase.workspaceSlug}`)
       await expect(page.getByText('Links rápidos')).toBeVisible()
       await expect(page.getByText('Suas anotações')).toBeVisible()

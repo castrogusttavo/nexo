@@ -80,9 +80,12 @@ export default async function Page() {
             />
           </HeaderBreadcrumbCrumb>
         </HeaderBreadcrumbList>
+        {/* Icon-only below `sm`: next to both sidebars a phone leaves the
+            row ~130px, less than the label alone. The label stays as the
+            accessible name. */}
         <Button variant='outline' size='xs'>
           <NexoIcon icon={Shapes01Icon} />
-          Gerenciar widgets
+          <span className='max-sm:sr-only'>Gerenciar widgets</span>
         </Button>
       </HeaderInternalNavigation>
       <div className='max-w-200 w-full h-full mx-auto p-6 space-y-8'>

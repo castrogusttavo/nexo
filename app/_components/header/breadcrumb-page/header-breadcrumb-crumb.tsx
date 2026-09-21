@@ -17,8 +17,13 @@ export function HeaderBreadcrumbCrumb({
     <Tooltip>
       <TooltipTrigger
         render={
-          <li className='gap-1.5 inline-flex items-center font-semibold text-xs'>
-            {children} {title} {after}
+          // `min-w-0` + a truncating title: when the row is narrow the title
+          // gives up its width as a one-line ellipsis (the tooltip still
+          // shows it in full) instead of wrapping.
+          <li className='gap-1.5 inline-flex min-w-0 items-center font-semibold text-xs'>
+            {children}
+            {title && <span className='truncate'>{title}</span>}
+            {after}
           </li>
         }
       />
