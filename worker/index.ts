@@ -5,6 +5,7 @@ import {
   closeQueueConnection,
   getQueueConnection,
 } from '../src/lib/queue/connection'
+import { reportJobFailure } from '../src/lib/queue/failure-alarm'
 import { QueueName } from '../src/lib/queue/jobs'
 import { processAccountLifecycle } from '../src/lib/queue/processors/account-lifecycle'
 import { processDataExport } from '../src/lib/queue/processors/data-export'
@@ -37,16 +38,10 @@ function registerWorker(name: QueueName, processor: Processor): Worker {
     })
   })
 
+  // Logs every failed attempt and raises `queue.job.exhausted` once BullMQ
+  // gives up on the job -- the event the Axiom alarm keys on.
   worker.on('failed', (job, err) => {
-    logger.error('queue.job.failed', {
-      component: 'Worker',
-      queue: name,
-      jobName: job?.name,
-      jobId: job?.id,
-      attemptsMade: job?.attemptsMade,
-      message: err.message,
-      stack: err.stack,
-    })
+    reportJobFailure(name, job, err)
   })
 
   worker.on('error', (err) => {
