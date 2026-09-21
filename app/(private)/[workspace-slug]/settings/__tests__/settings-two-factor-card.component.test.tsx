@@ -147,7 +147,11 @@ describe('<SettingsTwoFactorCard /> enabling', () => {
   it('shows the API error message and keeps the form open', async () => {
     enable.mockResolvedValue({
       data: null,
-      error: { message: 'Senha incorreta' },
+      error: {
+        status: 400,
+        code: 'INVALID_PASSWORD',
+        message: 'Invalid password',
+      },
     })
     const { user } = renderCard()
 
@@ -227,7 +231,11 @@ describe('<SettingsTwoFactorCard /> disabling', () => {
   it('shows the API error message and keeps the form open', async () => {
     disable.mockResolvedValue({
       data: null,
-      error: { message: 'Senha incorreta' },
+      error: {
+        status: 400,
+        code: 'INVALID_PASSWORD',
+        message: 'Invalid password',
+      },
     })
     const { user } = renderCard()
 

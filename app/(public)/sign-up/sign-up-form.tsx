@@ -13,6 +13,7 @@ import { Checkbox } from '@/components/ui/checkbox'
 import { Field, FieldError, FieldLabel } from '@/components/ui/field'
 import { Input } from '@/components/ui/input'
 import { authClient } from '@/src/lib/auth-client'
+import { authErrorMessage } from '@/src/lib/auth-errors'
 import { settleAuthRequest } from '@/src/lib/auth-request'
 
 type Step = 'form' | 'otp'
@@ -139,7 +140,7 @@ export function SignUpForm({ redirectTo = '/' }: { redirectTo?: string }) {
     if (signUpError) {
       dispatch({
         type: 'submitError',
-        message: signUpError.message ?? 'Erro ao criar conta',
+        message: authErrorMessage(signUpError, 'Erro ao criar conta'),
       })
       return
     }
@@ -156,7 +157,7 @@ export function SignUpForm({ redirectTo = '/' }: { redirectTo?: string }) {
     if (verifyError) {
       dispatch({
         type: 'verifySettled',
-        error: verifyError.message ?? 'Código inválido ou expirado',
+        error: authErrorMessage(verifyError, 'Código inválido ou expirado'),
       })
       return
     }
@@ -176,7 +177,10 @@ export function SignUpForm({ redirectTo = '/' }: { redirectTo?: string }) {
     if (resendError) {
       dispatch({
         type: 'resendError',
-        message: resendError.message ?? 'Não foi possível reenviar o código',
+        message: authErrorMessage(
+          resendError,
+          'Não foi possível reenviar o código',
+        ),
       })
     }
   }

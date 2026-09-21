@@ -181,10 +181,14 @@ describe('<SignUpForm /> form step', () => {
     expect(await screen.findByText('Confirme seu e-mail')).toBeInTheDocument()
   })
 
-  it('shows the backend error and keeps the user on the form', async () => {
+  it('translates a taken e-mail to pt-BR and keeps the user on the form', async () => {
     signUpEmail.mockResolvedValue({
       data: null,
-      error: { message: 'Este e-mail já está em uso' },
+      error: {
+        status: 422,
+        code: 'USER_ALREADY_EXISTS_USE_ANOTHER_EMAIL',
+        message: 'User already exists. Use another email.',
+      },
     })
     const { user } = renderWithProviders(<SignUpForm />)
 
@@ -192,8 +196,9 @@ describe('<SignUpForm /> form step', () => {
     await user.click(submitButton())
 
     expect(
-      await screen.findByText('Este e-mail já está em uso'),
+      await screen.findByText('Já existe uma conta com este e-mail'),
     ).toBeInTheDocument()
+    expect(screen.queryByText(/user already exists/i)).not.toBeInTheDocument()
     expect(submitButton()).toBeEnabled()
     expect(screen.queryByText('Confirme seu e-mail')).not.toBeInTheDocument()
   })
@@ -298,13 +303,16 @@ describe('<SignUpForm /> email verification step', () => {
   it('shows the verification error and does not redirect', async () => {
     verifyEmail.mockResolvedValue({
       data: null,
-      error: { message: 'Código expirado' },
+      error: { status: 400, code: 'OTP_EXPIRED', message: 'OTP expired' },
     })
     const { user } = await reachOtpStep()
 
     await user.type(screen.getByRole('textbox'), '123456')
 
-    expect(await screen.findByText('Código expirado')).toBeInTheDocument()
+    expect(
+      await screen.findByText('O código expirou. Solicite um novo'),
+    ).toBeInTheDocument()
+    expect(screen.queryByText('OTP expired')).not.toBeInTheDocument()
     expect(push).not.toHaveBeenCalled()
   })
 

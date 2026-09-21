@@ -181,7 +181,11 @@ describe('<UserModalSecurityTwoFactorField /> enabling', () => {
   it('keeps the form open with the backend error', async () => {
     enable.mockResolvedValue({
       data: null,
-      error: { message: 'Senha incorreta' },
+      error: {
+        status: 400,
+        code: 'INVALID_PASSWORD',
+        message: 'Invalid password',
+      },
     })
     const { user } = renderField()
 
@@ -281,7 +285,11 @@ describe('<UserModalSecurityTwoFactorField /> backup codes', () => {
   it('shows the error when regenerating fails', async () => {
     generateBackupCodes.mockResolvedValue({
       data: null,
-      error: { message: 'Senha incorreta' },
+      error: {
+        status: 400,
+        code: 'INVALID_PASSWORD',
+        message: 'Invalid password',
+      },
     })
     const { user } = renderField({ twoFactorEnabled: true })
 

@@ -138,7 +138,11 @@ describe('<ProfileTwoFactorSection />', () => {
   it('keeps the form open with the error when enabling fails', async () => {
     enable.mockResolvedValue({
       data: null,
-      error: { message: 'Senha incorreta' },
+      error: {
+        status: 400,
+        code: 'INVALID_PASSWORD',
+        message: 'Invalid password',
+      },
     })
     const { user } = await renderOpen({
       twoFactorEnabled: false,

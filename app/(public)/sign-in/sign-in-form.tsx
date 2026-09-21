@@ -12,6 +12,7 @@ import { Button } from '@/components/ui/button'
 import { Field, FieldError, FieldLabel } from '@/components/ui/field'
 import { Input } from '@/components/ui/input'
 import { authClient } from '@/src/lib/auth-client'
+import { authErrorMessage } from '@/src/lib/auth-errors'
 import { settleAuthRequest } from '@/src/lib/auth-request'
 
 type Step = 'form' | 'otp' | 'backup'
@@ -90,7 +91,7 @@ export function SignInForm({ redirectTo = '/' }: { redirectTo?: string }) {
     const { data, error: signInError } = result
 
     if (signInError) {
-      setError(signInError.message ?? 'E-mail ou senha inválidos')
+      setError(authErrorMessage(signInError, 'E-mail ou senha inválidos'))
       setIsPending(false)
       return
     }
@@ -104,7 +105,10 @@ export function SignInForm({ redirectTo = '/' }: { redirectTo?: string }) {
       )
       if (sendError) {
         setOtpError(
-          sendError.message ?? 'Não foi possível enviar o código de acesso',
+          authErrorMessage(
+            sendError,
+            'Não foi possível enviar o código de acesso',
+          ),
         )
       }
       return
@@ -122,7 +126,7 @@ export function SignInForm({ redirectTo = '/' }: { redirectTo?: string }) {
     setIsVerifying(false)
 
     if (verifyError) {
-      setOtpError(verifyError.message ?? 'Código inválido ou expirado')
+      setOtpError(authErrorMessage(verifyError, 'Código inválido ou expirado'))
       return
     }
 
@@ -135,7 +139,9 @@ export function SignInForm({ redirectTo = '/' }: { redirectTo?: string }) {
       authClient.twoFactor.sendOtp(),
     )
     if (resendError) {
-      setOtpError(resendError.message ?? 'Não foi possível reenviar o código')
+      setOtpError(
+        authErrorMessage(resendError, 'Não foi possível reenviar o código'),
+      )
     }
   }
 
@@ -154,7 +160,7 @@ export function SignInForm({ redirectTo = '/' }: { redirectTo?: string }) {
     )
     setIsVerifying(false)
     if (verifyError) {
-      setOtpError(verifyError.message ?? 'Código de backup inválido')
+      setOtpError(authErrorMessage(verifyError, 'Código de backup inválido'))
       return
     }
     push(redirectTo)

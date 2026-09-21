@@ -13,6 +13,7 @@ import { Input } from '@/components/ui/input'
 import { Switch } from '@/components/ui/switch'
 import { cn } from '@/lib/utils'
 import { authClient } from '@/src/lib/auth-client'
+import { authErrorMessage } from '@/src/lib/auth-errors'
 
 type TwoFAMode = 'idle' | 'enabling' | 'disabling'
 
@@ -134,7 +135,7 @@ export function ProfileTwoFactorSection({
       if (error) {
         dispatchTwoFA({
           type: 'requestError',
-          message: error.message ?? 'Não foi possível ativar a 2FA',
+          message: authErrorMessage(error, 'Não foi possível ativar a 2FA'),
         })
         return
       }
@@ -151,7 +152,7 @@ export function ProfileTwoFactorSection({
     if (error) {
       dispatchTwoFA({
         type: 'requestError',
-        message: error.message ?? 'Não foi possível desativar a 2FA',
+        message: authErrorMessage(error, 'Não foi possível desativar a 2FA'),
       })
       return
     }

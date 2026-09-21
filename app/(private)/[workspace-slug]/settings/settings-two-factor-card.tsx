@@ -7,6 +7,7 @@ import { Field, FieldError, FieldLabel } from '@/components/ui/field'
 import { Input } from '@/components/ui/input'
 import { Switch } from '@/components/ui/switch'
 import { authClient } from '@/src/lib/auth-client'
+import { authErrorMessage } from '@/src/lib/auth-errors'
 
 type Mode = 'idle' | 'enabling' | 'disabling'
 
@@ -50,7 +51,7 @@ export function SettingsTwoFactorCard() {
       setBusy(false)
 
       if (enableError) {
-        setError(enableError.message ?? 'Não foi possível ativar a 2FA')
+        setError(authErrorMessage(enableError, 'Não foi possível ativar a 2FA'))
         return
       }
 
@@ -67,7 +68,9 @@ export function SettingsTwoFactorCard() {
       setBusy(false)
 
       if (disableError) {
-        setError(disableError.message ?? 'Não foi possível desativar a 2FA')
+        setError(
+          authErrorMessage(disableError, 'Não foi possível desativar a 2FA'),
+        )
         return
       }
 

@@ -14,6 +14,7 @@ import { Input } from '@/components/ui/input'
 import { Switch } from '@/components/ui/switch'
 import { notify } from '@/lib/notify'
 import { authClient } from '@/src/lib/auth-client'
+import { authErrorMessage } from '@/src/lib/auth-errors'
 
 interface UserModalSecurityTwoFactorFieldProps {
   twoFactorEnabled: boolean
@@ -64,7 +65,9 @@ export function UserModalSecurityTwoFactorField({
       })
       setTwoFactorBusy(false)
       if (error) {
-        setTwoFactorError(error.message ?? 'Não foi possível ativar a 2FA')
+        setTwoFactorError(
+          authErrorMessage(error, 'Não foi possível ativar a 2FA'),
+        )
         return
       }
       setBackupCodes(data?.backupCodes ?? [])
@@ -81,7 +84,7 @@ export function UserModalSecurityTwoFactorField({
       setTwoFactorBusy(false)
       if (error) {
         setTwoFactorError(
-          error.message ?? 'Não foi possível gerar novos códigos',
+          authErrorMessage(error, 'Não foi possível gerar novos códigos'),
         )
         return
       }
@@ -97,7 +100,9 @@ export function UserModalSecurityTwoFactorField({
     })
     setTwoFactorBusy(false)
     if (error) {
-      setTwoFactorError(error.message ?? 'Não foi possível desativar a 2FA')
+      setTwoFactorError(
+        authErrorMessage(error, 'Não foi possível desativar a 2FA'),
+      )
       return
     }
     setTwoFactorMode('idle')

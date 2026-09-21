@@ -142,20 +142,65 @@ describe('<SignInForm /> credentials step', () => {
     await waitFor(() => expect(push).toHaveBeenCalled())
   })
 
-  it('shows the backend error message and re-enables the form', async () => {
+  it('translates a wrong password to pt-BR and re-enables the form', async () => {
+    // The exact shape Better Auth resolves with for bad credentials.
     signInEmail.mockResolvedValue({
       data: null,
-      error: { status: 401, message: 'Credenciais incorretas' },
+      error: {
+        status: 401,
+        code: 'INVALID_EMAIL_OR_PASSWORD',
+        message: 'Invalid email or password',
+      },
     })
     const { user } = renderWithProviders(<SignInForm />)
 
     await fillAndSubmit(user)
 
     expect(
-      await screen.findByText('Credenciais incorretas'),
+      await screen.findByText('E-mail ou senha inválidos'),
     ).toBeInTheDocument()
+    expect(
+      screen.queryByText('Invalid email or password'),
+    ).not.toBeInTheDocument()
     expect(screen.getByRole('button', { name: 'Continuar' })).toBeEnabled()
     expect(push).not.toHaveBeenCalled()
+  })
+
+  it('never shows an untranslated library message', async () => {
+    signInEmail.mockResolvedValue({
+      data: null,
+      error: { status: 400, code: 'SOMETHING_NEW', message: 'Something new' },
+    })
+    const { user } = renderWithProviders(<SignInForm />)
+
+    await fillAndSubmit(user)
+
+    expect(
+      await screen.findByText('E-mail ou senha inválidos'),
+    ).toBeInTheDocument()
+    expect(screen.queryByText('Something new')).not.toBeInTheDocument()
+  })
+
+  it('translates Better Auth own rate limiter after the retries', async () => {
+    vi.spyOn(Math, 'random').mockReturnValue(0)
+    signInEmail.mockResolvedValue({
+      data: null,
+      error: {
+        status: 429,
+        retryAfterSeconds: 0,
+        message: 'Too many requests. Please try again later.',
+      },
+    })
+    const { user } = renderWithProviders(<SignInForm />)
+
+    await fillAndSubmit(user)
+
+    expect(
+      await screen.findByText(
+        'Muitas tentativas. Aguarde um instante e tente novamente',
+      ),
+    ).toBeInTheDocument()
+    expect(screen.queryByText(/too many requests/i)).not.toBeInTheDocument()
   })
 
   it('falls back to a generic message when the error has none', async () => {
@@ -192,14 +237,19 @@ describe('<SignInForm /> credentials step', () => {
       error: {
         status: 429,
         retryAfterSeconds: 0,
-        message: 'Muitas tentativas',
+        code: 'RATE_LIMITED',
+        message: 'Muitos acessos agora, tente novamente em instantes',
       },
     })
     const { user } = renderWithProviders(<SignInForm />)
 
     await fillAndSubmit(user)
 
-    expect(await screen.findByText('Muitas tentativas')).toBeInTheDocument()
+    expect(
+      await screen.findByText(
+        'Muitos acessos agora, tente novamente em instantes',
+      ),
+    ).toBeInTheDocument()
     expect(signInEmail).toHaveBeenCalledTimes(3)
     expect(push).not.toHaveBeenCalled()
   })

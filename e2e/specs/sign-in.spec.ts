@@ -16,13 +16,12 @@ test.describe('sign-in', () => {
     await page.getByLabel('Senha').fill('definitely-not-the-password')
     await page.getByRole('button', { name: 'Continuar', exact: true }).click()
 
-    // The form keeps the user in place and surfaces the credential error.
-    // It currently renders better-auth's own English message
-    // ("Invalid email or password") rather than the pt-BR fallback the form
-    // carries — the regex accepts either so the spec survives that fix.
+    // The form keeps the user in place and surfaces the credential error in
+    // pt-BR: Better Auth's own English message must never reach the page.
     await expect(
-      page.getByText(/Invalid email or password|E-mail ou senha inválidos/),
+      page.getByText('E-mail ou senha inválidos', { exact: true }),
     ).toBeVisible()
+    await expect(page.getByText(/Invalid email or password/i)).toHaveCount(0)
     await expect(page).toHaveURL(/\/sign-in$/)
   })
 
