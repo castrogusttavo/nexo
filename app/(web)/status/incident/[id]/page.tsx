@@ -3,10 +3,10 @@ import type { Metadata } from 'next'
 import Image from 'next/image'
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
+import { ButtonLink } from '@/components/button-link'
 import { NexoIcon } from '@/components/icon/icon'
 import { Muted } from '@/components/typography/text/muted'
 import { P } from '@/components/typography/text/p'
-import { Button } from '@/components/ui/button'
 import { cn } from '@/lib/utils'
 import { StatusService } from '@/src/services/status/status.service'
 import { STATUS_META } from '@/src/services/status/status-map'
@@ -109,16 +109,12 @@ export default async function IncidentPage({ params }: IncidentPageProps) {
           className='invert dark:invert-0'
         />
         <div className='flex items-center gap-2'>
-          <Link href='#'>
-            <Button variant='outline' size='sm'>
-              Relate um problema
-            </Button>
-          </Link>
-          <Link href='#'>
-            <Button variant='default' size='sm'>
-              Receba atualizações
-            </Button>
-          </Link>
+          <ButtonLink href='#' variant='outline' size='sm'>
+            Relate um problema
+          </ButtonLink>
+          <ButtonLink href='#' variant='default' size='sm'>
+            Receba atualizações
+          </ButtonLink>
         </div>
       </div>
       <div

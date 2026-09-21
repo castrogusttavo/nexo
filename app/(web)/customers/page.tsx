@@ -1,10 +1,9 @@
 import { Briefcase02Icon } from '@hugeicons-pro/core-stroke-rounded'
 import type { Metadata } from 'next'
 import Image from 'next/image'
-import Link from 'next/link'
+import { ButtonLink } from '@/components/button-link'
 import { NexoIcon } from '@/components/icon/icon'
 import { Muted } from '@/components/typography/text/muted'
-import { Button } from '@/components/ui/button'
 import { IconStack } from '@/components/ui/icon-stack'
 import { cn } from '@/lib/utils'
 import { WebFooter } from '../_components/footer'
@@ -57,9 +56,9 @@ export default function CustomersPage() {
                 dia a dia.
               </SubTitle>
             </div>
-            <Link href='/sign-up'>
-              <Button size='lg'>Comece grátis</Button>
-            </Link>
+            <ButtonLink href='/sign-up' size='lg'>
+              Comece grátis
+            </ButtonLink>
           </section>
         )}
         <section
@@ -82,9 +81,9 @@ export default function CustomersPage() {
                   e ajudar a escrever essa história?
                 </p>
               </div>
-              <Link href='/talk-to-sales'>
-                <Button size='lg'>Falar com vendas</Button>
-              </Link>
+              <ButtonLink href='/talk-to-sales' size='lg'>
+                Falar com vendas
+              </ButtonLink>
             </div>
           ) : (
             <div
@@ -147,9 +146,9 @@ export default function CustomersPage() {
                         </Title>
                       </div>
                       <div className='w-full flex items-center justify-between'>
-                        <Link href={customer.href}>
-                          <Button size='lg'>Ler a história completa</Button>
-                        </Link>
+                        <ButtonLink href={customer.href} size='lg'>
+                          Ler a história completa
+                        </ButtonLink>
                         <Image
                           src={customer.logo}
                           alt=''

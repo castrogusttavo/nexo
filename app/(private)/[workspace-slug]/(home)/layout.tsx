@@ -54,10 +54,18 @@ export default async function HomeLayout({
           title='Projetos'
           actions={
             <>
-              <Button variant='ghost' size='icon-sm'>
+              <Button
+                variant='ghost'
+                size='icon-sm'
+                aria-label='Opções de exibição'
+              >
                 <NexoIcon icon={SlidersHorizontalIcon} strokeWidth={2} />
               </Button>
-              <Button variant='ghost' size='icon-sm'>
+              <Button
+                variant='ghost'
+                size='icon-sm'
+                aria-label='Recolher barra lateral'
+              >
                 <NexoIcon icon={PanelLeftIcon} strokeWidth={2} />
               </Button>
             </>

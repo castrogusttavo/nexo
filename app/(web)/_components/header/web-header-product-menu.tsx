@@ -6,6 +6,7 @@ import {
 } from '@hugeicons-pro/core-solid-rounded'
 import { ArrowUpRightIcon } from '@hugeicons-pro/core-stroke-rounded'
 import Link from 'next/link'
+import { ButtonLink } from '@/components/button-link'
 import { NexoIcon } from '@/components/icon/icon'
 import { Muted } from '@/components/typography/text/muted'
 import { Badge } from '@/components/ui/badge'
@@ -92,12 +93,15 @@ export function WebHeaderProductMenu() {
                       }
                     />
                   </div>
-                  <Link href='/marketplace'>
-                    <Button variant='link' size='sm' className='p-0'>
-                      Navegar pelo marketplace
-                      <NexoIcon icon={ArrowRight02Icon} size={20} />
-                    </Button>
-                  </Link>
+                  <ButtonLink
+                    href='/marketplace'
+                    variant='link'
+                    size='sm'
+                    className='p-0'
+                  >
+                    Navegar pelo marketplace
+                    <NexoIcon icon={ArrowRight02Icon} size={20} />
+                  </ButtonLink>
                 </CardDescription>
               </CardContent>
             </Card>

@@ -70,7 +70,7 @@ describe('<BillingUpgrade /> pricing', () => {
       ).toBeInTheDocument(),
     )
     expect(
-      screen.getByRole('button', { name: 'Atualizar para Pro' }),
+      screen.getByRole('link', { name: 'Atualizar para Pro' }),
     ).toHaveAttribute('href', '/upgrade?plan=PRO&billing=monthly')
   })
 
@@ -91,7 +91,7 @@ describe('<BillingUpgrade /> pricing', () => {
 
     expect(screen.getByText('Cotação a pedido')).toBeInTheDocument()
     expect(
-      screen.getByRole('button', { name: 'Falar com vendas' }),
+      screen.getByRole('link', { name: 'Falar com vendas' }),
     ).toHaveAttribute('href', '/talk-to-sales')
   })
 
@@ -109,10 +109,10 @@ describe('<BillingUpgrade /> current plan', () => {
     renderUpgrade()
 
     expect(
-      screen.getByRole('button', { name: 'Atualizar para Pro' }),
+      screen.getByRole('link', { name: 'Atualizar para Pro' }),
     ).toHaveAttribute('href', '/upgrade?plan=PRO&billing=yearly')
     expect(
-      screen.getByRole('button', { name: 'Atualizar para Business' }),
+      screen.getByRole('link', { name: 'Atualizar para Business' }),
     ).toHaveAttribute('href', '/upgrade?plan=BUSINESS&billing=yearly')
     expect(
       screen.queryByRole('button', { name: 'Plano atual' }),
@@ -126,10 +126,10 @@ describe('<BillingUpgrade /> current plan', () => {
       within(tierColumn('Pro')).getByRole('button', { name: 'Plano atual' }),
     ).toBeDisabled()
     expect(
-      screen.queryByRole('button', { name: 'Atualizar para Pro' }),
+      screen.queryByRole('link', { name: 'Atualizar para Pro' }),
     ).not.toBeInTheDocument()
     expect(
-      screen.getByRole('button', { name: 'Atualizar para Business' }),
+      screen.getByRole('link', { name: 'Atualizar para Business' }),
     ).toBeInTheDocument()
   })
 
@@ -142,7 +142,7 @@ describe('<BillingUpgrade /> current plan', () => {
       }),
     ).toBeDisabled()
     expect(
-      screen.queryByRole('button', { name: 'Falar com vendas' }),
+      screen.queryByRole('link', { name: 'Falar com vendas' }),
     ).not.toBeInTheDocument()
   })
 })

@@ -1,5 +1,6 @@
 import { screen } from '@testing-library/react'
 import { describe, expect, it, vi } from 'vitest'
+import { appPageRoutes, hasAppPage } from '@/src/__tests__/helpers/app-routes'
 import { renderWithProviders } from '@/src/__tests__/helpers/component'
 import { GlobalSidebarNavigation } from '../navigation-sidebar-global'
 import { GlobalButtonNavigation } from '../navigation-sidebar-global-button'
@@ -46,6 +47,18 @@ describe('<GlobalSidebarNavigation />', () => {
     renderSidebar('/nexo/settings')
 
     expect(link('Projetos')).not.toHaveAttribute('aria-current')
+  })
+
+  it('only links to sections that have a page', () => {
+    const { container } = renderSidebar('/nexo')
+    const routes = appPageRoutes()
+
+    const hrefs = [...container.querySelectorAll('a[href]')].map(
+      (element) => element.getAttribute('href') ?? '',
+    )
+
+    expect(hrefs).toHaveLength(4)
+    expect(hrefs.filter((href) => !hasAppPage(href, routes))).toEqual([])
   })
 
   it('keeps a look-alike slug prefix out of the current workspace', () => {

@@ -16,6 +16,7 @@ import {
   upgradeUrl,
 } from '@/app/(web)/_components/pricing/plans'
 import { billingParser } from '@/app/(web)/_components/pricing/plans-params'
+import { ButtonLink } from '@/components/button-link'
 import { NexoIcon } from '@/components/icon/icon'
 import { Muted } from '@/components/typography/text/muted'
 import { Button } from '@/components/ui/button'
@@ -89,21 +90,16 @@ export function BillingUpgrade({ currentPlan }: { currentPlan: string }) {
                     Plano atual
                   </Button>
                 ) : tier === 'ENTERPRISE' ? (
-                  <Button
-                    className='w-full'
-                    nativeButton={false}
-                    render={<Link href='/talk-to-sales'>Falar com vendas</Link>}
-                  />
+                  <ButtonLink href='/talk-to-sales' className='w-full'>
+                    Falar com vendas
+                  </ButtonLink>
                 ) : (
-                  <Button
+                  <ButtonLink
+                    href={upgradeUrl(tier, billing)}
                     className='w-full'
-                    nativeButton={false}
-                    render={
-                      <Link href={upgradeUrl(tier, billing)}>
-                        Atualizar para {formatPlanName(tier)}
-                      </Link>
-                    }
-                  />
+                  >
+                    Atualizar para {formatPlanName(tier)}
+                  </ButtonLink>
                 )}
               </div>
             )

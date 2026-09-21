@@ -2,8 +2,8 @@ import { ArrowRight02Icon } from '@hugeicons-pro/core-stroke-rounded'
 import type { Metadata } from 'next'
 import Image from 'next/image'
 import Link from 'next/link'
+import { ButtonLink } from '@/components/button-link'
 import { NexoIcon } from '@/components/icon/icon'
-import { Button } from '@/components/ui/button'
 import { WebFooter } from '../_components/footer'
 import { SubTitle } from '../_components/text/sub-title'
 import { Title } from '../_components/text/title'
@@ -111,9 +111,9 @@ export default function SecurityPage() {
               Conformidade pensada pra LGPD desde o início, não como retrofit.
             </SubTitle>
           </div>
-          <Link href='/talk-to-sales'>
-            <Button size='lg'>Falar com vendas</Button>
-          </Link>
+          <ButtonLink href='/talk-to-sales' size='lg'>
+            Falar com vendas
+          </ButtonLink>
         </section>
         <section className='flex flex-col lg:flex-row lg:items-center gap-12 text-start mx-auto w-full xl:max-w-336 xl:px-11 2xl:max-w-384 py-16 px-4 sm:px-8'>
           <div className='space-y-2'>
@@ -166,14 +166,16 @@ export default function SecurityPage() {
                 </p>
               </div>
               <div className='flex flex-wrap items-center gap-2.5'>
-                <Link href='/talk-to-sales'>
-                  <Button size='lg'>Falar com vendas</Button>
-                </Link>
-                <Link href='mailto:seguranca@nexopm.com'>
-                  <Button variant='secondary' size='lg'>
-                    Pedir documentação de segurança
-                  </Button>
-                </Link>
+                <ButtonLink href='/talk-to-sales' size='lg'>
+                  Falar com vendas
+                </ButtonLink>
+                <ButtonLink
+                  href='mailto:seguranca@nexopm.com'
+                  variant='secondary'
+                  size='lg'
+                >
+                  Pedir documentação de segurança
+                </ButtonLink>
               </div>
             </div>
           </div>

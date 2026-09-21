@@ -1,8 +1,7 @@
 import type { Metadata } from 'next'
 import Image from 'next/image'
-import Link from 'next/link'
+import { ButtonLink } from '@/components/button-link'
 import { Muted } from '@/components/typography/text/muted'
-import { Button } from '@/components/ui/button'
 import { WebFooter } from '../_components/footer'
 import { SubTitle } from '../_components/text/sub-title'
 import { Title } from '../_components/text/title'
@@ -44,14 +43,12 @@ export default function SwitchPage() {
               trabalho pro Nexo.
             </SubTitle>
             <div className='flex flex-wrap items-center justify-start gap-4 md:justify-center'>
-              <Link href='/sign-up'>
-                <Button size='lg'>Comece grátis</Button>
-              </Link>
-              <Link href='/talk-to-sales'>
-                <Button size='lg' variant='secondary'>
-                  Falar com vendas
-                </Button>
-              </Link>
+              <ButtonLink href='/sign-up' size='lg'>
+                Comece grátis
+              </ButtonLink>
+              <ButtonLink href='/talk-to-sales' size='lg' variant='secondary'>
+                Falar com vendas
+              </ButtonLink>
             </div>
           </div>
         </section>

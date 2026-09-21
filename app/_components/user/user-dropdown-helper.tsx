@@ -24,6 +24,7 @@ export function UserDropdownHelper() {
           <Button
             variant='ghost'
             size='icon'
+            aria-label='Ajuda'
             className='data-popup-open:bg-muted dark:data-popup-open:bg-muted p-1 rounded-md'
           >
             <NexoIcon icon={HelpCircleIcon} strokeWidth={2} size={20} />
@@ -32,28 +33,24 @@ export function UserDropdownHelper() {
       />
       <DropdownMenuContent className='w-55 p-3 flex flex-col gap-y-2 rounded-md'>
         <DropdownMenuGroup>
-          <Link href='/docs'>
-            <DropdownMenuItem className='text-xs'>
-              <NexoIcon icon={File02Icon} strokeWidth={2} size={20} />
-              Documentação
-            </DropdownMenuItem>
-          </Link>
-          <Link href='https://google.com' target='_blank'>
-            <DropdownMenuItem className='text-xs'>
-              <NexoIcon
-                icon={MessageMultiple01Icon}
-                strokeWidth={2}
-                size={20}
-              />
-              Suporte por mensagens
-            </DropdownMenuItem>
-          </Link>
-          <Link href='mailto:sales@nexopm.com' target='_blank'>
-            <DropdownMenuItem className='text-xs'>
-              <NexoIcon icon={UserIcon} strokeWidth={2} size={20} />
-              Contatar vendas
-            </DropdownMenuItem>
-          </Link>
+          <DropdownMenuItem className='text-xs' render={<Link href='/docs' />}>
+            <NexoIcon icon={File02Icon} strokeWidth={2} size={20} />
+            Documentação
+          </DropdownMenuItem>
+          <DropdownMenuItem
+            className='text-xs'
+            render={<Link href='https://google.com' target='_blank' />}
+          >
+            <NexoIcon icon={MessageMultiple01Icon} strokeWidth={2} size={20} />
+            Suporte por mensagens
+          </DropdownMenuItem>
+          <DropdownMenuItem
+            className='text-xs'
+            render={<Link href='mailto:sales@nexopm.com' target='_blank' />}
+          >
+            <NexoIcon icon={UserIcon} strokeWidth={2} size={20} />
+            Contatar vendas
+          </DropdownMenuItem>
         </DropdownMenuGroup>
         <DropdownMenuSeparator />
         <DropdownMenuGroup>
@@ -63,11 +60,12 @@ export function UserDropdownHelper() {
           <DropdownMenuItem className='text-xs'>
             O que há de novo?
           </DropdownMenuItem>
-          <Link href='/status'>
-            <DropdownMenuItem className='text-xs'>
-              Status do sistema
-            </DropdownMenuItem>
-          </Link>
+          <DropdownMenuItem
+            className='text-xs'
+            render={<Link href='/status' />}
+          >
+            Status do sistema
+          </DropdownMenuItem>
         </DropdownMenuGroup>
         <DropdownMenuSeparator />
         <DropdownMenuGroup>

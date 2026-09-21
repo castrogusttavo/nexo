@@ -1,12 +1,11 @@
 'use client'
 
-import Link from 'next/link'
 import {
   formatPlanName,
   type PlanGrid,
 } from '@/app/(web)/_components/pricing/plans'
+import { ButtonLink } from '@/components/button-link'
 import { Muted } from '@/components/typography/text/muted'
-import { Button } from '@/components/ui/button'
 
 interface HeaderPromotionBannerProps {
   endDate: string
@@ -36,22 +35,17 @@ export function HeaderPromotionBanner({
         {dateFormatter.format(end)}, você volta ao plano Free.
       </Muted>
       <div className='flex items-center gap-2'>
-        <Button
-          size='xs'
-          nativeButton={false}
-          render={
-            <Link href={`/upgrade?plan=${plan}&billing=yearly`}>
-              Assinar {planName}
-            </Link>
-          }
-        />
-        <Button
+        <ButtonLink href={`/upgrade?plan=${plan}&billing=yearly`} size='xs'>
+          Assinar {planName}
+        </ButtonLink>
+        <ButtonLink
+          href={`/${slug}/settings/billing`}
           variant='ghost'
           size='xs'
           className='underline hover:bg-transparent!'
-          nativeButton={false}
-          render={<Link href={`/${slug}/settings/billing`}>Ver planos</Link>}
-        />
+        >
+          Ver planos
+        </ButtonLink>
       </div>
     </div>
   )

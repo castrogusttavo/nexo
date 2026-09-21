@@ -1,9 +1,8 @@
 'use client'
 
-import Link from 'next/link'
 import { useQueryState } from 'nuqs'
+import { ButtonLink } from '@/components/button-link'
 import { Muted } from '@/components/typography/text/muted'
-import { Button } from '@/components/ui/button'
 import {
   type Billing,
   formatCurrency,
@@ -60,32 +59,20 @@ function PlanColumn({ plan, billing }: { plan: PlanGrid; billing: Billing }) {
 
 function PlanCta({ plan, billing }: { plan: PlanGrid; billing: Billing }) {
   if (plan === 'ENTERPRISE') {
-    return (
-      <Button
-        nativeButton={false}
-        render={<Link href='/talk-to-sales'>Fale conosco</Link>}
-      />
-    )
+    return <ButtonLink href='/talk-to-sales'>Fale conosco</ButtonLink>
   }
 
   if (plan === 'FREE') {
     return (
-      <Button
-        variant='outline'
-        nativeButton={false}
-        render={<Link href='/sign-up'>Comece grátis</Link>}
-      />
+      <ButtonLink href='/sign-up' variant='outline'>
+        Comece grátis
+      </ButtonLink>
     )
   }
 
   return (
-    <Button
-      nativeButton={false}
-      render={
-        <Link href={upgradeUrl(plan, billing)}>
-          Obtenha o {formatPlanName(plan)}
-        </Link>
-      }
-    />
+    <ButtonLink href={upgradeUrl(plan, billing)}>
+      Obtenha o {formatPlanName(plan)}
+    </ButtonLink>
   )
 }

@@ -59,8 +59,7 @@ function rowMenuTrigger(name: string) {
 
 /** The nesting depth the item renders as left padding. */
 function indentOf(name: string) {
-  const button = within(pageLink(name)).getByRole('button')
-  return button.style.paddingLeft
+  return pageLink(name).style.paddingLeft
 }
 
 describe('<WikiSidebarTree /> states', () => {
@@ -134,7 +133,7 @@ describe('<WikiSidebarTree /> tree building', () => {
     renderTree([buildPage({ id: 'orphan', title: 'Órfã', parentId: 'gone' })])
 
     const orphan = await screen.findByRole('link', { name: 'Órfã' })
-    expect(within(orphan).getByRole('button').style.paddingLeft).toBe('10px')
+    expect(orphan.style.paddingLeft).toBe('10px')
   })
 })
 
@@ -144,10 +143,14 @@ describe('<WikiSidebarTree /> current page', () => {
     renderTree([buildPage(), buildPage({ id: 'page-2', title: 'Arquitetura' })])
     await screen.findByRole('link', { name: 'Manual' })
 
-    const active = within(pageLink('Arquitetura')).getByRole('button')
-    const inactive = within(pageLink('Manual')).getByRole('button')
+    const active = pageLink('Arquitetura')
+    const inactive = pageLink('Manual')
 
     expect(active.className).not.toBe(inactive.className)
+    expect(active).toHaveAttribute('aria-current', 'page')
+    expect(inactive).not.toHaveAttribute('aria-current')
+    // One control per row: the link is not wrapped around a <button>.
+    expect(within(active).queryByRole('button')).toBeNull()
   })
 })
 

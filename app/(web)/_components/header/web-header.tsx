@@ -3,7 +3,7 @@
 import Image from 'next/image'
 import Link from 'next/link'
 import { useEffect, useState } from 'react'
-import { Button } from '@/components/ui/button'
+import { ButtonLink } from '@/components/button-link'
 import {
   NavigationMenu,
   NavigationMenuItem,
@@ -68,21 +68,15 @@ export function WebHeader() {
         </NavigationMenuList>
       </NavigationMenu>
       <div className='flex items-center gap-1.5 justify-self-end'>
-        <Link href='/talk-to-sales'>
-          <Button variant='ghost' size='sm'>
-            Falar com vendas
-          </Button>
-        </Link>
-        <Link href='/sign-in'>
-          <Button variant='ghost' size='sm'>
-            Entrar
-          </Button>
-        </Link>
-        <Link href='/sign-up'>
-          <Button variant='default' size='sm'>
-            Comece grátis
-          </Button>
-        </Link>
+        <ButtonLink href='/talk-to-sales' variant='ghost' size='sm'>
+          Falar com vendas
+        </ButtonLink>
+        <ButtonLink href='/sign-in' variant='ghost' size='sm'>
+          Entrar
+        </ButtonLink>
+        <ButtonLink href='/sign-up' variant='default' size='sm'>
+          Comece grátis
+        </ButtonLink>
       </div>
     </header>
   )

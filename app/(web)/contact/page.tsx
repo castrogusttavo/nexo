@@ -7,10 +7,9 @@ import {
   MessagesSquareIcon,
 } from '@hugeicons-pro/core-solid-rounded'
 import type { Metadata } from 'next'
-import Link from 'next/link'
+import { ButtonLink } from '@/components/button-link'
 import { NexoIcon } from '@/components/icon/icon'
 import type { IconType } from '@/components/layouts/list-layout'
-import { Button } from '@/components/ui/button'
 import { WebFooter } from '../_components/footer'
 import { SubTitle } from '../_components/text/sub-title'
 import { Title } from '../_components/text/title'
@@ -127,9 +126,9 @@ export default function ContactPage() {
                       {card.description}
                     </p>
                   </div>
-                  <Link href={card.href}>
-                    <Button size='lg'>{card.cta}</Button>
-                  </Link>
+                  <ButtonLink href={card.href} size='lg'>
+                    {card.cta}
+                  </ButtonLink>
                 </div>
               </div>
             ))}

@@ -1,9 +1,8 @@
 import { ArrowRight02Icon } from '@hugeicons-pro/core-stroke-rounded'
-import Link from 'next/link'
+import { ButtonLink } from '@/components/button-link'
 import { NexoIcon } from '@/components/icon/icon'
 import { Muted } from '@/components/typography/text/muted'
 import { Badge } from '@/components/ui/badge'
-import { Button } from '@/components/ui/button'
 import {
   Field,
   FieldContent,
@@ -105,11 +104,14 @@ export function UpgradePlanSelectionCard({
       </FieldSet>
       <div className='bg-card rounded-lg px-5 py-3 flex items-center justify-between text-sm'>
         <h5>Quer a experiência completa do Nexo Cloud empresarial?</h5>
-        <Link href='/talk-to-sales'>
-          <Button variant='link' size='sm' className='text-sky-400'>
-            Fale com vendas <NexoIcon icon={ArrowRight02Icon} strokeWidth={2} />
-          </Button>
-        </Link>
+        <ButtonLink
+          href='/talk-to-sales'
+          variant='link'
+          size='sm'
+          className='text-sky-400'
+        >
+          Fale com vendas <NexoIcon icon={ArrowRight02Icon} strokeWidth={2} />
+        </ButtonLink>
       </div>
     </div>
   )

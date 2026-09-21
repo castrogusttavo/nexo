@@ -6,11 +6,10 @@ import { Calendar04Icon } from '@hugeicons-pro/core-solid-rounded'
 import { InformationCircleIcon } from '@hugeicons-pro/core-stroke-rounded'
 import type { Metadata } from 'next'
 import Image from 'next/image'
-import Link from 'next/link'
+import { ButtonLink } from '@/components/button-link'
 import { NexoIcon } from '@/components/icon/icon'
 import { Muted } from '@/components/typography/text/muted'
 import { P } from '@/components/typography/text/p'
-import { Button } from '@/components/ui/button'
 import {
   Tooltip,
   TooltipContent,
@@ -75,16 +74,12 @@ export default async function StatusPage() {
           className='invert dark:invert-0'
         />
         <div className='flex items-center gap-2'>
-          <Link href='#'>
-            <Button variant='outline' size='sm'>
-              Relate um problema
-            </Button>
-          </Link>
-          <Link href='#'>
-            <Button variant='default' size='sm'>
-              Receba atualizações
-            </Button>
-          </Link>
+          <ButtonLink href='#' variant='outline' size='sm'>
+            Relate um problema
+          </ButtonLink>
+          <ButtonLink href='#' variant='default' size='sm'>
+            Receba atualizações
+          </ButtonLink>
         </div>
       </div>
       <div className='w-full h-fit overflow-hidden flex flex-col rounded-lg border border-zinc-200'>
@@ -143,12 +138,10 @@ export default async function StatusPage() {
           )
         })}
       </div>
-      <Link href='/status/history'>
-        <Button variant='outline' size='lg'>
-          <NexoIcon icon={Calendar04Icon} />
-          Ver histórico
-        </Button>
-      </Link>
+      <ButtonLink href='/status/history' variant='outline' size='lg'>
+        <NexoIcon icon={Calendar04Icon} />
+        Ver histórico
+      </ButtonLink>
     </div>
   )
 }

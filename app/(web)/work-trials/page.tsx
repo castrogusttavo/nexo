@@ -1,7 +1,7 @@
 import type { Metadata } from 'next'
 import Image from 'next/image'
 import Link from 'next/link'
-import { Button } from '@/components/ui/button'
+import { ButtonLink } from '@/components/button-link'
 import { WebFooter } from '../_components/footer'
 import { SubTitle } from '../_components/text/sub-title'
 import { Title } from '../_components/text/title'
@@ -88,9 +88,9 @@ export default function WorkTrialsPage() {
               </Title>
             </div>
             <div className='flex gap-4 items-center flex-wrap justify-start md:justify-center'>
-              <Link href='/careers#vagas'>
-                <Button size='lg'>Ver vagas abertas</Button>
-              </Link>
+              <ButtonLink href='/careers#vagas' size='lg'>
+                Ver vagas abertas
+              </ButtonLink>
             </div>
           </div>
           <div className='space-y-4 max-w-188'>

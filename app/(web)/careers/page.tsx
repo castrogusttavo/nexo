@@ -1,8 +1,7 @@
 import type { Metadata } from 'next'
 import Image from 'next/image'
-import Link from 'next/link'
+import { ButtonLink } from '@/components/button-link'
 import { Muted } from '@/components/typography/text/muted'
-import { Button } from '@/components/ui/button'
 import { CareerJobService } from '@/src/services/career-job.service'
 import { WebFooter } from '../_components/footer'
 import { SubTitle } from '../_components/text/sub-title'
@@ -51,14 +50,12 @@ export default async function CareersPage() {
               </Title>
             </div>
             <div className='flex gap-4 items-center flex-wrap justify-start md:justify-center'>
-              <Link href='#vagas'>
-                <Button size='lg'>Ver vagas abertas</Button>
-              </Link>
-              <Link href='/work-trials'>
-                <Button variant='secondary' size='lg'>
-                  Como contratamos
-                </Button>
-              </Link>
+              <ButtonLink href='#vagas' size='lg'>
+                Ver vagas abertas
+              </ButtonLink>
+              <ButtonLink href='/work-trials' variant='secondary' size='lg'>
+                Como contratamos
+              </ButtonLink>
             </div>
           </div>
           <div className='space-y-4 max-w-188'>

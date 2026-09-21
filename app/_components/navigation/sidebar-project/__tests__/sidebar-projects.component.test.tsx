@@ -1,6 +1,7 @@
 import { screen, waitFor, within } from '@testing-library/react'
 import { toast } from 'sonner'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
+import { appPageRoutes, hasAppPage } from '@/src/__tests__/helpers/app-routes'
 import {
   apiError,
   apiSuccess,
@@ -149,20 +150,27 @@ describe('<SidebarProjects /> listing', () => {
 
     await user.click(projectTrigger(/^Alpha$/))
 
-    expect(await screen.findByText('Visão geral')).toBeInTheDocument()
-    for (const label of [
-      'Issues',
-      'Ciclos',
-      'Módulos',
-      'Visualizações',
-      'Páginas',
-    ]) {
-      expect(screen.getByText(label)).toBeInTheDocument()
-    }
-    expect(screen.getByRole('link', { name: /Issues/ })).toHaveAttribute(
+    expect(
+      await screen.findByRole('link', { name: 'Visão geral' }),
+    ).toHaveAttribute('href', `${BASE}/projects/alpha/overview`)
+    expect(screen.getByRole('link', { name: 'Issues' })).toHaveAttribute(
       'href',
       `${BASE}/projects/alpha/issues`,
     )
+  })
+
+  it('only links to project sections that have a page', async () => {
+    const { container, user } = renderSidebar([buildProject()])
+    await user.click(projectTrigger(/^Alpha$/))
+    await screen.findByRole('link', { name: 'Visão geral' })
+    const routes = appPageRoutes()
+
+    const hrefs = [...container.querySelectorAll('a[href]')].map(
+      (link) => link.getAttribute('href') ?? '',
+    )
+
+    expect(hrefs.length).toBeGreaterThan(0)
+    expect(hrefs.filter((href) => !hasAppPage(href, routes))).toEqual([])
   })
 })
 

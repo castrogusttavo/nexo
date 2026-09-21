@@ -3,6 +3,7 @@
 import Image from 'next/image'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
+import { ButtonLink } from '@/components/button-link'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Button } from '@/components/ui/button'
 import {
@@ -42,11 +43,14 @@ export function WebHeaderUpgrade() {
         />
       </Link>
       <div className='flex items-center gap-1'>
-        <Link href='/talk-to-sales'>
-          <Button variant='link' size='sm' className='text-muted-foreground'>
-            Falar com vendas
-          </Button>
-        </Link>
+        <ButtonLink
+          href='/talk-to-sales'
+          variant='link'
+          size='sm'
+          className='text-muted-foreground'
+        >
+          Falar com vendas
+        </ButtonLink>
         <DropdownMenu>
           <DropdownMenuTrigger
             render={

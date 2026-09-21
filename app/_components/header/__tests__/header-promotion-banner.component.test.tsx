@@ -77,7 +77,7 @@ describe('<HeaderPromotionBanner />', () => {
   it('links straight to the yearly checkout of that plan', () => {
     renderBanner()
 
-    expect(screen.getByRole('button', { name: 'Assinar Pro' })).toHaveAttribute(
+    expect(screen.getByRole('link', { name: 'Assinar Pro' })).toHaveAttribute(
       'href',
       '/upgrade?plan=PRO&billing=yearly',
     )
@@ -86,7 +86,7 @@ describe('<HeaderPromotionBanner />', () => {
   it('links to the billing settings of the current workspace', () => {
     renderBanner({ slug: 'atlas' })
 
-    expect(screen.getByRole('button', { name: 'Ver planos' })).toHaveAttribute(
+    expect(screen.getByRole('link', { name: 'Ver planos' })).toHaveAttribute(
       'href',
       '/atlas/settings/billing',
     )

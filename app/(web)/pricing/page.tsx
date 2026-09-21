@@ -4,9 +4,9 @@ import {
   Shield01Icon,
 } from '@hugeicons-pro/core-stroke-rounded'
 import Link from 'next/link'
+import { ButtonLink } from '@/components/button-link'
 import { NexoIcon } from '@/components/icon/icon'
 import { JsonLd } from '@/components/seo/json-ld'
-import { Button } from '@/components/ui/button'
 import { NEXT_PUBLIC_URL } from '@/lib/env/env'
 import { PAID_PLAN_PRICES } from '@/src/config/plan-prices'
 import { CardCertifications } from '../_components/card-certifications'
@@ -138,14 +138,12 @@ export default function PricingPage() {
           </div>
         </div>
         <div className='flex flex-col md:flex-row items-center justify-center gap-4 py-4 border border-border w-full'>
-          <Link href='#features'>
-            <Button size='sm'>Lista completa de recursos</Button>
-          </Link>
-          <Link href='#calculator'>
-            <Button size='sm' variant='outline'>
-              Calculadora de poupança
-            </Button>
-          </Link>
+          <ButtonLink href='#features' size='sm'>
+            Lista completa de recursos
+          </ButtonLink>
+          <ButtonLink href='#calculator' size='sm' variant='outline'>
+            Calculadora de poupança
+          </ButtonLink>
         </div>
         <div className='w-full border border-border flex flex-col gap-4 px-4 pt-20 pb-4'>
           <h4 className='font-normal text-3xl'>

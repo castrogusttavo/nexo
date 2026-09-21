@@ -6,8 +6,8 @@ import {
   CheckIcon,
 } from '@hugeicons-pro/core-stroke-rounded'
 import { sendGAEvent } from '@next/third-parties/google'
-import Link from 'next/link'
 import { useQueryState } from 'nuqs'
+import { ButtonLink } from '@/components/button-link'
 import { NexoIcon } from '@/components/icon/icon'
 import { Muted } from '@/components/typography/text/muted'
 import { Button } from '@/components/ui/button'
@@ -73,39 +73,33 @@ export function PricingCardPlan({ plan }: PricingCardPlanProps) {
           <Muted className='text-sm'>{description}</Muted>
           <div className='flex flex-col gap-2'>
             {plan === 'ENTERPRISE' ? (
-              <Button
-                nativeButton={false}
+              <ButtonLink
+                href='/talk-to-sales'
+                onClick={trackClick}
                 size='sm'
                 className='w-full'
-                render={
-                  <Link href='/talk-to-sales' onClick={trackClick}>
-                    Falar com vendas
-                  </Link>
-                }
-              />
+              >
+                Falar com vendas
+              </ButtonLink>
             ) : plan === 'FREE' ? (
-              <Button
-                nativeButton={false}
+              <ButtonLink
+                href='/sign-up'
+                onClick={trackClick}
                 size='sm'
                 variant='outline'
                 className='w-full'
-                render={
-                  <Link href='/sign-up' onClick={trackClick}>
-                    Comece grátis
-                  </Link>
-                }
-              />
+              >
+                Comece grátis
+              </ButtonLink>
             ) : (
-              <Button
-                nativeButton={false}
+              <ButtonLink
+                href={upgradeUrl(plan, billing)}
+                onClick={trackClick}
                 size='sm'
                 className='w-full'
-                render={
-                  <Link href={upgradeUrl(plan, billing)} onClick={trackClick}>
-                    Obter {formatPlanName(plan)} por este preço
-                  </Link>
-                }
-              />
+              >
+                Obter {formatPlanName(plan)} por este preço
+              </ButtonLink>
             )}
             {plan === 'FREE' || plan === 'ENTERPRISE' ? (
               <Button

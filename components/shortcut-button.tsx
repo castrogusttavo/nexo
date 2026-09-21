@@ -1,5 +1,4 @@
-import Link from 'next/link'
-import { buttonVariants } from '@/components/ui/button'
+import { ButtonLink } from '@/components/button-link'
 
 interface ShortCutButtonProps {
   children?: React.ReactNode
@@ -12,12 +11,8 @@ interface ShortCutButtonProps {
 // them made two tab stops and left the icon-only link without a name.
 export function ShortCutButton({ children, href, label }: ShortCutButtonProps) {
   return (
-    <Link
-      href={href}
-      aria-label={label}
-      className={buttonVariants({ variant: 'ghost', size: 'icon-sm' })}
-    >
+    <ButtonLink href={href} aria-label={label} variant='ghost' size='icon-sm'>
       {children}
-    </Link>
+    </ButtonLink>
   )
 }

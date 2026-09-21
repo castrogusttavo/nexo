@@ -9,7 +9,7 @@ import { useQueryStates } from 'nuqs'
 import { useMemo } from 'react'
 import { NexoIcon } from '@/components/icon/icon'
 import { Muted } from '@/components/typography/text/muted'
-import { Button } from '@/components/ui/button'
+import { buttonVariants } from '@/components/ui/button'
 import { IconStack } from '@/components/ui/icon-stack'
 import {
   CAREER_EMPLOYMENT_TYPE_LABELS,
@@ -118,10 +118,13 @@ export function CareersList({ jobs }: CareersListProps) {
                   <span className='text-sm text-muted-foreground text-start space-y-2'>
                     {CAREER_EMPLOYMENT_TYPE_LABELS[job.employmentType]}
                   </span>
-                  <Button
-                    variant='ghost'
-                    size='sm'
-                    className='group-hover/job:underline'
+                  {/* The whole row is the link; this only looks like a button. */}
+                  <span
+                    className={buttonVariants({
+                      variant: 'ghost',
+                      size: 'sm',
+                      className: 'group-hover/job:underline',
+                    })}
                   >
                     Candidatar-se{' '}
                     <NexoIcon
@@ -129,7 +132,7 @@ export function CareersList({ jobs }: CareersListProps) {
                       strokeWidth={2}
                       className='transition-transform duration-300 group-hover/job:-translate-y-0.5'
                     />
-                  </Button>
+                  </span>
                 </div>
               </Link>
             ))}

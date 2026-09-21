@@ -3,7 +3,7 @@
 import Link from 'next/link'
 import type { ReactNode } from 'react'
 import { Muted } from '@/components/typography/text/muted'
-import { Button } from '@/components/ui/button'
+import { buttonVariants } from '@/components/ui/button'
 
 export function GlobalButtonNavigation({
   linkNavigation,
@@ -22,13 +22,18 @@ export function GlobalButtonNavigation({
       aria-current={active ? 'page' : undefined}
       className='flex flex-col items-center justify-center text-muted-foreground'
     >
-      <Button
-        variant={active ? 'secondary' : 'ghost'}
-        size='icon'
-        className='relative'
+      {/* Styled like an icon button but inert: the link is the one control,
+          and "description" below is its accessible name. */}
+      <span
+        aria-hidden='true'
+        className={buttonVariants({
+          variant: active ? 'secondary' : 'ghost',
+          size: 'icon',
+          className: 'relative',
+        })}
       >
         {children}
-      </Button>
+      </span>
       <Muted className='font-medium'>{description}</Muted>
     </Link>
   )

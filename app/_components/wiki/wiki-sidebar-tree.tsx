@@ -5,9 +5,9 @@ import {
   File02Icon,
   MoreHorizontalIcon,
 } from '@hugeicons-pro/core-stroke-rounded'
-import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { useMemo } from 'react'
+import { ButtonLink } from '@/components/button-link'
 import { NexoIcon } from '@/components/icon/icon'
 import { Muted } from '@/components/typography/text/muted'
 import { Button } from '@/components/ui/button'
@@ -89,17 +89,17 @@ function WikiSidebarTreeItem({
   return (
     <div>
       <div className='group flex items-center'>
-        <Link href={href} className='flex-1 min-w-0'>
-          <Button
-            variant={isActive ? 'secondary' : 'ghost'}
-            size='sm'
-            className='w-full justify-start gap-2'
-            style={{ paddingLeft: `${depth * 12 + 10}px` }}
-          >
-            <NexoIcon icon={File02Icon} strokeWidth={2} />
-            <span className='truncate'>{node.title || 'Sem título'}</span>
-          </Button>
-        </Link>
+        <ButtonLink
+          href={href}
+          variant={isActive ? 'secondary' : 'ghost'}
+          size='sm'
+          aria-current={isActive ? 'page' : undefined}
+          className='flex-1 min-w-0 justify-start gap-2'
+          style={{ paddingLeft: `${depth * 12 + 10}px` }}
+        >
+          <NexoIcon icon={File02Icon} strokeWidth={2} />
+          <span className='truncate'>{node.title || 'Sem título'}</span>
+        </ButtonLink>
         <DropdownMenu>
           <DropdownMenuTrigger
             render={

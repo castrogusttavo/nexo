@@ -3,7 +3,7 @@ import Image from 'next/image'
 import Link from 'next/link'
 import { NexoIcon } from '@/components/icon/icon'
 import { Muted } from '@/components/typography/text/muted'
-import { Button } from '@/components/ui/button'
+import { buttonVariants } from '@/components/ui/button'
 import { BLOG_POST_TAG_LABELS } from '@/src/lib/blog/blog-labels'
 import { formatPostDate } from '@/src/lib/blog/format-ṕost-date'
 import type { BlogPostMetaDTO } from '@/types/blog-post'
@@ -30,9 +30,10 @@ export function BlogFeatured({ featured, highlighted }: BlogFeaturedProps) {
             <Muted className='font-normal text-base'>{featured.excerpt}</Muted>
             <Muted className='font-light'>Gusttavo Castro</Muted>
           </div>
-          <Button variant='outline' size='sm'>
+          {/* The whole card is the link; this only looks like a button. */}
+          <span className={buttonVariants({ variant: 'outline', size: 'sm' })}>
             Leia mais <NexoIcon icon={ArrowRight02Icon} />
-          </Button>
+          </span>
         </div>
 
         <Image

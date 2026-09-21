@@ -8,6 +8,7 @@ import {
 } from '@hugeicons-pro/core-solid-rounded'
 import Image from 'next/image'
 import Link from 'next/link'
+import { ButtonLink } from '@/components/button-link'
 import { NexoIcon } from '@/components/icon/icon'
 import { Muted } from '@/components/typography/text/muted'
 import { Button } from '@/components/ui/button'
@@ -28,14 +29,17 @@ export function WebFooter({ showBanner = true }: WebFooterProps = {}) {
               A nova geração da gestão de projetos <br /> começa aqui
             </h2>
             <div className='flex flex-wrap w-full items-center gap-4 justify-center'>
-              <Link href='/talk-to-sales'>
-                <Button variant='secondary' size='lg' className='border-border'>
-                  Fale com um especialista em migração
-                </Button>
-              </Link>
-              <Link href='/sign-up'>
-                <Button size='lg'>Comece grátis</Button>
-              </Link>
+              <ButtonLink
+                href='/talk-to-sales'
+                variant='secondary'
+                size='lg'
+                className='border-border'
+              >
+                Fale com um especialista em migração
+              </ButtonLink>
+              <ButtonLink href='/sign-up' size='lg'>
+                Comece grátis
+              </ButtonLink>
             </div>
           </div>
         </div>
@@ -658,42 +662,42 @@ export function WebFooter({ showBanner = true }: WebFooterProps = {}) {
             </Button>
           </div>
           <div className='flex items-center gap-4'>
-            <Link href='https://linkedin.com'>
-              <Button
-                variant='outline'
-                size='icon-lg'
-                className="[&_svg:not([class*='size-'])]:size-5"
-              >
-                <NexoIcon icon={LinkedinIcon} />
-              </Button>
-            </Link>
-            <Link href='#'>
-              <Button
-                variant='outline'
-                size='icon-lg'
-                className="[&_svg:not([class*='size-'])]:size-5"
-              >
-                <NexoIcon icon={Github01Icon} />
-              </Button>
-            </Link>
-            <Link href='#'>
-              <Button
-                variant='outline'
-                size='icon-lg'
-                className="[&_svg:not([class*='size-'])]:size-5"
-              >
-                <NexoIcon icon={NewTwitterIcon} />
-              </Button>
-            </Link>
-            <Link href='#'>
-              <Button
-                variant='outline'
-                size='icon-lg'
-                className="[&_svg:not([class*='size-'])]:size-5"
-              >
-                <NexoIcon icon={YoutubeIcon} />
-              </Button>
-            </Link>
+            <ButtonLink
+              href='https://linkedin.com'
+              variant='outline'
+              size='icon-lg'
+              className="[&_svg:not([class*='size-'])]:size-5"
+              aria-label='Nexo no LinkedIn'
+            >
+              <NexoIcon icon={LinkedinIcon} />
+            </ButtonLink>
+            <ButtonLink
+              href='#'
+              variant='outline'
+              size='icon-lg'
+              className="[&_svg:not([class*='size-'])]:size-5"
+              aria-label='Nexo no GitHub'
+            >
+              <NexoIcon icon={Github01Icon} />
+            </ButtonLink>
+            <ButtonLink
+              href='#'
+              variant='outline'
+              size='icon-lg'
+              className="[&_svg:not([class*='size-'])]:size-5"
+              aria-label='Nexo no X'
+            >
+              <NexoIcon icon={NewTwitterIcon} />
+            </ButtonLink>
+            <ButtonLink
+              href='#'
+              variant='outline'
+              size='icon-lg'
+              className="[&_svg:not([class*='size-'])]:size-5"
+              aria-label='Nexo no YouTube'
+            >
+              <NexoIcon icon={YoutubeIcon} />
+            </ButtonLink>
           </div>
         </div>
       </footer>

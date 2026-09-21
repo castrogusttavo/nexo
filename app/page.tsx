@@ -2,12 +2,11 @@ import { ArrowRight02Icon, CheckIcon } from '@hugeicons-pro/core-stroke-rounded'
 import type { Metadata } from 'next'
 import { headers } from 'next/headers'
 import Image from 'next/image'
-import Link from 'next/link'
 import { redirect } from 'next/navigation'
 import { WebHeader } from '@/app/(web)/_components/header/web-header'
+import { ButtonLink } from '@/components/button-link'
 import { NexoIcon } from '@/components/icon/icon'
 import { Muted } from '@/components/typography/text/muted'
-import { Button } from '@/components/ui/button'
 import { auth } from '@/src/lib/auth'
 import { MembershipService } from '@/src/services/membership.service'
 import { WebFooter } from './(web)/_components/footer'
@@ -68,15 +67,13 @@ export default async function Page() {
               </p>
             </div>
             <div className='flex gap-4 items-center flex-wrap justify-start md:justify-center'>
-              <Link href='/sign-up'>
-                <Button size='lg'>Comece grátis por 14 dias</Button>
-              </Link>
-              <Link href='/talk-to-sales'>
-                <Button variant='outline' size='lg'>
-                  Falar com um especialista{' '}
-                  <NexoIcon icon={ArrowRight02Icon} strokeWidth={2} />
-                </Button>
-              </Link>
+              <ButtonLink href='/sign-up' size='lg'>
+                Comece grátis por 14 dias
+              </ButtonLink>
+              <ButtonLink href='/talk-to-sales' variant='outline' size='lg'>
+                Falar com um especialista{' '}
+                <NexoIcon icon={ArrowRight02Icon} strokeWidth={2} />
+              </ButtonLink>
             </div>
           </div>
           <Image
@@ -236,15 +233,13 @@ export default async function Page() {
                 </div>
               </div>
               <div className='flex gap-4 items-center flex-wrap justify-start'>
-                <Link href='/sign-up'>
-                  <Button size='lg'>Comece grátis</Button>
-                </Link>
-                <Link href='/talk-to-sales'>
-                  <Button variant='outline' size='lg'>
-                    Falar com um humano{' '}
-                    <NexoIcon icon={ArrowRight02Icon} strokeWidth={2} />
-                  </Button>
-                </Link>
+                <ButtonLink href='/sign-up' size='lg'>
+                  Comece grátis
+                </ButtonLink>
+                <ButtonLink href='/talk-to-sales' variant='outline' size='lg'>
+                  Falar com um humano{' '}
+                  <NexoIcon icon={ArrowRight02Icon} strokeWidth={2} />
+                </ButtonLink>
               </div>
             </div>
             <NexoAiShowcase />
@@ -265,15 +260,13 @@ export default async function Page() {
               </p>
             </div>
             <div className='flex gap-4 items-center flex-wrap justify-start'>
-              <Link href='/sign-up'>
-                <Button size='lg'>Comece grátis</Button>
-              </Link>
-              <Link href='/talk-to-sales'>
-                <Button variant='outline' size='lg'>
-                  Falar com um humano{' '}
-                  <NexoIcon icon={ArrowRight02Icon} strokeWidth={2} />
-                </Button>
-              </Link>
+              <ButtonLink href='/sign-up' size='lg'>
+                Comece grátis
+              </ButtonLink>
+              <ButtonLink href='/talk-to-sales' variant='outline' size='lg'>
+                Falar com um humano{' '}
+                <NexoIcon icon={ArrowRight02Icon} strokeWidth={2} />
+              </ButtonLink>
             </div>
           </div>
           <div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3'>
@@ -370,15 +363,13 @@ export default async function Page() {
               </p>
             </div>
             <div className='flex gap-4 items-center flex-wrap justify-start'>
-              <Link href='/sign-up'>
-                <Button size='lg'>Comece grátis</Button>
-              </Link>
-              <Link href='/talk-to-sales'>
-                <Button variant='outline' size='lg'>
-                  Falar com um humano{' '}
-                  <NexoIcon icon={ArrowRight02Icon} strokeWidth={2} />
-                </Button>
-              </Link>
+              <ButtonLink href='/sign-up' size='lg'>
+                Comece grátis
+              </ButtonLink>
+              <ButtonLink href='/talk-to-sales' variant='outline' size='lg'>
+                Falar com um humano{' '}
+                <NexoIcon icon={ArrowRight02Icon} strokeWidth={2} />
+              </ButtonLink>
             </div>
           </div>
           <div className='space-y-6'>
@@ -497,9 +488,9 @@ export default async function Page() {
                 </div>
                 <div className='flex flex-col gap-2 items-start'>
                   <div className='flex gap-4 items-center flex-wrap justify-start'>
-                    <Link href='/sign-up'>
-                      <Button size='lg'>Comece grátis</Button>
-                    </Link>
+                    <ButtonLink href='/sign-up' size='lg'>
+                      Comece grátis
+                    </ButtonLink>
                   </div>
                   <Muted>Apps nativos para Android e iOS em breve.</Muted>
                 </div>
@@ -546,12 +537,15 @@ export default async function Page() {
                   privacy-by-design alinhado à LGPD e ao GDPR desde o primeiro
                   commit.
                 </p>
-                <Link href='/legals/security'>
-                  <Button variant='link' size='lg' className='p-0 m-0'>
-                    Saiba mais sobre segurança{' '}
-                    <NexoIcon icon={ArrowRight02Icon} strokeWidth={2} />
-                  </Button>
-                </Link>
+                <ButtonLink
+                  href='/legals/security'
+                  variant='link'
+                  size='lg'
+                  className='p-0 m-0'
+                >
+                  Saiba mais sobre segurança{' '}
+                  <NexoIcon icon={ArrowRight02Icon} strokeWidth={2} />
+                </ButtonLink>
               </div>
             </div>
             <div className='space-y-5'>
@@ -574,12 +568,15 @@ export default async function Page() {
                   múltiplas camadas. Construído pra continuar no ar quando mais
                   importa.
                 </p>
-                <Link href='/status'>
-                  <Button variant='link' size='lg' className='p-0 m-0'>
-                    Acesse nossa página de status{' '}
-                    <NexoIcon icon={ArrowRight02Icon} strokeWidth={2} />
-                  </Button>
-                </Link>
+                <ButtonLink
+                  href='/status'
+                  variant='link'
+                  size='lg'
+                  className='p-0 m-0'
+                >
+                  Acesse nossa página de status{' '}
+                  <NexoIcon icon={ArrowRight02Icon} strokeWidth={2} />
+                </ButtonLink>
               </div>
             </div>
             <div className='space-y-5'>
@@ -600,12 +597,15 @@ export default async function Page() {
                 <p className='text-sm text-muted-foreground'>
                   SSO, SAML e LDAP em todo workspace. Autentique do seu jeito.
                 </p>
-                <Link href='/talk-to-sales'>
-                  <Button variant='link' size='lg' className='p-0 m-0'>
-                    Falar com vendas{' '}
-                    <NexoIcon icon={ArrowRight02Icon} strokeWidth={2} />
-                  </Button>
-                </Link>
+                <ButtonLink
+                  href='/talk-to-sales'
+                  variant='link'
+                  size='lg'
+                  className='p-0 m-0'
+                >
+                  Falar com vendas{' '}
+                  <NexoIcon icon={ArrowRight02Icon} strokeWidth={2} />
+                </ButtonLink>
               </div>
             </div>
           </div>
@@ -622,14 +622,12 @@ export default async function Page() {
               </h2>
             </div>
             <div className='flex gap-4 items-center flex-wrap justify-center'>
-              <Link href='/sign-up'>
-                <Button size='lg'>Comece grátis</Button>
-              </Link>
-              <Link href='/talk-to-sales'>
-                <Button variant='outline' size='lg'>
-                  Falar com um humano
-                </Button>
-              </Link>
+              <ButtonLink href='/sign-up' size='lg'>
+                Comece grátis
+              </ButtonLink>
+              <ButtonLink href='/talk-to-sales' variant='outline' size='lg'>
+                Falar com um humano
+              </ButtonLink>
             </div>
             <div className='grid grid-cols-1 gap-6 md:grid-cols-2'>
               <div className='space-y-1.5 md:col-span-2 bg-card rounded-xl overflow-hidden grid grid-cols-1 md:grid-cols-2 items-center'>
@@ -656,11 +654,14 @@ export default async function Page() {
                       infraestrutura que ela é.
                     </p>
                   </div>
-                  <Link href='/nexo-compose'>
-                    <Button variant='link' size='lg' className='p-0 m-0'>
-                      Leia mais
-                    </Button>
-                  </Link>
+                  <ButtonLink
+                    href='/nexo-compose'
+                    variant='link'
+                    size='lg'
+                    className='p-0 m-0'
+                  >
+                    Leia mais
+                  </ButtonLink>
                 </div>
               </div>
               <div className='relative space-y-1.5 rounded-lg p-6 hover:scale-101 transition-all duration-300 bg-card text-start'>
