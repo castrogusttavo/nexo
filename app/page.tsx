@@ -77,10 +77,10 @@ export default async function Page() {
             </div>
           </div>
           <Image
-            src='/web/home/bg-home.png'
+            src='/web/home/hero_home_image.svg'
             alt='Visão geral do workspace do Nexo'
-            width={5024}
-            height={2752}
+            width={1920}
+            height={1052}
             sizes='100vw'
             priority
             className='w-full h-auto object-cover object-center rounded-4xl'
