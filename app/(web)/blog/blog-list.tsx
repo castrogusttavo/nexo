@@ -11,11 +11,11 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import {
   Pagination,
+  PaginationButton,
   PaginationContent,
   PaginationItem,
-  PaginationLink,
-  PaginationNext,
-  PaginationPrevious,
+  PaginationNextButton,
+  PaginationPreviousButton,
 } from '@/components/ui/pagination'
 import { BLOG_POST_TAG_LABELS } from '@/src/lib/blog/blog-labels'
 import { blogSearchParser, blogTagParser } from '@/src/lib/blog/blog-params'
@@ -153,23 +153,31 @@ export function BlogList({ posts }: BlogListProps) {
         ))}
       </div>
       {totalPages > 1 && (
+        // The page is component state, not a url: these controls act, they
+        // do not navigate, so they are buttons rather than links.
         <Pagination>
           <PaginationContent>
             <PaginationItem>
-              <PaginationPrevious onClick={() => goToPage(currentPage - 1)} />
+              <PaginationPreviousButton
+                disabled={currentPage === 1}
+                onClick={() => goToPage(currentPage - 1)}
+              />
             </PaginationItem>
             {pageWindow.map((p) => (
               <PaginationItem key={p}>
-                <PaginationLink
+                <PaginationButton
                   isActive={p === currentPage}
                   onClick={() => goToPage(p)}
                 >
                   {p}
-                </PaginationLink>
+                </PaginationButton>
               </PaginationItem>
             ))}
             <PaginationItem>
-              <PaginationNext onClick={() => goToPage(currentPage + 1)} />
+              <PaginationNextButton
+                disabled={currentPage === totalPages}
+                onClick={() => goToPage(currentPage + 1)}
+              />
             </PaginationItem>
           </PaginationContent>
         </Pagination>

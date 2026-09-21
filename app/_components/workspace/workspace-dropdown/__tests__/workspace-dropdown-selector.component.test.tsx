@@ -180,4 +180,21 @@ describe('<WorkSpaceDropdown /> switching', () => {
 
     expect(push).not.toHaveBeenCalled()
   })
+
+  it("opens another workspace's settings without switching to it", async () => {
+    const { user } = await renderDropdown()
+    await screen.findByText('Acme')
+
+    const menu = await openMenu(user)
+    const settings = menu.getByRole('menuitem', {
+      name: 'Configurações de Globex',
+    })
+    expect(settings).toHaveAttribute('href', '/globex/settings')
+
+    // The link is a sibling of the radio item now, not inside it: following
+    // it must not also fire the radio group's switch.
+    await user.click(settings)
+
+    expect(push).not.toHaveBeenCalled()
+  })
 })
