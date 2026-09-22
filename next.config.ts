@@ -79,10 +79,31 @@ const posthogProxy = posthogKey
     }
   : {};
 
+// --- Sentry ------------------------------------------------------------------
+// Source maps are uploaded only when the build is handed credentials, which is
+// the CD image build and nothing else: CI, `pnpm build` on a laptop and any
+// fork build run with none of these set, and must not fail for it.
+const sentryOrg = process.env.SENTRY_ORG;
+const sentryProject = process.env.SENTRY_PROJECT;
+const sentryAuthToken = process.env.SENTRY_AUTH_TOKEN;
+const canUploadSourcemaps = Boolean(
+  sentryOrg && sentryProject && sentryAuthToken,
+);
+
 const nextConfig: NextConfig = {
   ...posthogProxy,
   poweredByHeader: false,
   output: 'standalone',
+  // Turbopack emits no browser source map unless asked, and the Sentry plugin
+  // does not ask for us: without this it created the release and had nothing
+  // to upload, so every client stack trace in Sentry was minified (no
+  // `_sentryDebugIds` in any chunk, `debug_meta.images: 0` on the event).
+  // Tied to the upload credentials on purpose — the maps must not be emitted
+  // where nothing will delete them afterwards. In the CD build,
+  // `sourcemaps.deleteSourcemapsAfterUpload` removes the files and strips the
+  // `sourceMappingURL` comments once Sentry has them, so the traces stay
+  // readable in Sentry and unreadable in the browser.
+  productionBrowserSourceMaps: canUploadSourcemaps,
   serverExternalPackages: ['@prisma/client'],
   images: {
     remotePatterns: [
@@ -161,20 +182,6 @@ const nextConfig: NextConfig = {
     },
   ],
 };
-
-// --- Sentry ------------------------------------------------------------------
-// Source maps are uploaded only when the build is handed credentials, which
-// is the CD image build and nothing else: CI, `pnpm build` on a laptop and any
-// fork build run with none of these set, and must not fail for it. The upload
-// is also the only thing that would ever emit a .map next to the client
-// bundle, and `deleteSourcemapsAfterUpload` takes them away again — stack
-// traces stay readable in Sentry and unreadable in the browser.
-const sentryOrg = process.env.SENTRY_ORG;
-const sentryProject = process.env.SENTRY_PROJECT;
-const sentryAuthToken = process.env.SENTRY_AUTH_TOKEN;
-const canUploadSourcemaps = Boolean(
-  sentryOrg && sentryProject && sentryAuthToken,
-);
 
 export default withSentryConfig(nextConfig, {
   org: sentryOrg,
