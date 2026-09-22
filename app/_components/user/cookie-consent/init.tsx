@@ -17,7 +17,11 @@ export async function CookieConsentInit({ children }: { children: ReactNode }) {
   const initial = parseCookieConsent(cookieStore.get(COOKIE_NAME)?.value)
 
   return (
-    <CookieConsentProvider initial={initial} isAuthenticated={!!session}>
+    <CookieConsentProvider
+      initial={initial}
+      isAuthenticated={!!session}
+      userId={session?.user.id ?? null}
+    >
       {children}
     </CookieConsentProvider>
   )

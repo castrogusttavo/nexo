@@ -36,6 +36,35 @@ ENV NEXT_PUBLIC_AXIOM_DATASET=$NEXT_PUBLIC_AXIOM_DATASET
 ARG NEXT_PUBLIC_REALTIME_URL
 ENV NEXT_PUBLIC_REALTIME_URL=$NEXT_PUBLIC_REALTIME_URL
 
+# Public by design: both values are inlined into the client bundle and only
+# allow writing (a PostHog project key, a Sentry DSN). Unset is a valid build:
+# neither SDK is loaded and neither service is contacted.
+ARG NEXT_PUBLIC_POSTHOG_KEY
+ENV NEXT_PUBLIC_POSTHOG_KEY=$NEXT_PUBLIC_POSTHOG_KEY
+
+ARG NEXT_PUBLIC_POSTHOG_HOST
+ENV NEXT_PUBLIC_POSTHOG_HOST=$NEXT_PUBLIC_POSTHOG_HOST
+
+ARG NEXT_PUBLIC_SENTRY_DSN
+ENV NEXT_PUBLIC_SENTRY_DSN=$NEXT_PUBLIC_SENTRY_DSN
+
+# The commit being shipped, so a Sentry issue points at the code that caused
+# it and matches the source maps uploaded from this same build.
+ARG NEXT_PUBLIC_SENTRY_RELEASE
+ENV NEXT_PUBLIC_SENTRY_RELEASE=$NEXT_PUBLIC_SENTRY_RELEASE
+
+ARG NEXT_PUBLIC_SENTRY_ENVIRONMENT
+ENV NEXT_PUBLIC_SENTRY_ENVIRONMENT=$NEXT_PUBLIC_SENTRY_ENVIRONMENT
+
+# Source map upload only. Not secret on their own, unlike the auth token
+# below, which is mounted as a BuildKit secret so it stays out of the image
+# history.
+ARG SENTRY_ORG
+ENV SENTRY_ORG=$SENTRY_ORG
+
+ARG SENTRY_PROJECT
+ENV SENTRY_PROJECT=$SENTRY_PROJECT
+
 ENV DATABASE_URL="postgresql://dummy:dummy@localhost:5432/dummy"
 # `next build` imports every route module to collect its metadata, which
 # evaluates app/jobs/[[...workbench]]/route.ts's top-level `workbench({...})`
@@ -45,9 +74,17 @@ ENV DATABASE_URL="postgresql://dummy:dummy@localhost:5432/dummy"
 ENV REDIS_URL="redis://localhost:6379"
 ENV SKIP_ENV_VALIDATION="true"
 
+# The Sentry auth token is read from the mount and never becomes an ENV layer.
+# Without it (or without SENTRY_ORG/SENTRY_PROJECT) the build still succeeds:
+# next.config.ts turns source map generation off entirely, so no .map is left
+# next to the client bundle either.
 RUN --mount=type=cache,target=/app/.next/cache \
+    --mount=type=secret,id=sentry_auth_token \
     corepack enable pnpm && \
     pnpm prisma:generate && \
+    if [ -s /run/secrets/sentry_auth_token ]; then \
+      export SENTRY_AUTH_TOKEN="$(cat /run/secrets/sentry_auth_token)"; \
+    fi && \
     pnpm build && \
     pnpm worker:build && \
     pnpm realtime:build

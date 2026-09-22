@@ -19,6 +19,7 @@ const BACKEND_COVERAGE = [
   'src/lib/result.ts',
   'utils/**',
   'lib/abacatepay.ts',
+  'lib/sentry/scrub.ts',
   'app/api/**/route.ts',
 ]
 
@@ -50,7 +51,13 @@ function clientSourceFiles(): string[] {
   return files
 }
 
-const FRONTEND_COVERAGE = ['src/hooks/**', ...clientSourceFiles()]
+// lib/posthog/client.ts ships to the browser but lives outside the roots
+// clientSourceFiles() walks, so it is listed by hand.
+const FRONTEND_COVERAGE = [
+  'src/hooks/**',
+  'lib/posthog/client.ts',
+  ...clientSourceFiles(),
+]
 
 const isFrontendCoverage = process.env.COVERAGE_SCOPE === 'frontend'
 

@@ -4,7 +4,13 @@ import {
   type NextFetchEvent,
 } from 'next/server'
 import { logger } from '@/lib/axiom/server'
-import { NEXT_PUBLIC_REALTIME_URL, NODE_ENV } from '@/lib/env/env'
+import {
+  NEXT_PUBLIC_POSTHOG_KEY,
+  NEXT_PUBLIC_REALTIME_URL,
+  NEXT_PUBLIC_SENTRY_DSN,
+  NODE_ENV,
+} from '@/lib/env/env'
+import { POSTHOG_PROXY_PATH } from '@/lib/posthog/constants'
 import { transformMiddlewareRequest } from '@axiomhq/nextjs'
 
 const PUBLIC_ROUTES = [
@@ -17,8 +23,28 @@ const PUBLIC_ROUTES = [
   '/robots.txt', '/sitemap.xml', '/opengraph-image',
   '/twitter-image', '/icon', '/apple-icon', '/manifest.webmanifest',
   '/llms.txt', '/work-trials', '/security', '/about', '/manifesto', '/switch',
-  '/contact', '/customers'
+  '/contact', '/customers',
+  // PostHog's reverse proxy (next.config.ts rewrites it straight to PostHog).
+  // Analytics is collected on the marketing site too, where nobody has a
+  // session, so the auth gate would answer every beacon with a redirect.
+  ...(NEXT_PUBLIC_POSTHOG_KEY ? [POSTHOG_PROXY_PATH] : []),
 ]
+
+// Sentry's ingest host is derived from the DSN instead of being hard-coded:
+// the subdomain carries the org id and the region (`o123.ingest.de.sentry.io`),
+// and a deployment with no DSN gets no extra host in its CSP at all. The
+// SDK's `tunnelRoute` would avoid the entry entirely, but it turns the app
+// into an unauthenticated POST endpoint that forwards to a third party and
+// routes every error payload through the single VPS — one CSP origin is the
+// smaller surface.
+function sentryConnectSrc(): string {
+  if (!NEXT_PUBLIC_SENTRY_DSN) return ''
+  try {
+    return ` ${new URL(NEXT_PUBLIC_SENTRY_DSN).origin}`
+  } catch {
+    return ''
+  }
+}
 
 // style-src keeps 'unsafe-inline' as a deliberate trade-off, not an
 // oversight: our UI primitives (Radix/Base UI popovers, tooltips, dropdowns)
@@ -38,6 +64,14 @@ const PUBLIC_ROUTES = [
 // buying us -- uploads are served from the storage subdomain, not from this
 // origin. Revisit if cacheComponents is ever turned off: full dynamic
 // rendering makes the nonce path work end to end.
+// connect-src lists exactly the services the browser is allowed to reach:
+// Axiom (logs and web vitals), jsdelivr (the Scalar API reference at /docs),
+// the realtime server, and Sentry when a DSN is configured. PostHog is
+// deliberately absent -- it is reached through the same-origin /ingest
+// rewrite, so 'self' already covers it. `va.vercel-scripts.com` was removed
+// with @vercel/analytics: its beacons posted to /_vercel/insights/* on our
+// own origin, a path that only exists on Vercel and answered 307 to /sign-in
+// here, so the entry protected nothing that was ever collected.
 function buildCspHeader(): string {
   return `
     default-src 'self';
@@ -46,7 +80,7 @@ function buildCspHeader(): string {
     img-src 'self' blob: data: https:${NODE_ENV === 'development' ? ' http://localhost:9000' : ''};
     media-src 'self' blob: https:${NODE_ENV === 'development' ? ' http://localhost:9000' : ''};
     font-src 'self';
-    connect-src 'self' blob: data: https://*.axiom.co https://va.vercel-scripts.com https://cdn.jsdelivr.net ${NEXT_PUBLIC_REALTIME_URL}${NODE_ENV === 'development' ? ' ws://localhost:4444' : ''};
+    connect-src 'self' blob: data: https://*.axiom.co https://cdn.jsdelivr.net ${NEXT_PUBLIC_REALTIME_URL}${sentryConnectSrc()}${NODE_ENV === 'development' ? ' ws://localhost:4444' : ''};
     frame-src https://www.figma.com https://www.loom.com https://www.youtube.com https://docs.google.com;
     frame-ancestors 'none';
     form-action 'self';

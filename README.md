@@ -86,7 +86,7 @@ Project management primitives are next on deck:
 - **Backend** — Next.js 16 (App Router), PostgreSQL, Prisma 7, Redis, BullMQ, MinIO, Better Auth, Resend.
 - **Frontend** — React 19, Tailwind CSS 4, Base UI, TanStack Query, React Email, Hugeicons.
 - **Quality** — Vitest, Biome, Commitlint, Husky.
-- **Observability** — Axiom, Vercel Analytics and Speed Insights.
+- **Observability** — Axiom (logs, audit trail, web vitals), Sentry (error tracking), PostHog (product analytics, consent-gated).
 
 ## Screenshots
 

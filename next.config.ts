@@ -1,8 +1,14 @@
 import { createRequire } from "node:module";
 import path from "node:path";
+import { withSentryConfig } from "@sentry/nextjs/config";
 import type { NextConfig } from "next";
 import { EXCALIDRAW_ASSET_PATH } from "./lib/excalidraw/asset-path";
 import { syncExcalidrawFonts } from "./lib/excalidraw/sync-fonts";
+import {
+  POSTHOG_DEFAULT_HOST,
+  POSTHOG_PROXY_PATH,
+  posthogAssetHost,
+} from "./lib/posthog/constants";
 
 // Self-host excalidraw's fonts (the wiki's drawing block) instead of letting
 // it fetch them from esm.sh, which `font-src 'self'` blocks. Runs whenever
@@ -39,7 +45,42 @@ const staticAssetHeaders = [
   { key: 'Content-Security-Policy', value: staticAssetCsp },
 ]
 
+// --- PostHog reverse proxy ---------------------------------------------------
+// The browser only ever talks to `/ingest/*` on our own origin, which Next
+// rewrites to PostHog. Two things are bought with it: `connect-src` stays at
+// `'self'` (no third-party host in the CSP at all), and the requests survive
+// the blocklists that recognise `*.i.posthog.com` by name. The cost is that
+// analytics traffic transits our server — acceptable for the volume this
+// config allows (page views and named events, no autocapture, no recording).
+//
+// It exists only when a key is configured, so a deployment without PostHog has
+// no `/ingest` route, no external rewrite and no trailing-slash change.
+const posthogKey = process.env.NEXT_PUBLIC_POSTHOG_KEY;
+const posthogHost =
+  process.env.NEXT_PUBLIC_POSTHOG_HOST || POSTHOG_DEFAULT_HOST;
+
+const posthogProxy = posthogKey
+  ? {
+      // Every posthog-js endpoint ends in a slash (`/e/`, `/i/`, `/s/`,
+      // `/flags/`). Next's default trailing-slash normalisation would answer
+      // each of them with a 308 before the rewrite is ever consulted, turning
+      // every event into two round trips.
+      skipTrailingSlashRedirect: true,
+      rewrites: async () => [
+        {
+          source: `${POSTHOG_PROXY_PATH}/static/:path*`,
+          destination: `${posthogAssetHost(posthogHost)}/static/:path*`,
+        },
+        {
+          source: `${POSTHOG_PROXY_PATH}/:path*`,
+          destination: `${posthogHost}/:path*`,
+        },
+      ],
+    }
+  : {};
+
 const nextConfig: NextConfig = {
+  ...posthogProxy,
   poweredByHeader: false,
   output: 'standalone',
   serverExternalPackages: ['@prisma/client'],
@@ -121,4 +162,50 @@ const nextConfig: NextConfig = {
   ],
 };
 
-export default nextConfig;
+// --- Sentry ------------------------------------------------------------------
+// Source maps are uploaded only when the build is handed credentials, which
+// is the CD image build and nothing else: CI, `pnpm build` on a laptop and any
+// fork build run with none of these set, and must not fail for it. The upload
+// is also the only thing that would ever emit a .map next to the client
+// bundle, and `deleteSourcemapsAfterUpload` takes them away again — stack
+// traces stay readable in Sentry and unreadable in the browser.
+const sentryOrg = process.env.SENTRY_ORG;
+const sentryProject = process.env.SENTRY_PROJECT;
+const sentryAuthToken = process.env.SENTRY_AUTH_TOKEN;
+const canUploadSourcemaps = Boolean(
+  sentryOrg && sentryProject && sentryAuthToken,
+);
+
+export default withSentryConfig(nextConfig, {
+  org: sentryOrg,
+  project: sentryProject,
+  authToken: sentryAuthToken,
+  silent: !process.env.CI,
+  telemetry: false,
+  // `disableLogger` / `automaticVercelMonitors` are deliberately absent: both
+  // are webpack-only options and this project builds with Turbopack, so the
+  // SDK only warns about them. We do not deploy to Vercel either.
+  widenClientFileUpload: false,
+  release: {
+    // The git SHA the CD build already knows (Dockerfile build arg), so an
+    // issue points at the commit that shipped it.
+    name: process.env.NEXT_PUBLIC_SENTRY_RELEASE,
+    create: canUploadSourcemaps,
+    finalize: canUploadSourcemaps,
+  },
+  sourcemaps: {
+    disable: !canUploadSourcemaps,
+    deleteSourcemapsAfterUpload: true,
+  },
+  bundleSizeOptimizations: {
+    excludeDebugStatements: true,
+    excludeReplayShadowDom: true,
+    excludeReplayIframe: true,
+    excludeReplayWorker: true,
+  },
+  // A credential problem, a network blip or a rate limit on Sentry's side must
+  // never turn into a failed deploy. The build continues and says so.
+  errorHandler: (error) => {
+    console.warn(`[sentry] source map upload skipped: ${error.message}`);
+  },
+});

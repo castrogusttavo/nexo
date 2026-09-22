@@ -63,6 +63,16 @@ const SUB_PROCESSORS: SubProcessor[] = [
     location: 'Estados Unidos',
   },
   {
+    name: 'Sentry',
+    purpose: 'Monitoramento de erros da aplicação',
+    location: 'Estados Unidos',
+  },
+  {
+    name: 'PostHog',
+    purpose: 'Análise de uso do produto (mediante consentimento)',
+    location: 'Estados Unidos',
+  },
+  {
     name: 'Google',
     purpose: 'Autenticação (login social, opcional)',
     location: 'Estados Unidos',

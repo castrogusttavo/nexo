@@ -16,6 +16,12 @@ import {
 interface CookieConsentCtx {
   consent: CookieConsent
   isAuthenticated: boolean
+  /**
+   * The signed-in user's id, or `null`. Read by the consented trackers so
+   * PostHog can attach events to an account without any other profile field
+   * ever reaching it.
+   */
+  userId: string | null
   setConsent: (next: 'accepted' | 'rejected') => void
 }
 
@@ -24,12 +30,14 @@ const Ctx = createContext<CookieConsentCtx | null>(null)
 interface ProviderProps {
   initial: CookieConsent
   isAuthenticated: boolean
+  userId?: string | null
   children: ReactNode
 }
 
 export function CookieConsentProvider({
   initial,
   isAuthenticated,
+  userId = null,
   children,
 }: ProviderProps) {
   const [consent, setConsentState] = useState<CookieConsent>(initial)
@@ -54,7 +62,7 @@ export function CookieConsentProvider({
   )
 
   return (
-    <Ctx.Provider value={{ consent, isAuthenticated, setConsent }}>
+    <Ctx.Provider value={{ consent, isAuthenticated, userId, setConsent }}>
       {children}
     </Ctx.Provider>
   )

@@ -94,8 +94,15 @@ jobs:
             NEXT_PUBLIC_REALTIME_URL=wss://nexopm.com/realtime
             NEXT_PUBLIC_AXIOM_TOKEN=${{ secrets.NEXT_PUBLIC_AXIOM_TOKEN }}
             NEXT_PUBLIC_AXIOM_DATASET=${{ secrets.NEXT_PUBLIC_AXIOM_DATASET }}
+            NEXT_PUBLIC_POSTHOG_KEY=${{ secrets.NEXT_PUBLIC_POSTHOG_KEY }}
+            NEXT_PUBLIC_SENTRY_DSN=${{ secrets.NEXT_PUBLIC_SENTRY_DSN }}
+            NEXT_PUBLIC_SENTRY_ENVIRONMENT=production
+            NEXT_PUBLIC_SENTRY_RELEASE=${{ github.event.workflow_run.head_sha }}
+            SENTRY_ORG=${{ secrets.SENTRY_ORG }}
+            SENTRY_PROJECT=${{ secrets.SENTRY_PROJECT }}
           secrets: |
             hugeicons_token=${{ secrets.HUGEICONS_TOKEN }}
+            sentry_auth_token=${{ secrets.SENTRY_AUTH_TOKEN }}
 
       - name: Scan image with Trivy
         uses: aquasecurity/trivy-action@ed142fd0673e97e23eac54620cfb913e5ce36c25 # v0.36.0

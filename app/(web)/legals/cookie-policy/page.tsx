@@ -86,6 +86,14 @@ const SECTIONS: LegalSection[] = [
       {
         paragraphs: [
           'Usamos o Google Analytics (GA4) nos nossos sites de marketing pra entender como visitantes chegam e navegam pelo site, e medir a eficácia de páginas e campanhas. Esses cookies só são carregados mediante o seu consentimento.',
+          'Usamos o PostHog (hospedado nos Estados Unidos) pra entender como o produto é usado: quais telas são abertas e quais ações acontecem. O PostHog grava no seu navegador um identificador anônimo de dispositivo e de sessão, em cookie e no armazenamento local. Se você estiver logado, associamos esses eventos ao identificador interno da sua conta — nunca ao seu nome, e-mail ou conteúdo do que você escreve.',
+          'O PostHog fica desligado por padrão: o script só é baixado depois que você aceita os cookies de análise, e nada é enviado se você recusar ou ainda não tiver decidido. Deixamos desativados a gravação de sessão, a captura automática de cliques e de campos de formulário, os mapas de calor e as pesquisas — coletamos visualizações de página e eventos que o código envia explicitamente.',
+        ],
+      },
+      {
+        heading: 'Monitoramento de erros',
+        paragraphs: [
+          'Usamos o Sentry pra registrar falhas técnicas (erros não tratados) e conseguir corrigi-las. O Sentry não usa cookies nem rastreia navegação: ele só é acionado quando algo quebra, e o relatório leva a mensagem do erro, a página e o identificador interno da sua conta. Removemos cookies, cabeçalhos de autenticação, corpos de requisição e endereços de e-mail antes do envio. Por ser necessário à segurança e ao funcionamento do Serviço, esse monitoramento não depende do banner de consentimento.',
         ],
       },
     ],
@@ -107,7 +115,7 @@ const SECTIONS: LegalSection[] = [
     blocks: [
       {
         paragraphs: [
-          'Cookies definidos por provedores como o Google Analytics são regidos pela política de privacidade desses provedores, além desta. Não usamos cookies de publicidade de terceiros nem redirecionamos dados pra fins de publicidade comportamental entre sites.',
+          'Cookies definidos por provedores como o Google Analytics e o PostHog são regidos pela política de privacidade desses provedores, além desta. As requisições do PostHog passam pelo nosso próprio domínio (/ingest), então nenhum script de terceiros é carregado de fora pra coletá-las. Não usamos cookies de publicidade de terceiros nem redirecionamos dados pra fins de publicidade comportamental entre sites.',
         ],
       },
     ],
