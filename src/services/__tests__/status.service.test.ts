@@ -474,8 +474,13 @@ describe('StatusService.collect()', () => {
   beforeEach(() => {
     mockedRunProbes.mockReset()
     mockedStatusRepo.recordChecks.mockReset()
-    mockedStatusRepo.aggregateForDay.mockReset()
-    mockedStatusRepo.upsertDaily.mockReset()
+    mockedStatusRepo.aggregateForDayByKeys.mockReset()
+    mockedStatusRepo.upsertDailies.mockReset()
+    // The rollup write is now one call for the whole tier and always happens,
+    // even with nothing to write, so it needs a default here rather than in
+    // every case that only cares about incidents.
+    mockedStatusRepo.aggregateForDayByKeys.mockResolvedValue(ok(new Map()))
+    mockedStatusRepo.upsertDailies.mockResolvedValue(ok(undefined))
     mockedStatusRepo.pruneOldChecks.mockReset()
     mockedStatusRepo.findRecentChecks.mockReset()
     mockedStatusRepo.findRecentChecks.mockResolvedValue(ok([]))
@@ -495,16 +500,23 @@ describe('StatusService.collect()', () => {
       auth: { status: 'OPERATIONAL', latencyMs: 20, error: null },
     })
     mockedStatusRepo.recordChecks.mockResolvedValue(ok(undefined))
-    mockedStatusRepo.aggregateForDay.mockResolvedValue(
-      ok({
-        worstStatus: 'OPERATIONAL',
-        totalChecks: 1,
-        upChecks: 1,
-        uptimePct: 100,
-        avgLatencyMs: 10,
-      }),
+    mockedStatusRepo.aggregateForDayByKeys.mockResolvedValue(
+      ok(
+        new Map([
+          [
+            'database' as const,
+            {
+              worstStatus: 'OPERATIONAL' as const,
+              totalChecks: 1,
+              upChecks: 1,
+              uptimePct: 100,
+              avgLatencyMs: 10,
+            },
+          ],
+        ]),
+      ),
     )
-    mockedStatusRepo.upsertDaily.mockResolvedValue(ok(undefined))
+    mockedStatusRepo.upsertDailies.mockResolvedValue(ok(undefined))
     mockedIncidentRepo.findOpenByComponent.mockResolvedValue(ok(null))
     mockedStatusRepo.pruneOldChecks.mockResolvedValue(ok(0))
     mockedCache.invalidate.mockResolvedValue(undefined)
@@ -525,7 +537,7 @@ describe('StatusService.collect()', () => {
       auth: { status: 'OPERATIONAL', latencyMs: 20, error: null },
     })
     mockedStatusRepo.recordChecks.mockResolvedValue(ok(undefined))
-    mockedStatusRepo.aggregateForDay.mockResolvedValue(ok(null))
+    mockedStatusRepo.aggregateForDayByKeys.mockResolvedValue(ok(new Map()))
     mockedIncidentRepo.findOpenByComponent.mockResolvedValue(ok(null))
     mockedIncidentRepo.create.mockResolvedValue(
       ok({
@@ -559,7 +571,7 @@ describe('StatusService.collect()', () => {
       auth: { status: 'OPERATIONAL', latencyMs: 20, error: null },
     })
     mockedStatusRepo.recordChecks.mockResolvedValue(ok(undefined))
-    mockedStatusRepo.aggregateForDay.mockResolvedValue(ok(null))
+    mockedStatusRepo.aggregateForDayByKeys.mockResolvedValue(ok(new Map()))
     mockedIncidentRepo.findOpenByComponent.mockImplementation(async (key) =>
       key === 'database'
         ? ok({
@@ -594,7 +606,7 @@ describe('StatusService.collect()', () => {
       auth: { status: 'OPERATIONAL', latencyMs: 20, error: null },
     })
     mockedStatusRepo.recordChecks.mockResolvedValue(ok(undefined))
-    mockedStatusRepo.aggregateForDay.mockResolvedValue(ok(null))
+    mockedStatusRepo.aggregateForDayByKeys.mockResolvedValue(ok(new Map()))
     mockedIncidentRepo.findOpenByComponent.mockImplementation(async (key) =>
       key === 'database'
         ? ok({
@@ -634,7 +646,7 @@ describe('StatusService.collect()', () => {
       auth: { status: 'OPERATIONAL', latencyMs: 20, error: null },
     })
     mockedStatusRepo.recordChecks.mockResolvedValue(ok(undefined))
-    mockedStatusRepo.aggregateForDay.mockResolvedValue(ok(null))
+    mockedStatusRepo.aggregateForDayByKeys.mockResolvedValue(ok(new Map()))
     mockedIncidentRepo.findOpenByComponent.mockImplementation(async (key) =>
       key === 'database'
         ? ok({
@@ -667,7 +679,7 @@ describe('StatusService.collect()', () => {
       auth: { status: 'OPERATIONAL', latencyMs: 20, error: null },
     })
     mockedStatusRepo.recordChecks.mockResolvedValue(ok(undefined))
-    mockedStatusRepo.aggregateForDay.mockResolvedValue(ok(null))
+    mockedStatusRepo.aggregateForDayByKeys.mockResolvedValue(ok(new Map()))
     mockedIncidentRepo.findOpenByComponent.mockResolvedValue(ok(null))
     mockedStatusRepo.pruneOldChecks.mockResolvedValue(ok(0))
     mockedCache.invalidate.mockResolvedValue(undefined)
@@ -693,7 +705,7 @@ describe('StatusService.collect()', () => {
     const result = await StatusService.collect('core')
 
     expectErr(result, 'DATABASE_ERROR')
-    expect(mockedStatusRepo.aggregateForDay).not.toHaveBeenCalled()
+    expect(mockedStatusRepo.aggregateForDayByKeys).not.toHaveBeenCalled()
   })
 
   it('should log and continue when incident evaluation fails', async () => {
@@ -704,7 +716,7 @@ describe('StatusService.collect()', () => {
       auth: { status: 'OPERATIONAL', latencyMs: 20, error: null },
     })
     mockedStatusRepo.recordChecks.mockResolvedValue(ok(undefined))
-    mockedStatusRepo.aggregateForDay.mockResolvedValue(ok(null))
+    mockedStatusRepo.aggregateForDayByKeys.mockResolvedValue(ok(new Map()))
     mockedIncidentRepo.findOpenByComponent.mockResolvedValue(
       err(databaseError()),
     )
@@ -726,7 +738,7 @@ describe('StatusService.collect()', () => {
       auth: { status: 'OPERATIONAL', latencyMs: 20, error: null },
     })
     mockedStatusRepo.recordChecks.mockResolvedValue(ok(undefined))
-    mockedStatusRepo.aggregateForDay.mockResolvedValue(ok(null))
+    mockedStatusRepo.aggregateForDayByKeys.mockResolvedValue(ok(new Map()))
     mockedIncidentRepo.findOpenByComponent.mockResolvedValue(ok(null))
     mockedStatusRepo.pruneOldChecks.mockResolvedValue(err(databaseError()))
     mockedCache.invalidate.mockResolvedValue(undefined)
@@ -745,7 +757,7 @@ describe('StatusService.collect()', () => {
       auth: { status: 'OPERATIONAL', latencyMs: 20, error: null },
     })
     mockedStatusRepo.recordChecks.mockResolvedValue(ok(undefined))
-    mockedStatusRepo.aggregateForDay.mockResolvedValue(ok(null))
+    mockedStatusRepo.aggregateForDayByKeys.mockResolvedValue(ok(new Map()))
     mockedIncidentRepo.findOpenByComponent.mockResolvedValue(ok(null))
     mockedStatusRepo.pruneOldChecks.mockResolvedValue(ok(0))
     mockedCache.invalidate.mockRejectedValue(new Error('redis down'))
@@ -764,7 +776,7 @@ describe('StatusService.collect()', () => {
       auth: { status: 'OPERATIONAL', latencyMs: 20, error: null },
     })
     mockedStatusRepo.recordChecks.mockResolvedValue(ok(undefined))
-    mockedStatusRepo.aggregateForDay.mockResolvedValue(ok(null))
+    mockedStatusRepo.aggregateForDayByKeys.mockResolvedValue(ok(new Map()))
     mockedIncidentRepo.findOpenByComponent.mockResolvedValue(ok(null))
     mockedIncidentRepo.create.mockResolvedValue(err(databaseError()))
     mockedStatusRepo.pruneOldChecks.mockResolvedValue(ok(0))
@@ -785,7 +797,7 @@ describe('StatusService.collect()', () => {
       auth: { status: 'OPERATIONAL', latencyMs: 20, error: null },
     })
     mockedStatusRepo.recordChecks.mockResolvedValue(ok(undefined))
-    mockedStatusRepo.aggregateForDay.mockResolvedValue(ok(null))
+    mockedStatusRepo.aggregateForDayByKeys.mockResolvedValue(ok(new Map()))
     mockedIncidentRepo.findOpenByComponent.mockImplementation(async (key) =>
       key === 'database'
         ? ok({
@@ -817,7 +829,7 @@ describe('StatusService.collect()', () => {
       auth: { status: 'OPERATIONAL', latencyMs: 20, error: null },
     })
     mockedStatusRepo.recordChecks.mockResolvedValue(ok(undefined))
-    mockedStatusRepo.aggregateForDay.mockResolvedValue(ok(null))
+    mockedStatusRepo.aggregateForDayByKeys.mockResolvedValue(ok(new Map()))
     mockedIncidentRepo.findOpenByComponent.mockImplementation(async (key) =>
       key === 'database'
         ? ok({
@@ -842,7 +854,7 @@ describe('StatusService.collect()', () => {
     expect(mockedIncidentRepo.addUpdate).toHaveBeenCalled()
   })
 
-  it('should propagate aggregateForDay error', async () => {
+  it('should propagate aggregateForDayByKeys error', async () => {
     mockedRunProbes.mockResolvedValue({
       app: { status: 'OPERATIONAL', latencyMs: 5, error: null },
       database: { status: 'OPERATIONAL', latencyMs: 10, error: null },
@@ -850,7 +862,9 @@ describe('StatusService.collect()', () => {
       auth: { status: 'OPERATIONAL', latencyMs: 20, error: null },
     })
     mockedStatusRepo.recordChecks.mockResolvedValue(ok(undefined))
-    mockedStatusRepo.aggregateForDay.mockResolvedValue(err(databaseError()))
+    mockedStatusRepo.aggregateForDayByKeys.mockResolvedValue(
+      err(databaseError()),
+    )
 
     const result = await StatusService.collect('core')
 
@@ -865,7 +879,7 @@ describe('StatusService.collect()', () => {
       // 'auth' intentionally omitted from the probe map
     })
     mockedStatusRepo.recordChecks.mockResolvedValue(ok(undefined))
-    mockedStatusRepo.aggregateForDay.mockResolvedValue(ok(null))
+    mockedStatusRepo.aggregateForDayByKeys.mockResolvedValue(ok(new Map()))
     mockedIncidentRepo.findOpenByComponent.mockResolvedValue(ok(null))
     mockedStatusRepo.pruneOldChecks.mockResolvedValue(ok(0))
     mockedCache.invalidate.mockResolvedValue(undefined)

@@ -400,21 +400,26 @@ export const StatusService = {
     const today = startOfUtcDay()
     const tomorrow = addDays(today, 1)
 
-    const dailyResults = await Promise.all(
-      tierKeys.map(async (key) => {
-        const aggResult = await StatusRepository.aggregateForDay(
-          key,
-          today,
-          tomorrow,
-        )
-        if (!aggResult.ok) return aggResult
-        if (!aggResult.value) return ok(undefined)
-        return StatusRepository.upsertDaily(key, today, aggResult.value)
+    // Two queries for the whole tier, not two per component: this runs every
+    // minute from the cron, and the per-component loop it replaces was the
+    // N+1 on this route.
+    const aggregatesResult = await StatusRepository.aggregateForDayByKeys(
+      tierKeys,
+      today,
+      tomorrow,
+    )
+    if (!aggregatesResult.ok) return aggregatesResult
+
+    const dailyResult = await StatusRepository.upsertDailies(
+      today,
+      // A component with no check today has no row to write — that is a gap in
+      // the history, not a day of zero uptime.
+      tierKeys.flatMap((key) => {
+        const aggregate = aggregatesResult.value.get(key)
+        return aggregate ? [{ componentKey: key, aggregate }] : []
       }),
     )
-    for (const dailyResult of dailyResults) {
-      if (!dailyResult.ok) return dailyResult
-    }
+    if (!dailyResult.ok) return dailyResult
 
     const alerts = await Promise.all(
       tierKeys.map(async (key) => {

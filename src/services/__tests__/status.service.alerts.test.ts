@@ -91,7 +91,8 @@ function installStore() {
       ),
     ),
   )
-  mockedStatusRepo.aggregateForDay.mockResolvedValue(ok(null))
+  mockedStatusRepo.aggregateForDayByKeys.mockResolvedValue(ok(new Map()))
+  mockedStatusRepo.upsertDailies.mockResolvedValue(ok(undefined))
   mockedStatusRepo.pruneOldChecks.mockResolvedValue(ok(0))
   mockedIncidentRepo.findOpenByComponent.mockImplementation(async (key) => {
     const open = incidents.find(

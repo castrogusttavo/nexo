@@ -1,3 +1,4 @@
+import { createId } from '@paralleldrive/cuid2'
 import type {
   ComponentDaily,
   ComponentStatus,
@@ -21,6 +22,22 @@ export interface RecentCheck {
   componentKey: string
   status: ComponentStatus
   checkedAt: Date
+}
+
+// How bad each status is. `worstStatus` is the maximum over this ranking, not
+// over the enum's declaration or alphabetical order, so it has to be spelled
+// out somewhere — here, next to the only query that folds checks into a day.
+const STATUS_RANK: Record<ComponentStatus, number> = {
+  OPERATIONAL: 0,
+  MAINTENANCE: 1,
+  DEGRADED: 2,
+  PARTIAL_OUTAGE: 3,
+  MAJOR_OUTAGE: 4,
+}
+
+export interface DailyUpsert {
+  componentKey: ComponentKey
+  aggregate: DailyAggregate
 }
 
 export const StatusRepository = {
@@ -52,81 +69,117 @@ export const StatusRepository = {
     }
   },
 
-  async aggregateForDay(
-    componentKey: ComponentKey,
+  /**
+   * The day's aggregate for each of the given components, in one query.
+   *
+   * Aggregating in JS rather than in SQL is deliberate: `worstStatus` is a
+   * maximum over a *ranking* of the enum, not over its alphabetical order, and
+   * expressing that in a `groupBy` costs a CASE ladder for a set of rows that
+   * is one day of checks for a handful of components. A component with no
+   * check in the window is absent from the map, not zeroed — that is the
+   * difference between "up 0% today" and "nothing measured yet".
+   */
+  async aggregateForDayByKeys(
+    componentKeys: ReadonlyArray<ComponentKey>,
     fromDate: Date,
     toDate: Date,
-  ): Promise<Result<DailyAggregate | null>> {
+  ): Promise<Result<Map<ComponentKey, DailyAggregate>>> {
+    if (componentKeys.length === 0) return ok(new Map())
     try {
       const rows = await prisma.healthCheck.findMany({
         where: {
-          componentKey,
+          componentKey: { in: [...componentKeys] },
           checkedAt: { gte: fromDate, lt: toDate },
         },
-        select: { status: true, latencyMs: true },
+        select: { componentKey: true, status: true, latencyMs: true },
       })
 
-      if (rows.length === 0) return ok(null)
-
-      let upChecks = 0
-      let latencySum = 0
-      let worst: ComponentStatus = 'OPERATIONAL'
-      const rank: Record<ComponentStatus, number> = {
-        OPERATIONAL: 0,
-        MAINTENANCE: 1,
-        DEGRADED: 2,
-        PARTIAL_OUTAGE: 3,
-        MAJOR_OUTAGE: 4,
-      }
+      const totals = new Map<
+        ComponentKey,
+        {
+          up: number
+          latencySum: number
+          worst: ComponentStatus
+          count: number
+        }
+      >()
 
       for (const row of rows) {
-        if (row.status === 'OPERATIONAL') upChecks += 1
-        latencySum += row.latencyMs
-        if (rank[row.status] > rank[worst]) worst = row.status
+        const key = row.componentKey as ComponentKey
+        const acc = totals.get(key) ?? {
+          up: 0,
+          latencySum: 0,
+          worst: 'OPERATIONAL' as ComponentStatus,
+          count: 0,
+        }
+        if (row.status === 'OPERATIONAL') acc.up += 1
+        acc.latencySum += row.latencyMs
+        if (STATUS_RANK[row.status] > STATUS_RANK[acc.worst])
+          acc.worst = row.status
+        acc.count += 1
+        totals.set(key, acc)
       }
 
-      const total = rows.length
-      return ok({
-        worstStatus: worst,
-        totalChecks: total,
-        upChecks,
-        uptimePct: Number(((upChecks / total) * 100).toFixed(3)),
-        avgLatencyMs: Math.round(latencySum / total),
-      })
+      const aggregates = new Map<ComponentKey, DailyAggregate>()
+      for (const [key, acc] of totals) {
+        aggregates.set(key, {
+          worstStatus: acc.worst,
+          totalChecks: acc.count,
+          upChecks: acc.up,
+          uptimePct: Number(((acc.up / acc.count) * 100).toFixed(3)),
+          avgLatencyMs: Math.round(acc.latencySum / acc.count),
+        })
+      }
+      return ok(aggregates)
     } catch (error) {
       return err(dbError('Failed to aggregate daily checks', error))
     }
   },
 
-  async upsertDaily(
-    componentKey: ComponentKey,
-    day: Date,
-    agg: DailyAggregate,
-  ): Promise<Result<void>> {
+  /**
+   * Writes every component's rollup for `day` in a single statement.
+   *
+   * Prisma has no multi-row upsert, and the obvious loop is what the status
+   * cron was doing: one `INSERT ... ON CONFLICT` per component, each taking
+   * its own round trip and pool connection, every minute — the N+1 Sentry
+   * flagged on `POST /api/status/collect/core`. Raw SQL here buys one round
+   * trip for all of them; `id` is generated in code because the model's
+   * `cuid()` default is applied by the Prisma client, not by the database.
+   */
+  async upsertDailies(day: Date, rows: DailyUpsert[]): Promise<Result<void>> {
+    if (rows.length === 0) return ok(undefined)
     try {
-      const data: Prisma.ComponentDailyCreateInput = {
-        componentKey,
-        day,
-        worstStatus: agg.worstStatus,
-        totalChecks: agg.totalChecks,
-        upChecks: agg.upChecks,
-        uptimePct: new Prisma.Decimal(agg.uptimePct),
-        avgLatencyMs: agg.avgLatencyMs,
-      }
-      await prisma.componentDaily.upsert({
-        where: { componentKey_day: { componentKey, day } },
-        create: data,
-        update: {
-          worstStatus: agg.worstStatus,
-          totalChecks: agg.totalChecks,
-          upChecks: agg.upChecks,
-          uptimePct: new Prisma.Decimal(agg.uptimePct),
-          avgLatencyMs: agg.avgLatencyMs,
-        },
-      })
+      const values = rows.map(
+        ({ componentKey, aggregate }) => Prisma.sql`(
+          ${createId()},
+          ${componentKey},
+          ${day}::date,
+          ${aggregate.worstStatus}::"ComponentStatus",
+          ${aggregate.totalChecks},
+          ${aggregate.upChecks},
+          ${new Prisma.Decimal(aggregate.uptimePct)},
+          ${aggregate.avgLatencyMs},
+          NOW()
+        )`,
+      )
+
+      await prisma.$executeRaw`
+        INSERT INTO component_dailies (
+          id, component_key, day, worst_status,
+          total_checks, up_checks, uptime_pct, avg_latency_ms, updated_at
+        )
+        VALUES ${Prisma.join(values)}
+        ON CONFLICT (component_key, day) DO UPDATE SET
+          worst_status = EXCLUDED.worst_status,
+          total_checks = EXCLUDED.total_checks,
+          up_checks = EXCLUDED.up_checks,
+          uptime_pct = EXCLUDED.uptime_pct,
+          avg_latency_ms = EXCLUDED.avg_latency_ms,
+          updated_at = NOW()
+      `
       return ok(undefined)
     } catch (error) {
-      return err(dbError('Failed to upsert component daily', error))
+      return err(dbError('Failed to upsert component dailies', error))
     }
   },
 
