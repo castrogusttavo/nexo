@@ -1,6 +1,7 @@
 'use client'
 
 import type { PostHog, PostHogConfig } from 'posthog-js'
+import { COOKIE_NAME, parseCookieConsent } from '@/lib/cookie-consent/types'
 import { NEXT_PUBLIC_POSTHOG_HOST, NEXT_PUBLIC_POSTHOG_KEY } from '@/lib/env/env'
 import { POSTHOG_PROXY_PATH } from './constants'
 
@@ -90,6 +91,35 @@ export function loadPostHog(): Promise<PostHog | null> {
     })
     .catch(() => null)
   return pending
+}
+
+/**
+ * Fires one product event, if analytics is allowed to run at all.
+ *
+ * Consent is re-read from the cookie here instead of being trusted from the
+ * caller: unlike `<PostHogTracker />`, which only ever mounts behind the
+ * consent gate, these are click handlers spread across the marketing site,
+ * and one firing on a page the visitor never accepted analytics on would
+ * initialise the SDK and send a beacon. Nothing is awaited -- a button must
+ * not wait on analytics, and a load that fails is a no-op by design.
+ */
+export function captureEvent(
+  event: string,
+  properties?: Record<string, string | number | boolean | null>,
+): void {
+  if (!hasAnalyticsConsent()) return
+  void loadPostHog().then((posthog) => {
+    posthog?.capture(event, properties)
+  })
+}
+
+function hasAnalyticsConsent(): boolean {
+  if (typeof document === 'undefined') return false
+  const value = document.cookie
+    .split('; ')
+    .find((entry) => entry.startsWith(`${COOKIE_NAME}=`))
+    ?.slice(COOKIE_NAME.length + 1)
+  return parseCookieConsent(value) === 'accepted'
 }
 
 /** Test seam: drops the memoised client so each case starts from nothing. */

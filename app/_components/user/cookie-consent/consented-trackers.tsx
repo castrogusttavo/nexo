@@ -1,15 +1,19 @@
 'use client'
 
-import { GoogleAnalytics } from '@next/third-parties/google'
 import { WebVitals } from '@/lib/axiom/client'
-import { NEXT_PUBLIC_GA_ID } from '@/lib/env/env'
 import { PostHogTracker } from './posthog-tracker'
 import { useCookieConsent } from './provider'
 
 // Renders the analytics integrations (Axiom WebVitals, PostHog product
-// analytics, Google Analytics) only when the user has explicitly accepted.
-// Rejected or undecided keeps the DOM clean — none of these integrations
-// loads its script, and PostHog's SDK chunk is not even fetched.
+// analytics) only when the user has explicitly accepted. Rejected or
+// undecided keeps the DOM clean — none of these integrations loads its
+// script, and PostHog's SDK chunk is not even fetched.
+//
+// Google Analytics used to be here too. It was removed with PostHog's
+// arrival: its script is loaded from googletagmanager.com, which our
+// `script-src 'self'` refuses, so every visit that accepted cookies produced
+// a CSP violation and no data. Two analytics tools nobody reads is worse
+// than one that works.
 //
 // Error tracking is deliberately not here: Sentry carries no analytics
 // identity and is gated on `NEXT_PUBLIC_SENTRY_DSN`, not on consent.
@@ -21,7 +25,6 @@ export function ConsentedTrackers() {
     <>
       <WebVitals />
       <PostHogTracker userId={userId} />
-      {NEXT_PUBLIC_GA_ID && <GoogleAnalytics gaId={NEXT_PUBLIC_GA_ID} />}
     </>
   )
 }

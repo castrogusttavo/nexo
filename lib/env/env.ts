@@ -6,7 +6,6 @@ const publicEnv = {
   NEXT_PUBLIC_AXIOM_TOKEN: process.env.NEXT_PUBLIC_AXIOM_TOKEN,
   NEXT_PUBLIC_AXIOM_DATASET: process.env.NEXT_PUBLIC_AXIOM_DATASET,
   NEXT_PUBLIC_URL: process.env.NEXT_PUBLIC_URL,
-  NEXT_PUBLIC_GA_ID: process.env.NEXT_PUBLIC_GA_ID,
   NEXT_PUBLIC_REALTIME_URL: process.env.NEXT_PUBLIC_REALTIME_URL,
   NEXT_PUBLIC_POSTHOG_KEY: process.env.NEXT_PUBLIC_POSTHOG_KEY,
   // Defaulted here rather than with `.default()` on the schema: `NODE_ENV=test`
@@ -24,7 +23,6 @@ const publicEnvSchema = z.object({
   NEXT_PUBLIC_AXIOM_TOKEN: z.string().startsWith('xaat-'),
   NEXT_PUBLIC_AXIOM_DATASET: z.string().min(1).max(128),
   NEXT_PUBLIC_URL: z.url().startsWith('http'),
-  NEXT_PUBLIC_GA_ID: z.string().startsWith('G-').optional(),
   NEXT_PUBLIC_REALTIME_URL: z.url().startsWith('ws'),
   // Optional on purpose: unset means PostHog never loads and never requests
   // anything, which is what dev, CI and the test suites run with.
@@ -46,7 +44,6 @@ export const {
   NEXT_PUBLIC_AXIOM_TOKEN,
   NEXT_PUBLIC_AXIOM_DATASET,
   NEXT_PUBLIC_URL,
-  NEXT_PUBLIC_GA_ID,
   NEXT_PUBLIC_REALTIME_URL,
   NEXT_PUBLIC_POSTHOG_KEY,
   NEXT_PUBLIC_POSTHOG_HOST,

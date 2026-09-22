@@ -1,7 +1,11 @@
 import { act, render, waitFor } from '@testing-library/react'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
-import type { CookieConsent } from '@/lib/cookie-consent/types'
-import { POSTHOG_OPTIONS, resetPostHogForTests } from '@/lib/posthog/client'
+import { COOKIE_NAME, type CookieConsent } from '@/lib/cookie-consent/types'
+import {
+  captureEvent,
+  POSTHOG_OPTIONS,
+  resetPostHogForTests,
+} from '@/lib/posthog/client'
 import { ConsentedTrackers } from '../consented-trackers'
 import { PostHogTracker } from '../posthog-tracker'
 import { CookieConsentProvider } from '../provider'
@@ -16,6 +20,7 @@ const sdk = vi.hoisted(() => ({
   init: vi.fn(),
   identify: vi.fn(),
   reset: vi.fn(),
+  capture: vi.fn(),
   distinctId: 'anon-0001',
   identified: false,
 }))
@@ -26,6 +31,7 @@ vi.mock('posthog-js', () => {
     init: sdk.init,
     identify: sdk.identify,
     reset: sdk.reset,
+    capture: sdk.capture,
     get_distinct_id: () => sdk.distinctId,
     _isIdentified: () => sdk.identified,
   }
@@ -39,7 +45,6 @@ vi.mock('@/lib/env/env', () => ({
     return env.key
   },
   NEXT_PUBLIC_POSTHOG_HOST: 'https://eu.i.posthog.com',
-  NEXT_PUBLIC_GA_ID: undefined,
   NODE_ENV: 'test',
 }))
 
@@ -50,6 +55,7 @@ beforeEach(() => {
   sdk.init.mockClear()
   sdk.identify.mockClear()
   sdk.reset.mockClear()
+  sdk.capture.mockClear()
   sdk.distinctId = 'anon-0001'
   sdk.identified = false
   env.key = undefined
@@ -179,5 +185,69 @@ describe('PostHog configuration', () => {
     expect(POSTHOG_OPTIONS.capture_exceptions).toBe(false)
     expect(POSTHOG_OPTIONS.disable_external_dependency_loading).toBe(true)
     expect(POSTHOG_OPTIONS.api_host).toBe('/ingest')
+  })
+})
+
+// `captureEvent` is called from click handlers on the marketing site, outside
+// the provider that gates <ConsentedTrackers />, so it re-reads the consent
+// cookie itself. These cases are what keeps a pricing click from loading the
+// SDK for a visitor who refused analytics.
+describe('captureEvent() consent gate', () => {
+  function setConsentCookie(value: string | null): void {
+    // biome-ignore lint/suspicious/noDocumentCookie: the banner writes this cookie the same way (provider.tsx), and jsdom has no Cookie Store API.
+    document.cookie = `${COOKIE_NAME}=; path=/; max-age=0`
+    // biome-ignore lint/suspicious/noDocumentCookie: same reason.
+    if (value) document.cookie = `${COOKIE_NAME}=${value}; path=/`
+  }
+
+  beforeEach(() => {
+    setConsentCookie(null)
+  })
+
+  it('never loads the SDK with no decision on record', async () => {
+    env.key = 'phc_test'
+    captureEvent('pricing_plan_click', { plan: 'PRO' })
+    await settle()
+    expect(sdk.imports).toBe(0)
+    expect(sdk.capture).not.toHaveBeenCalled()
+  })
+
+  it('never loads the SDK when the visitor refused analytics cookies', async () => {
+    env.key = 'phc_test'
+    setConsentCookie('rejected')
+    captureEvent('pricing_plan_click', { plan: 'PRO' })
+    await settle()
+    expect(sdk.imports).toBe(0)
+    expect(sdk.capture).not.toHaveBeenCalled()
+  })
+
+  it('sends nothing when the deployment has no key, consent or not', async () => {
+    setConsentCookie('accepted')
+    captureEvent('pricing_plan_click', { plan: 'PRO' })
+    await settle()
+    expect(sdk.imports).toBe(0)
+    expect(sdk.capture).not.toHaveBeenCalled()
+  })
+
+  it('sends the event with its properties once consent is accepted', async () => {
+    env.key = 'phc_test'
+    setConsentCookie('accepted')
+    captureEvent('pricing_plan_click', { plan: 'PRO', billing: 'yearly' })
+    await waitFor(() => expect(sdk.capture).toHaveBeenCalledTimes(1))
+    expect(sdk.capture).toHaveBeenCalledWith('pricing_plan_click', {
+      plan: 'PRO',
+      billing: 'yearly',
+    })
+  })
+
+  it('reads the cookie per call, so a fresh acceptance takes effect', async () => {
+    env.key = 'phc_test'
+    captureEvent('blog_post_read', { post_slug: 'a' })
+    await settle()
+    expect(sdk.capture).not.toHaveBeenCalled()
+
+    setConsentCookie('accepted')
+    captureEvent('blog_post_read', { post_slug: 'a' })
+    await waitFor(() => expect(sdk.capture).toHaveBeenCalledTimes(1))
   })
 })

@@ -1,6 +1,5 @@
 'use client'
 
-import { sendGAEvent } from '@next/third-parties/google'
 import { useState } from 'react'
 import { Button } from '@/components/ui/button'
 import { Field, FieldError, FieldLabel } from '@/components/ui/field'
@@ -16,6 +15,7 @@ import {
 import { Textarea } from '@/components/ui/textarea'
 import { useLogger } from '@/lib/axiom/client'
 import { notify } from '@/lib/notify'
+import { captureEvent } from '@/lib/posthog/client'
 import { TEAM_SIZES } from '@/src/schemas/talk-to-sales.schema'
 
 const EMPTY = { name: '', email: '', message: '' }
@@ -59,7 +59,7 @@ export function TalkToSalesForm() {
         body: JSON.stringify(payload),
       })
       if (res.ok) {
-        sendGAEvent('event', 'talk_to_sales_submit', { team_size: teamSize })
+        captureEvent('talk_to_sales_submit', { team_size: teamSize })
         setFields(EMPTY)
         setTeamSize('')
         setStatus('sent')

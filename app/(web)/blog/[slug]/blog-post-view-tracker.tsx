@@ -1,7 +1,7 @@
 'use client'
 
-import { sendGAEvent } from '@next/third-parties/google'
 import { useEffect } from 'react'
+import { captureEvent } from '@/lib/posthog/client'
 
 interface Props {
   slug: string
@@ -10,10 +10,7 @@ interface Props {
 
 export function BlogPostViewTracker({ slug, title }: Props) {
   useEffect(() => {
-    sendGAEvent('event', 'blog_post_read', {
-      post_slug: slug,
-      post_title: title,
-    })
+    captureEvent('blog_post_read', { post_slug: slug, post_title: title })
   }, [slug, title])
 
   return null

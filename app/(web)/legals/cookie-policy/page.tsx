@@ -85,7 +85,6 @@ const SECTIONS: LegalSection[] = [
     blocks: [
       {
         paragraphs: [
-          'Usamos o Google Analytics (GA4) nos nossos sites de marketing pra entender como visitantes chegam e navegam pelo site, e medir a eficácia de páginas e campanhas. Esses cookies só são carregados mediante o seu consentimento.',
           'Usamos o PostHog (hospedado nos Estados Unidos) pra entender como o produto é usado: quais telas são abertas e quais ações acontecem. O PostHog grava no seu navegador um identificador anônimo de dispositivo e de sessão, em cookie e no armazenamento local. Se você estiver logado, associamos esses eventos ao identificador interno da sua conta — nunca ao seu nome, e-mail ou conteúdo do que você escreve.',
           'O PostHog fica desligado por padrão: o script só é baixado depois que você aceita os cookies de análise, e nada é enviado se você recusar ou ainda não tiver decidido. Deixamos desativados a gravação de sessão, a captura automática de cliques e de campos de formulário, os mapas de calor e as pesquisas — coletamos visualizações de página e eventos que o código envia explicitamente.',
         ],
@@ -115,7 +114,7 @@ const SECTIONS: LegalSection[] = [
     blocks: [
       {
         paragraphs: [
-          'Cookies definidos por provedores como o Google Analytics e o PostHog são regidos pela política de privacidade desses provedores, além desta. As requisições do PostHog passam pelo nosso próprio domínio (/ingest), então nenhum script de terceiros é carregado de fora pra coletá-las. Não usamos cookies de publicidade de terceiros nem redirecionamos dados pra fins de publicidade comportamental entre sites.',
+          'Cookies definidos por provedores como o PostHog são regidos pela política de privacidade desses provedores, além desta. As requisições do PostHog passam pelo nosso próprio domínio (/ingest), então nenhum script de terceiros é carregado de fora pra coletá-las. Não usamos cookies de publicidade de terceiros nem redirecionamos dados pra fins de publicidade comportamental entre sites.',
         ],
       },
     ],

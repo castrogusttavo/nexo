@@ -5,7 +5,6 @@ import {
   ArrowRight01Icon,
   CheckIcon,
 } from '@hugeicons-pro/core-stroke-rounded'
-import { sendGAEvent } from '@next/third-parties/google'
 import { useQueryState } from 'nuqs'
 import { ButtonLink } from '@/components/button-link'
 import { NexoIcon } from '@/components/icon/icon'
@@ -16,6 +15,7 @@ import {
   TooltipContent,
   TooltipTrigger,
 } from '@/components/ui/tooltip'
+import { captureEvent } from '@/lib/posthog/client'
 import { cn } from '@/lib/utils'
 import {
   formatCurrency,
@@ -43,7 +43,7 @@ export function PricingCardPlan({ plan }: PricingCardPlanProps) {
   const discount = price ? yearlyDiscount(price) : 0
 
   function trackClick() {
-    sendGAEvent('event', 'pricing_plan_click', { plan, billing })
+    captureEvent('pricing_plan_click', { plan, billing })
   }
 
   return (
