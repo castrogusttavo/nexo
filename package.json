@@ -66,6 +66,8 @@
     "worker:dev": "tsx --tsconfig tsconfig.worker.json --env-file=.env --watch worker/index.ts",
     "worker:build": "esbuild worker/index.ts --bundle --platform=node --target=node20 --alias:server-only=./worker/server-only.shim.ts --outfile=dist/worker.cjs --external:argon2 --external:@prisma/client --external:.prisma/client",
     "worker": "node dist/worker.cjs",
+    "status:collect": "tsx --tsconfig tsconfig.worker.json --env-file=.env worker/status-collect.ts",
+    "status:watch": "tsx --tsconfig tsconfig.worker.json --env-file=.env worker/status-collect.ts --watch",
     "seed:preview": "tsx --env-file=.env scripts/seed-preview-data.ts",
     "seed:load-test": "tsx --env-file=.env scripts/seed-load-test.ts",
     "loadtest": "k6 run k6/flows.js",
