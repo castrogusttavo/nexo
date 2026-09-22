@@ -3,7 +3,9 @@ import { Section, Text, Link } from "react-email";
 
 export const EmailFooter = () => (
   <Section className='bg-[#f4f5f5] p-8'>
-    <Text className='text-slate-500 text-[14px] pb-10'>{brand.legalName}</Text>
+    <Text className='text-slate-500 text-[14px] pb-10'>
+      {brand.tradeName} · CNPJ {brand.cnpj}
+    </Text>
     <table
       width='100%'
       cellPadding={0}

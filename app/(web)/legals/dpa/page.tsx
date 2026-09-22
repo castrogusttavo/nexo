@@ -1,6 +1,7 @@
 import type { Metadata } from 'next'
 import { Muted } from '@/components/typography/text/muted'
 import { P } from '@/components/typography/text/p'
+import { brand } from '@/lib/brand'
 import { WebFooter } from '../../_components/footer'
 import { Title } from '../../_components/text/title'
 import { linkifyLegalText } from '../linkify-legal-text'
@@ -9,7 +10,7 @@ import { SectionHeading } from '../section-heading'
 const TITLE = 'Aditivo de Processamento de Dados | Nexo'
 const DESCRIPTION =
   'Como o Nexo trata dados pessoais em nome dos seus clientes, sob a LGPD.'
-const VERSION = '2026-09-09'
+const VERSION = '2026-09-22'
 
 export const metadata: Metadata = {
   title: TITLE,
@@ -149,7 +150,7 @@ const SECTIONS: LegalSection[] = [
     blocks: [
       {
         paragraphs: [
-          'Dúvidas sobre este DPA: Nexo Software, Inc., e-mail juridico@nexopm.com.',
+          `Dúvidas sobre este DPA: ${brand.tradeName} (CNPJ ${brand.cnpj}), e-mail juridico@nexopm.com.`,
         ],
       },
     ],

@@ -1,6 +1,7 @@
 import type { Metadata } from 'next'
 import { Muted } from '@/components/typography/text/muted'
 import { P } from '@/components/typography/text/p'
+import { brand } from '@/lib/brand'
 import { PRIVACY_VERSION } from '@/lib/legal/versions'
 import { WebFooter } from '../../_components/footer'
 import { Title } from '../../_components/text/title'
@@ -41,7 +42,7 @@ interface LegalSection {
 }
 
 const PREAMBLE = [
-  'Esta Política de Privacidade explica como a Nexo Software, Inc. ("Nexo", "nós" ou "nosso") coleta, usa, compartilha e protege informações pessoais quando você interage com nossos sites, produtos e serviços.',
+  `Esta Política de Privacidade explica como a ${brand.tradeName}, nome fantasia de ${brand.legalName}, empresário individual inscrito no CNPJ sob o nº ${brand.cnpj} ("Nexo", "nós" ou "nosso") coleta, usa, compartilha e protege informações pessoais quando você interage com nossos sites, produtos e serviços.`,
   'O Nexo oferece uma plataforma de gestão de trabalho hospedada na nuvem (o "Serviço", conforme definido em nossos Termos de Serviço). Esta Política de Privacidade cobre nossas práticas como controlador de dados — ou seja, situações em que determinamos como e por que suas informações pessoais são tratadas.',
   'Termos em maiúsculas não definidos aqui têm o significado atribuído em nossos Termos de Serviço.',
 ]
@@ -336,7 +337,7 @@ const SECTIONS: LegalSection[] = [
     blocks: [
       {
         paragraphs: [
-          'Se você tiver dúvidas ou solicitações sobre esta Política de Privacidade ou nossas práticas de privacidade, entre em contato: Nexo Software, Inc., e-mail juridico@nexopm.com.',
+          `Se você tiver dúvidas ou solicitações sobre esta Política de Privacidade ou nossas práticas de privacidade, entre em contato: ${brand.tradeName} (CNPJ ${brand.cnpj}), e-mail juridico@nexopm.com.`,
           'Esse é também o canal para falar com o nosso Encarregado de Proteção de Dados (DPO), nos termos do art. 41 da LGPD.',
         ],
       },

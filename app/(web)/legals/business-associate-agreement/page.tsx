@@ -1,6 +1,7 @@
 import type { Metadata } from 'next'
 import { Muted } from '@/components/typography/text/muted'
 import { P } from '@/components/typography/text/p'
+import { brand } from '@/lib/brand'
 import { WebFooter } from '../../_components/footer'
 import { Title } from '../../_components/text/title'
 import { linkifyLegalText } from '../linkify-legal-text'
@@ -9,7 +10,7 @@ import { SectionHeading } from '../section-heading'
 const TITLE = 'Acordo de Parceiro de Negócios | Nexo'
 const DESCRIPTION =
   'As obrigações do Nexo ao lidar com informações de saúde protegidas de um cliente.'
-const VERSION = '2026-09-09'
+const VERSION = '2026-09-22'
 
 export const metadata: Metadata = {
   title: TITLE,
@@ -118,7 +119,7 @@ const SECTIONS: LegalSection[] = [
     blocks: [
       {
         paragraphs: [
-          'Para solicitar este BAA ou tirar dúvidas: Nexo Software, Inc., e-mail juridico@nexopm.com.',
+          `Para solicitar este BAA ou tirar dúvidas: ${brand.tradeName} (CNPJ ${brand.cnpj}), e-mail juridico@nexopm.com.`,
         ],
       },
     ],

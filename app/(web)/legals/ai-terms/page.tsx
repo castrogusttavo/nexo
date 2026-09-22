@@ -1,6 +1,7 @@
 import type { Metadata } from 'next'
 import { Muted } from '@/components/typography/text/muted'
 import { P } from '@/components/typography/text/p'
+import { brand } from '@/lib/brand'
 import { WebFooter } from '../../_components/footer'
 import { Title } from '../../_components/text/title'
 import { linkifyLegalText } from '../linkify-legal-text'
@@ -9,7 +10,7 @@ import { SectionHeading } from '../section-heading'
 const TITLE = 'Termos de Uso de IA | Nexo'
 const DESCRIPTION =
   'Como os agentes de IA operam dentro do Nexo e os limites desse uso.'
-const VERSION = '2026-09-09'
+const VERSION = '2026-09-22'
 
 export const metadata: Metadata = {
   title: TITLE,
@@ -118,7 +119,7 @@ const SECTIONS: LegalSection[] = [
     blocks: [
       {
         paragraphs: [
-          'Dúvidas sobre estes Termos de Uso de IA: Nexo Software, Inc., e-mail juridico@nexopm.com.',
+          `Dúvidas sobre estes Termos de Uso de IA: ${brand.tradeName} (CNPJ ${brand.cnpj}), e-mail juridico@nexopm.com.`,
         ],
       },
     ],

@@ -1,6 +1,7 @@
 import type { Metadata } from 'next'
 import { Muted } from '@/components/typography/text/muted'
 import { P } from '@/components/typography/text/p'
+import { brand } from '@/lib/brand'
 import { COOKIES_VERSION } from '@/lib/legal/versions'
 import { WebFooter } from '../../_components/footer'
 import { Title } from '../../_components/text/title'
@@ -128,7 +129,7 @@ const SECTIONS: LegalSection[] = [
     blocks: [
       {
         paragraphs: [
-          'Dúvidas sobre esta Política de Cookies: Nexo Software, Inc., e-mail juridico@nexopm.com.',
+          `Dúvidas sobre esta Política de Cookies: ${brand.tradeName} (CNPJ ${brand.cnpj}), e-mail juridico@nexopm.com.`,
         ],
       },
     ],

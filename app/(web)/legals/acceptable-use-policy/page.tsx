@@ -1,6 +1,7 @@
 import type { Metadata } from 'next'
 import { Muted } from '@/components/typography/text/muted'
 import { P } from '@/components/typography/text/p'
+import { brand } from '@/lib/brand'
 import { WebFooter } from '../../_components/footer'
 import { Title } from '../../_components/text/title'
 import { linkifyLegalText } from '../linkify-legal-text'
@@ -9,7 +10,7 @@ import { SectionHeading } from '../section-heading'
 const TITLE = 'Política de Uso Aceitável | Nexo'
 const DESCRIPTION =
   'Os usos permitidos e proibidos ao operar uma conta no Nexo.'
-const VERSION = '2026-09-09'
+const VERSION = '2026-09-22'
 
 export const metadata: Metadata = {
   title: TITLE,
@@ -185,7 +186,7 @@ const SECTIONS: LegalSection[] = [
     blocks: [
       {
         paragraphs: [
-          'Em caso de dúvidas sobre esta AUP, entre em contato: Nexo Software, Inc., e-mail juridico@nexopm.com.',
+          `Em caso de dúvidas sobre esta AUP, entre em contato: ${brand.tradeName} (CNPJ ${brand.cnpj}), e-mail juridico@nexopm.com.`,
         ],
       },
     ],

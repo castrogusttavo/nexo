@@ -1,6 +1,7 @@
 import type { Metadata } from 'next'
 import { Muted } from '@/components/typography/text/muted'
 import { P } from '@/components/typography/text/p'
+import { brand } from '@/lib/brand'
 import { WebFooter } from '../../_components/footer'
 import { Title } from '../../_components/text/title'
 import { linkifyLegalText } from '../linkify-legal-text'
@@ -9,7 +10,7 @@ import { SectionHeading } from '../section-heading'
 const TITLE = 'Sub-processadores | Nexo'
 const DESCRIPTION =
   'Os terceiros que o Nexo usa para processar dados em nome dos clientes.'
-const VERSION = '2026-09-09'
+const VERSION = '2026-09-22'
 
 export const metadata: Metadata = {
   title: TITLE,
@@ -143,7 +144,7 @@ export default function SubProcessorsPage() {
           </SectionHeading>
           <P>
             {linkifyLegalText(
-              'Dúvidas sobre esta lista: Nexo Software, Inc., e-mail juridico@nexopm.com.',
+              `Dúvidas sobre esta lista: ${brand.tradeName} (CNPJ ${brand.cnpj}), e-mail juridico@nexopm.com.`,
             )}
           </P>
         </section>

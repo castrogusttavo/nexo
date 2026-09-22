@@ -1,6 +1,7 @@
 import type { Metadata } from 'next'
 import { Muted } from '@/components/typography/text/muted'
 import { P } from '@/components/typography/text/p'
+import { brand } from '@/lib/brand'
 import { TERMS_VERSION } from '@/lib/legal/versions'
 import { WebFooter } from '../../_components/footer'
 import { Title } from '../../_components/text/title'
@@ -42,7 +43,7 @@ interface LegalSection {
 }
 
 const PREAMBLE = [
-  'Estes Termos de Serviço ("Termos") são celebrados entre Nexo Software, Inc. ("Nexo", "nós" ou "nosso") e a pessoa física ou jurídica que acessa ou usa o Serviço ("Cliente" ou "você"). Se você estiver acessando ou usando o Serviço em nome de uma empresa ou outra entidade, você declara ter autoridade para vincular essa entidade a estes Termos, e "você" e "Cliente" passam a se referir a essa entidade.',
+  `Estes Termos de Serviço ("Termos") são celebrados entre ${brand.tradeName}, nome fantasia de ${brand.legalName}, empresário individual inscrito no CNPJ sob o nº ${brand.cnpj} ("Nexo", "nós" ou "nosso") e a pessoa física ou jurídica que acessa ou usa o Serviço ("Cliente" ou "você"). Se você estiver acessando ou usando o Serviço em nome de uma empresa ou outra entidade, você declara ter autoridade para vincular essa entidade a estes Termos, e "você" e "Cliente" passam a se referir a essa entidade.`,
   'Estes Termos regem o acesso e o uso da plataforma de gestão de trabalho do Nexo, incluindo nossos sites, APIs, aplicativos móveis e serviços relacionados (em conjunto, o "Serviço"). Ao acessar ou usar o Serviço, clicar em "Concordo" ou assinar um Pedido de Contratação que faça referência a estes Termos, você concorda em se vincular a eles. Se você não concordar, não utilize o Serviço.',
   'A "Data de Vigência" é a que ocorrer primeiro entre: (a) seu primeiro acesso ao Serviço, ou (b) a data de vigência do primeiro Pedido de Contratação que faça referência a estes Termos.',
 ]
@@ -567,7 +568,7 @@ const SECTIONS: LegalSection[] = [
       {
         heading: '16.6 Notificações',
         paragraphs: [
-          'As notificações previstas nestes Termos devem ser feitas por escrito. O Nexo opera de forma 100% remota, sem endereço físico ou escritório — por isso, as notificações são feitas exclusivamente através do Serviço ou por e-mail, nunca por correio. Notificações ao Nexo devem ser enviadas para: Nexo Software, Inc., Att.: Departamento Jurídico, e-mail juridico@nexopm.com. Notificações eletrônicas são consideradas recebidas no primeiro dia útil seguinte ao envio.',
+          `As notificações previstas nestes Termos devem ser feitas por escrito. O Nexo opera de forma 100% remota, sem escritório de atendimento presencial — por isso, as notificações são feitas exclusivamente através do Serviço ou por e-mail, nunca por correio. Notificações ao Nexo devem ser enviadas para: ${brand.tradeName} (CNPJ ${brand.cnpj}), Att.: Departamento Jurídico, e-mail juridico@nexopm.com. Notificações eletrônicas são consideradas recebidas no primeiro dia útil seguinte ao envio.`,
         ],
       },
       {
@@ -614,7 +615,7 @@ const SECTIONS: LegalSection[] = [
     blocks: [
       {
         paragraphs: [
-          'Em caso de dúvidas sobre estes Termos, entre em contato: Nexo Software, Inc., e-mail juridico@nexopm.com.',
+          `Em caso de dúvidas sobre estes Termos, entre em contato: ${brand.tradeName} (CNPJ ${brand.cnpj}), e-mail juridico@nexopm.com.`,
           'Para relatar violações destes Termos, envie um e-mail para: juridico@nexopm.com.',
         ],
       },

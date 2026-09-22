@@ -2,7 +2,11 @@ import { baseEmailUrl } from './base-email-url'
 
 /** Brand identity shared across transactional emails and public surfaces. */
 export const brand = {
-  legalName: 'Nexo software, Inc.',
+  /** Razão social of the MEI that bills customers (Receita Federal registry). */
+  legalName: '69.225.330 GUSTTAVO LEANDRO DE CASTRO TAVARES',
+  /** Nome fantasia — how the legal entity presents itself in contracts. */
+  tradeName: 'Nexo Software',
+  cnpj: '69.225.330/0001-81',
   displayName: 'Nexo',
   url: baseEmailUrl,
   contactEmail: 'contato@nexopm.com',
