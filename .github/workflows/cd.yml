@@ -123,6 +123,19 @@ jobs:
         env:
           SOPS_AGE_KEY: ${{ secrets.SOPS_AGE_KEY }}
 
+      # Runtime alerts (status transitions, dead background jobs) post to the
+      # same Slack webhook CI and CD already notify through. GitHub secrets
+      # cannot be read back, so instead of copying the URL into sops the
+      # deploy hands the secret to the app's environment. sops wins if it ever
+      # defines the variable itself.
+      - name: Provide the Slack webhook to the app
+        run: |
+          if [ -n "$SLACK_WEBHOOK_URL" ] && ! grep -q '^SLACK_ALERTS_WEBHOOK_URL=' /var/www/nexo/.env; then
+            printf 'SLACK_ALERTS_WEBHOOK_URL=%s\n' "$SLACK_WEBHOOK_URL" >> /var/www/nexo/.env
+          fi
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+
       - name: Deploy to server
         run: |
           cp docker-compose.yml /var/www/nexo/docker-compose.yml

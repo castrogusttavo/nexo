@@ -58,6 +58,27 @@ describe('closeWorkerResources', () => {
     ])
   })
 
+  it('waits for in-flight Slack alerts after the listener and before the queues', async () => {
+    const workers = [closable('worker.a')]
+    const failureListener = closable('listener.close')
+    const failureAlarm = {
+      flush: vi.fn(async () => {
+        order.push('alarm.flush')
+      }),
+    }
+
+    await closeWorkerResources({ workers, failureListener, failureAlarm })
+
+    expect(order).toEqual([
+      'worker.a',
+      'listener.close',
+      'alarm.flush',
+      'queues.close',
+      'connection.close',
+      'logger.flush',
+    ])
+  })
+
   it('shuts down cleanly when the listener never started', async () => {
     await closeWorkerResources({
       workers: [closable('worker.a')],

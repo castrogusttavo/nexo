@@ -1,5 +1,10 @@
 import type { Job } from 'bullmq'
 import { logger } from '@/lib/axiom/logger'
+import {
+  formatAlertTime,
+  sanitizeAlertText,
+  sendSlackAlert,
+} from '@/src/lib/alerts/slack'
 
 /**
  * Emitted once per job death -- when BullMQ gives up on a job and moves it to
@@ -147,6 +152,11 @@ export interface JobFailureAlarm {
   ): void
   /** Handler for a BullMQ `Worker` `stalled` event. Never alarms. */
   stalled(queue: string, jobId: string): void
+  /**
+   * Resolves once every Slack alert already started has been delivered or
+   * given up on (each is bounded by the Slack timeout). Never rejects.
+   */
+  flush(): Promise<void>
   /** Deaths currently remembered for deduplication (for tests). */
   readonly ledgerSize: number
 }
@@ -158,16 +168,80 @@ function lastStackEntry(job: Job): string | undefined {
     : undefined
 }
 
+const REASON_WORDS: Record<JobExhaustedReason, string> = {
+  attempts_exhausted: 'tentativas esgotadas',
+  unrecoverable: 'erro irrecuperável',
+  stalled: 'travou além do limite (stalled)',
+}
+
+/**
+ * The Slack text for a job death. Built only from the queue/job names, the
+ * attempt counters, the allowlisted payload ids and the sanitized error
+ * message -- never the payload itself or the stack.
+ */
+export function jobExhaustedAlertText(
+  fields: JobExhaustedFields,
+  at: Date,
+): string {
+  const attempts =
+    fields.maxAttempts > 0
+      ? ` (${fields.attemptsMade}/${fields.maxAttempts})`
+      : ''
+  const ids = fields.payload
+    ? Object.entries(fields.payload)
+        .map(([key, value]) => `${key}=\`${sanitizeAlertText(value, 64)}\``)
+        .join(', ')
+    : null
+  return [
+    `:skull: Job morreu: \`${sanitizeAlertText(fields.queue, 64)}\` / \`${sanitizeAlertText(fields.jobName, 64)}\``,
+    `Motivo: ${REASON_WORDS[fields.reason]}${attempts}`,
+    `Job: \`${sanitizeAlertText(String(fields.jobId ?? 'desconhecido'), 64)}\` · ${formatAlertTime(at)}`,
+    ids ? `IDs: ${ids}` : null,
+    fields.message ? `Erro: \`${sanitizeAlertText(fields.message)}\`` : null,
+  ]
+    .filter(Boolean)
+    .join('\n')
+}
+
+export type JobExhaustedNotifier = (fields: JobExhaustedFields) => Promise<void>
+
+const notifySlack: JobExhaustedNotifier = async (fields) => {
+  await sendSlackAlert({
+    event: JOB_EXHAUSTED_EVENT,
+    text: jobExhaustedAlertText(fields, new Date()),
+  })
+}
+
 export function createJobFailureAlarm({
   capacity = DEFAULT_LEDGER_CAPACITY,
+  notify = notifySlack,
 }: {
   capacity?: number
+  /** Posts the death to Slack; only ever called once per death. */
+  notify?: JobExhaustedNotifier
 } = {}): JobFailureAlarm {
   const ledger = new DeathLedger(capacity)
+  const inFlight = new Set<Promise<void>>()
 
   function alarm(fields: JobExhaustedFields, finishedOn: number | undefined) {
+    // The ledger decides first, so a death reported by both the Worker and
+    // the QueueEvents backstop reaches Slack once, like the log line.
     if (!ledger.claim(`${fields.queue}:${fields.jobId}`, finishedOn)) return
     logger.error(JOB_EXHAUSTED_EVENT, { ...fields })
+
+    // Fire-and-forget for the event handler; `flush()` lets shutdown wait.
+    const sending = Promise.resolve()
+      .then(() => notify(fields))
+      .catch((error: unknown) => {
+        logger.error('alerts.slack.failed', {
+          component: 'SlackAlerts',
+          alert: JOB_EXHAUSTED_EVENT,
+          reason: 'notifier_error',
+          message: error instanceof Error ? error.message : String(error),
+        })
+      })
+      .finally(() => inFlight.delete(sending))
+    inFlight.add(sending)
   }
 
   return {
@@ -256,6 +330,10 @@ export function createJobFailureAlarm({
 
     stalled(queue, jobId) {
       logger.warn(JOB_STALLED_EVENT, { component: 'Worker', queue, jobId })
+    },
+
+    async flush() {
+      await Promise.allSettled([...inFlight])
     },
 
     get ledgerSize() {

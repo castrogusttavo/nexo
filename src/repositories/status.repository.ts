@@ -17,6 +17,12 @@ interface InsertCheck {
   error: string | null
 }
 
+export interface RecentCheck {
+  componentKey: string
+  status: ComponentStatus
+  checkedAt: Date
+}
+
 export const StatusRepository = {
   async recordChecks(rows: InsertCheck[]): Promise<Result<void>> {
     if (rows.length === 0) return ok(undefined)
@@ -157,6 +163,27 @@ export const StatusRepository = {
       return ok(rows)
     } catch (error) {
       return err(dbError('Failed to find daily aggregates', error))
+    }
+  },
+
+  /** Checks of the given components since `since`, oldest first. */
+  async findRecentChecks(
+    componentKeys: ReadonlyArray<ComponentKey>,
+    since: Date,
+  ): Promise<Result<RecentCheck[]>> {
+    if (componentKeys.length === 0) return ok([])
+    try {
+      const rows = await prisma.healthCheck.findMany({
+        where: {
+          componentKey: { in: [...componentKeys] },
+          checkedAt: { gte: since },
+        },
+        select: { componentKey: true, status: true, checkedAt: true },
+        orderBy: [{ checkedAt: 'asc' }, { id: 'asc' }],
+      })
+      return ok(rows)
+    } catch (error) {
+      return err(dbError('Failed to find recent health checks', error))
     }
   },
 

@@ -32,7 +32,8 @@ const serverEnv = {
   AUTH_VERIFY_CONCURRENCY: process.env.AUTH_VERIFY_CONCURRENCY,
   AUTH_VERIFY_QUEUE_DEPTH: process.env.AUTH_VERIFY_QUEUE_DEPTH,
   AUTH_VERIFY_QUEUE_WAIT_MS: process.env.AUTH_VERIFY_QUEUE_WAIT_MS,
-  REALTIME_PORT: process.env.REALTIME_PORT
+  REALTIME_PORT: process.env.REALTIME_PORT,
+  SLACK_ALERTS_WEBHOOK_URL: process.env.SLACK_ALERTS_WEBHOOK_URL
 }
 
 const serverEnvSchema = z.object({
@@ -115,7 +116,14 @@ const serverEnvSchema = z.object({
     .transform((v) => (v ? Number(v) : 1234))
     .refine((v) => Number.isFinite(v) && v > 0, {
       message: 'REALTIME_PORT must be a positive number'
-    })
+    }),
+  // Optional on purpose, and deliberately lenient: a malformed webhook must
+  // never stop the app from booting. Unset or blank disables Slack alerts; a
+  // bad value fails at send time and is logged as `alerts.slack.failed`.
+  SLACK_ALERTS_WEBHOOK_URL: z
+    .string()
+    .optional()
+    .transform((v) => (v?.trim() ? v.trim() : undefined))
 })
 
 const validatedServerEnv =
@@ -154,5 +162,6 @@ export const {
   AUTH_VERIFY_QUEUE_DEPTH,
   AUTH_VERIFY_QUEUE_WAIT_MS,
   DB_POOL_MAX,
-  REALTIME_PORT
+  REALTIME_PORT,
+  SLACK_ALERTS_WEBHOOK_URL
 } = validatedServerEnv

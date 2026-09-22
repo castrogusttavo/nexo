@@ -7,10 +7,14 @@ import type {
 import { logger } from '@/lib/axiom/logger'
 import { StatusCache } from '@/src/cache/status.cache'
 import { databaseError, notFound } from '@/src/errors'
+import type { AppError } from '@/src/errors/app-error'
 import { prisma } from '@/src/lib/prisma'
 import { err, ok, type Result } from '@/src/lib/result'
 import { IncidentRepository } from '@/src/repositories/incident.repository'
-import { StatusRepository } from '@/src/repositories/status.repository'
+import {
+  type RecentCheck,
+  StatusRepository,
+} from '@/src/repositories/status.repository'
 import type {
   ComponentSnapshot,
   DailyPoint,
@@ -27,7 +31,29 @@ import {
   worstStatus,
 } from './components'
 import { componentsForTier, type ProbeResult, runProbesForTier } from './probes'
+import {
+  ALERT_HISTORY_LOOKBACK_MS,
+  alertCollectFailed,
+  alertCollectRecovered,
+  alertComponent,
+  decideComponentAlert,
+  type StatusPoint,
+} from './status-alerts'
 import { STATUS_META } from './status-map'
+
+export interface CollectedComponent {
+  componentKey: ComponentKey
+  name: string
+  status: ComponentStatus
+  latencyMs: number
+  error: string | null
+}
+
+export interface CollectSummary {
+  tier: ComponentTier
+  collectedAt: string
+  components: CollectedComponent[]
+}
 
 const HISTORY_WINDOW_DAYS = 90
 const RAW_RETENTION_DAYS = 7
@@ -105,23 +131,60 @@ function buildResolvedMessage(componentKey: ComponentKey): string {
   return `${def.name} retornou ao funcionamento normal. Incidente resolvido.`
 }
 
+/** A state change of a component, as seen by the incident lifecycle. */
+export interface IncidentTransition {
+  from: ComponentStatus
+  to: ComponentStatus
+  /** Start of the incident this change belongs to (null when none exists). */
+  incidentStartedAt: Date | null
+}
+
+interface IncidentEvaluation {
+  /** Null when the component is in the same state as at the previous check. */
+  transition: IncidentTransition | null
+  /** Set when an incident read or write failed; the transition still stands. */
+  error: AppError | null
+}
+
+/**
+ * Moves the component's incident along -- opens it, raises its severity,
+ * resolves it -- and reports the state change that caused it.
+ *
+ * `previous` is the component's status at its previous recorded check. The
+ * transition is measured against it rather than against the incident row, so
+ * an incident write that failed (and is retried next minute) does not report
+ * the same change twice, and a de-escalation -- which the incident keeps at
+ * its peak severity -- is still reported. Without a previous check (first run,
+ * or the history could not be read) the open incident stands in for it.
+ */
 async function evaluateIncidentFor(
   componentKey: ComponentKey,
   probe: ProbeResult,
-): Promise<Result<void>> {
-  const openResult = await IncidentRepository.findOpenByComponent(componentKey)
-  if (!openResult.ok) return openResult
-  const open = openResult.value
-
+  previous: ComponentStatus | null,
+  now: Date,
+): Promise<IncidentEvaluation> {
   const status = probe.status as ComponentStatus
+  const openResult = await IncidentRepository.findOpenByComponent(componentKey)
+  const open = openResult.ok ? openResult.value : null
+  const from = previous ?? open?.severity ?? 'OPERATIONAL'
+  const transition = (incidentStartedAt: Date | null) =>
+    from === status ? null : { from, to: status, incidentStartedAt }
+
+  if (!openResult.ok) {
+    return { transition: transition(null), error: openResult.error }
+  }
 
   if (status === 'OPERATIONAL') {
-    if (!open) return ok(undefined)
-    return IncidentRepository.close(
+    if (!open) return { transition: transition(null), error: null }
+    const closed = await IncidentRepository.close(
       open.id,
-      new Date(),
+      now,
       buildResolvedMessage(componentKey),
     )
+    return {
+      transition: transition(open.startedAt),
+      error: closed.ok ? null : closed.error,
+    }
   }
 
   if (!open) {
@@ -129,29 +192,51 @@ async function evaluateIncidentFor(
       componentKey,
       severity: status,
       title: buildIncidentTitle(componentKey, status),
-      startedAt: new Date(),
+      startedAt: now,
       initialMessage: buildInvestigatingMessage(
         componentKey,
         status,
         probe.error,
       ),
     })
-    if (!created.ok) return created
-    return ok(undefined)
+    return {
+      transition: transition(now),
+      error: created.ok ? null : created.error,
+    }
   }
 
+  // The incident records its peak: only a new worst severity updates it.
   if (STATUS_RANK[status] > STATUS_RANK[open.severity]) {
     const bumped = await IncidentRepository.bumpSeverity(open.id, status)
-    if (!bumped.ok) return bumped
+    if (!bumped.ok) {
+      return { transition: transition(open.startedAt), error: bumped.error }
+    }
     const updateResult = await IncidentRepository.addUpdate(
       open.id,
       'IDENTIFIED',
       `Severidade atualizada para ${STATUS_META[status].label}.`,
     )
-    if (!updateResult.ok) return updateResult
+    if (!updateResult.ok) {
+      return {
+        transition: transition(open.startedAt),
+        error: updateResult.error,
+      }
+    }
   }
 
-  return ok(undefined)
+  return { transition: transition(open.startedAt), error: null }
+}
+
+/** Status points per component, oldest first, from the recorded checks. */
+function groupHistory(rows: RecentCheck[]): Map<ComponentKey, StatusPoint[]> {
+  const byKey = new Map<ComponentKey, StatusPoint[]>()
+  for (const row of rows) {
+    const key = row.componentKey as ComponentKey
+    const list = byKey.get(key) ?? []
+    list.push({ status: row.status, at: row.checkedAt })
+    byKey.set(key, list)
+  }
+  return byKey
 }
 
 async function loadIncidentMapForWindow(
@@ -268,9 +353,26 @@ function toIncidentSummaryDTO(row: {
 }
 
 export const StatusService = {
-  async collect(tier: ComponentTier): Promise<Result<void>> {
+  async collect(tier: ComponentTier): Promise<Result<CollectSummary>> {
     const probeMap = await runProbesForTier(tier)
     const tierKeys = componentsForTier(tier)
+    const now = new Date()
+
+    // Read before this run's checks are written: the newest row per component
+    // is then its previous state. A failed read only weakens the alerts (no
+    // flap suppression this run); it never blocks the collection.
+    const historyResult = await StatusRepository.findRecentChecks(
+      tierKeys,
+      new Date(now.getTime() - ALERT_HISTORY_LOOKBACK_MS),
+    )
+    if (!historyResult.ok) {
+      logger.error('status.alert_history_failed', {
+        component: 'StatusService',
+        errorCode: historyResult.error.code,
+        message: historyResult.error.message,
+      })
+    }
+    const history = groupHistory(historyResult.ok ? historyResult.value : [])
 
     const rows = tierKeys.flatMap((key) => {
       const probe = probeMap[key]
@@ -286,7 +388,14 @@ export const StatusService = {
     })
 
     const recordResult = await StatusRepository.recordChecks(rows)
-    if (!recordResult.ok) return recordResult
+    if (!recordResult.ok) {
+      await alertCollectFailed(
+        recordResult.error.message,
+        probeMap.database?.error ?? null,
+      )
+      return recordResult
+    }
+    await alertCollectRecovered()
 
     const today = startOfUtcDay()
     const tomorrow = addDays(today, 1)
@@ -307,20 +416,61 @@ export const StatusService = {
       if (!dailyResult.ok) return dailyResult
     }
 
-    await Promise.all(
+    const alerts = await Promise.all(
       tierKeys.map(async (key) => {
         const probe = probeMap[key]
-        if (!probe) return
-        const evalResult = await evaluateIncidentFor(key, probe)
-        if (!evalResult.ok) {
+        if (!probe) return null
+        const past = history.get(key) ?? []
+        const previous = past.at(-1)?.status ?? null
+        const { transition, error } = await evaluateIncidentFor(
+          key,
+          probe,
+          previous,
+          now,
+        )
+        if (error) {
           logger.error('status.incident_eval_failed', {
             component: 'StatusService',
             componentKey: key,
-            errorCode: evalResult.error.code,
-            message: evalResult.error.message,
+            errorCode: error.code,
+            message: error.message,
           })
         }
+
+        const current = probe.status as ComponentStatus
+        // No recorded previous check: seed the replay with the state the
+        // lifecycle compared against, so a first-run outage still alerts.
+        const seed: StatusPoint[] =
+          past.length === 0 && transition
+            ? [{ status: transition.from, at: new Date(now.getTime() - 1) }]
+            : []
+        const decision = decideComponentAlert([
+          ...seed,
+          ...past,
+          { status: current, at: now },
+        ])
+        if (decision.action === 'none' || decision.action === 'suppressed') {
+          return null
+        }
+        return {
+          decision,
+          context: {
+            componentKey: key,
+            from: transition?.from ?? current,
+            to: current,
+            at: now,
+            incidentStartedAt: transition?.incidentStartedAt ?? null,
+            error: probe.error,
+          },
+        }
       }),
+    )
+    // Awaited so the route and the CLI do not exit mid-send; each send is
+    // bounded by the Slack timeout and never rejects.
+    await Promise.allSettled(
+      alerts.flatMap((alert) =>
+        alert ? [alertComponent(alert.decision, alert.context)] : [],
+      ),
     )
 
     const cutoff = addDays(today, -RAW_RETENTION_DAYS)
@@ -342,7 +492,17 @@ export const StatusService = {
       })
     }
 
-    return ok(undefined)
+    return ok({
+      tier,
+      collectedAt: now.toISOString(),
+      components: rows.map((row) => ({
+        componentKey: row.componentKey,
+        name: COMPONENTS_BY_KEY[row.componentKey].name,
+        status: row.status,
+        latencyMs: row.latencyMs,
+        error: row.error,
+      })),
+    })
   },
 
   async getCurrentSnapshot(): Promise<Result<Snapshot>> {

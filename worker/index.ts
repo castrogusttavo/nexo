@@ -75,7 +75,11 @@ async function shutdown(signal: NodeJS.Signals): Promise<void> {
   })
 
   try {
-    await closeWorkerResources({ workers, failureListener })
+    await closeWorkerResources({
+      workers,
+      failureListener,
+      failureAlarm,
+    })
   } catch (err) {
     const e = err as Error
     logger.error('queue.worker.shutdown_error', {

@@ -259,6 +259,63 @@ describe('StatusRepository', () => {
     })
   })
 
+  describe('findRecentChecks()', () => {
+    it('returns only the asked components since the cutoff, oldest first', async () => {
+      const at = (min: number) => new Date(Date.UTC(2025, 9, 1, 12, min, 0, 0))
+      await prisma.healthCheck.createMany({
+        data: [
+          {
+            componentKey: 'database',
+            status: 'DEGRADED',
+            latencyMs: 1,
+            checkedAt: at(3),
+          },
+          {
+            componentKey: 'database',
+            status: 'OPERATIONAL',
+            latencyMs: 1,
+            checkedAt: at(1),
+          },
+          {
+            componentKey: 'cache',
+            status: 'MAJOR_OUTAGE',
+            latencyMs: 1,
+            checkedAt: at(2),
+          },
+          {
+            componentKey: 'email',
+            status: 'OPERATIONAL',
+            latencyMs: 1,
+            checkedAt: at(2),
+          },
+          {
+            componentKey: 'database',
+            status: 'MAJOR_OUTAGE',
+            latencyMs: 1,
+            checkedAt: at(0),
+          },
+        ],
+      })
+
+      const rows = expectOk(
+        await StatusRepository.findRecentChecks(['database', 'cache'], at(1)),
+      )
+
+      expect(rows).toEqual([
+        { componentKey: 'database', status: 'OPERATIONAL', checkedAt: at(1) },
+        { componentKey: 'cache', status: 'MAJOR_OUTAGE', checkedAt: at(2) },
+        { componentKey: 'database', status: 'DEGRADED', checkedAt: at(3) },
+      ])
+    })
+
+    it('does not query when no component is asked for', async () => {
+      const rows = expectOk(
+        await StatusRepository.findRecentChecks([], new Date(0)),
+      )
+      expect(rows).toEqual([])
+    })
+  })
+
   describe('findLatestPerComponent()', () => {
     it('should return the latest check per component', async () => {
       const t1 = new Date('2025-10-01T00:00:00.000Z')

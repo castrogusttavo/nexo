@@ -477,6 +477,8 @@ describe('StatusService.collect()', () => {
     mockedStatusRepo.aggregateForDay.mockReset()
     mockedStatusRepo.upsertDaily.mockReset()
     mockedStatusRepo.pruneOldChecks.mockReset()
+    mockedStatusRepo.findRecentChecks.mockReset()
+    mockedStatusRepo.findRecentChecks.mockResolvedValue(ok([]))
     mockedIncidentRepo.findOpenByComponent.mockReset()
     mockedIncidentRepo.create.mockReset()
     mockedIncidentRepo.close.mockReset()
