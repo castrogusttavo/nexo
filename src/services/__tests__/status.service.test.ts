@@ -16,9 +16,22 @@ vi.mock('@/src/services/status/probes', () => {
     core: ['app', 'database', 'cache', 'auth'],
     peripheral: ['payment', 'email', 'storage'],
   }
+  // Budgets mirroring the real ones closely enough for the collector's
+  // smoothing rule: these cases drive latency explicitly when they mean to.
+  const SLOW_ABOVE: Record<string, number> = {
+    app: 2_500,
+    database: 1_000,
+    cache: 1_000,
+    auth: 1_500,
+    storage: 1_500,
+    payment: 3_000,
+    email: 3_000,
+  }
   return {
     runProbesForTier: vi.fn(),
     componentsForTier: (tier: 'core' | 'peripheral') => TIER_KEYS[tier] ?? [],
+    isSlow: (key: string, latencyMs: number) =>
+      latencyMs > (SLOW_ABOVE[key] ?? 1_000),
   }
 })
 
@@ -490,6 +503,126 @@ describe('StatusService.collect()', () => {
     mockedIncidentRepo.bumpSeverity.mockReset()
     mockedIncidentRepo.addUpdate.mockReset()
     mockedCache.invalidate.mockReset()
+  })
+
+  // A slow minute is not an outage and not even a degradation: the collector,
+  // the CI runner and the nightly backup share one machine, so the status page
+  // used to report our own builds as incidents.
+  describe('slowness has to persist before it counts', () => {
+    function slowDatabaseProbe() {
+      mockedRunProbes.mockResolvedValue({
+        app: { status: 'OPERATIONAL', latencyMs: 5, error: null },
+        database: { status: 'DEGRADED', latencyMs: 5_000, error: null },
+        cache: { status: 'OPERATIONAL', latencyMs: 3, error: null },
+        auth: { status: 'OPERATIONAL', latencyMs: 20, error: null },
+      })
+      mockedStatusRepo.recordChecks.mockResolvedValue(ok(undefined))
+      mockedIncidentRepo.findOpenByComponent.mockResolvedValue(ok(null))
+      // Reached only by the cases where the slowness does persist.
+      mockedIncidentRepo.create.mockResolvedValue(
+        ok({
+          id: 'inc-slow',
+          componentKey: 'database',
+          severity: 'DEGRADED',
+          startedAt: new Date(),
+        } as never),
+      )
+      mockedStatusRepo.pruneOldChecks.mockResolvedValue(ok(0))
+      mockedCache.invalidate.mockResolvedValue(undefined)
+    }
+
+    function pastChecks(...latencies: number[]) {
+      return latencies.map((latencyMs, index) => ({
+        componentKey: 'database',
+        status: 'OPERATIONAL' as const,
+        latencyMs,
+        checkedAt: new Date(Date.now() - (latencies.length - index) * 60_000),
+      }))
+    }
+
+    function recordedDatabaseStatus() {
+      const rows = mockedStatusRepo.recordChecks.mock.calls[0]?.[0] ?? []
+      return rows.find((r) => r.componentKey === 'database')?.status
+    }
+
+    it('records a single slow sample as OPERATIONAL', async () => {
+      slowDatabaseProbe()
+      mockedStatusRepo.findRecentChecks.mockResolvedValue(ok([]))
+
+      expectOk(await StatusService.collect('core'))
+
+      expect(recordedDatabaseStatus()).toBe('OPERATIONAL')
+      expect(mockedIncidentRepo.create).not.toHaveBeenCalled()
+    })
+
+    it('records DEGRADED once the two previous samples were slow too', async () => {
+      slowDatabaseProbe()
+      mockedStatusRepo.findRecentChecks.mockResolvedValue(
+        ok(pastChecks(4_000, 6_000)),
+      )
+
+      expectOk(await StatusService.collect('core'))
+
+      expect(recordedDatabaseStatus()).toBe('DEGRADED')
+      expect(mockedIncidentRepo.create).toHaveBeenCalled()
+    })
+
+    it('resets the streak when one of the previous samples was fast', async () => {
+      slowDatabaseProbe()
+      mockedStatusRepo.findRecentChecks.mockResolvedValue(
+        ok(pastChecks(4_000, 12)),
+      )
+
+      expectOk(await StatusService.collect('core'))
+
+      expect(recordedDatabaseStatus()).toBe('OPERATIONAL')
+    })
+
+    // The streak is read from the recorded *latencies*, not the recorded
+    // statuses: those are already smoothed, so comparing against them would
+    // reset the streak forever and a permanently slow component would never
+    // degrade at all.
+    it('degrades a component that is slow every minute', async () => {
+      slowDatabaseProbe()
+      mockedStatusRepo.findRecentChecks.mockResolvedValue(
+        ok(pastChecks(5_000, 5_000, 5_000, 5_000)),
+      )
+
+      expectOk(await StatusService.collect('core'))
+
+      expect(recordedDatabaseStatus()).toBe('DEGRADED')
+    })
+
+    it('records a failure on the first sample, with no smoothing', async () => {
+      mockedRunProbes.mockResolvedValue({
+        app: { status: 'OPERATIONAL', latencyMs: 5, error: null },
+        database: {
+          status: 'MAJOR_OUTAGE',
+          latencyMs: 5_000,
+          error: 'timeout',
+        },
+        cache: { status: 'OPERATIONAL', latencyMs: 3, error: null },
+        auth: { status: 'OPERATIONAL', latencyMs: 20, error: null },
+      })
+      mockedStatusRepo.recordChecks.mockResolvedValue(ok(undefined))
+      mockedStatusRepo.findRecentChecks.mockResolvedValue(ok([]))
+      mockedIncidentRepo.findOpenByComponent.mockResolvedValue(ok(null))
+      mockedIncidentRepo.create.mockResolvedValue(
+        ok({
+          id: 'inc-1',
+          componentKey: 'database',
+          severity: 'MAJOR_OUTAGE',
+          startedAt: new Date(),
+        } as never),
+      )
+      mockedStatusRepo.pruneOldChecks.mockResolvedValue(ok(0))
+      mockedCache.invalidate.mockResolvedValue(undefined)
+
+      expectOk(await StatusService.collect('core'))
+
+      expect(recordedDatabaseStatus()).toBe('MAJOR_OUTAGE')
+      expect(mockedIncidentRepo.create).toHaveBeenCalled()
+    })
   })
 
   it('should record probes and not open incidents when all OPERATIONAL', async () => {

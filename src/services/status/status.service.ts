@@ -30,7 +30,13 @@ import {
   STATUS_RANK,
   worstStatus,
 } from './components'
-import { componentsForTier, type ProbeResult, runProbesForTier } from './probes'
+import {
+  componentsForTier,
+  isSlow,
+  type ProbeResult,
+  type ProbeStatus,
+  runProbesForTier,
+} from './probes'
 import {
   ALERT_HISTORY_LOOKBACK_MS,
   alertCollectFailed,
@@ -227,6 +233,58 @@ async function evaluateIncidentFor(
   return { transition: transition(open.startedAt), error: null }
 }
 
+/**
+ * How many consecutive slow samples make a component DEGRADED.
+ *
+ * One is not enough, and that was the whole bug: the collector runs on the
+ * same machine as the CI runner and the nightly backup, so a single sample can
+ * be slow because *we* are busy. With three in a row the signal survives a
+ * build, a backup or one unlucky packet, and a component that is genuinely
+ * struggling still shows up within three minutes.
+ */
+const SLOW_SAMPLES_TO_DEGRADE = 3
+
+/**
+ * The status actually written for this sample.
+ *
+ * A failing probe is recorded as it came: an outage is an outage on the first
+ * sample. Slowness, on the other hand, only becomes DEGRADED once the two
+ * previous samples were slow too. The decision reads the recorded *latencies*,
+ * not the recorded statuses, precisely because the statuses are already
+ * smoothed — comparing against them would keep resetting the streak and a
+ * permanently slow component would never degrade at all.
+ */
+function recordedStatus(
+  key: ComponentKey,
+  probe: ProbeResult,
+  recentLatencies: number[],
+): ProbeStatus {
+  // Only latency-derived degradation is smoothed. A DEGRADED that came from
+  // anywhere else — a probe that answered but reported something wrong — is
+  // recorded on the first sample, like an outage.
+  if (
+    probe.status !== 'DEGRADED' ||
+    probe.error !== null ||
+    !isSlow(key, probe.latencyMs)
+  ) {
+    return probe.status
+  }
+  const previous = recentLatencies.slice(-(SLOW_SAMPLES_TO_DEGRADE - 1))
+  if (previous.length < SLOW_SAMPLES_TO_DEGRADE - 1) return 'OPERATIONAL'
+  return previous.every((ms) => isSlow(key, ms)) ? 'DEGRADED' : 'OPERATIONAL'
+}
+
+function groupLatencies(rows: RecentCheck[]): Map<ComponentKey, number[]> {
+  const byKey = new Map<ComponentKey, number[]>()
+  for (const row of rows) {
+    const key = row.componentKey as ComponentKey
+    const list = byKey.get(key) ?? []
+    list.push(row.latencyMs)
+    byKey.set(key, list)
+  }
+  return byKey
+}
+
 /** Status points per component, oldest first, from the recorded checks. */
 function groupHistory(rows: RecentCheck[]): Map<ComponentKey, StatusPoint[]> {
   const byKey = new Map<ComponentKey, StatusPoint[]>()
@@ -372,17 +430,34 @@ export const StatusService = {
         message: historyResult.error.message,
       })
     }
-    const history = groupHistory(historyResult.ok ? historyResult.value : [])
+    const recentChecks = historyResult.ok ? historyResult.value : []
+    const history = groupHistory(recentChecks)
+    const latencies = groupLatencies(recentChecks)
+
+    // The smoothed sample is the sample, for everyone downstream: what gets
+    // written, what the incident lifecycle sees and what the alerts replay.
+    // Letting the raw probe reach the incident code would open (and then
+    // close) an incident for a single slow minute while the stored history
+    // said nothing had happened.
+    const samples = new Map<ComponentKey, ProbeResult>()
+    for (const key of tierKeys) {
+      const probe = probeMap[key]
+      if (!probe) continue
+      samples.set(key, {
+        ...probe,
+        status: recordedStatus(key, probe, latencies.get(key) ?? []),
+      })
+    }
 
     const rows = tierKeys.flatMap((key) => {
-      const probe = probeMap[key]
-      if (!probe) return []
+      const sample = samples.get(key)
+      if (!sample) return []
       return [
         {
           componentKey: key,
-          status: probe.status as ComponentStatus,
-          latencyMs: probe.latencyMs,
-          error: probe.error,
+          status: sample.status as ComponentStatus,
+          latencyMs: sample.latencyMs,
+          error: sample.error,
         },
       ]
     })
@@ -423,7 +498,7 @@ export const StatusService = {
 
     const alerts = await Promise.all(
       tierKeys.map(async (key) => {
-        const probe = probeMap[key]
+        const probe = samples.get(key)
         if (!probe) return null
         const past = history.get(key) ?? []
         const previous = past.at(-1)?.status ?? null

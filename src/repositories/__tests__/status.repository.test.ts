@@ -109,10 +109,61 @@ describe('StatusRepository', () => {
       const agg = expectOk(result).get('database')
       expect(agg).not.toBeUndefined()
       expect(agg?.totalChecks).toBe(4)
+      // Three of the four answered: two fast, one slow. Uptime counts answers,
+      // not speed — counting only OPERATIONAL is what reported Resend at 50%
+      // on days it served every request correctly. The slow minute is still
+      // visible, in `worstStatus` and in the average latency.
+      expect(agg?.upChecks).toBe(3)
+      expect(agg?.uptimePct).toBe(75)
+      expect(agg?.worstStatus).toBe('MAJOR_OUTAGE')
+      expect(agg?.avgLatencyMs).toBe(250)
+    })
+
+    it('counts a degraded check as uptime and an outage as downtime', async () => {
+      const day = new Date('2025-06-25T12:00:00.000Z')
+      await prisma.healthCheck.createMany({
+        data: [
+          {
+            componentKey: 'email',
+            status: 'DEGRADED',
+            latencyMs: 3_500,
+            error: null,
+            checkedAt: day,
+          },
+          {
+            componentKey: 'email',
+            status: 'DEGRADED',
+            latencyMs: 3_600,
+            error: null,
+            checkedAt: day,
+          },
+          {
+            componentKey: 'email',
+            status: 'MAJOR_OUTAGE',
+            latencyMs: 8_000,
+            error: 'timeout',
+            checkedAt: day,
+          },
+          {
+            componentKey: 'email',
+            status: 'PARTIAL_OUTAGE',
+            latencyMs: 8_000,
+            error: 'half down',
+            checkedAt: day,
+          },
+        ],
+      })
+
+      const result = await StatusRepository.aggregateForDayByKeys(
+        ['email'],
+        new Date('2025-06-25T00:00:00.000Z'),
+        new Date('2025-06-26T00:00:00.000Z'),
+      )
+
+      const agg = expectOk(result).get('email')
       expect(agg?.upChecks).toBe(2)
       expect(agg?.uptimePct).toBe(50)
       expect(agg?.worstStatus).toBe('MAJOR_OUTAGE')
-      expect(agg?.avgLatencyMs).toBe(250)
     })
 
     it('should ignore checks outside window', async () => {
@@ -460,10 +511,28 @@ describe('StatusRepository', () => {
         await StatusRepository.findRecentChecks(['database', 'cache'], at(1)),
       )
 
+      // The latency rides along because the collector decides whether slowness
+      // has persisted from the recorded latencies, not from the recorded
+      // statuses — those are already smoothed.
       expect(rows).toEqual([
-        { componentKey: 'database', status: 'OPERATIONAL', checkedAt: at(1) },
-        { componentKey: 'cache', status: 'MAJOR_OUTAGE', checkedAt: at(2) },
-        { componentKey: 'database', status: 'DEGRADED', checkedAt: at(3) },
+        {
+          componentKey: 'database',
+          status: 'OPERATIONAL',
+          latencyMs: 1,
+          checkedAt: at(1),
+        },
+        {
+          componentKey: 'cache',
+          status: 'MAJOR_OUTAGE',
+          latencyMs: 1,
+          checkedAt: at(2),
+        },
+        {
+          componentKey: 'database',
+          status: 'DEGRADED',
+          latencyMs: 1,
+          checkedAt: at(3),
+        },
       ])
     })
 

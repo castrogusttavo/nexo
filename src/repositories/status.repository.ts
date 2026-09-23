@@ -21,7 +21,22 @@ interface InsertCheck {
 export interface RecentCheck {
   componentKey: string
   status: ComponentStatus
+  latencyMs: number
   checkedAt: Date
+}
+
+/**
+ * A check that answered, however slowly. Uptime is the share of these.
+ *
+ * It used to count only `OPERATIONAL`, which quietly turned the number the
+ * status page calls "uptime" into a latency SLO: Resend answered every
+ * request correctly and still showed 50% for the day, because half the
+ * samples were over a threshold meant for a local query. Slowness is not
+ * absence — it is carried by the day's worst status and by the average
+ * latency, both of which stay honest.
+ */
+function answered(status: ComponentStatus): boolean {
+  return status !== 'MAJOR_OUTAGE' && status !== 'PARTIAL_OUTAGE'
 }
 
 // How bad each status is. `worstStatus` is the maximum over this ranking, not
@@ -112,7 +127,7 @@ export const StatusRepository = {
           worst: 'OPERATIONAL' as ComponentStatus,
           count: 0,
         }
-        if (row.status === 'OPERATIONAL') acc.up += 1
+        if (answered(row.status)) acc.up += 1
         acc.latencySum += row.latencyMs
         if (STATUS_RANK[row.status] > STATUS_RANK[acc.worst])
           acc.worst = row.status
@@ -231,7 +246,12 @@ export const StatusRepository = {
           componentKey: { in: [...componentKeys] },
           checkedAt: { gte: since },
         },
-        select: { componentKey: true, status: true, checkedAt: true },
+        select: {
+          componentKey: true,
+          status: true,
+          latencyMs: true,
+          checkedAt: true,
+        },
         orderBy: [{ checkedAt: 'asc' }, { id: 'asc' }],
       })
       return ok(rows)

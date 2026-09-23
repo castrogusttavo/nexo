@@ -29,9 +29,22 @@ vi.mock('@/src/services/status/probes', () => {
     core: ['app', 'database', 'cache', 'auth'],
     peripheral: ['payment', 'email', 'storage'],
   }
+  // Budgets mirroring the real ones closely enough for the collector's
+  // smoothing rule: these cases drive latency explicitly when they mean to.
+  const SLOW_ABOVE: Record<string, number> = {
+    app: 2_500,
+    database: 1_000,
+    cache: 1_000,
+    auth: 1_500,
+    storage: 1_500,
+    payment: 3_000,
+    email: 3_000,
+  }
   return {
     runProbesForTier: vi.fn(),
     componentsForTier: (tier: 'core' | 'peripheral') => TIER_KEYS[tier] ?? [],
+    isSlow: (key: string, latencyMs: number) =>
+      latencyMs > (SLOW_ABOVE[key] ?? 1_000),
   }
 })
 
@@ -55,6 +68,9 @@ const fetchMock = vi.fn<typeof fetch>()
 interface StoredCheck {
   componentKey: string
   status: ComponentStatus
+  // The collector reads the recorded latencies to decide whether slowness has
+  // persisted, so the fake store has to keep them like the real table does.
+  latencyMs: number
   checkedAt: Date
 }
 interface StoredIncident {
@@ -77,6 +93,7 @@ function installStore() {
       checks.push({
         componentKey: row.componentKey,
         status: row.status,
+        latencyMs: row.latencyMs,
         checkedAt: new Date(),
       })
     }
