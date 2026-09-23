@@ -10,7 +10,7 @@ import { SectionHeading } from '../section-heading'
 const TITLE = 'Sub-processadores | Nexo'
 const DESCRIPTION =
   'Os terceiros que o Nexo usa para processar dados em nome dos clientes.'
-const VERSION = '2026-09-22'
+const VERSION = '2026-09-23'
 
 export const metadata: Metadata = {
   title: TITLE,
@@ -33,6 +33,7 @@ export const metadata: Metadata = {
 
 const PREAMBLE = [
   'Um sub-processador é um terceiro contratado pelo Nexo para tratar dados pessoais em nome dos Clientes, ao prestar parte do Serviço. Este documento lista os sub-processadores atualmente em uso, conforme exigido pela Seção 4 do nosso Aditivo de Processamento de Dados.',
+  'A aplicação, o banco de dados e os arquivos que você envia ficam em servidor próprio, operado por nós em São Paulo, Brasil — não em nuvem de terceiros. Os sub-processadores abaixo recebem apenas o que a finalidade de cada um exige, e só os de backup guardam cópia do seu conteúdo (criptografada).',
 ]
 
 interface SubProcessor {
@@ -50,11 +51,6 @@ const SUB_PROCESSORS: SubProcessor[] = [
   {
     name: 'Resend',
     purpose: 'Envio de e-mails transacionais',
-    location: 'Estados Unidos',
-  },
-  {
-    name: 'Amazon Web Services (S3)',
-    purpose: 'Armazenamento de arquivos e anexos',
     location: 'Estados Unidos',
   },
   {
@@ -81,6 +77,21 @@ const SUB_PROCESSORS: SubProcessor[] = [
     name: 'GitHub',
     purpose: 'Autenticação (login social, opcional)',
     location: 'Estados Unidos',
+  },
+  {
+    name: 'Slack',
+    purpose: 'Alertas operacionais para a nossa equipe',
+    location: 'Estados Unidos',
+  },
+  {
+    name: 'Backblaze B2',
+    purpose: 'Backups criptografados do banco de dados e dos arquivos',
+    location: 'Estados Unidos',
+  },
+  {
+    name: 'Better Stack',
+    purpose: 'Monitoramento externo de disponibilidade',
+    location: 'União Europeia',
   },
 ]
 
