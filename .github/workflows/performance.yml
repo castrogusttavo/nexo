@@ -1,8 +1,9 @@
 name: Performance
 
 on:
-  # Not on pull_request: these checks are informational (continue-on-error)
-  # and PRs here are Dependabot bumps, where nobody reads them.
+  # Not on pull_request: these checks are informational (continue-on-error),
+  # and work lands straight on main here — a PR gate nobody reads buys
+  # nothing.
   push:
     branches: [main]
     paths-ignore:
