@@ -26,7 +26,7 @@ export function HistoryBars({ history }: HistoryBarsProps) {
   }
 
   return (
-    <div className='flex items-center justify-end'>
+    <div className='w-full flex items-center justify-between'>
       {history.map((point) => {
         const meta = STATUS_META[point.status]
         const date = new Date(`${point.day}T00:00:00Z`)
