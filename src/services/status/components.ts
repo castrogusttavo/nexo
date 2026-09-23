@@ -57,8 +57,11 @@ export const COMPONENTS = [
   },
   {
     key: 'storage',
-    name: 'Armazenamento (AWS S3)',
-    description: 'Armazenamento de objetos',
+    // Not AWS: uploads live in our own MinIO, on our own server. The old label
+    // named a provider we have never used, on the page whose entire job is to
+    // tell the truth about our infrastructure.
+    name: 'Armazenamento de arquivos',
+    description: 'MinIO (servidor próprio)',
     tier: 'peripheral',
   },
 ] as const satisfies ReadonlyArray<ComponentDefinition>
