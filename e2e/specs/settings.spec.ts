@@ -45,7 +45,19 @@ test.describe('settings', () => {
     const nameField = page.getByRole('textbox', { name: 'Nome do projeto' })
     await expect(nameField).toHaveValue(`Antes ${suffix}`)
 
-    await nameField.fill(`Depois ${suffix}`)
+    // The form's inputs are uncontrolled, so text typed before React hydrates is
+    // thrown away when hydration re-creates the element: the submit then carries
+    // the *old* name, the API answers 200 for a no-op update, the success toast
+    // appears, and only the reload below reveals anything went wrong. That is
+    // exactly how this test failed on CI — the PATCH body read
+    // `"name":"Antes …"` — and why it failed there and not locally: hydration is
+    // slower on a loaded 2-vCPU runner. Retrying the fill until the value sticks
+    // makes the precondition explicit instead of racing it.
+    await expect(async () => {
+      await nameField.fill(`Depois ${suffix}`)
+      await expect(nameField).toHaveValue(`Depois ${suffix}`)
+    }).toPass({ timeout: 15_000 })
+
     const [response] = await Promise.all([
       page.waitForResponse(
         (r) =>
