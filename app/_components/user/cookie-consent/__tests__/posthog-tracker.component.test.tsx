@@ -173,6 +173,15 @@ describe('PostHog configuration', () => {
     expect(POSTHOG_OPTIONS.rageclick).toBe(false)
   })
 
+  // Regression guard: `respect_dnt: true` made posthog-js drop every event from
+  // a browser sending DNT or GPC — Firefox "Strict", Brave, any private window —
+  // even after the visitor accepted our banner, with no log and no request. The
+  // consent banner is the gate; a browser-level signal aimed at ad-tech "sale
+  // or sharing" is not a second one.
+  it('does not let a browser privacy signal override the banner', () => {
+    expect(POSTHOG_OPTIONS.respect_dnt).toBe(false)
+  })
+
   it('records nothing the user types or sees', () => {
     expect(POSTHOG_OPTIONS.disable_session_recording).toBe(true)
     expect(POSTHOG_OPTIONS.mask_all_text).toBe(true)

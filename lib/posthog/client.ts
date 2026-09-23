@@ -63,7 +63,19 @@ export const POSTHOG_OPTIONS: Partial<PostHogConfig> = {
   mask_personal_data_properties: true,
   // No profile for a visitor who never signs in.
   person_profiles: 'identified_only',
-  respect_dnt: true,
+  // Deliberately off, and it is the narrower choice it looks like. `respect_dnt`
+  // makes posthog-js refuse to collect when the browser sets `doNotTrack` or
+  // `globalPrivacyControl` -- and Firefox turns GPC on by default under
+  // "Strict" tracking protection and in private windows, as does Brave. With it
+  // on, those visitors clicked "Aceitar" in our banner and we silently ignored
+  // them: no event, no log, no error, a permanent blind spot nobody could see.
+  // GPC is a CCPA construct about the *sale or sharing* of personal data, which
+  // this product does not do, and no Brazilian law requires honouring it -- our
+  // privacy policy has always said so ("não respondemos a sinais de Do Not
+  // Track", GPC honoured "quando exigido pela legislação aplicável"), so the
+  // old value contradicted our own text. The gate that matters stays the
+  // explicit, revocable opt-in of the cookie banner: no consent, no SDK.
+  respect_dnt: false,
   // We do not use PostHog feature flags; skipping the /flags/ round trip
   // keeps the reverse proxy to event ingestion only.
   advanced_disable_flags: true,
