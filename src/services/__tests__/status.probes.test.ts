@@ -31,6 +31,28 @@ vi.mock('@/src/lib/prisma', () => ({
 const s3 = vi.hoisted(() => ({ send: vi.fn().mockResolvedValue({}) }))
 vi.mock('@/src/lib/storage/s3', () => ({ getS3Client: () => s3 }))
 
+// One fake BullMQ queue per real one, with the two numbers the probe reads.
+const queues = vi.hoisted(() => {
+  const state: Record<string, { workers: number; waiting: number }> = {
+    'data-retention': { workers: 1, waiting: 0 },
+    'account-lifecycle': { workers: 1, waiting: 0 },
+    'data-export': { workers: 1, waiting: 0 },
+    'trial-lifecycle': { workers: 1, waiting: 0 },
+  }
+  const queue = (name: string) => ({
+    name,
+    getWorkers: async () => Array.from({ length: state[name].workers }),
+    getWaitingCount: async () => state[name].waiting,
+  })
+  return { state, queue }
+})
+vi.mock('@/src/lib/queue/queues', () => ({
+  getDataRetentionQueue: () => queues.queue('data-retention'),
+  getAccountLifecycleQueue: () => queues.queue('account-lifecycle'),
+  getDataExportQueue: () => queues.queue('data-export'),
+  getTrialLifecycleQueue: () => queues.queue('trial-lifecycle'),
+}))
+
 import { ensureRedisConnected } from '@/src/lib/redis'
 import {
   componentsForTier,
@@ -40,6 +62,7 @@ import {
   probeCache,
   probeDatabase,
   probeEmail,
+  probeJobs,
   probePayment,
   probeStorage,
   runProbesForTier,
@@ -50,6 +73,9 @@ let fetchSpy: MockInstance<typeof fetch>
 beforeEach(() => {
   fetchSpy = vi.spyOn(globalThis, 'fetch')
   s3.send.mockReset().mockResolvedValue({})
+  for (const name of Object.keys(queues.state)) {
+    queues.state[name] = { workers: 1, waiting: 0 }
+  }
 })
 
 afterEach(() => {
@@ -78,6 +104,7 @@ describe('componentsForTier()', () => {
     expect(componentsForTier('peripheral')).toEqual([
       'payment',
       'email',
+      'jobs',
       'storage',
     ])
   })
@@ -308,13 +335,57 @@ describe('probePayment()', () => {
   })
 })
 
+// The worker is a separate process from Next. When it dies, the app keeps
+// serving pages while account deletions, exports and the nightly cleanups
+// quietly stop happening — the failure this probe exists for.
+describe('probeJobs()', () => {
+  it('is OPERATIONAL when every queue has a worker and no backlog', async () => {
+    const result = await probeJobs()
+
+    expect(result.status).toBe('OPERATIONAL')
+    expect(result.error).toBeNull()
+  })
+
+  it('reports an outage naming the queue nobody is consuming', async () => {
+    queues.state['data-export'] = { workers: 0, waiting: 0 }
+
+    const result = await probeJobs()
+
+    expect(result.status).toBe('MAJOR_OUTAGE')
+    expect(result.error).toContain('data-export')
+  })
+
+  // Working badly is neither slow nor down: the queue answers instantly and
+  // the jobs still are not being done.
+  it('degrades — without an error — when jobs pile up', async () => {
+    queues.state['account-lifecycle'] = { workers: 1, waiting: 120 }
+
+    const result = await probeJobs()
+
+    expect(result.status).toBe('DEGRADED')
+    expect(result.error).toContain('120 jobs aguardando')
+    expect(result.error).toContain('account-lifecycle')
+  })
+
+  it('tolerates a handful of jobs waiting to be picked up', async () => {
+    queues.state['data-retention'] = { workers: 1, waiting: 3 }
+
+    expect((await probeJobs()).status).toBe('OPERATIONAL')
+  })
+})
+
 describe('runProbesForTier()', () => {
   it('runs all peripheral probes and returns a map', async () => {
     fetchSpy.mockResolvedValue(new Response('ok', { status: 200 }))
 
     const result = await runProbesForTier('peripheral')
 
-    expect(Object.keys(result).sort()).toEqual(['email', 'payment', 'storage'])
+    expect(Object.keys(result).sort()).toEqual([
+      'email',
+      'jobs',
+      'payment',
+      'storage',
+    ])
     expect(result.payment?.status).toBe('OPERATIONAL')
     expect(result.storage?.status).toBe('OPERATIONAL')
   })

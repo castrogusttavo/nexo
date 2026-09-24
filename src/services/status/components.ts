@@ -8,6 +8,7 @@ export type ComponentKey =
   | 'payment'
   | 'email'
   | 'storage'
+  | 'jobs'
 
 export type ComponentTier = 'core' | 'peripheral'
 
@@ -53,6 +54,12 @@ export const COMPONENTS = [
     key: 'email',
     name: 'Envio de e-mail (Resend)',
     description: 'Entrega transacional de e-mail',
+    tier: 'peripheral',
+  },
+  {
+    key: 'jobs',
+    name: 'Processamento em segundo plano',
+    description: 'Filas de e-mail, exportações e limpezas agendadas',
     tier: 'peripheral',
   },
   {

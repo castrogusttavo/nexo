@@ -504,6 +504,7 @@ const STATUS_COMPONENTS = [
   'payment',
   'email',
   'storage',
+  'jobs',
 ]
 
 const HISTORY_DAYS = 90

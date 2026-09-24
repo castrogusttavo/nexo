@@ -14,7 +14,7 @@ vi.mock('@/src/repositories/incident.repository')
 vi.mock('@/src/services/status/probes', () => {
   const TIER_KEYS: Record<string, readonly string[]> = {
     core: ['app', 'database', 'cache', 'auth'],
-    peripheral: ['payment', 'email', 'storage'],
+    peripheral: ['payment', 'email', 'jobs', 'storage'],
   }
   // Budgets mirroring the real ones closely enough for the collector's
   // smoothing rule: these cases drive latency explicitly when they mean to.
@@ -24,6 +24,7 @@ vi.mock('@/src/services/status/probes', () => {
     cache: 1_000,
     auth: 1_500,
     storage: 1_500,
+    jobs: 2_000,
     payment: 3_000,
     email: 3_000,
   }

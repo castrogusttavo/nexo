@@ -10217,7 +10217,8 @@
           "auth",
           "payment",
           "email",
-          "storage"
+          "storage",
+          "jobs"
         ],
         "example": "app"
       },
