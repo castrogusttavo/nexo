@@ -179,9 +179,15 @@ jobs:
           retention-days: 1
 
       # Applying infrastructure is separate from deploying the app on purpose:
-      # `--remove-orphans` stops and deletes any container the file no longer
-      # declares, which is how RabbitMQ leaves, and that is not a thing to do
-      # as a side effect of shipping a frontend change.
+      # restarting Postgres or Redis is not a side effect a frontend deploy
+      # should have.
+      #
+      # `--remove-orphans` is deliberately NOT used, and this comment is the
+      # scar: both compose files in /var/www/nexo share one project name
+      # (`nexo`, from the directory), so to the infra file the app, the worker
+      # and the realtime server all look like orphans. Running it took
+      # production down for about ninety seconds on 2026-09-24. A container
+      # that should go is named explicitly below instead.
       - name: Apply the production infra compose
         if: ${{ inputs.mode == 'infra-apply' }}
         run: |
@@ -195,7 +201,20 @@ jobs:
           echo "==> installed $(wc -l < "$TARGET") lines into $TARGET"
 
           cd '${{ env.SERVER_DIR }}'
-          docker compose -f docker-compose.infra.yml up -d --remove-orphans
+          docker compose -f docker-compose.infra.yml up -d
+
+          # Whatever belongs to this project but is not declared by either
+          # compose file is reported, never removed: deciding that a container
+          # is garbage is a human's call, and the automated version of that
+          # call is what caused the outage this step now avoids.
+          echo
+          echo '==> containers in this project that no compose file declares:'
+          declared=$(docker compose -f docker-compose.infra.yml ps -a --format '{{.Name}}';
+                     docker compose -f docker-compose.yml ps -a --format '{{.Name}}')
+          docker ps -a --filter 'label=com.docker.compose.project=nexo' --format '{{.Names}}' |
+            while read -r name; do
+              grep -qx "$name" <<< "$declared" || echo "    $name"
+            done
 
           echo
           echo '==> what is running after'
@@ -207,8 +226,8 @@ jobs:
           curl -fsS -o /dev/null -w '  storage health %{http_code}\n' http://localhost:9000/minio/health/live
 
           echo
-          echo '==> volumes still on disk (rabbitmqdata is expected to survive:'
-          echo '    --remove-orphans deletes containers, never data)'
+          echo '==> volumes still on disk (rabbitmqdata survives on purpose:'
+          echo '    removing a container never removes its data)'
           docker volume ls --format '  {{.Name}}' | grep -E 'nexo_' || true
 
       - name: Bring the application stack up
