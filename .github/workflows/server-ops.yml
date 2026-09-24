@@ -1,0 +1,150 @@
+name: Server Ops
+
+# Narrow, auditable access to the production host for the things that live
+# outside this repository: the infrastructure compose file and the backup
+# script. The self-hosted runner is on that machine, so every action leaves a
+# log of what was read or changed.
+#
+# Modes are deliberately specific rather than "run this command". Read-only
+# ones come first and are the default.
+#
+#   compose-diff    — prints the server's infra compose next to this repo's
+#                     and diffs them. Changes nothing.
+#   backup-inspect  — prints the backup script (credentials redacted), its
+#                     cron entry, the most recent log and the rclone remote
+#                     names. Changes nothing.
+#   backup-run      — runs the backup script now and reports what it produced,
+#                     locally and on Backblaze B2.
+#   cleanup-bak     — removes the *.bak the storage migration left behind.
+
+on:
+  workflow_dispatch:
+    inputs:
+      mode:
+        description: 'What to do on the server'
+        required: true
+        default: compose-diff
+        type: choice
+        options: [compose-diff, backup-inspect, backup-run, cleanup-bak]
+
+env:
+  SERVER_DIR: /var/www/nexo
+  BACKUP_SCRIPT: /usr/local/sbin/nexo-backup.sh
+
+jobs:
+  ops:
+    name: ${{ inputs.mode }}
+    runs-on: self-hosted
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+
+      - name: Compare the server's infra compose with this repository's
+        if: ${{ inputs.mode == 'compose-diff' }}
+        run: |
+          set -uo pipefail
+          FILE='${{ env.SERVER_DIR }}/docker-compose.infra.yml'
+          if [ ! -f "$FILE" ]; then
+            echo "::error::$FILE does not exist."
+            exit 1
+          fi
+
+          echo "==> services and images on the server"
+          grep -nE '^  [a-z0-9_-]+:|image:|container_name:' "$FILE" || true
+
+          echo
+          echo '==> services and images in this repository'
+          grep -nE '^  [a-z0-9_-]+:|image:|container_name:' docker-compose.infra.yml || true
+
+          echo
+          echo '==> diff (server -> repository)'
+          # Values are redacted: the server file carries real credentials in
+          # environment blocks, and this log is readable by anyone with access
+          # to the Actions tab.
+          redact() { sed -E 's/(PASSWORD|SECRET|KEY|TOKEN|USER)([A-Z_]*): *.+/\1\2: <redacted>/I; s/(:[^ ]*@)/:<redacted>@/g'; }
+          diff -u <(redact < "$FILE") <(redact < docker-compose.infra.yml) || true
+
+          echo
+          echo '==> leftovers from the storage migration'
+          ls -la '${{ env.SERVER_DIR }}'/*.bak 2>/dev/null || echo '  (none)'
+
+          echo
+          echo '==> what is actually running'
+          docker ps --format '  {{.Names}} | {{.Image}} | {{.Status}}'
+
+      - name: Inspect the backup setup
+        if: ${{ inputs.mode == 'backup-inspect' }}
+        run: |
+          set -uo pipefail
+          echo "==> ${{ env.BACKUP_SCRIPT }}"
+          if [ -f '${{ env.BACKUP_SCRIPT }}' ]; then
+            # Same redaction as above: this prints a file that may embed keys.
+            sed -E 's/(PASSWORD|SECRET|KEY|TOKEN|ACCOUNT)([A-Z_]*)=.+/\1\2=<redacted>/I' '${{ env.BACKUP_SCRIPT }}'
+          else
+            echo '  (not found)'
+          fi
+
+          echo
+          echo '==> schedule'
+          crontab -l 2>/dev/null | grep -i backup || true
+          ls -la /etc/cron.d/ 2>/dev/null | grep -i backup || true
+          systemctl list-timers --all 2>/dev/null | grep -i backup || true
+
+          echo
+          echo '==> most recent backup artefacts on disk'
+          ls -lah /var/backups/nexo/ 2>/dev/null | tail -10 || echo '  (no /var/backups/nexo)'
+
+          echo
+          echo '==> most recent log lines'
+          for f in /var/log/nexo-backup.log /var/log/nexo/backup.log; do
+            [ -f "$f" ] && { echo "--- $f"; tail -25 "$f"; }
+          done
+
+          echo
+          echo '==> rclone remotes (names only)'
+          rclone listremotes 2>/dev/null || echo '  rclone not on PATH for this user'
+
+      - name: Run the backup now
+        if: ${{ inputs.mode == 'backup-run' }}
+        run: |
+          set -uo pipefail
+          if [ ! -x '${{ env.BACKUP_SCRIPT }}' ]; then
+            echo '::error::${{ env.BACKUP_SCRIPT }} is not executable by this user.'
+            exit 1
+          fi
+
+          before=$(ls -1 /var/backups/nexo/ 2>/dev/null | wc -l)
+          echo "==> files in /var/backups/nexo before: $before"
+
+          # The script is the same one cron runs; no flags, no shortcuts, so
+          # what this proves is what happens at 03:15 every day.
+          '${{ env.BACKUP_SCRIPT }}' 2>&1 | tail -60
+          status=${PIPESTATUS[0]}
+          echo "==> exit status: $status"
+
+          echo
+          echo '==> artefacts now'
+          ls -lah /var/backups/nexo/ 2>/dev/null | tail -10
+
+          echo
+          echo '==> newest objects on the remote'
+          for remote in $(rclone listremotes 2>/dev/null); do
+            echo "--- $remote"
+            rclone lsl "$remote" --max-depth 2 2>/dev/null | sort -k2 | tail -8 || true
+          done
+
+          exit "$status"
+
+      - name: Remove the migration leftovers
+        if: ${{ inputs.mode == 'cleanup-bak' }}
+        run: |
+          set -euo pipefail
+          found=0
+          for f in '${{ env.SERVER_DIR }}'/*.bak; do
+            [ -e "$f" ] || continue
+            found=1
+            echo "  removing $f"
+            rm -f "$f"
+          done
+          [ "$found" -eq 1 ] || echo '  nothing to remove'
+          ls -la '${{ env.SERVER_DIR }}' | grep -E '\.ya?ml' || true
