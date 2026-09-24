@@ -32,6 +32,7 @@ describe('GET /api/status', () => {
         'cache',
         'database',
         'email',
+        'jobs',
         'payment',
         'storage',
       ].sort(),
