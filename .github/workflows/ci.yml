@@ -172,13 +172,22 @@ jobs:
       # (it needs `server /data` or it exits immediately), so it's started
       # the same way as the redis-tls-smoke job's Redis container: a plain
       # docker run + a wait loop, instead of the declarative `services:` block.
+      #
+      # The image is Silo, a maintained AGPL fork of the MinIO server: MinIO
+      # archived the open-source repository and then withdrew its public
+      # distribution entirely — quay.io/minio/minio answers 401 for every tag,
+      # Docker Hub denies access and dl.min.io is 410 — which broke this job
+      # overnight with no change of ours. Silo is a drop-in: same command, same
+      # env vars, same `/minio/health/live` endpoint the wait loop below uses,
+      # and it reads a data directory written by the old server unchanged
+      # (verified against the exact image this replaces).
       - name: Start MinIO
         run: |
           docker run -d --name minio \
             -p 9000:9000 \
             -e MINIO_ROOT_USER=ci-minio-user \
             -e MINIO_ROOT_PASSWORD=ci-minio-password \
-            quay.io/minio/minio:RELEASE.2025-02-28T09-55-16Z server /data
+            docker.io/pgsty/silo:RELEASE.2026-09-16T00-00-00Z server /data
 
       - name: Wait for MinIO to be ready
         run: |

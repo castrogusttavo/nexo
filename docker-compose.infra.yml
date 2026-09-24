@@ -104,7 +104,11 @@ services:
       - app-network
 
   nexo-storage:
-    image: quay.io/minio/minio:RELEASE.2025-02-28T09-55-16Z
+    # Silo: maintained AGPL fork of the MinIO server, after MinIO archived the
+    # open-source project and pulled its images and binaries from public
+    # distribution. Drop-in on the existing `miniodata` volume — same on-disk
+    # format, same env vars, same bundled `mc` the healthcheck below calls.
+    image: docker.io/pgsty/silo:RELEASE.2026-09-16T00-00-00Z
     container_name: nexo-minio
     restart: unless-stopped
     environment:
