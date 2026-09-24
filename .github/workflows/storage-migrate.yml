@@ -168,10 +168,18 @@ jobs:
           if [ "$ok" -eq 1 ]; then
             echo '==> health endpoint answers on the host'
             # The chain customers actually use: nginx -> container. A container
-            # that answers on localhost while the public host does not is still
-            # an outage, and that is the half a local check cannot see.
-            code=$(curl -s -o /dev/null -w '%{http_code}' https://storage.nexopm.com/minio/health/live || echo 000)
-            echo "==> https://storage.nexopm.com/minio/health/live -> $code"
+            # that answers on localhost while the vhost does not is still an
+            # outage, and that is the half a local check cannot see.
+            #
+            # `--resolve` points the public hostname at the loopback instead of
+            # trusting DNS: this machine cannot reach its own public IP (no NAT
+            # hairpin), so a plain request to storage.nexopm.com fails here for
+            # reasons that have nothing to do with the service — which is
+            # exactly what rolled the first attempt back.
+            code=$(curl -s -o /dev/null -w '%{http_code}' \
+              --resolve storage.nexopm.com:443:127.0.0.1 \
+              https://storage.nexopm.com/minio/health/live) || code='000'
+            echo "==> nginx vhost storage.nexopm.com -> $code"
             if [ "$code" != '200' ]; then
               echo '::error::The public endpoint does not answer 200 — rolling back.'
               ok=0
