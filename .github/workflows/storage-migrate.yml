@@ -166,7 +166,19 @@ jobs:
           done
 
           if [ "$ok" -eq 1 ]; then
-            echo '==> health endpoint answers'
+            echo '==> health endpoint answers on the host'
+            # The chain customers actually use: nginx -> container. A container
+            # that answers on localhost while the public host does not is still
+            # an outage, and that is the half a local check cannot see.
+            code=$(curl -s -o /dev/null -w '%{http_code}' https://storage.nexopm.com/minio/health/live || echo 000)
+            echo "==> https://storage.nexopm.com/minio/health/live -> $code"
+            if [ "$code" != '200' ]; then
+              echo '::error::The public endpoint does not answer 200 — rolling back.'
+              ok=0
+            fi
+          fi
+
+          if [ "$ok" -eq 1 ]; then
             docker exec "$NAME" mc alias set check http://127.0.0.1:9000 \
               "$(docker inspect "$NAME" --format '{{range .Config.Env}}{{println .}}{{end}}' | sed -n 's/^MINIO_ROOT_USER=//p')" \
               "$(docker inspect "$NAME" --format '{{range .Config.Env}}{{println .}}{{end}}' | sed -n 's/^MINIO_ROOT_PASSWORD=//p')" > /dev/null 2>&1
