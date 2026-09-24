@@ -19,8 +19,9 @@ name: Server Ops
 #   compose-export  — uploads the server's infra compose as an artifact, so it
 #                     can be reviewed and then versioned in this repository.
 #   infra-apply     — installs this repository's production infra compose and
-#                     brings the stack to match it, removing whatever service
-#                     the file no longer declares.
+#                     brings the stack to match it.
+#   app-up          — brings the application stack (app, worker, realtime) back
+#                     up from docker-compose.yml, without a rebuild.
 
 on:
   workflow_dispatch:
@@ -30,7 +31,7 @@ on:
         required: true
         default: compose-diff
         type: choice
-        options: [compose-diff, backup-inspect, backup-run, cleanup-bak, compose-export, infra-apply]
+        options: [compose-diff, backup-inspect, backup-run, cleanup-bak, compose-export, infra-apply, app-up]
 
 env:
   SERVER_DIR: /var/www/nexo
@@ -209,3 +210,13 @@ jobs:
           echo '==> volumes still on disk (rabbitmqdata is expected to survive:'
           echo '    --remove-orphans deletes containers, never data)'
           docker volume ls --format '  {{.Name}}' | grep -E 'nexo_' || true
+
+      - name: Bring the application stack up
+        if: ${{ inputs.mode == 'app-up' }}
+        run: |
+          set -euo pipefail
+          cd '${{ env.SERVER_DIR }}'
+          docker compose -f docker-compose.yml up -d
+          sleep 5
+          docker ps --format '  {{.Names}} | {{.Image}} | {{.Status}}'
+          curl -fsS -o /dev/null -w '  app health %{http_code}\n' http://localhost:3000/api/health || true
