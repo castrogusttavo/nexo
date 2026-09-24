@@ -59,8 +59,8 @@ jobs:
           grep -nE '^  [a-z0-9_-]+:|image:|container_name:' "$FILE" || true
 
           echo
-          echo '==> services and images in this repository'
-          grep -nE '^  [a-z0-9_-]+:|image:|container_name:' docker-compose.infra.yml || true
+          echo '==> services and images in this repository (production file)'
+          grep -nE '^  [a-z0-9_-]+:|image:|container_name:' docker-compose.infra.prod.yml || true
 
           echo
           echo '==> diff (server -> repository)'
@@ -68,7 +68,11 @@ jobs:
           # environment blocks, and this log is readable by anyone with access
           # to the Actions tab.
           redact() { sed -E 's/(PASSWORD|SECRET|KEY|TOKEN|USER)([A-Z_]*): *.+/\1\2: <redacted>/I; s/(:[^ ]*@)/:<redacted>@/g'; }
-          diff -u <(redact < "$FILE") <(redact < docker-compose.infra.yml) || true
+          # Against the production file, not the development one: they are
+          # different stacks on purpose (dev has a replica and a pgbouncer),
+          # and diffing the wrong pair reports 125 lines of noise.
+          diff -u <(redact < "$FILE") <(redact < docker-compose.infra.prod.yml) &&
+            echo '  (identical)'
 
           echo
           echo '==> leftovers from the storage migration'
