@@ -226,9 +226,9 @@ export async function probeEmail(): Promise<ProbeResult> {
 
 /**
  * Storage is checked through the S3 API with our credentials rather than
- * through `/minio/health/live`, which answers 200 to anyone: the health
- * endpoint says the process is alive, `ListBuckets` says we can actually use
- * it. Same lesson the payment probe learned the expensive way. Listing is
+ * through `/minio/health/live` (the name the server kept after the MinIO
+ * fork), which answers 200 to anyone: the health endpoint says the process is
+ * alive, `ListBuckets` says we can actually use it. Same lesson the payment probe learned the expensive way. Listing is
  * used instead of `HeadBucket` so the check does not depend on any particular
  * bucket already existing.
  */
