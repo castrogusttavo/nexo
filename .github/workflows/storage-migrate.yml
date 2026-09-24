@@ -18,6 +18,8 @@ name: Storage Migration (MinIO → Silo)
 #   migrate  — backs the data up, swaps the container, verifies, and rolls
 #              back by itself if verification fails.
 #   rollback — puts the previous image back, as long as it is still on disk.
+#   purge    — deletes every MinIO image left on the machine, refusing to
+#              touch any that a container still references.
 
 on:
   workflow_dispatch:
@@ -27,7 +29,7 @@ on:
         required: true
         default: inspect
         type: choice
-        options: [inspect, migrate, rollback]
+        options: [inspect, migrate, rollback, purge]
       container:
         description: 'Name of the storage container'
         required: true
@@ -50,6 +52,7 @@ jobs:
     steps:
       - name: Inspect the running storage container
         id: inspect
+        if: ${{ inputs.mode != 'purge' }}
         run: |
           set -euo pipefail
           NAME='${{ inputs.container }}'
@@ -220,6 +223,30 @@ jobs:
           mv "$FILE.bak" "$FILE"
           docker compose -f "$FILE" up -d '${{ steps.inspect.outputs.service }}'
           docker ps --filter "name=${{ steps.inspect.outputs.name }}" --format '  {{.Names}} | {{.Image}} | {{.Status}}'
+
+      # "Leave MinIO completely": the pinned image goes with the migration,
+      # this sweeps up whatever else is still lying around — a stray `latest`
+      # from an older deploy, a dangling tag. An image a container still
+      # references is left alone and reported, because deleting it would leave
+      # that container unable to ever start again: nobody can pull these back.
+      - name: Purge every MinIO image left behind
+        if: ${{ inputs.mode == 'purge' }}
+        run: |
+          set -euo pipefail
+          found=0
+          for image in $(docker images --format '{{.Repository}}:{{.Tag}}' | grep -E '(^|/)minio/minio:' || true); do
+            found=1
+            user=$(docker ps -a --filter "ancestor=$image" --format '{{.Names}}' | paste -sd, -)
+            if [ -n "$user" ]; then
+              echo "  keeping $image — still referenced by: $user"
+              continue
+            fi
+            echo "  deleting $image"
+            docker rmi "$image"
+          done
+          [ "$found" -eq 1 ] || echo '  no MinIO image on this machine'
+          echo '==> storage images now:'
+          docker images --format '  {{.Repository}}:{{.Tag}} ({{.Size}})' | grep -iE 'silo|minio' || echo '  (none)'
 
       # Deliberately last, and opt-in: the old image cannot be pulled again by
       # anyone, so deleting it is the one step of this migration that cannot be
