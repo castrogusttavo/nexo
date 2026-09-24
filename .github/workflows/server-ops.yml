@@ -18,6 +18,9 @@ name: Server Ops
 #   cleanup-bak     — removes the *.bak the storage migration left behind.
 #   compose-export  — uploads the server's infra compose as an artifact, so it
 #                     can be reviewed and then versioned in this repository.
+#   infra-apply     — installs this repository's production infra compose and
+#                     brings the stack to match it, removing whatever service
+#                     the file no longer declares.
 
 on:
   workflow_dispatch:
@@ -27,7 +30,7 @@ on:
         required: true
         default: compose-diff
         type: choice
-        options: [compose-diff, backup-inspect, backup-run, cleanup-bak, compose-export]
+        options: [compose-diff, backup-inspect, backup-run, cleanup-bak, compose-export, infra-apply]
 
 env:
   SERVER_DIR: /var/www/nexo
@@ -173,3 +176,36 @@ jobs:
           name: server-infra-compose
           path: exported/docker-compose.infra.yml
           retention-days: 1
+
+      # Applying infrastructure is separate from deploying the app on purpose:
+      # `--remove-orphans` stops and deletes any container the file no longer
+      # declares, which is how RabbitMQ leaves, and that is not a thing to do
+      # as a side effect of shipping a frontend change.
+      - name: Apply the production infra compose
+        if: ${{ inputs.mode == 'infra-apply' }}
+        run: |
+          set -euo pipefail
+          TARGET='${{ env.SERVER_DIR }}/docker-compose.infra.yml'
+
+          echo '==> what is running before'
+          docker ps --format '  {{.Names}} | {{.Image}} | {{.Status}}'
+
+          cp docker-compose.infra.prod.yml "$TARGET"
+          echo "==> installed $(wc -l < "$TARGET") lines into $TARGET"
+
+          cd '${{ env.SERVER_DIR }}'
+          docker compose -f docker-compose.infra.yml up -d --remove-orphans
+
+          echo
+          echo '==> what is running after'
+          docker ps --format '  {{.Names}} | {{.Image}} | {{.Status}}'
+
+          echo
+          echo '==> the database and storage answered:'
+          docker exec nexo-db-1 pg_isready -U "$(grep -m1 '^POSTGRES_USER=' .env | cut -d= -f2-)" || true
+          curl -fsS -o /dev/null -w '  storage health %{http_code}\n' http://localhost:9000/minio/health/live
+
+          echo
+          echo '==> volumes still on disk (rabbitmqdata is expected to survive:'
+          echo '    --remove-orphans deletes containers, never data)'
+          docker volume ls --format '  {{.Name}}' | grep -E 'nexo_' || true

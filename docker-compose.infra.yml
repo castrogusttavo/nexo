@@ -162,7 +162,6 @@ volumes:
   pgdata:
   pgdata-replica:
   redis-master-data:
-  rabbitmqdata:
   miniodata:
 
 secrets:

@@ -1,0 +1,102 @@
+# Production infrastructure, as it runs on the server.
+#
+# This file used to exist *only* at /var/www/nexo/docker-compose.infra.yml,
+# because the CD copies docker-compose.yml and never this one. That is how the
+# server ended up with a RabbitMQ nothing talks to, while the repository's
+# docker-compose.infra.yml — which is the *development* stack — grew a replica
+# and a pgbouncer production never had. Two different files with the same name
+# drifting apart in silence, which the storage migration finally made visible.
+#
+# Names matter here and are deliberately kept: `nexo-db-1` is what the nightly
+# backup calls (`docker exec nexo-db-1 pg_dump`), and `nexo-minio-1` is what
+# the storage tooling expects. Renaming either breaks something that only
+# reports the failure on the day you need it.
+#
+# The corresponding values live in /var/www/nexo/.env, written by the CD from
+# sops. Nothing here carries a literal credential.
+
+services:
+  nexo-db:
+    image: postgres:17-alpine
+    container_name: nexo-db-1
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB}
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    networks:
+      - app-network
+
+  nexo-redis-master:
+    image: bitnami/redis:latest
+    container_name: nexo-redis
+    restart: unless-stopped
+    environment:
+      REDIS_REPLICATION_MODE: master
+      REDIS_PASSWORD: ${REDIS_PASSWORD}
+      REDIS_TLS_ENABLED: "yes"
+      REDIS_TLS_PORT_NUMBER: 6379
+      REDIS_PORT_NUMBER: 0
+      REDIS_TLS_CERT_FILE: /opt/bitnami/redis/certs/redis.crt
+      REDIS_TLS_KEY_FILE: /opt/bitnami/redis/certs/redis.key
+      REDIS_TLS_CA_FILE: /opt/bitnami/redis/certs/ca.crt
+      REDIS_TLS_AUTH_CLIENTS: "no"
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis-master-data:/bitnami/redis/data
+      - ./redis-tls:/opt/bitnami/redis/certs:ro
+    healthcheck:
+      test: ["CMD-SHELL", "redis-cli --tls --cacert /opt/bitnami/redis/certs/ca.crt -a $${REDIS_PASSWORD} ping"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    networks:
+      - app-network
+
+  # Silo, the maintained AGPL fork of the MinIO server. MinIO archived its
+  # open-source project and withdrew every public image and binary, so the tag
+  # this replaced cannot be pulled by anyone, anywhere, any more.
+  nexo-storage:
+    image: docker.io/pgsty/silo:RELEASE.2026-09-16T00-00-00Z
+    container_name: nexo-minio-1
+    restart: unless-stopped
+    environment:
+      MINIO_ROOT_USER: ${MINIO_USER}
+      MINIO_ROOT_PASSWORD: ${MINIO_PASSWORD}
+    ports:
+      - "9000:9000" # API
+      - "127.0.0.1:9001:9001" # Console Web
+    volumes:
+      - miniodata:/data
+    command: server /data --console-address ":9001"
+    healthcheck:
+      test: ["CMD", "mc", "ready", "local"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    networks:
+      - app-network
+
+# `rabbitmqdata` is deliberately absent along with the service that used it:
+# nothing in this codebase speaks AMQP — no dependency, no client, no
+# environment variable, no import. The queues are BullMQ over Redis. It was a
+# leftover of an earlier architecture, costing memory and one more listening
+# port in production for nobody.
+volumes:
+  pgdata:
+  redis-master-data:
+  miniodata:
+
+networks:
+  app-network:
+    name: nexo_default
