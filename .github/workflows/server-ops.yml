@@ -16,6 +16,8 @@ name: Server Ops
 #   backup-run      — runs the backup script now and reports what it produced,
 #                     locally and on Backblaze B2.
 #   cleanup-bak     — removes the *.bak the storage migration left behind.
+#   compose-export  — uploads the server's infra compose as an artifact, so it
+#                     can be reviewed and then versioned in this repository.
 
 on:
   workflow_dispatch:
@@ -25,7 +27,7 @@ on:
         required: true
         default: compose-diff
         type: choice
-        options: [compose-diff, backup-inspect, backup-run, cleanup-bak]
+        options: [compose-diff, backup-inspect, backup-run, cleanup-bak, compose-export]
 
 env:
   SERVER_DIR: /var/www/nexo
@@ -148,3 +150,26 @@ jobs:
           done
           [ "$found" -eq 1 ] || echo '  nothing to remove'
           ls -la '${{ env.SERVER_DIR }}' | grep -E '\.ya?ml' || true
+
+      # The production infra compose exists only on the server (the CD copies
+      # docker-compose.yml and never this one), so it cannot be reviewed or
+      # versioned without leaving the box. An artifact keeps it out of the run
+      # log, which is rendered to anyone who opens the Actions tab.
+      - name: Export the server's infra compose
+        if: ${{ inputs.mode == 'compose-export' }}
+        run: |
+          set -euo pipefail
+          mkdir -p exported
+          cp '${{ env.SERVER_DIR }}/docker-compose.infra.yml' exported/
+          echo "==> exported $(wc -l < exported/docker-compose.infra.yml) lines"
+          echo '==> lines that carry a literal value instead of a ${VAR} reference:'
+          grep -nE '^[[:space:]]+[A-Z_]+: *[^$[:space:]]' exported/docker-compose.infra.yml |
+            sed -E 's/: .*/: <value hidden>/' || echo '  (none — every value is a reference)'
+
+      - name: Upload it
+        if: ${{ inputs.mode == 'compose-export' }}
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: server-infra-compose
+          path: exported/docker-compose.infra.yml
+          retention-days: 1
