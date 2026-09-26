@@ -2,6 +2,7 @@ import { createId } from '@paralleldrive/cuid2'
 import { hash, verify } from 'argon2'
 import { betterAuth } from 'better-auth'
 import { prismaAdapter } from 'better-auth/adapters/prisma'
+import { createAuthMiddleware } from 'better-auth/api'
 import { emailOTP, twoFactor } from 'better-auth/plugins'
 import { auditAuth, auditMutation } from '@/lib/axiom/audit'
 import { NODE_ENV } from '@/lib/env/env'
@@ -13,6 +14,7 @@ import {
   GOOGLE_CLIENT_ID,
   GOOGLE_CLIENT_SECRET,
 } from '@/lib/env/server'
+
 import { PRIVACY_VERSION, TERMS_VERSION } from '@/lib/legal/versions'
 import { ARGON2_OPTIONS } from '@/src/lib/argon2-config'
 import { sendResetPasswordEmail } from '@/src/lib/mail/user/send-reset-password'
@@ -21,6 +23,7 @@ import { sendVerifyEmailWithOtp } from '@/src/lib/mail/user/send-verify-email-wi
 import { sendWelcomeEmail } from '@/src/lib/mail/user/send-welcome'
 import { AccountLifecycleService } from '@/src/services/account-lifecycle.service'
 import { acquireVerifySlot } from './auth-concurrency-gate'
+import { refuseTrustedDeviceForAdmins } from './auth-trusted-device'
 import { prisma } from './prisma'
 import { generateUniqueUsername } from './username'
 
@@ -313,6 +316,9 @@ export const auth = betterAuth({
       },
     },
   },
+  hooks: {
+    after: createAuthMiddleware(refuseTrustedDeviceForAdmins),
+  },
   plugins: [
     emailOTP({
       overrideDefaultEmailVerification: true,
@@ -338,13 +344,31 @@ export const auth = betterAuth({
       },
     }),
     twoFactor({
-      // The 2nd factor is email OTP (sent to the account's already-verified
-      // email), not TOTP/authenticator — there's no scan/verify step in the
-      // toggle. Without this, `twoFactor.enable()` doesn't persist `twoFactorEnabled`
-      // and the activation "disappears" when the session reloads.
-      skipVerificationOnEnable: true,
+      // Shown by authenticator apps next to the code.
+      issuer: 'Nexo',
+      // Two second factors, enabled per method (better-auth 1.7 split
+      // `enable()` by `method`): `otp` turns on email codes immediately, since
+      // the address is already verified at that point and nothing else is left
+      // to prove; `totp` writes an unverified secret and only counts once the
+      // user types a code the authenticator produced. Skipping that step would
+      // let someone enable TOTP from a QR code they never scanned and lock
+      // themselves out at the next sign-in.
+      skipVerificationOnEnable: false,
+      // The plugin defaults to a 10-attempt budget; five is enough for a
+      // 6-digit code and cuts the guessing surface in half. Both values were
+      // implicit before — the lockout writes to `two_factors` columns this
+      // schema only gained in the `two_factor_lockout` migration.
+      accountLockout: {
+        enabled: true,
+        maxFailedAttempts: 5,
+        durationSeconds: 900,
+      },
       otpOptions: {
         period: 5,
+        // The default is "plain": the live second factor would sit in the
+        // verification table in clear text, so anyone with read access to that
+        // table could complete someone else's sign-in challenge.
+        storeOTP: 'hashed',
         async sendOTP({ user, otp }) {
           try {
             await sendVerify2faAccessOtp({

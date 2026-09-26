@@ -23,7 +23,6 @@ interface TwoFAState {
   password: string
   error: string | null
   busy: boolean
-  backupCodes: string[] | null
 }
 
 type TwoFAAction =
@@ -31,7 +30,7 @@ type TwoFAAction =
   | { type: 'passwordChanged'; password: string }
   | { type: 'confirmStart' }
   | { type: 'validationError'; message: string }
-  | { type: 'enableSuccess'; backupCodes: string[] }
+  | { type: 'enableSuccess' }
   | { type: 'disableSuccess' }
   | { type: 'requestError'; message: string }
   | { type: 'reset' }
@@ -42,7 +41,6 @@ function twoFAReducer(state: TwoFAState, action: TwoFAAction): TwoFAState {
       return {
         ...state,
         error: null,
-        backupCodes: [],
         password: '',
         mode: action.mode,
       }
@@ -56,7 +54,6 @@ function twoFAReducer(state: TwoFAState, action: TwoFAAction): TwoFAState {
       return {
         ...state,
         isEnabled: true,
-        backupCodes: action.backupCodes,
         mode: 'idle',
         password: '',
         busy: false,
@@ -95,7 +92,6 @@ export function ProfileTwoFactorSection({
       password: '',
       error: null,
       busy: false,
-      backupCodes: null,
     }),
   )
   const {
@@ -104,7 +100,6 @@ export function ProfileTwoFactorSection({
     password: twoFAPass,
     error: twoFAError,
     busy: twoFABusy,
-    backupCodes,
   } = twoFAState
 
   function handle2FAToggle(next: boolean) {
@@ -129,8 +124,9 @@ export function ProfileTwoFactorSection({
     dispatchTwoFA({ type: 'confirmStart' })
 
     if (twoFAMode === 'enabling') {
-      const { data, error } = await authClient.twoFactor.enable({
+      const { error } = await authClient.twoFactor.enable({
         password: twoFAPass,
+        method: 'otp',
       })
       if (error) {
         dispatchTwoFA({
@@ -139,10 +135,7 @@ export function ProfileTwoFactorSection({
         })
         return
       }
-      dispatchTwoFA({
-        type: 'enableSuccess',
-        backupCodes: data?.backupCodes ?? [],
-      })
+      dispatchTwoFA({ type: 'enableSuccess' })
       return
     }
 
@@ -184,7 +177,7 @@ export function ProfileTwoFactorSection({
               {!hasPassword
                 ? 'Disponível apenas para contas com senha definida.'
                 : is2FAEnabled
-                  ? 'Código por e-mail a cada login.'
+                  ? 'Código por e-mail a cada login. Para usar um aplicativo autenticador, vá em configurações de segurança.'
                   : 'Recomendada para maior segurança.'}
             </p>
             <Switch
@@ -245,21 +238,6 @@ export function ProfileTwoFactorSection({
                       ? 'Ativar 2FA'
                       : 'Desativar 2FA'}
                 </Button>
-              </div>
-            </div>
-          )}
-
-          {/* Backup codes */}
-          {backupCodes && backupCodes.length > 0 && (
-            <div className='flex flex-col gap-2 border-t pt-3'>
-              <p className='text-sm font-medium'>Códigos de backup</p>
-              <p className='text-xs text-muted-foreground'>
-                Guarde em local seguro. Cada código só pode ser usado uma vez.
-              </p>
-              <div className='grid grid-cols-2 gap-1.5 rounded-md border p-3 font-mono text-xs'>
-                {backupCodes.map((code) => (
-                  <span key={code}>{code}</span>
-                ))}
               </div>
             </div>
           )}

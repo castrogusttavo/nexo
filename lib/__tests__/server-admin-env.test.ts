@@ -48,9 +48,9 @@ describe('admin env validation', () => {
   })
 
   // Each surface validates only what it reads. The first lazy version used one
-  // schema for all three variables, so /jobs — which authenticates with the
-  // workbench pair alone — 500ed in production over a missing
-  // PLATFORM_ADMIN_EMAILS it never touches.
+  // schema for all three variables, so the queue workbench — which
+  // authenticates with its own pair alone — 500ed in production over a
+  // missing PLATFORM_ADMIN_EMAILS it never touches.
   it('serves the workbench without the admin e-mail list', async () => {
     vi.stubEnv('WORKBENCH_USER', 'nexo-ops')
     vi.stubEnv('WORKBENCH_PASS', 'a-long-enough-password')

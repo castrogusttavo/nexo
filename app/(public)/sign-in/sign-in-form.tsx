@@ -9,13 +9,14 @@ import { SocialLoginButtonProps } from '@/components/social-login-button'
 import { H4 } from '@/components/typography/heading/h4'
 import { Muted } from '@/components/typography/text/muted'
 import { Button } from '@/components/ui/button'
+import { Checkbox } from '@/components/ui/checkbox'
 import { Field, FieldError, FieldLabel } from '@/components/ui/field'
 import { Input } from '@/components/ui/input'
 import { authClient } from '@/src/lib/auth-client'
 import { authErrorMessage } from '@/src/lib/auth-errors'
 import { settleAuthRequest } from '@/src/lib/auth-request'
 
-type Step = 'form' | 'otp' | 'backup'
+type Step = 'form' | 'otp' | 'totp' | 'backup'
 
 const MAX_RETRIES = 2
 
@@ -37,6 +38,11 @@ export function SignInForm({ redirectTo = '/' }: { redirectTo?: string }) {
   const [isVerifying, setIsVerifying] = useState(false)
   const [isRetrying, setIsRetrying] = useState(false)
   const [backupCode, setBackupCode] = useState('')
+  const [totpCode, setTotpCode] = useState('')
+  // Skips the second factor on this browser for 30 days. Platform admins are
+  // refused server-side regardless of what this sends (src/lib/auth.ts), so
+  // the box can stay on screen for everyone without leaking who is an admin.
+  const [trustDevice, setTrustDevice] = useState(false)
 
   const signUpHref =
     redirectTo === '/'
@@ -121,7 +127,7 @@ export function SignInForm({ redirectTo = '/' }: { redirectTo?: string }) {
     setOtpError(null)
     setIsVerifying(true)
     const { error: verifyError } = await settleAuthRequest(
-      authClient.twoFactor.verifyOtp({ code: otp }),
+      authClient.twoFactor.verifyOtp({ code: otp, trustDevice }),
     )
     setIsVerifying(false)
 
@@ -156,7 +162,10 @@ export function SignInForm({ redirectTo = '/' }: { redirectTo?: string }) {
     setOtpError(null)
     setIsVerifying(true)
     const { error: verifyError } = await settleAuthRequest(
-      authClient.twoFactor.verifyBackupCode({ code: backupCode.trim() }),
+      authClient.twoFactor.verifyBackupCode({
+        code: backupCode.trim(),
+        trustDevice,
+      }),
     )
     setIsVerifying(false)
     if (verifyError) {
@@ -166,10 +175,49 @@ export function SignInForm({ redirectTo = '/' }: { redirectTo?: string }) {
     push(redirectTo)
   }
 
+  async function handleVerifyTotp(e: React.SyntheticEvent<HTMLFormElement>) {
+    e.preventDefault()
+    if (!totpCode.trim()) {
+      setOtpError('Informe o código do aplicativo')
+      return
+    }
+    setOtpError(null)
+    setIsVerifying(true)
+    const { error: verifyError } = await settleAuthRequest(
+      authClient.twoFactor.verifyTotp({
+        code: totpCode.trim(),
+        trustDevice,
+      }),
+    )
+    setIsVerifying(false)
+    if (verifyError) {
+      setOtpError(authErrorMessage(verifyError, 'Código inválido ou expirado'))
+      return
+    }
+    push(redirectTo)
+  }
+
   function handleBack() {
     setStep('form')
     setOtpError(null)
   }
+
+  const trustDeviceField = (
+    <Field orientation='horizontal'>
+      <Checkbox
+        id='sign-in-trust-device'
+        checked={trustDevice}
+        onCheckedChange={(state) => setTrustDevice(state === true)}
+        disabled={isVerifying}
+      />
+      <FieldLabel
+        htmlFor='sign-in-trust-device'
+        className='text-sm leading-5 text-muted-foreground'
+      >
+        Confiar neste dispositivo por 30 dias
+      </FieldLabel>
+    </Field>
+  )
 
   return (
     <div className='min-h-screen flex flex-col items-center justify-center p-4 pb-12'>
@@ -266,18 +314,79 @@ export function SignInForm({ redirectTo = '/' }: { redirectTo?: string }) {
         )}
 
         {step === 'otp' && (
-          <EmailValidationWithOtp
-            email={email}
-            onBack={handleBack}
-            onVerify={handleVerify}
-            onResend={handleResend}
-            isPending={isVerifying}
-            error={otpError}
-            onUseBackupCode={() => {
-              setStep('backup')
-              setOtpError(null)
-            }}
-          />
+          <>
+            <EmailValidationWithOtp
+              email={email}
+              onBack={handleBack}
+              onVerify={handleVerify}
+              onResend={handleResend}
+              isPending={isVerifying}
+              error={otpError}
+              onUseBackupCode={() => {
+                setStep('backup')
+                setOtpError(null)
+              }}
+            />
+            {trustDeviceField}
+            <div className='text-center text-sm'>
+              <button
+                type='button'
+                onClick={() => {
+                  setStep('totp')
+                  setOtpError(null)
+                }}
+                className='text-primary hover:underline'
+              >
+                Tenho um aplicativo autenticador
+              </button>
+            </div>
+          </>
+        )}
+
+        {step === 'totp' && (
+          <>
+            <div>
+              <H4>Abra seu aplicativo autenticador.</H4>
+              <H4 className='text-muted-foreground'>
+                Digite o código de 6 dígitos que ele está mostrando agora.
+              </H4>
+            </div>
+            <form onSubmit={handleVerifyTotp} className='w-full space-y-4'>
+              <Field data-invalid={!!otpError || undefined}>
+                <FieldLabel htmlFor='sign-in-totp-code'>
+                  Código do aplicativo
+                </FieldLabel>
+                <Input
+                  id='sign-in-totp-code'
+                  value={totpCode}
+                  onChange={(e) => setTotpCode(e.target.value)}
+                  placeholder='000000'
+                  inputMode='numeric'
+                  autoComplete='one-time-code'
+                  autoFocus
+                  disabled={isVerifying}
+                />
+                {otpError && <FieldError>{otpError}</FieldError>}
+              </Field>
+              {trustDeviceField}
+              <Button type='submit' className='w-full' disabled={isVerifying}>
+                {isVerifying ? 'Verificando...' : 'Verificar código'}
+              </Button>
+              <div className='text-center text-sm'>
+                <button
+                  type='button'
+                  onClick={() => {
+                    setStep('otp')
+                    setOtpError(null)
+                    setTotpCode('')
+                  }}
+                  className='text-primary hover:underline'
+                >
+                  Usar o código enviado por e-mail
+                </button>
+              </div>
+            </form>
+          </>
         )}
 
         {step === 'backup' && (
@@ -307,6 +416,7 @@ export function SignInForm({ redirectTo = '/' }: { redirectTo?: string }) {
                 />
                 {otpError && <FieldError>{otpError}</FieldError>}
               </Field>
+              {trustDeviceField}
               <Button type='submit' className='w-full' disabled={isVerifying}>
                 {isVerifying ? 'Verificando...' : 'Verificar código'}
               </Button>

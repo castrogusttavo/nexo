@@ -1,6 +1,7 @@
 'use client'
 
 import { useState } from 'react'
+import { TwoFactorEnrollment } from '@/components/security/two-factor-enrollment'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Field, FieldError, FieldLabel } from '@/components/ui/field'
@@ -19,7 +20,6 @@ export function SettingsTwoFactorCard() {
   const [password, setPassword] = useState('')
   const [error, setError] = useState<string | null>(null)
   const [busy, setBusy] = useState(false)
-  const [backupCodes, setBackupCodes] = useState<string[] | null>(null)
 
   function reset() {
     setMode('idle')
@@ -30,7 +30,6 @@ export function SettingsTwoFactorCard() {
 
   function handleToggle(next: boolean) {
     setError(null)
-    setBackupCodes(null)
     setPassword('')
     setMode(next ? 'enabling' : 'disabling')
   }
@@ -43,23 +42,6 @@ export function SettingsTwoFactorCard() {
     }
     setError(null)
     setBusy(true)
-
-    if (mode === 'enabling') {
-      const { data, error: enableError } = await authClient.twoFactor.enable({
-        password,
-      })
-      setBusy(false)
-
-      if (enableError) {
-        setError(authErrorMessage(enableError, 'Não foi possível ativar a 2FA'))
-        return
-      }
-
-      setBackupCodes(data?.backupCodes ?? [])
-      setMode('idle')
-      setPassword('')
-      return
-    }
 
     if (mode === 'disabling') {
       const { error: disableError } = await authClient.twoFactor.disable({
@@ -78,15 +60,6 @@ export function SettingsTwoFactorCard() {
     }
   }
 
-  async function handleCopyCodes() {
-    if (!backupCodes) return
-    try {
-      await navigator.clipboard.writeText(backupCodes.join('\n'))
-    } catch {
-      // ignore
-    }
-  }
-
   return (
     <Card>
       <CardHeader>
@@ -99,8 +72,8 @@ export function SettingsTwoFactorCard() {
               {isEnabled ? 'Ativa' : 'Inativa'}
             </p>
             <p className='text-sm text-muted-foreground'>
-              Receba um código de 6 dígitos por e-mail no login para reforçar a
-              segurança da sua conta.
+              Exija um segundo fator no login: um aplicativo autenticador ou um
+              código de 6 dígitos por e-mail.
             </p>
           </div>
           <Switch
@@ -110,12 +83,14 @@ export function SettingsTwoFactorCard() {
           />
         </div>
 
-        {mode !== 'idle' && (
+        {mode === 'enabling' && (
+          <TwoFactorEnrollment onEnabled={reset} onCancel={reset} />
+        )}
+
+        {mode === 'disabling' && (
           <form onSubmit={handleConfirm} className='space-y-3 border-t pt-4'>
             <Field data-invalid={!!error || undefined}>
-              <FieldLabel>
-                Senha para {mode === 'enabling' ? 'ativar' : 'desativar'} a 2FA
-              </FieldLabel>
+              <FieldLabel>Senha para desativar a 2FA</FieldLabel>
               <Input
                 type='password'
                 value={password}
@@ -137,41 +112,10 @@ export function SettingsTwoFactorCard() {
                 Cancelar
               </Button>
               <Button type='submit' disabled={busy}>
-                {busy
-                  ? 'Processando...'
-                  : mode === 'enabling'
-                    ? 'Ativar 2FA'
-                    : 'Desativar 2FA'}
+                {busy ? 'Processando...' : 'Desativar 2FA'}
               </Button>
             </div>
           </form>
-        )}
-
-        {backupCodes && backupCodes.length > 0 && (
-          <div className='space-y-3 border-t pt-4'>
-            <div>
-              <p className='text-sm font-medium'>Códigos de backup</p>
-              <p className='text-sm text-muted-foreground'>
-                Guarde estes códigos em local seguro. Cada código só pode ser
-                usado uma vez e não serão exibidos novamente.
-              </p>
-            </div>
-            <div className='grid grid-cols-2 gap-2 rounded-md border p-3 font-mono text-sm'>
-              {backupCodes.map((code) => (
-                <span key={code}>{code}</span>
-              ))}
-            </div>
-            <div className='flex justify-end'>
-              <Button
-                type='button'
-                variant='outline'
-                size='sm'
-                onClick={handleCopyCodes}
-              >
-                Copiar códigos
-              </Button>
-            </div>
-          </div>
         )}
       </CardContent>
     </Card>

@@ -71,6 +71,8 @@ type AuditAuthEvent =
   | 'auth.2fa_otp.send_failed'
   | 'auth.2fa_enabled'
   | 'auth.2fa_disabled'
+  | 'auth.2fa.trust_device_refused'
+  | 'auth.admin_access.denied'
   | 'auth.welcome_email.send_failed'
   | 'auth.sign_in.success'
   | 'auth.sign_in.failure'

@@ -3,15 +3,23 @@ import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { renderWithProviders } from '@/src/__tests__/helpers/component'
 import { SignInForm } from '../sign-in-form'
 
-const { push, signInEmail, signInSocial, sendOtp, verifyOtp, verifyBackup } =
-  vi.hoisted(() => ({
-    push: vi.fn(),
-    signInEmail: vi.fn(),
-    signInSocial: vi.fn(),
-    sendOtp: vi.fn(),
-    verifyOtp: vi.fn(),
-    verifyBackup: vi.fn(),
-  }))
+const {
+  push,
+  signInEmail,
+  signInSocial,
+  sendOtp,
+  verifyOtp,
+  verifyTotp,
+  verifyBackup,
+} = vi.hoisted(() => ({
+  push: vi.fn(),
+  signInEmail: vi.fn(),
+  signInSocial: vi.fn(),
+  sendOtp: vi.fn(),
+  verifyOtp: vi.fn(),
+  verifyTotp: vi.fn(),
+  verifyBackup: vi.fn(),
+}))
 
 vi.mock('next/navigation', () => ({
   useRouter: () => ({ push }),
@@ -23,6 +31,7 @@ vi.mock('@/src/lib/auth-client', () => ({
     twoFactor: {
       sendOtp,
       verifyOtp,
+      verifyTotp,
       verifyBackupCode: verifyBackup,
     },
   },
@@ -76,6 +85,7 @@ beforeEach(() => {
   signInSocial.mockResolvedValue({ data: null, error: null })
   sendOtp.mockResolvedValue({ data: {}, error: null })
   verifyOtp.mockResolvedValue({ data: {}, error: null })
+  verifyTotp.mockResolvedValue({ data: {}, error: null })
   verifyBackup.mockResolvedValue({ data: {}, error: null })
 })
 
@@ -338,7 +348,10 @@ describe('<SignInForm /> two-factor step', () => {
     await user.type(screen.getByRole('textbox'), '123456')
 
     await waitFor(() =>
-      expect(verifyOtp).toHaveBeenCalledWith({ code: '123456' }),
+      expect(verifyOtp).toHaveBeenCalledWith({
+        code: '123456',
+        trustDevice: false,
+      }),
     )
     await waitFor(() => expect(push).toHaveBeenCalledWith('/acme'))
   })
@@ -410,7 +423,10 @@ describe('<SignInForm /> backup code step', () => {
     await user.type(screen.getByPlaceholderText('xxxxxxxx'), '  abcd1234  ')
     await user.click(screen.getByRole('button', { name: 'Verificar código' }))
 
-    expect(verifyBackup).toHaveBeenCalledWith({ code: 'abcd1234' })
+    expect(verifyBackup).toHaveBeenCalledWith({
+      code: 'abcd1234',
+      trustDevice: false,
+    })
     await waitFor(() => expect(push).toHaveBeenCalledWith('/acme'))
   })
 
@@ -435,5 +451,106 @@ describe('<SignInForm /> backup code step', () => {
     )
 
     expect(screen.getByText('Confirme seu e-mail')).toBeInTheDocument()
+  })
+})
+
+describe('<SignInForm /> authenticator step', () => {
+  async function reachTotpStep() {
+    const utils = await reachOtpStep()
+    await utils.user.click(
+      screen.getByRole('button', { name: 'Tenho um aplicativo autenticador' }),
+    )
+    await screen.findByLabelText('Código do aplicativo')
+    return utils
+  }
+
+  it('verifies the app code and redirects', async () => {
+    const { user } = await reachTotpStep()
+
+    await user.type(screen.getByLabelText('Código do aplicativo'), '123456')
+    await user.click(screen.getByRole('button', { name: 'Verificar código' }))
+
+    await waitFor(() =>
+      expect(verifyTotp).toHaveBeenCalledWith({
+        code: '123456',
+        trustDevice: false,
+      }),
+    )
+    await waitFor(() => expect(push).toHaveBeenCalledWith('/'))
+  })
+
+  it('refuses an empty code without calling the API', async () => {
+    const { user } = await reachTotpStep()
+
+    await user.click(screen.getByRole('button', { name: 'Verificar código' }))
+
+    expect(screen.getByText('Informe o código do aplicativo')).toBeVisible()
+    expect(verifyTotp).not.toHaveBeenCalled()
+  })
+
+  it('goes back to the emailed code', async () => {
+    const { user } = await reachTotpStep()
+
+    await user.click(
+      screen.getByRole('button', { name: 'Usar o código enviado por e-mail' }),
+    )
+
+    expect(await screen.findByText('Confirme seu e-mail')).toBeInTheDocument()
+  })
+})
+
+describe('<SignInForm /> trusted device', () => {
+  const trustCheckbox = () =>
+    screen.getByRole('checkbox', {
+      name: 'Confiar neste dispositivo por 30 dias',
+    })
+
+  it('is off unless the user asks for it', async () => {
+    await reachOtpStep()
+
+    expect(trustCheckbox()).not.toBeChecked()
+  })
+
+  // The flag rides along with whichever factor the user completes, so the
+  // choice survives switching between the e-mail code and the app.
+  it('carries the choice into the app code verification', async () => {
+    const { user } = await reachOtpStep()
+
+    await user.click(trustCheckbox())
+    await user.click(
+      screen.getByRole('button', { name: 'Tenho um aplicativo autenticador' }),
+    )
+    await user.type(
+      await screen.findByLabelText('Código do aplicativo'),
+      '123456',
+    )
+    await user.click(screen.getByRole('button', { name: 'Verificar código' }))
+
+    await waitFor(() =>
+      expect(verifyTotp).toHaveBeenCalledWith({
+        code: '123456',
+        trustDevice: true,
+      }),
+    )
+  })
+
+  it('carries the choice into the backup code verification', async () => {
+    const { user } = await reachOtpStep()
+
+    await user.click(trustCheckbox())
+    await user.click(
+      screen.getByRole('button', {
+        name: 'Não consegue acessar o e-mail? Usar um código de backup',
+      }),
+    )
+    await user.type(screen.getByLabelText('Código de backup'), 'abcd1234')
+    await user.click(screen.getByRole('button', { name: 'Verificar código' }))
+
+    await waitFor(() =>
+      expect(verifyBackup).toHaveBeenCalledWith({
+        code: 'abcd1234',
+        trustDevice: true,
+      }),
+    )
   })
 })

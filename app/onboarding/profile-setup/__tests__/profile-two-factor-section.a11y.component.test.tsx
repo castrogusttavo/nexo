@@ -29,7 +29,7 @@ async function renderOpen(props: {
 
 beforeEach(() => {
   enable.mockResolvedValue({
-    data: { backupCodes: ['code-aaa', 'code-bbb'] },
+    data: { method: 'otp' },
     error: null,
   })
   disable.mockResolvedValue({ data: {}, error: null })
@@ -74,7 +74,7 @@ describe('<ProfileTwoFactorSection /> accessibility', () => {
     await expectNoA11yViolations(container, { disabledRules: FRAGMENT_RULES })
   })
 
-  it('has no violations on the backup codes panel', async () => {
+  it('has no violations once the second factor is active', async () => {
     const { container, user } = await renderOpen({
       twoFactorEnabled: false,
       hasPassword: true,
@@ -83,7 +83,7 @@ describe('<ProfileTwoFactorSection /> accessibility', () => {
     await user.click(screen.getByRole('switch'))
     await user.type(screen.getByPlaceholderText('••••••'), 'my-password')
     await user.click(screen.getByRole('button', { name: 'Ativar 2FA' }))
-    await screen.findByText('Códigos de backup')
+    await screen.findByText('Ativa')
 
     await expectNoA11yViolations(container, { disabledRules: FRAGMENT_RULES })
   })

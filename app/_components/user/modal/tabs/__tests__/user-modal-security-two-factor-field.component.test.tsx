@@ -4,19 +4,24 @@ import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { renderWithProviders } from '@/src/__tests__/helpers/component'
 import { UserModalSecurityTwoFactorField } from '../user-modal-security-two-factor-field'
 
-const { enable, disable, generateBackupCodes, getSession } = vi.hoisted(() => ({
-  enable: vi.fn(),
-  disable: vi.fn(),
-  generateBackupCodes: vi.fn(),
-  getSession: vi.fn(),
-}))
+const { enable, disable, generateBackupCodes, verifyTotp, getSession } =
+  vi.hoisted(() => ({
+    enable: vi.fn(),
+    disable: vi.fn(),
+    generateBackupCodes: vi.fn(),
+    verifyTotp: vi.fn(),
+    getSession: vi.fn(),
+  }))
 
 vi.mock('@/src/lib/auth-client', () => ({
   authClient: {
-    twoFactor: { enable, disable, generateBackupCodes },
+    twoFactor: { enable, disable, generateBackupCodes, verifyTotp },
     getSession,
   },
 }))
+
+const TOTP_URI =
+  'otpauth://totp/Nexo:dev@nexopm.com?secret=JBSWY3DPEHPK3PXP&issuer=Nexo'
 
 vi.mock('sonner', () => ({
   toast: {
@@ -56,9 +61,14 @@ const passwordInput = () => screen.getByPlaceholderText('••••••')
 
 beforeEach(() => {
   enable.mockResolvedValue({
-    data: { backupCodes: ['code-aaa', 'code-bbb'] },
+    data: {
+      method: 'totp',
+      totpURI: TOTP_URI,
+      backupCodes: ['code-aaa', 'code-bbb'],
+    },
     error: null,
   })
+  verifyTotp.mockResolvedValue({ data: {}, error: null })
   disable.mockResolvedValue({ data: {}, error: null })
   generateBackupCodes.mockResolvedValue({
     data: { backupCodes: ['new-aaa', 'new-bbb'] },
@@ -73,7 +83,7 @@ describe('<UserModalSecurityTwoFactorField /> switch', () => {
 
     expect(
       screen.getByText(
-        'Receba um código de 6 dígitos por e-mail no login para reforçar a segurança da sua conta.',
+        'Exija um segundo fator no login: um aplicativo autenticador ou um código de 6 dígitos por e-mail.',
       ),
     ).toBeInTheDocument()
     expect(switchControl()).not.toBeChecked()
@@ -132,23 +142,57 @@ describe('<UserModalSecurityTwoFactorField /> enabling', () => {
     expect(enable).not.toHaveBeenCalled()
   })
 
-  it('enables 2FA, reveals the backup codes and refreshes the session', async () => {
+  // The authenticator secret is only worth anything once the user proves the
+  // app produced a code from it, so the codes come after the verification,
+  // never straight out of `enable`.
+  it('enrols the authenticator app before revealing the backup codes', async () => {
     const { user } = renderField()
 
     await user.click(switchControl())
     await user.type(passwordInput(), 'my-password')
     await user.click(screen.getByRole('button', { name: 'Ativar 2FA' }))
 
-    expect(enable).toHaveBeenCalledWith({ password: 'my-password' })
+    expect(enable).toHaveBeenCalledWith({
+      password: 'my-password',
+      method: 'totp',
+    })
+    expect(
+      await screen.findByLabelText('QR code para o aplicativo autenticador'),
+    ).toBeInTheDocument()
+    expect(screen.queryByText('code-aaa')).not.toBeInTheDocument()
+
+    await user.type(screen.getByLabelText('Código do aplicativo'), '123456')
+    await user.click(screen.getByRole('button', { name: 'Confirmar código' }))
+
+    expect(verifyTotp).toHaveBeenCalledWith({ code: '123456' })
     expect(await screen.findByText('Códigos de backup')).toBeInTheDocument()
     expect(screen.getByText('code-aaa')).toBeInTheDocument()
     expect(screen.getByText('code-bbb')).toBeInTheDocument()
-    expect(screen.queryByPlaceholderText('••••••')).not.toBeInTheDocument()
     await waitFor(() =>
       expect(getSession).toHaveBeenCalledWith({
         query: { disableCookieCache: true },
       }),
     )
+  })
+
+  it('enables the e-mail method without an authenticator round trip', async () => {
+    enable.mockResolvedValue({ data: { method: 'otp' }, error: null })
+    const { user } = renderField()
+
+    await user.click(switchControl())
+    await user.click(screen.getByLabelText(/Código por e-mail/))
+    await user.type(passwordInput(), 'my-password')
+    await user.click(screen.getByRole('button', { name: 'Ativar 2FA' }))
+
+    expect(enable).toHaveBeenCalledWith({
+      password: 'my-password',
+      method: 'otp',
+    })
+    await waitFor(() =>
+      expect(screen.queryByPlaceholderText('••••••')).not.toBeInTheDocument(),
+    )
+    expect(verifyTotp).not.toHaveBeenCalled()
+    expect(screen.queryByText('Códigos de backup')).not.toBeInTheDocument()
   })
 
   it('shows a processing state while the request is in flight', async () => {
@@ -170,7 +214,7 @@ describe('<UserModalSecurityTwoFactorField /> enabling', () => {
     expect(screen.getByRole('button', { name: 'Cancelar' })).toBeDisabled()
     expect(passwordInput()).toBeDisabled()
 
-    resolve({ data: { backupCodes: [] }, error: null })
+    resolve({ data: { method: 'otp' }, error: null })
     await waitFor(() =>
       expect(screen.queryByPlaceholderText('••••••')).not.toBeInTheDocument(),
     )
@@ -320,30 +364,34 @@ describe('<UserModalSecurityTwoFactorField /> backup codes', () => {
   })
 
   it('copies the codes to the clipboard', async () => {
-    const { user } = renderField()
+    const { user } = renderField({ twoFactorEnabled: true })
     const writeText = spyOnClipboard()
 
-    await user.click(switchControl())
+    await user.click(
+      screen.getByRole('button', { name: 'Gerar novos códigos de backup' }),
+    )
     await user.type(passwordInput(), 'my-password')
-    await user.click(screen.getByRole('button', { name: 'Ativar 2FA' }))
-    await screen.findByText('code-aaa')
+    await user.click(screen.getByRole('button', { name: 'Gerar códigos' }))
+    await screen.findByText('new-aaa')
 
     await user.click(screen.getByRole('button', { name: 'Copiar códigos' }))
 
-    expect(writeText).toHaveBeenCalledWith('code-aaa\ncode-bbb')
+    expect(writeText).toHaveBeenCalledWith('new-aaa\nnew-bbb')
     await waitFor(() =>
       expect(toast.success).toHaveBeenCalledWith('Códigos de backup copiados'),
     )
   })
 
   it('stays quiet when the clipboard is unavailable', async () => {
-    const { user } = renderField()
+    const { user } = renderField({ twoFactorEnabled: true })
     const writeText = spyOnClipboard().mockRejectedValue(new Error('denied'))
 
-    await user.click(switchControl())
+    await user.click(
+      screen.getByRole('button', { name: 'Gerar novos códigos de backup' }),
+    )
     await user.type(passwordInput(), 'my-password')
-    await user.click(screen.getByRole('button', { name: 'Ativar 2FA' }))
-    await screen.findByText('code-aaa')
+    await user.click(screen.getByRole('button', { name: 'Gerar códigos' }))
+    await screen.findByText('new-aaa')
 
     await user.click(screen.getByRole('button', { name: 'Copiar códigos' }))
 

@@ -1,6 +1,7 @@
 'use client'
 
 import { useId, useState } from 'react'
+import { TwoFactorEnrollment } from '@/components/security/two-factor-enrollment'
 import { Muted } from '@/components/typography/text/muted'
 import { Button } from '@/components/ui/button'
 import {
@@ -59,24 +60,6 @@ export function UserModalSecurityTwoFactorField({
     setTwoFactorError(null)
     setTwoFactorBusy(true)
 
-    if (twoFactorMode === 'enabling') {
-      const { data, error } = await authClient.twoFactor.enable({
-        password: twoFactorPassword,
-      })
-      setTwoFactorBusy(false)
-      if (error) {
-        setTwoFactorError(
-          authErrorMessage(error, 'Não foi possível ativar a 2FA'),
-        )
-        return
-      }
-      setBackupCodes(data?.backupCodes ?? [])
-      setTwoFactorMode('idle')
-      setTwoFactorPassword('')
-      await authClient.getSession({ query: { disableCookieCache: true } })
-      return
-    }
-
     if (twoFactorMode === 'regenerating') {
       const { data, error } = await authClient.twoFactor.generateBackupCodes({
         password: twoFactorPassword,
@@ -130,7 +113,7 @@ export function UserModalSecurityTwoFactorField({
           <FieldDescription>
             {hasPassword === false
               ? 'Defina uma senha antes de ativar a verificação em duas etapas.'
-              : 'Receba um código de 6 dígitos por e-mail no login para reforçar a segurança da sua conta.'}
+              : 'Exija um segundo fator no login: um aplicativo autenticador ou um código de 6 dígitos por e-mail.'}
           </FieldDescription>
         </FieldContent>
         <Switch
@@ -159,18 +142,23 @@ export function UserModalSecurityTwoFactorField({
         </div>
       )}
 
-      {twoFactorMode !== 'idle' && (
+      {twoFactorMode === 'enabling' && (
+        <TwoFactorEnrollment
+          onEnabled={() => setTwoFactorMode('idle')}
+          onCancel={() => setTwoFactorMode('idle')}
+        />
+      )}
+
+      {(twoFactorMode === 'disabling' || twoFactorMode === 'regenerating') && (
         <form
           onSubmit={confirmTwoFactor}
           className='flex flex-col gap-3 border-t border-border pt-4'
         >
           <Field data-invalid={!!twoFactorError || undefined}>
             <FieldLabel htmlFor={`${fieldId}-password`}>
-              {twoFactorMode === 'enabling'
-                ? 'Senha para ativar a 2FA'
-                : twoFactorMode === 'regenerating'
-                  ? 'Senha para gerar novos códigos de backup'
-                  : 'Senha para desativar a 2FA'}
+              {twoFactorMode === 'regenerating'
+                ? 'Senha para gerar novos códigos de backup'
+                : 'Senha para desativar a 2FA'}
             </FieldLabel>
             <Input
               id={`${fieldId}-password`}
@@ -195,11 +183,9 @@ export function UserModalSecurityTwoFactorField({
             <Button type='submit' disabled={twoFactorBusy}>
               {twoFactorBusy
                 ? 'Processando...'
-                : twoFactorMode === 'enabling'
-                  ? 'Ativar 2FA'
-                  : twoFactorMode === 'regenerating'
-                    ? 'Gerar códigos'
-                    : 'Desativar 2FA'}
+                : twoFactorMode === 'regenerating'
+                  ? 'Gerar códigos'
+                  : 'Desativar 2FA'}
             </Button>
           </div>
         </form>

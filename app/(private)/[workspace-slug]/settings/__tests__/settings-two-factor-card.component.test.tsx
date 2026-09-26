@@ -3,14 +3,22 @@ import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { renderWithProviders } from '@/src/__tests__/helpers/component'
 import { SettingsTwoFactorCard } from '../settings-two-factor-card'
 
-const { useSession, enable, disable } = vi.hoisted(() => ({
-  useSession: vi.fn(),
-  enable: vi.fn(),
-  disable: vi.fn(),
-}))
+const { useSession, enable, disable, verifyTotp, getSession } = vi.hoisted(
+  () => ({
+    useSession: vi.fn(),
+    enable: vi.fn(),
+    disable: vi.fn(),
+    verifyTotp: vi.fn(),
+    getSession: vi.fn(),
+  }),
+)
 
 vi.mock('@/src/lib/auth-client', () => ({
-  authClient: { useSession, twoFactor: { enable, disable } },
+  authClient: {
+    useSession,
+    getSession,
+    twoFactor: { enable, disable, verifyTotp },
+  },
 }))
 
 function mockSession({
@@ -39,16 +47,19 @@ async function startEnabling(
   password = 'senha-secreta',
 ) {
   await user.click(toggle())
+  // The enrollment flow offers both methods; the card's own tests take the
+  // e-mail one, which finishes in a single round trip. The authenticator path
+  // is covered where it lives, in the enrollment component's tests.
+  await user.click(screen.getByLabelText(/Código por e-mail/))
   if (password) await user.type(passwordInput(), password)
 }
 
 beforeEach(() => {
   mockSession()
-  enable.mockResolvedValue({
-    data: { backupCodes: ['code-aaa', 'code-bbb'] },
-    error: null,
-  })
+  enable.mockResolvedValue({ data: { method: 'otp' }, error: null })
   disable.mockResolvedValue({ data: {}, error: null })
+  verifyTotp.mockResolvedValue({ data: {}, error: null })
+  getSession.mockResolvedValue({ data: null, error: null })
 })
 
 describe('<SettingsTwoFactorCard /> status', () => {
@@ -99,49 +110,30 @@ describe('<SettingsTwoFactorCard /> enabling', () => {
     expect(enable).not.toHaveBeenCalled()
   })
 
-  it('enables 2FA and reveals the backup codes', async () => {
+  it('enables 2FA with the chosen method and closes the form', async () => {
     const { user } = renderCard()
 
     await startEnabling(user)
     await user.click(screen.getByRole('button', { name: 'Ativar 2FA' }))
 
     await waitFor(() =>
-      expect(enable).toHaveBeenCalledWith({ password: 'senha-secreta' }),
+      expect(enable).toHaveBeenCalledWith({
+        password: 'senha-secreta',
+        method: 'otp',
+      }),
     )
-    expect(await screen.findByText('Códigos de backup')).toBeInTheDocument()
-    expect(screen.getByText('code-aaa')).toBeInTheDocument()
-    expect(screen.getByText('code-bbb')).toBeInTheDocument()
-    // The confirmation form closes once the codes are on screen.
-    expect(screen.queryByPlaceholderText('••••••')).not.toBeInTheDocument()
-  })
-
-  it('omits the codes block when the API returns none', async () => {
-    enable.mockResolvedValue({ data: {}, error: null })
-    const { user } = renderCard()
-
-    await startEnabling(user)
-    await user.click(screen.getByRole('button', { name: 'Ativar 2FA' }))
-
-    await waitFor(() => expect(enable).toHaveBeenCalled())
     await waitFor(() =>
       expect(screen.queryByPlaceholderText('••••••')).not.toBeInTheDocument(),
     )
-    expect(screen.queryByText('Códigos de backup')).not.toBeInTheDocument()
   })
 
-  it('hides the codes again when the switch is toggled back', async () => {
-    mockSession()
+  it('offers both second factors', async () => {
     const { user } = renderCard()
 
-    await startEnabling(user)
-    await user.click(screen.getByRole('button', { name: 'Ativar 2FA' }))
-    expect(await screen.findByText('Códigos de backup')).toBeInTheDocument()
-
-    // The session mock still reports 2FA off, so the switch re-opens the
-    // "enabling" form — the stale codes must not linger.
     await user.click(toggle())
 
-    expect(screen.queryByText('Códigos de backup')).not.toBeInTheDocument()
+    expect(screen.getByLabelText(/Aplicativo autenticador/)).toBeChecked()
+    expect(screen.getByLabelText(/Código por e-mail/)).not.toBeChecked()
   })
 
   it('shows the API error message and keeps the form open', async () => {
@@ -258,35 +250,5 @@ describe('<SettingsTwoFactorCard /> disabling', () => {
     expect(
       await screen.findByText('Não foi possível desativar a 2FA'),
     ).toBeInTheDocument()
-  })
-})
-
-describe('<SettingsTwoFactorCard /> backup codes', () => {
-  async function renderWithCodes() {
-    const utils = renderCard()
-    await startEnabling(utils.user)
-    await utils.user.click(screen.getByRole('button', { name: 'Ativar 2FA' }))
-    await screen.findByText('Códigos de backup')
-    return utils
-  }
-
-  it('copies every code to the clipboard, newline separated', async () => {
-    const { user } = await renderWithCodes()
-    const writeText = vi.spyOn(navigator.clipboard, 'writeText')
-
-    await user.click(screen.getByRole('button', { name: 'Copiar códigos' }))
-
-    expect(writeText).toHaveBeenCalledWith('code-aaa\ncode-bbb')
-  })
-
-  it('stays silent when the clipboard is unavailable', async () => {
-    const { user } = await renderWithCodes()
-    vi.spyOn(navigator.clipboard, 'writeText').mockRejectedValue(
-      new Error('denied'),
-    )
-
-    await user.click(screen.getByRole('button', { name: 'Copiar códigos' }))
-
-    expect(screen.getByText('Códigos de backup')).toBeInTheDocument()
   })
 })

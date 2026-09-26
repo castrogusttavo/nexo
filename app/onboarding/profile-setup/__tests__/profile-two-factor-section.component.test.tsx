@@ -26,10 +26,7 @@ async function renderOpen(props: {
 const passwordInput = () => screen.getByPlaceholderText('••••••')
 
 beforeEach(() => {
-  enable.mockResolvedValue({
-    data: { backupCodes: ['code-aaa', 'code-bbb'] },
-    error: null,
-  })
+  enable.mockResolvedValue({ data: { method: 'otp' }, error: null })
   disable.mockResolvedValue({ data: {}, error: null })
 })
 
@@ -49,7 +46,9 @@ describe('<ProfileTwoFactorSection />', () => {
 
     expect(screen.getByText('Ativa')).toBeInTheDocument()
     expect(
-      screen.getByText('Código por e-mail a cada login.'),
+      screen.getByText(
+        'Código por e-mail a cada login. Para usar um aplicativo autenticador, vá em configurações de segurança.',
+      ),
     ).toBeInTheDocument()
     expect(screen.getByRole('switch')).toBeChecked()
   })
@@ -93,7 +92,11 @@ describe('<ProfileTwoFactorSection />', () => {
     expect(enable).not.toHaveBeenCalled()
   })
 
-  it('enables 2FA with the password and reveals the backup codes', async () => {
+  // Onboarding asks for the e-mail method explicitly. Leaving `method` out
+  // would take better-auth's default, which is the authenticator app: it hands
+  // back a secret that still needs to be scanned and verified, and this screen
+  // has nowhere to do that — the account would be left half-enrolled.
+  it('enables the e-mail second factor with the password', async () => {
     const { user } = await renderOpen({
       twoFactorEnabled: false,
       hasPassword: true,
@@ -103,12 +106,28 @@ describe('<ProfileTwoFactorSection />', () => {
     await user.type(passwordInput(), 'my-password')
     await user.click(screen.getByRole('button', { name: 'Ativar 2FA' }))
 
-    expect(enable).toHaveBeenCalledWith({ password: 'my-password' })
-    expect(await screen.findByText('Códigos de backup')).toBeInTheDocument()
-    expect(screen.getByText('code-aaa')).toBeInTheDocument()
-    expect(screen.getByText('code-bbb')).toBeInTheDocument()
-    expect(screen.getByText('Ativa')).toBeInTheDocument()
+    expect(enable).toHaveBeenCalledWith({
+      password: 'my-password',
+      method: 'otp',
+    })
+    expect(await screen.findByText('Ativa')).toBeInTheDocument()
     expect(screen.queryByPlaceholderText('••••••')).not.toBeInTheDocument()
+  })
+
+  // The e-mail method has no backup codes: better-auth only mints them for the
+  // authenticator app, and here the mailbox already is the recovery path.
+  it('does not promise backup codes it cannot deliver', async () => {
+    const { user } = await renderOpen({
+      twoFactorEnabled: false,
+      hasPassword: true,
+    })
+
+    await user.click(screen.getByRole('switch'))
+    await user.type(passwordInput(), 'my-password')
+    await user.click(screen.getByRole('button', { name: 'Ativar 2FA' }))
+
+    await screen.findByText('Ativa')
+    expect(screen.queryByText('Códigos de backup')).not.toBeInTheDocument()
   })
 
   it('shows a processing state while the request is in flight', async () => {
@@ -131,7 +150,7 @@ describe('<ProfileTwoFactorSection />', () => {
     expect(screen.getByRole('button', { name: 'Cancelar' })).toBeDisabled()
     expect(passwordInput()).toBeDisabled()
 
-    resolve({ data: { backupCodes: [] }, error: null })
+    resolve({ data: { method: 'otp' }, error: null })
     await waitFor(() => expect(screen.getByText('Ativa')).toBeInTheDocument())
   })
 
@@ -225,7 +244,7 @@ describe('<ProfileTwoFactorSection />', () => {
     expect(enable).not.toHaveBeenCalled()
   })
 
-  it('hides previous backup codes when 2FA is toggled again', async () => {
+  it('asks for the password again when the switch is turned back off', async () => {
     const { user } = await renderOpen({
       twoFactorEnabled: false,
       hasPassword: true,
@@ -234,11 +253,10 @@ describe('<ProfileTwoFactorSection />', () => {
     await user.click(screen.getByRole('switch'))
     await user.type(passwordInput(), 'my-password')
     await user.click(screen.getByRole('button', { name: 'Ativar 2FA' }))
-    await screen.findByText('code-aaa')
+    await screen.findByText('Ativa')
 
     await user.click(screen.getByRole('switch'))
 
-    expect(screen.queryByText('code-aaa')).not.toBeInTheDocument()
     expect(screen.getByText('Senha para desativar a 2FA')).toBeInTheDocument()
   })
 })

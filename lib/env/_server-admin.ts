@@ -1,8 +1,8 @@
 import { z } from 'zod'
 
 // Isolated from _server.ts on purpose: these vars back Next-only admin
-// surfaces (the /jobs workbench UI and the /admin panel). The worker is a
-// separate process that imports _server.ts transitively (via queue/connection.ts
+// surfaces (the /admin/queues workbench UI and the rest of /admin). The worker
+// is a separate process that imports _server.ts transitively (queue/connection.ts
 // for REDIS_URL) but never these — bundling them into the shared schema made
 // the worker's eager Zod parse fail on vars it never uses, crash-looping it
 // in production whenever only the admin vars were missing.
@@ -18,7 +18,7 @@ import { z } from 'zod'
 //      mid-stream: `failed to pipe response`, a truncated page, an error that
 //      reads like a network fault.
 //   2. Making the parse lazy but leaving one schema for all three variables
-//      meant /jobs, which needs only the two workbench credentials, died on a
+//      meant the workbench, which needs only its two credentials, died on a
 //      missing PLATFORM_ADMIN_EMAILS. One surface kept paying for another's
 //      configuration.
 //
@@ -72,10 +72,10 @@ function platformAdminEnv(): z.infer<typeof platformAdminSchema> {
   return platformAdmin
 }
 
-/** Basic-auth user for the /jobs workbench. Throws if unset. */
+/** Basic-auth user for the /admin/queues workbench. Throws if unset. */
 export const getWorkbenchUser = (): string => workbenchEnv().WORKBENCH_USER
 
-/** Basic-auth password for the /jobs workbench. Throws if unset. */
+/** Basic-auth password for the /admin/queues workbench. Throws if unset. */
 export const getWorkbenchPass = (): string => workbenchEnv().WORKBENCH_PASS
 
 /**
@@ -87,6 +87,28 @@ export const getWorkbenchPass = (): string => workbenchEnv().WORKBENCH_PASS
  */
 export const getPlatformAdminEmails = (): string[] =>
   platformAdminEnv().PLATFORM_ADMIN_EMAILS
+
+/**
+ * Whether `email` belongs to a platform admin, without throwing when the list
+ * is unconfigured.
+ *
+ * The getter above is the right shape for an authorization check: a deployment
+ * with no list must refuse admin access loudly. This variant exists for callers
+ * on the authentication path, where throwing would deny *every* user over a
+ * variable only admins use — the exact failure that took /careers and /jobs
+ * down. An unconfigured list simply means nobody is an admin, which is the
+ * conclusion the strict getter reaches anyway, minus the 500.
+ */
+export function isPlatformAdminEmail(
+  email: string | null | undefined,
+): boolean {
+  if (!email) return false
+  try {
+    return getPlatformAdminEmails().includes(email.toLowerCase())
+  } catch {
+    return false
+  }
+}
 
 /** Test seam: drops both memoised parses so a case can change the environment. */
 export function resetServerAdminEnvForTests(): void {
