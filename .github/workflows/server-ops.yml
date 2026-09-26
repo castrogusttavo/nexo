@@ -29,6 +29,9 @@ name: Server Ops
 #                     streaming, and how far behind it is.
 #   db-pool-status  — how many connections Postgres allows, who is holding
 #                     them, and what pgbouncer is doing with them.
+#   env-sync        — rewrites the server's .env from sops and restarts the
+#                     application containers, without waiting for a full
+#                     build-and-deploy. Same source of truth, sooner.
 
 on:
   workflow_dispatch:
@@ -38,7 +41,7 @@ on:
         required: true
         default: compose-diff
         type: choice
-        options: [compose-diff, backup-inspect, backup-run, cleanup-bak, compose-export, infra-apply, app-up, replication-prepare, replication-status, db-pool-status]
+        options: [compose-diff, backup-inspect, backup-run, cleanup-bak, compose-export, infra-apply, app-up, replication-prepare, replication-status, db-pool-status, env-sync]
 
 env:
   SERVER_DIR: /var/www/nexo
@@ -394,3 +397,39 @@ jobs:
           fi
           echo -n '    DB_POOL_MAX: '
           grep -m1 '^DB_POOL_MAX=' .env | cut -d= -f2- || echo '25 (code default; not in .env)'
+
+      # The deploy already writes this file; this does the same two steps
+      # without the image build in front of them, for when a secret changed and
+      # the wait is the only thing standing between a variable and a test.
+      #
+      # It deliberately mirrors cd.yml rather than improvising: the same sops
+      # decrypt, and the same Slack webhook appended afterwards, because that
+      # one lives in a GitHub secret instead of sops and would otherwise be
+      # dropped every time this ran.
+      - name: Sync the server environment from sops
+        if: ${{ inputs.mode == 'env-sync' }}
+        env:
+          SOPS_AGE_KEY: ${{ secrets.SOPS_AGE_KEY }}
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+        run: |
+          set -euo pipefail
+          before=$(grep -c . '${{ env.SERVER_DIR }}/.env' || echo 0)
+
+          sops --decrypt secrets/production.enc.env > '${{ env.SERVER_DIR }}/.env'
+
+          if [ -n "$SLACK_WEBHOOK_URL" ] &&
+             ! grep -q '^SLACK_ALERTS_WEBHOOK_URL=' '${{ env.SERVER_DIR }}/.env'; then
+            printf 'SLACK_ALERTS_WEBHOOK_URL=%s\n' "$SLACK_WEBHOOK_URL" >> '${{ env.SERVER_DIR }}/.env'
+          fi
+
+          after=$(grep -c . '${{ env.SERVER_DIR }}/.env')
+          echo "==> .env: $before -> $after variables (names only below)"
+          cut -d= -f1 '${{ env.SERVER_DIR }}/.env' | sort | tr '\n' ' ' | fold -w 100 -s | sed 's/^/    /'
+
+          echo
+          echo '==> restarting the application so it reads them'
+          cd '${{ env.SERVER_DIR }}'
+          docker compose -f docker-compose.yml up -d
+          sleep 6
+          docker ps --format '  {{.Names}} | {{.Status}}' | grep -E 'nextjs|worker|realtime'
+          curl -fsS -o /dev/null -w '  app health %{http_code}\n' http://localhost:3000/api/health || true
