@@ -4,7 +4,10 @@ vi.mock('@/lib/env/server-admin', async (importOriginal) => {
   const actual = await importOriginal<typeof import('@/lib/env/server-admin')>()
   return {
     ...actual,
-    PLATFORM_ADMIN_EMAILS: ['admin@nexopm.com'],
+    // A function now, not a constant: the admin variables are validated on
+    // first use, so that importing this service — as the public /careers page
+    // does — never demands credentials it has no business needing.
+    getPlatformAdminEmails: () => ['admin@nexopm.com'],
   }
 })
 vi.mock('@/src/repositories/career-job.repository')

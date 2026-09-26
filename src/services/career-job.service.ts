@@ -1,5 +1,5 @@
 import { auditMutation } from '@/lib/axiom/audit'
-import { PLATFORM_ADMIN_EMAILS } from '@/lib/env/server-admin'
+import { getPlatformAdminEmails } from '@/lib/env/server-admin'
 import type { CareerJobDTO } from '@/types/career-job'
 import { careerJobForbidden } from '../errors'
 import { err, ok, type Result } from '../lib/result'
@@ -12,7 +12,9 @@ import type {
 } from '../schemas/career-job.schema'
 
 function assertPlatformAdmin(email: string | null | undefined): Result<void> {
-  if (!email || !PLATFORM_ADMIN_EMAILS.includes(email.toLowerCase())) {
+  // Read here, not at import: `listPublic` below serves /careers, a page with
+  // no login, and it must not require admin credentials to exist.
+  if (!email || !getPlatformAdminEmails().includes(email.toLowerCase())) {
     return err(careerJobForbidden())
   }
   return ok(undefined)
