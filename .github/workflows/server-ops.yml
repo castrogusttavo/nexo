@@ -27,6 +27,8 @@ name: Server Ops
 #                     and does not restart Postgres.
 #   replication-status — asks the primary whether a standby is actually
 #                     streaming, and how far behind it is.
+#   db-pool-status  — how many connections Postgres allows, who is holding
+#                     them, and what pgbouncer is doing with them.
 
 on:
   workflow_dispatch:
@@ -36,7 +38,7 @@ on:
         required: true
         default: compose-diff
         type: choice
-        options: [compose-diff, backup-inspect, backup-run, cleanup-bak, compose-export, infra-apply, app-up, replication-prepare, replication-status]
+        options: [compose-diff, backup-inspect, backup-run, cleanup-bak, compose-export, infra-apply, app-up, replication-prepare, replication-status, db-pool-status]
 
 env:
   SERVER_DIR: /var/www/nexo
@@ -344,3 +346,51 @@ jobs:
           echo '==> pgbouncer'
           docker exec nexo-pgbouncer sh -c 'nc -z 127.0.0.1 5432' 2>/dev/null &&
             echo '    listening' || echo '    not answering'
+
+      # Connection pressure is three numbers: what Postgres allows, what the
+      # application processes hold, and what pgbouncer is absorbing. Each app
+      # container keeps its own pool, so the headroom is easy to lose sight of
+      # from the outside.
+      - name: Report connection pool pressure
+        if: ${{ inputs.mode == 'db-pool-status' }}
+        run: |
+          set -uo pipefail
+          cd '${{ env.SERVER_DIR }}'
+          PGUSER=$(grep -m1 '^POSTGRES_USER=' .env | cut -d= -f2-)
+          PGDB=$(grep -m1 '^POSTGRES_DB=' .env | cut -d= -f2-)
+
+          echo '==> what the server allows'
+          docker exec nexo-db-1 psql -U "$PGUSER" -d "$PGDB" -Atc \
+            "SELECT name || ' = ' || setting FROM pg_settings
+             WHERE name IN ('max_connections','superuser_reserved_connections','max_wal_senders');" |
+            sed 's/^/    /'
+
+          echo '==> who is holding connections right now'
+          docker exec nexo-db-1 psql -U "$PGUSER" -d "$PGDB" -c \
+            "SELECT coalesce(application_name,'(none)') AS client, state,
+                    count(*) AS conns, max(now() - state_change) AS oldest
+             FROM pg_stat_activity
+             WHERE backend_type = 'client backend'
+             GROUP BY 1, 2 ORDER BY conns DESC;" | sed 's/^/    /'
+
+          echo '==> totals'
+          docker exec nexo-db-1 psql -U "$PGUSER" -d "$PGDB" -Atc \
+            "SELECT 'in use: ' || count(*) || ' of ' ||
+                    current_setting('max_connections') ||
+                    ' (' || round(100.0 * count(*) /
+                    current_setting('max_connections')::int, 1) || '%)'
+             FROM pg_stat_activity;" | sed 's/^/    /'
+
+          echo '==> is anything going through pgbouncer'
+          docker exec nexo-pgbouncer psql -h 127.0.0.1 -p 5432 -U "$PGUSER" \
+            -d pgbouncer -Atc 'SHOW POOLS;' 2>/dev/null | sed 's/^/    /' ||
+            echo '    (pgbouncer admin console not reachable — it is idle unless DATABASE_URL_POOLED is set)'
+
+          echo '==> does the app route through it?'
+          if grep -q '^DATABASE_URL_POOLED=' .env; then
+            echo '    DATABASE_URL_POOLED is set: traffic goes through pgbouncer'
+          else
+            echo '    DATABASE_URL_POOLED is NOT set: every process talks to Postgres directly'
+          fi
+          echo -n '    DB_POOL_MAX: '
+          grep -m1 '^DB_POOL_MAX=' .env | cut -d= -f2- || echo '25 (code default; not in .env)'
