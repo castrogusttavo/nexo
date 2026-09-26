@@ -25,6 +25,8 @@ name: Server Ops
 #   replication-prepare — creates the replicator role and the pg_hba rule on
 #                     the live primary, so a replica can clone it. Idempotent,
 #                     and does not restart Postgres.
+#   replication-status — asks the primary whether a standby is actually
+#                     streaming, and how far behind it is.
 
 on:
   workflow_dispatch:
@@ -34,7 +36,7 @@ on:
         required: true
         default: compose-diff
         type: choice
-        options: [compose-diff, backup-inspect, backup-run, cleanup-bak, compose-export, infra-apply, app-up, replication-prepare]
+        options: [compose-diff, backup-inspect, backup-run, cleanup-bak, compose-export, infra-apply, app-up, replication-prepare, replication-status]
 
 env:
   SERVER_DIR: /var/www/nexo
@@ -309,3 +311,36 @@ jobs:
 
           echo '==> replication rules now in pg_hba:'
           docker exec nexo-db-1 grep -E '^host +replication' /var/lib/postgresql/data/pg_hba.conf | sed 's/^/    /'
+
+      # "The container is up" is not the same claim as "the replica has the
+      # data". Only the primary can answer the second one, and it does so in
+      # pg_stat_replication: a row per connected standby, with how far behind
+      # it is in bytes.
+      - name: Report replication status
+        if: ${{ inputs.mode == 'replication-status' }}
+        run: |
+          set -uo pipefail
+          cd '${{ env.SERVER_DIR }}'
+          PGUSER=$(grep -m1 '^POSTGRES_USER=' .env | cut -d= -f2-)
+          PGDB=$(grep -m1 '^POSTGRES_DB=' .env | cut -d= -f2-)
+
+          echo '==> standbys connected to the primary'
+          docker exec nexo-db-1 psql -U "$PGUSER" -d "$PGDB" -x -c \
+            "SELECT application_name, client_addr, state, sync_state,
+                    pg_size_pretty(pg_wal_lsn_diff(sent_lsn, replay_lsn)) AS replay_lag
+             FROM pg_stat_replication;" | sed 's/^/    /'
+
+          echo '==> the replica answers, and knows it is a replica'
+          docker exec nexo-db-replica psql -U "$PGUSER" -d "$PGDB" -Atc \
+            'SELECT pg_is_in_recovery();' | sed 's/^/    in recovery: /' || echo '    (replica not answering)'
+
+          echo '==> row counts, primary vs replica'
+          for c in nexo-db-1 nexo-db-replica; do
+            n=$(docker exec "$c" psql -U "$PGUSER" -d "$PGDB" -Atc \
+              'SELECT count(*) FROM users;' 2>/dev/null || echo '?')
+            echo "    $c: $n users"
+          done
+
+          echo '==> pgbouncer'
+          docker exec nexo-pgbouncer sh -c 'nc -z 127.0.0.1 5432' 2>/dev/null &&
+            echo '    listening' || echo '    not answering'
