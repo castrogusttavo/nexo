@@ -65,7 +65,7 @@ jobs:
 
           echo
           echo '==> services and images in this repository (production file)'
-          grep -nE '^  [a-z0-9_-]+:|image:|container_name:' docker-compose.infra.prod.yml || true
+          grep -nE '^  [a-z0-9_-]+:|image:|container_name:' infra/prod.yml || true
 
           echo
           echo '==> diff (server -> repository)'
@@ -76,7 +76,7 @@ jobs:
           # Against the production file, not the development one: they are
           # different stacks on purpose (dev has a replica and a pgbouncer),
           # and diffing the wrong pair reports 125 lines of noise.
-          diff -u <(redact < "$FILE") <(redact < docker-compose.infra.prod.yml) &&
+          diff -u <(redact < "$FILE") <(redact < infra/prod.yml) &&
             echo '  (identical)'
 
           echo
@@ -206,7 +206,7 @@ jobs:
           echo '==> what is running before'
           docker ps --format '  {{.Names}} | {{.Image}} | {{.Status}}'
 
-          cp docker-compose.infra.prod.yml "$TARGET"
+          cp infra/prod.yml "$TARGET"
           echo "==> installed $(wc -l < "$TARGET") lines into $TARGET"
 
           # The replica bind-mounts its entrypoint from ./docker, relative to

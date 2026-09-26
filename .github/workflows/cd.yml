@@ -146,13 +146,13 @@ jobs:
 
       - name: Deploy to server
         run: |
-          cp docker-compose.yml /var/www/nexo/docker-compose.yml
+          cp infra/app.yml /var/www/nexo/docker-compose.yml
           # The infra file is copied but deliberately not applied: recreating
           # Postgres or Redis is not something an application deploy should do
           # on its own. Applying it is an explicit step (`server-ops` workflow,
           # mode `infra-apply`), so the file stays the source of truth while
           # the decision to restart infrastructure stays a human one.
-          cp docker-compose.infra.prod.yml /var/www/nexo/docker-compose.infra.yml
+          cp infra/prod.yml /var/www/nexo/docker-compose.infra.yml
           cd /var/www/nexo/
           docker compose pull
           docker compose up -d

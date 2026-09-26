@@ -1,3 +1,10 @@
+# Copied to /var/www/nexo on the server, so every relative path here — the
+# TLS certificate mounts and `.env` alike — is resolved *there*, not from this
+# directory. That is why they stay as they are while infra/dev.yml uses `../`,
+# and why `docker compose -f infra/app.yml config` only validates on the
+# server, where the file it names actually sits next to it.
+name: nexo
+
 # Public, non-secret settings shared by every service; they override the same
 # keys in the sops-decrypted .env. NEXT_PUBLIC_REALTIME_URL
 # is validated at startup by lib/env (app, worker and realtime all crash-loop

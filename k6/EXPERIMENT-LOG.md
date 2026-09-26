@@ -481,7 +481,7 @@ refletir o `apiLimiter`.
 
 Mudança: `app/api/health/route.ts` (novo, `SELECT 1`, sem auth), `nginx/
 nginx.conf` (upstream `least_conn`, `max_fails=3 fail_timeout=10s`),
-`docker-compose.loadtest.yml` (novo, builda a imagem local via `buildx`,
+`infra/loadtest.yml` (novo, builda a imagem local via `buildx`,
 4 serviços `nexo-app-1..4` por YAML anchor + `nexo-lb` na porta 8080).
 
 ### Nota operacional — cinco bugs achados só ao tentar subir de verdade
@@ -498,7 +498,7 @@ número:
 2. **`app/api/health/route.ts` devolvia `200` no `catch`** — bug de
    transcrição (thread anterior desta sessão), corrigido pra `503`.
    Sem isso, o healthcheck nunca detectaria uma instância quebrada.
-3. **`docker-compose.loadtest.yml` sem `env_file: .env`** — só o
+3. **`infra/loadtest.yml` sem `env_file: .env`** — só o
    `environment:` explícito não é suficiente; a validação Zod de
    `lib/env/server.ts` exige o `.env` inteiro (`HUGEICONS_TOKEN`,
    `ABACATE_PAY`, etc.), e sem isso as 4 instâncias quebravam no boot.
@@ -509,7 +509,7 @@ número:
    o schema de env público falhava no boot com os mesmos vindos vazios.
 5. **O maior: certificado TLS do `nexo-redis` não cobre o hostname
    `nexo-redis`** — o cert (gerado por `redis-tls/generate.sh` no
-   checkout principal, usado por `docker-compose.infra.yml`) só tem
+   checkout principal, usado por `infra/dev.yml`) só tem
    SANs `redis`, `localhost`, `127.0.0.1`, `::1`. Como essas 4
    instâncias falam com o Redis pelo nome real do container
    (`nexo-redis`), toda verificação de hostname TLS falhava
@@ -521,7 +521,7 @@ número:
    connect()` puro (sem o client Redis) direto num container — erro em
    18ms, claro na mensagem. Corrigido com `NODE_TLS_REJECT_UNAUTHORIZED:
    "0"` só nesses 4 serviços (ainda é TLS, só sem checar CN/SAN) — não
-   mexe no `docker-compose.infra.yml` compartilhado nem no código do
+   mexe no `infra/dev.yml` compartilhado nem no código do
    app; aceitável pra infra local efêmera, mesmo espírito do desvio já
    assumido pra Camada 5.
 
@@ -580,13 +580,13 @@ O LB e o health check funcionam exatamente como desenhado — a única
 coisa que falhou de verdade foi ambiente (buildx faltando, TLS do Redis
 não cobrindo o hostname certo), não a lógica de roteamento/failover em
 si. Todos os 5 bugs achados nesta seção são de infraestrutura de teste
-local, não de código de produto: nenhum afeta `docker-compose.yml` (a
-imagem publicada de produção) nem o `docker-compose.infra.yml`
+local, não de código de produto: nenhum afeta `infra/app.yml` (a
+imagem publicada de produção) nem o `infra/dev.yml`
 compartilhado.
 
 ### Experimento 9 — Camada 4: PgBouncer (pooling de transação)
 
-Mudança: `docker-compose.infra.yml` ganha o serviço `nexo-pgbouncer`
+Mudança: `infra/dev.yml` ganha o serviço `nexo-pgbouncer`
 (porta 6432→5432, `POOL_MODE: transaction`), aditivo — não mexe no
 `nexo-db` existente. `lib/env/_server.ts` ganha `DATABASE_URL_POOLED`
 opcional; `src/lib/prisma.ts` usa
@@ -602,8 +602,10 @@ zero tags publicadas). Troquei por `edoburu/pgbouncer:v1.25.2-p0`
 (imagem ativa, tags reais), variáveis de ambiente equivalentes
 (`DB_HOST`/`DB_USER`/... em vez de `POSTGRESQL_*`).
 
-**Armadilha operacional**: rodar `docker compose -f
-docker-compose.infra.yml up -d nexo-pgbouncer` de dentro do worktree
+**Armadilha operacional** (fechada em 26/09, quando os compose foram para
+`infra/` e passaram a declarar `name: nexo` — o parágrafo fica como registro
+do que acontecia antes): rodar `docker compose -f
+infra/dev.yml up -d nexo-pgbouncer` de dentro do worktree
 `nexo-scale-1m` faz o Compose tratar isso como um projeto *diferente*
 do que subiu o `nexo-db`/`nexo-redis` originais (nome do projeto =
 nome do diretório) — na primeira tentativa, o Compose quase recriou o
@@ -611,7 +613,7 @@ nome do diretório) — na primeira tentativa, o Compose quase recriou o
 antes de criar um volume `nexo-scale-1m_pgdata` vazio e desconectado).
 Resolvido com `--no-deps` (só sobe o serviço pedido, não tenta
 reconciliar as dependências) — o volume fantasma foi removido depois.
-Isso é fricção de rodar `docker-compose.infra.yml` a partir de um
+Isso é fricção de rodar `infra/dev.yml` a partir de um
 worktree com nome de diretório diferente, não um bug da Camada 4.
 
 **Teste de fumaça (risco verificado — prepared statements nomeados)**:
@@ -677,7 +679,7 @@ esses headers assim que existir um.
 ### Experimento 10 — Camada 5: réplica de leitura do Postgres
 
 Mudança: streaming replication de verdade, não "só adiciona uma
-réplica". `docker-compose.infra.yml` ganha `nexo-db-replica`
+réplica". `infra/dev.yml` ganha `nexo-db-replica`
 (`postgres:17-alpine`, entrypoint dedicado em
 `docker/postgres-replica/entrypoint-replica.sh`, roda `pg_basebackup -R`
 no primeiro start). `src/lib/prisma-replica.ts` (singleton preguiçoso,
@@ -767,7 +769,7 @@ lag desprezível em rede local, réplica genuinamente rejeita escrita, e
 o CPU de leitura migra pra ela sob carga — confirmado com números, não
 só lido no código. Os dois bugs do entrypoint (`gosu` errado, drop de
 privilégio faltando) são 100% infra de teste local, não afetam
-`docker-compose.yml` de produção nem o código da aplicação. O achado
+`infra/app.yml` de produção nem o código da aplicação. O achado
 mais importante pro resto do plano: **não precisei reiniciar o
 `nexo-db` compartilhado** — os defaults do Postgres já bastavam, e as
 duas mudanças que precisei (role + `pg_hba.conf`) aplicam via reload
@@ -789,13 +791,13 @@ determine a client IP and is falling back to a single shared per-path
 bucket`. Essas 4 imagens rodam com `NODE_ENV=production` (via
 `Dockerfile`), e o limiter embutido do Better Auth só fica desativado
 com `DISABLE_AUTH_RATE_LIMIT=true` — que eu não tinha setado no
-`docker-compose.loadtest.yml`. Sem um `trustedProxies` configurado, o
+`infra/loadtest.yml`. Sem um `trustedProxies` configurado, o
 Better Auth não confia no `X-Forwarded-For` que o nginx repassa, então
 todo login de qualquer IP cai no mesmo bucket compartilhado e derruba
 sob concorrência. Não é bug de nenhuma camada — é o mesmo motivo pelo
 qual o e2e do próprio projeto já roda com essa env setada (documentado
 no `CLAUDE.md`). Corrigido adicionando `DISABLE_AUTH_RATE_LIMIT: "true"`
-no `docker-compose.loadtest.yml`, recriando só as 4 instâncias (env-only,
+no `infra/loadtest.yml`, recriando só as 4 instâncias (env-only,
 sem rebuild).
 
 ### Resultado depois da correção

@@ -1,3 +1,8 @@
+# Copied to /var/www/nexo on the server, so every relative path here is
+# resolved *there*, not from this directory. That is why they stay `./` while
+# infra/dev.yml uses `../`.
+name: nexo
+
 # Production infrastructure, as it runs on the server.
 #
 # This file used to exist *only* at /var/www/nexo/docker-compose.infra.yml,

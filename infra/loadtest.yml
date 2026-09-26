@@ -1,6 +1,12 @@
+# Project name pinned: compose otherwise takes it from this file's directory,
+# which moving these files into infra/ would silently change from `nexo` to
+# `infra` — new volume names, and a database that looks empty because the old
+# `nexo_pgdata` is no longer the one being mounted.
+name: nexo
+
 x-app-defaults: &app-defaults
   build:
-    context: .
+    context: ..
     dockerfile: Dockerfile
     secrets:
       - hugeicons_token
@@ -9,7 +15,7 @@ x-app-defaults: &app-defaults
       NEXT_PUBLIC_AXIOM_TOKEN: ${NEXT_PUBLIC_AXIOM_TOKEN}
       NEXT_PUBLIC_AXIOM_DATASET: ${NEXT_PUBLIC_AXIOM_DATASET}
   env_file:
-    - .env
+    - ../.env
   environment:
     DATABASE_URL: postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@nexo-db:5432/${POSTGRES_DB}
     DATABASE_URL_POOLED: postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@nexo-pgbouncer:5432/${POSTGRES_DB}
@@ -37,7 +43,7 @@ x-app-defaults: &app-defaults
     NEXT_PUBLIC_URL: http://localhost:8080
     DB_POOL_MAX: 15
   volumes:
-    - ./redis-tls/ca.crt:/etc/redis-tls/ca.crt:ro
+    - ../redis-tls/ca.crt:/etc/redis-tls/ca.crt:ro
   healthcheck:
     test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://127.0.0.1:3000/api/health"]
     interval: 5s
@@ -71,7 +77,7 @@ services:
     ports:
       - "8080:80"
     volumes:
-      - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+      - ../nginx/nginx.conf:/etc/nginx/nginx.conf:ro
     depends_on:
       nexo-app-1:
         condition: service_healthy

@@ -55,11 +55,11 @@ Meet [Nexo](https://nexopm.com/), a project management platform built for teams 
 Two ways to run Nexo:
 
 - **Nexo Cloud.** Sign up at [nexopm.com](https://nexopm.com) — the fastest path to get started, with no infrastructure to manage.
-- **Self-host with Docker.** Bring your own infrastructure. The full stack runs from a single Compose file — see [`docker-compose.yml`](./docker-compose.yml) to get started.
+- **Self-host with Docker.** Bring your own infrastructure. The full stack runs from a single Compose file — see [`infra/app.yml`](./infra/app.yml) to get started.
 
 | Installation method | Documentation                                    |
 | ------------------- | ------------------------------------------------ |
-| Docker              | [`docker-compose.yml`](./docker-compose.yml)     |
+| Docker              | [`infra/app.yml`](./infra/app.yml)               |
 
 ## Features
 
@@ -136,7 +136,7 @@ pnpm prisma:migrate:dev   # apply migrations
 pnpm dev
 ```
 
-For subsequent runs, `pnpm infra` starts the containers and applies pending migrations in one step. See `docker-compose.infra.yml` and the `scripts` block in `package.json` for the full picture.
+For subsequent runs, `pnpm infra` starts the containers and applies pending migrations in one step. The compose files live in `infra/`: `dev.yml` (this stack), `app.yml` (the application containers), `prod.yml` (the server's infrastructure) and `loadtest.yml`. See them and the `scripts` block in `package.json` for the full picture.
 
 ## Documentation
 
