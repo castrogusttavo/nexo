@@ -37,8 +37,22 @@ describe('GET /api/admin/careers', () => {
     expect(res.status).toBe(403)
   })
 
-  it('should list all career jobs for a platform admin', async () => {
+  // Allowlisted, but with nothing but a password behind the session.
+  it('should return 403 for an admin without a second factor', async () => {
     const { cookie } = await createAuthenticatedUser({ email: ADMIN_EMAIL })
+
+    const res = await getJson('/api/admin/careers', cookie)
+
+    expect(res.status).toBe(403)
+    const body = await res.json()
+    expect(body.error.code).toBe('ADMIN_TWO_FACTOR_REQUIRED')
+  })
+
+  it('should list all career jobs for a platform admin', async () => {
+    const { cookie } = await createAuthenticatedUser({
+      email: ADMIN_EMAIL,
+      twoFactorEnabled: true,
+    })
     await seedCareerJob()
 
     const res = await getJson('/api/admin/careers', cookie)
@@ -63,13 +77,19 @@ describe('POST /api/admin/careers', () => {
   })
 
   it('should return 422 for an invalid body', async () => {
-    const { cookie } = await createAuthenticatedUser({ email: ADMIN_EMAIL })
+    const { cookie } = await createAuthenticatedUser({
+      email: ADMIN_EMAIL,
+      twoFactorEnabled: true,
+    })
     const res = await postJson('/api/admin/careers', { slug: 'x' }, cookie)
     expect(res.status).toBe(422)
   })
 
   it('should create a career job as DRAFT for a platform admin', async () => {
-    const { cookie } = await createAuthenticatedUser({ email: ADMIN_EMAIL })
+    const { cookie } = await createAuthenticatedUser({
+      email: ADMIN_EMAIL,
+      twoFactorEnabled: true,
+    })
     const res = await postJson('/api/admin/careers', validJobPayload(), cookie)
 
     expect(res.status).toBe(201)

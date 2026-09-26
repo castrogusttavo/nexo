@@ -24,6 +24,9 @@ export async function createAuthenticatedUser(overrides?: {
   /** Skip the consent fields the SignUpForm sends — simulates a curl
    *  client that bypasses the UI. Defaults to false (consent sent). */
   skipConsent?: boolean
+  /** Leaves the account with a second factor on, which the admin surfaces
+   *  require. Set after sign-in on purpose — see the note below. */
+  twoFactorEnabled?: boolean
 }) {
   const name = overrides?.name ?? 'E2E User'
   const email = overrides?.email ?? `e2e-${createId()}@example.com`
@@ -68,10 +71,34 @@ export async function createAuthenticatedUser(overrides?: {
     )
   }
 
-  const cookie = signInRes.headers.get('set-cookie')
+  let cookie = signInRes.headers.get('set-cookie')
   if (!cookie) throw new Error('No session cookie after sign-in')
 
+  // The flag has to go in *after* the session exists: with it set beforehand,
+  // sign-in answers with a 2FA challenge instead of a session, and the code
+  // for that challenge is e-mailed (and stored hashed), so a test cannot read
+  // it back. Signing in first and flipping the column after gets the same
+  // authorization state without pretending to own a mailbox.
+  //
+  // Dropping `session_data` is what makes the change visible: that cookie is
+  // better-auth's session cache, and while it is fresh `getSession` answers
+  // from it, user row and all. Without it every request re-reads the database.
+  if (overrides?.twoFactorEnabled) {
+    await prisma.user.update({
+      where: { id: user.id },
+      data: { twoFactorEnabled: true },
+    })
+    cookie = stripSessionCache(cookie)
+  }
+
   return { id: user.id, name, email, cookie }
+}
+
+function stripSessionCache(cookie: string): string {
+  return cookie
+    .split(/,\s*(?=[^;=]+=)/)
+    .filter((part) => !part.trimStart().startsWith('better-auth.session_data'))
+    .join(', ')
 }
 
 export async function createWorkspaceForUser(

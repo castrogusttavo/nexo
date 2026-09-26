@@ -2292,7 +2292,7 @@
           "Admin — Vagas"
         ],
         "summary": "Listar todas as vagas (admin)",
-        "description": "Retorna todas as vagas de carreira, independentemente do status. Restrito a e-mails na allowlist de administradores da plataforma (`CAREER_JOB_FORBIDDEN`, 403, caso contrário).",
+        "description": "Retorna todas as vagas de carreira, independentemente do status. Restrito a e-mails na allowlist de administradores da plataforma (`CAREER_JOB_FORBIDDEN`, 403, caso contrário). Exige verificação em duas etapas ativa na conta (`ADMIN_TWO_FACTOR_REQUIRED`, 403, caso contrário).",
         "security": [
           {
             "cookieAuth": []
@@ -2322,7 +2322,7 @@
           "Admin — Vagas"
         ],
         "summary": "Criar vaga",
-        "description": "Cria uma nova vaga de carreira. Sempre criada com status `DRAFT` (a publicação é feita depois via endpoint de status). Restrito a administradores da plataforma.",
+        "description": "Cria uma nova vaga de carreira. Sempre criada com status `DRAFT` (a publicação é feita depois via endpoint de status). Restrito a administradores da plataforma. Exige verificação em duas etapas ativa na conta (`ADMIN_TWO_FACTOR_REQUIRED`, 403, caso contrário).",
         "security": [
           {
             "cookieAuth": []
@@ -2381,7 +2381,7 @@
           "Admin — Vagas"
         ],
         "summary": "Obter vaga por ID (admin)",
-        "description": "Retorna os detalhes completos de uma vaga, incluindo rascunhos. Restrito a administradores da plataforma.",
+        "description": "Retorna os detalhes completos de uma vaga, incluindo rascunhos. Restrito a administradores da plataforma. Exige verificação em duas etapas ativa na conta (`ADMIN_TWO_FACTOR_REQUIRED`, 403, caso contrário).",
         "security": [
           {
             "cookieAuth": []
@@ -2414,7 +2414,7 @@
           "Admin — Vagas"
         ],
         "summary": "Atualizar vaga",
-        "description": "Atualiza um ou mais campos do conteúdo da vaga. Não altera o status — use o endpoint dedicado `/admin/careers/{id}/status` para isso. Restrito a administradores da plataforma.",
+        "description": "Atualiza um ou mais campos do conteúdo da vaga. Não altera o status — use o endpoint dedicado `/admin/careers/{id}/status` para isso. Restrito a administradores da plataforma. Exige verificação em duas etapas ativa na conta (`ADMIN_TWO_FACTOR_REQUIRED`, 403, caso contrário).",
         "security": [
           {
             "cookieAuth": []
@@ -2476,7 +2476,7 @@
           "Admin — Vagas"
         ],
         "summary": "Alterar status da vaga",
-        "description": "Transiciona o status da vaga (`DRAFT` → `OPEN` → `CLOSED`). Ação distinta da edição de conteúdo, com endpoint próprio. Restrito a administradores da plataforma.",
+        "description": "Transiciona o status da vaga (`DRAFT` → `OPEN` → `CLOSED`). Ação distinta da edição de conteúdo, com endpoint próprio. Restrito a administradores da plataforma. Exige verificação em duas etapas ativa na conta (`ADMIN_TWO_FACTOR_REQUIRED`, 403, caso contrário).",
         "security": [
           {
             "cookieAuth": []

@@ -125,6 +125,15 @@ export const careerJobForbidden = (
   message = 'Sem permissão para gerenciar vagas',
 ): AppError => appError('CAREER_JOB_FORBIDDEN', message)
 
+/**
+ * The caller is on the admin allowlist but has no second factor, so the
+ * platform surfaces stay closed until they turn one on. Distinct from a plain
+ * forbidden: the fix is on the caller's own account, and the message says so.
+ */
+export const adminTwoFactorRequired = (
+  message = 'Ative a verificação em duas etapas para acessar a administração',
+): AppError => appError('ADMIN_TWO_FACTOR_REQUIRED', message)
+
 export const careerJobSlugTaken = (
   message = 'Já existe uma vaga com este slug',
 ): AppError => appError('CAREER_JOB_SLUG_TAKEN', message)

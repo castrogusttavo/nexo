@@ -1,7 +1,7 @@
 import { auditMutation } from '@/lib/axiom/audit'
 import { getPlatformAdminEmails } from '@/lib/env/server-admin'
 import type { CareerJobDTO } from '@/types/career-job'
-import { careerJobForbidden } from '../errors'
+import { adminTwoFactorRequired, careerJobForbidden } from '../errors'
 import { err, ok, type Result } from '../lib/result'
 import { toCareerJobDTO } from '../mappers/career-job.mapper'
 import { CareerJobRepository } from '../repositories/career-job.repository'
@@ -11,12 +11,34 @@ import type {
   UpdateCareerJobDTO,
 } from '../schemas/career-job.schema'
 
-function assertPlatformAdmin(email: string | null | undefined): Result<void> {
+/**
+ * Whoever is asking. Shaped so a route can pass the session user straight
+ * through, which is also what keeps the two checks below honest: the second
+ * factor is read from the same session that carries the e-mail, not from a
+ * flag the caller assembles.
+ */
+export interface PlatformActor {
+  id: string
+  email?: string | null
+  twoFactorEnabled?: boolean | null
+}
+
+function assertPlatformAdmin(actor: PlatformActor): Result<void> {
   // Read here, not at import: `listPublic` below serves /careers, a page with
   // no login, and it must not require admin credentials to exist.
-  if (!email || !getPlatformAdminEmails().includes(email.toLowerCase())) {
+  const email = actor.email?.toLowerCase()
+  if (!email || !getPlatformAdminEmails().includes(email)) {
     return err(careerJobForbidden())
   }
+
+  // Being on the allowlist is not enough. These endpoints publish public job
+  // posts and read candidate data, so a single stolen password must not be
+  // the whole story — and the distinct code lets the UI say "turn 2FA on"
+  // instead of the dead end a generic 403 would be for a real admin.
+  if (!actor.twoFactorEnabled) {
+    return err(adminTwoFactorRequired())
+  }
+
   return ok(undefined)
 }
 
@@ -36,10 +58,10 @@ export const CareerJobService = {
   },
 
   async getById(
-    actorEmail: string | null,
+    actor: PlatformActor,
     id: string,
   ): Promise<Result<CareerJobDTO>> {
-    const admin = assertPlatformAdmin(actorEmail)
+    const admin = assertPlatformAdmin(actor)
     if (!admin.ok) return admin
 
     const result = await CareerJobRepository.findById(id)
@@ -48,8 +70,8 @@ export const CareerJobService = {
     return ok(toCareerJobDTO(result.value))
   },
 
-  async listAll(actorEmail: string | null): Promise<Result<CareerJobDTO[]>> {
-    const admin = assertPlatformAdmin(actorEmail)
+  async listAll(actor: PlatformActor): Promise<Result<CareerJobDTO[]>> {
+    const admin = assertPlatformAdmin(actor)
     if (!admin.ok) return admin
 
     const result = await CareerJobRepository.listAll()
@@ -59,11 +81,10 @@ export const CareerJobService = {
   },
 
   async create(
-    actorId: string,
-    actorEmail: string | null,
+    actor: PlatformActor,
     dto: CreateCareerJobDTO,
   ): Promise<Result<CareerJobDTO>> {
-    const admin = assertPlatformAdmin(actorEmail)
+    const admin = assertPlatformAdmin(actor)
     if (!admin.ok) return admin
 
     const result = await CareerJobRepository.create(dto)
@@ -71,7 +92,7 @@ export const CareerJobService = {
       auditMutation({
         entity: 'career_job',
         action: 'create',
-        actorId,
+        actorId: actor.id,
         outcome: 'failure',
         reason: result.error.code,
       })
@@ -81,7 +102,7 @@ export const CareerJobService = {
     auditMutation({
       entity: 'career_job',
       action: 'create',
-      actorId,
+      actorId: actor.id,
       targetId: result.value.id,
     })
 
@@ -89,12 +110,11 @@ export const CareerJobService = {
   },
 
   async update(
-    actorId: string,
-    actorEmail: string | null,
+    actor: PlatformActor,
     id: string,
     dto: UpdateCareerJobDTO,
   ): Promise<Result<CareerJobDTO>> {
-    const admin = assertPlatformAdmin(actorEmail)
+    const admin = assertPlatformAdmin(actor)
     if (!admin.ok) return admin
 
     const existing = await CareerJobRepository.findById(id)
@@ -105,7 +125,7 @@ export const CareerJobService = {
       auditMutation({
         entity: 'career_job',
         action: 'update',
-        actorId,
+        actorId: actor.id,
         targetId: id,
         outcome: 'failure',
         reason: result.error.code,
@@ -116,7 +136,7 @@ export const CareerJobService = {
     auditMutation({
       entity: 'career_job',
       action: 'update',
-      actorId,
+      actorId: actor.id,
       targetId: result.value.id,
     })
 
@@ -124,12 +144,11 @@ export const CareerJobService = {
   },
 
   async changeStatus(
-    actorId: string,
-    actorEmail: string | null,
+    actor: PlatformActor,
     id: string,
     dto: ChangeCareerJobStatusDTO,
   ): Promise<Result<CareerJobDTO>> {
-    const admin = assertPlatformAdmin(actorEmail)
+    const admin = assertPlatformAdmin(actor)
     if (!admin.ok) return admin
 
     const existing = await CareerJobRepository.findById(id)
@@ -140,7 +159,7 @@ export const CareerJobService = {
       auditMutation({
         entity: 'career_job',
         action: 'update',
-        actorId,
+        actorId: actor.id,
         targetId: id,
         outcome: 'failure',
         reason: result.error.code,
@@ -151,7 +170,7 @@ export const CareerJobService = {
     auditMutation({
       entity: 'career_job',
       action: 'update',
-      actorId,
+      actorId: actor.id,
       targetId: result.value.id,
     })
 

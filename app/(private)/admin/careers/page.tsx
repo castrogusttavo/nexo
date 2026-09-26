@@ -12,7 +12,7 @@ export default async function AdminCareersPage() {
   const session = await getAuthSession()
   if (!session.ok) redirect('/sign-in')
 
-  const result = await CareerJobService.listAll(session.value.user.email)
+  const result = await CareerJobService.listAll(session.value.user)
   if (!result.ok) redirect('/sign-in')
 
   const jobs = result.value

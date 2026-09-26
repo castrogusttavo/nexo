@@ -13,7 +13,7 @@ export const GET = withAxiom(async () => {
   const session = await getAuthSession()
   if (!session.ok) return handleError(session.error)
 
-  const result = await CareerJobService.listAll(session.value.user.email)
+  const result = await CareerJobService.listAll(session.value.user)
   if (!result.ok) return handleError(result.error)
 
   return successResponse(result.value)
@@ -33,11 +33,7 @@ export const POST = withAxiom(async (request: NextRequest) => {
     )
   }
 
-  const result = await CareerJobService.create(
-    session.value.user.id,
-    session.value.user.email,
-    parsed.data,
-  )
+  const result = await CareerJobService.create(session.value.user, parsed.data)
   if (!result.ok) return handleError(result.error)
   return successResponse(result.value, 201)
 })

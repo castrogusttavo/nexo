@@ -18,7 +18,7 @@ export const GET = withAxiom(
     if (!session.ok) return handleError(session.error)
 
     const { id } = await params
-    const result = await CareerJobService.getById(session.value.user.email, id)
+    const result = await CareerJobService.getById(session.value.user, id)
     if (!result.ok) return handleError(result.error)
 
     return successResponse(result.value)
@@ -47,8 +47,7 @@ export const PATCH = withAxiom(
     }
 
     const result = await CareerJobService.update(
-      session.value.user.id,
-      session.value.user.email,
+      session.value.user,
       id,
       parsed.data,
     )

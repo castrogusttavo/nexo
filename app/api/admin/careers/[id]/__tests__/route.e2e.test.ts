@@ -24,14 +24,20 @@ describe('GET /api/admin/careers/[id]', () => {
   })
 
   it('should return 404 for an unknown id, as a platform admin', async () => {
-    const { cookie } = await createAuthenticatedUser({ email: ADMIN_EMAIL })
+    const { cookie } = await createAuthenticatedUser({
+      email: ADMIN_EMAIL,
+      twoFactorEnabled: true,
+    })
 
     const res = await getJson(`/api/admin/careers/${createId()}`, cookie)
     expect(res.status).toBe(404)
   })
 
   it('should return the career job for a platform admin', async () => {
-    const { cookie } = await createAuthenticatedUser({ email: ADMIN_EMAIL })
+    const { cookie } = await createAuthenticatedUser({
+      email: ADMIN_EMAIL,
+      twoFactorEnabled: true,
+    })
     const job = await seedCareerJob({ title: 'Staff Engineer' })
 
     const res = await getJson(`/api/admin/careers/${job.id}`, cookie)
@@ -63,7 +69,10 @@ describe('PATCH /api/admin/careers/[id]', () => {
   })
 
   it('should update the career job for a platform admin', async () => {
-    const { cookie } = await createAuthenticatedUser({ email: ADMIN_EMAIL })
+    const { cookie } = await createAuthenticatedUser({
+      email: ADMIN_EMAIL,
+      twoFactorEnabled: true,
+    })
     const job = await seedCareerJob({ title: 'Old Title' })
 
     const res = await patchJson(

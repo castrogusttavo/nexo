@@ -16,7 +16,7 @@ export default async function EditCareerJobPage({ params }: Props) {
   if (!session.ok) redirect('/sign-in')
 
   const { id } = await params
-  const result = await CareerJobService.getById(session.value.user.email, id)
+  const result = await CareerJobService.getById(session.value.user, id)
   if (!result.ok) notFound()
 
   const job = result.value

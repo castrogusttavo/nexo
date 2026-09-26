@@ -11,6 +11,10 @@ export const ERROR_CODES = {
   FEATURE_NOT_IN_PLAN: { code: 'FEATURE_NOT_IN_PLAN', status: 403 },
   INVITATION_EMAIL_MISMATCH: { code: 'INVITATION_EMAIL_MISMATCH', status: 403 },
   CAREER_JOB_FORBIDDEN: { code: 'CAREER_JOB_FORBIDDEN', status: 403 },
+  ADMIN_TWO_FACTOR_REQUIRED: {
+    code: 'ADMIN_TWO_FACTOR_REQUIRED',
+    status: 403,
+  },
 
   // Client Errors (400, 404, 409, 422, 429)
   BAD_REQUEST: { code: 'BAD_REQUEST', status: 400 },

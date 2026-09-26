@@ -31,8 +31,7 @@ export const PATCH = withAxiom(
     }
 
     const result = await CareerJobService.changeStatus(
-      session.value.user.id,
-      session.value.user.email,
+      session.value.user,
       id,
       parsed.data,
     )

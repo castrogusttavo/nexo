@@ -26,7 +26,10 @@ describe('PATCH /api/admin/careers/[id]/status', () => {
   })
 
   it('should return 422 for an invalid status value', async () => {
-    const { cookie } = await createAuthenticatedUser({ email: ADMIN_EMAIL })
+    const { cookie } = await createAuthenticatedUser({
+      email: ADMIN_EMAIL,
+      twoFactorEnabled: true,
+    })
     const job = await seedCareerJob({ status: 'DRAFT' })
 
     const res = await patchJson(
@@ -38,7 +41,10 @@ describe('PATCH /api/admin/careers/[id]/status', () => {
   })
 
   it('should transition DRAFT to OPEN for a platform admin', async () => {
-    const { cookie } = await createAuthenticatedUser({ email: ADMIN_EMAIL })
+    const { cookie } = await createAuthenticatedUser({
+      email: ADMIN_EMAIL,
+      twoFactorEnabled: true,
+    })
     const job = await seedCareerJob({ status: 'DRAFT' })
 
     const res = await patchJson(
