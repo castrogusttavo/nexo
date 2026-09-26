@@ -22,6 +22,9 @@ name: Server Ops
 #                     brings the stack to match it.
 #   app-up          — brings the application stack (app, worker, realtime) back
 #                     up from docker-compose.yml, without a rebuild.
+#   replication-prepare — creates the replicator role and the pg_hba rule on
+#                     the live primary, so a replica can clone it. Idempotent,
+#                     and does not restart Postgres.
 
 on:
   workflow_dispatch:
@@ -31,7 +34,7 @@ on:
         required: true
         default: compose-diff
         type: choice
-        options: [compose-diff, backup-inspect, backup-run, cleanup-bak, compose-export, infra-apply, app-up]
+        options: [compose-diff, backup-inspect, backup-run, cleanup-bak, compose-export, infra-apply, app-up, replication-prepare]
 
 env:
   SERVER_DIR: /var/www/nexo
@@ -204,6 +207,13 @@ jobs:
           cp docker-compose.infra.prod.yml "$TARGET"
           echo "==> installed $(wc -l < "$TARGET") lines into $TARGET"
 
+          # The replica bind-mounts its entrypoint from ./docker, relative to
+          # the compose file. The CD never copied that directory, so without
+          # this the container starts and dies on a missing file.
+          rsync -a --delete docker/ '${{ env.SERVER_DIR }}/docker/'
+          echo "==> support scripts installed:"
+          find '${{ env.SERVER_DIR }}/docker' -type f | sed 's/^/    /'
+
           cd '${{ env.SERVER_DIR }}'
           docker compose -f docker-compose.infra.yml up -d
 
@@ -243,3 +253,59 @@ jobs:
           sleep 5
           docker ps --format '  {{.Names}} | {{.Image}} | {{.Status}}'
           curl -fsS -o /dev/null -w '  app health %{http_code}\n' http://localhost:3000/api/health || true
+
+      # Replication needs two things on the primary that only appear by
+      # themselves when a Postgres volume is initialised from empty: a role
+      # that may replicate, and a pg_hba line that lets it in. Production's
+      # volume has carried data since January, so they are applied here.
+      #
+      # `pg_hba` is scoped to the docker network's own subnet, not the
+      # 0.0.0.0/0 the development init script uses — that script says in its
+      # own comment that it is for ephemeral local infra, and the primary
+      # publishes 5432 on the host. Nothing is restarted: a reload is enough
+      # for pg_hba, and the role needs no restart at all.
+      - name: Prepare the primary for replication
+        if: ${{ inputs.mode == 'replication-prepare' }}
+        run: |
+          set -euo pipefail
+          cd '${{ env.SERVER_DIR }}'
+          PGUSER=$(grep -m1 '^POSTGRES_USER=' .env | cut -d= -f2-)
+          PGDB=$(grep -m1 '^POSTGRES_DB=' .env | cut -d= -f2-)
+          REPLPW=$(grep -m1 '^REPLICATOR_PASSWORD=' .env | cut -d= -f2-)
+          if [ -z "$REPLPW" ]; then
+            echo '::error::REPLICATOR_PASSWORD is not in /var/www/nexo/.env yet — deploy first, the CD writes it from sops.'
+            exit 1
+          fi
+
+          echo '==> settings the primary already has'
+          docker exec nexo-db-1 psql -U "$PGUSER" -d "$PGDB" -Atc \
+            "SELECT name || ' = ' || setting FROM pg_settings WHERE name IN ('wal_level','max_wal_senders','max_replication_slots');" |
+            sed 's/^/    /'
+
+          echo '==> role'
+          exists=$(docker exec nexo-db-1 psql -U "$PGUSER" -d "$PGDB" -Atc \
+            "SELECT 1 FROM pg_roles WHERE rolname = 'replicator';")
+          if [ "$exists" = '1' ]; then
+            docker exec -e PW="$REPLPW" nexo-db-1 psql -U "$PGUSER" -d "$PGDB" -v ON_ERROR_STOP=1 -c \
+              "ALTER ROLE replicator WITH REPLICATION LOGIN PASSWORD '$REPLPW';" > /dev/null
+            echo '    replicator already existed; password re-applied'
+          else
+            docker exec nexo-db-1 psql -U "$PGUSER" -d "$PGDB" -v ON_ERROR_STOP=1 -c \
+              "CREATE ROLE replicator WITH REPLICATION LOGIN PASSWORD '$REPLPW';" > /dev/null
+            echo '    replicator created'
+          fi
+
+          echo '==> pg_hba'
+          SUBNET=$(docker network inspect nexo_default --format '{{(index .IPAM.Config 0).Subnet}}')
+          RULE="host    replication     replicator      $SUBNET          scram-sha-256"
+          echo "    docker subnet: $SUBNET"
+          if docker exec nexo-db-1 grep -qF "replication     replicator      $SUBNET" /var/lib/postgresql/data/pg_hba.conf; then
+            echo '    rule already present'
+          else
+            docker exec nexo-db-1 bash -c "echo '$RULE' >> /var/lib/postgresql/data/pg_hba.conf"
+            docker exec nexo-db-1 psql -U "$PGUSER" -d "$PGDB" -Atc 'SELECT pg_reload_conf();' > /dev/null
+            echo '    rule appended and configuration reloaded (no restart)'
+          fi
+
+          echo '==> replication rules now in pg_hba:'
+          docker exec nexo-db-1 grep -E '^host +replication' /var/lib/postgresql/data/pg_hba.conf | sed 's/^/    /'

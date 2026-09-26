@@ -63,6 +63,71 @@ services:
     networks:
       - app-network
 
+  # Read replica in streaming replication. It clones the primary with
+  # pg_basebackup on its first start (entrypoint-replica.sh) into its own
+  # volume, then every later start comes up as a standby on its own.
+  #
+  # The primary above is deliberately left byte-identical to what is already
+  # running: adding so much as an environment variable to it would make
+  # `up -d` recreate the container, and restarting production's database is
+  # not a price worth paying for a variable that only matters when a volume
+  # is initialised from empty. The replicator role and the pg_hba line are
+  # applied to the live primary instead, by the server-ops workflow.
+  #
+  # No published port: nothing outside the docker network reads from it yet.
+  nexo-db-replica:
+    image: postgres:17-alpine
+    container_name: nexo-db-replica
+    restart: unless-stopped
+    entrypoint: ["/entrypoint-replica.sh"]
+    environment:
+      PRIMARY_HOST: nexo-db
+      REPLICATOR_PASSWORD: ${REPLICATOR_PASSWORD}
+      PGDATA: /var/lib/postgresql/data
+    volumes:
+      - pgdata-replica:/var/lib/postgresql/data
+      - ./docker/postgres-replica/entrypoint-replica.sh:/entrypoint-replica.sh:ro
+    depends_on:
+      nexo-db:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 60s
+    networks:
+      - app-network
+
+  # Transaction pooling in front of the primary. Additive on purpose: it
+  # changes nothing about Postgres and nothing about the app until the app is
+  # pointed at it, which is a separate decision (Prisma needs `pgbouncer=true`
+  # in the URL, or transaction pooling breaks its prepared statements).
+  #
+  # Bound to the loopback rather than published: the app containers reach it
+  # over the docker network, and nothing off this machine should.
+  nexo-pgbouncer:
+    image: edoburu/pgbouncer:v1.25.2-p0
+    container_name: nexo-pgbouncer
+    restart: unless-stopped
+    environment:
+      DB_HOST: nexo-db
+      DB_PORT: 5432
+      DB_USER: ${POSTGRES_USER}
+      DB_PASSWORD: ${POSTGRES_PASSWORD}
+      DB_NAME: ${POSTGRES_DB}
+      POOL_MODE: transaction
+      MAX_CLIENT_CONN: 200
+      DEFAULT_POOL_SIZE: 20
+      AUTH_TYPE: scram-sha-256
+    ports:
+      - "127.0.0.1:6432:5432"
+    depends_on:
+      nexo-db:
+        condition: service_healthy
+    networks:
+      - app-network
+
   # Silo, the maintained AGPL fork of the MinIO server. MinIO archived its
   # open-source project and withdrew every public image and binary, so the tag
   # this replaced cannot be pulled by anyone, anywhere, any more.
@@ -94,6 +159,7 @@ services:
 # port in production for nobody.
 volumes:
   pgdata:
+  pgdata-replica:
   redis-master-data:
   miniodata:
 
