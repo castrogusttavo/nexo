@@ -47,6 +47,36 @@ describe('admin env validation', () => {
     expect(() => getPlatformAdminEmails()).toThrow()
   })
 
+  // Each surface validates only what it reads. The first lazy version used one
+  // schema for all three variables, so /jobs — which authenticates with the
+  // workbench pair alone — 500ed in production over a missing
+  // PLATFORM_ADMIN_EMAILS it never touches.
+  it('serves the workbench without the admin e-mail list', async () => {
+    vi.stubEnv('WORKBENCH_USER', 'nexo-ops')
+    vi.stubEnv('WORKBENCH_PASS', 'a-long-enough-password')
+
+    const { getWorkbenchUser, getWorkbenchPass } = await importFresh()
+
+    expect(getWorkbenchUser()).toBe('nexo-ops')
+    expect(getWorkbenchPass()).toBe('a-long-enough-password')
+  })
+
+  it('serves the admin list without the workbench credentials', async () => {
+    vi.stubEnv('PLATFORM_ADMIN_EMAILS', 'gusttavo@nexopm.com')
+
+    const { getPlatformAdminEmails } = await importFresh()
+
+    expect(getPlatformAdminEmails()).toEqual(['gusttavo@nexopm.com'])
+  })
+
+  it('still refuses the workbench when its own credentials are missing', async () => {
+    vi.stubEnv('PLATFORM_ADMIN_EMAILS', 'gusttavo@nexopm.com')
+
+    const { getWorkbenchUser } = await importFresh()
+
+    expect(() => getWorkbenchUser()).toThrow()
+  })
+
   it('reads the variables when they are set, lowercased and trimmed', async () => {
     vi.stubEnv('PLATFORM_ADMIN_EMAILS', ' Admin@Nexopm.com , dev@nexopm.com')
     vi.stubEnv('WORKBENCH_USER', 'workbench')
