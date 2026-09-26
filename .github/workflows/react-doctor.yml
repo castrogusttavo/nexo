@@ -7,29 +7,30 @@
 name: React Doctor
 
 on:
-  # Scans the PR's changed files and posts a sticky summary comment listing only the new issues introduced relative to the merge base of the target branch.
-  pull_request:
-    types: [opened, synchronize, reopened, ready_for_review]
-  # Scans `main` on every push to track the health-score trend and catch regressions that slipped past PR review.
+  # Only on main. The pull_request trigger was dropped: this project commits
+  # straight to the trunk, so the review comments and merge-base comparison
+  # that trigger produced had nothing to attach to. What is left is the scan
+  # of main and the commit status it writes, which is the trend worth tracking.
   push:
     branches: ["main"]
 
 permissions:
   contents: read
-  pull-requests: write
-  issues: write
   statuses: write
 
-# Cancels any in-flight scan for the same PR (or branch, on push) the moment a new commit arrives, so reviewers only ever see the latest run.
+# Cancels any in-flight scan for the branch the moment a new commit arrives,
+# so the status on main always reflects the newest code.
 concurrency:
-  group: react-doctor-${{ github.event.pull_request.number || github.ref }}
+  group: react-doctor-${{ github.ref }}
   cancel-in-progress: true
 
 jobs:
   react-doctor:
     runs-on: avrea-ubuntu-latest-2-vcpu
     steps:
-      # fetch-depth: 0 gives React Doctor the full git history it needs to find the merge base with the target branch. Without it a shallow checkout has no merge base, so PR runs can't compare against the base and fall back to reporting every issue in the changed files (pre-existing ones included) instead of only the ones the PR introduced.
+      # fetch-depth: 0 gives React Doctor the full git history it uses to
+      # compare a scan against earlier ones. A shallow checkout has nothing to
+      # compare with, so every run reports every issue as if it were new.
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
         with:
           fetch-depth: 0
