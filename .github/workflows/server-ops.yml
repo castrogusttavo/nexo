@@ -212,7 +212,7 @@ jobs:
           # The replica bind-mounts its entrypoint from ./docker, relative to
           # the compose file. The CD never copied that directory, so without
           # this the container starts and dies on a missing file.
-          rsync -a --delete docker/ '${{ env.SERVER_DIR }}/docker/'
+          rsync -a --delete infra/docker/ '${{ env.SERVER_DIR }}/docker/'
           echo "==> support scripts installed:"
           find '${{ env.SERVER_DIR }}/docker' -type f | sed 's/^/    /'
 

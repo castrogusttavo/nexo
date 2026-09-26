@@ -681,7 +681,7 @@ esses headers assim que existir um.
 Mudança: streaming replication de verdade, não "só adiciona uma
 réplica". `infra/dev.yml` ganha `nexo-db-replica`
 (`postgres:17-alpine`, entrypoint dedicado em
-`docker/postgres-replica/entrypoint-replica.sh`, roda `pg_basebackup -R`
+`infra/docker/postgres-replica/entrypoint-replica.sh`, roda `pg_basebackup -R`
 no primeiro start). `src/lib/prisma-replica.ts` (singleton preguiçoso,
 mesmo estilo de `getQueueConnection()`) cai pro client primário sem
 `DATABASE_URL_REPLICA`. `IssueRepository.listByProject`,
@@ -699,7 +699,7 @@ também pelo checkout `nexo` principal) — só precisei de duas mudanças
 que aplicam via reload, sem restart: `CREATE ROLE replicator WITH
 REPLICATION LOGIN PASSWORD '...'` e uma linha nova em `pg_hba.conf`
 (`host replication replicator 172.19.0.0/16 scram-sha-256`), seguido de
-`SELECT pg_reload_conf()`. `docker/postgres-init/01-*.sh` e `02-*.sh`
+`SELECT pg_reload_conf()`. `infra/docker/postgres-init/01-*.sh` e `02-*.sh`
 escrevem o equivalente pra quando o volume for inicializado do zero,
 mas não retroagem num volume que já tem dado — documentado
 explicitamente nos dois arquivos.
