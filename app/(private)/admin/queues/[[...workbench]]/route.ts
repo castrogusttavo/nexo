@@ -1,4 +1,5 @@
 import { type WorkbenchHandlers, workbench } from '@getworkbench/next'
+import { logger } from '@/lib/axiom/logger'
 import {
   getWorkbenchPass,
   getWorkbenchUser,
@@ -34,8 +35,24 @@ async function denyNonAdmin(): Promise<Response | null> {
 
 let handlers: WorkbenchHandlers | null = null
 
-function getHandlers(): WorkbenchHandlers {
+function getHandlers(): WorkbenchHandlers | null {
   if (handlers) return handlers
+
+  const username = getWorkbenchUser()
+  const password = getWorkbenchPass()
+
+  // Under SKIP_ENV_VALIDATION (CI, tests, any bootstrap that sets it) the
+  // getters hand back whatever the environment holds, including nothing — and
+  // workbench reads missing credentials as "no auth configured" and serves the
+  // console to whoever asks. Refuse to mount instead: a queue dashboard with
+  // retry, remove and promote behind no password is worse than a broken one.
+  if (!username || !password) {
+    logger.error('workbench.credentials_missing', {
+      component: 'Workbench',
+      basePath: '/admin/queues',
+    })
+    return null
+  }
 
   handlers = workbench({
     // Listed explicitly, not auto-discovered. `@getworkbench/next` only scans
@@ -51,10 +68,7 @@ function getHandlers(): WorkbenchHandlers {
     // who may reach the dashboard. This is what stands between an admin
     // session and the destructive actions (retry, remove, promote) the
     // dashboard exposes.
-    auth: {
-      username: getWorkbenchUser(),
-      password: getWorkbenchPass(),
-    },
+    auth: { username, password },
   })
 
   return handlers
@@ -67,7 +81,16 @@ function handle(method: keyof WorkbenchHandlers) {
   return async (request: Request): Promise<Response> => {
     const denied = await denyNonAdmin()
     if (denied) return denied
-    return getHandlers()[method](request)
+
+    const workbenchHandlers = getHandlers()
+    if (!workbenchHandlers) {
+      return standardError(
+        'INTERNAL_SERVER_ERROR',
+        'Workbench sem credenciais configuradas',
+      )
+    }
+
+    return workbenchHandlers[method](request)
   }
 }
 

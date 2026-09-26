@@ -124,6 +124,11 @@ jobs:
       # Same reasoning: the /admin/careers e2e suite signs up a user with this
       # exact address to exercise the authorized path of the platform-admin allowlist.
       PLATFORM_ADMIN_EMAILS: e2e-admin@example.com
+      # The queue console mounts basic auth from these. Without them the route
+      # refuses to mount at all (see its comment), so the suite would be
+      # asserting the refusal instead of the dashboard it means to cover.
+      WORKBENCH_USER: ci-workbench
+      WORKBENCH_PASS: ci-workbench-password
       # `next start` runs in production mode, where better-auth's built-in rate
       # limiter is on and would 429 the suite's repeated sign-ups. The app keeps
       # its own auth rate limiting; disable only better-auth's here.
