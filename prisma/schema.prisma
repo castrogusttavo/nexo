@@ -163,10 +163,20 @@ model TwoFactor {
   userId      String   @map("user_id")
   user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   verified    Boolean  @default(true)
-  createdAt   DateTime @default(now()) @map("created_at")
-  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  // Account-level lockout, which better-auth's two-factor plugin enables by
+  // default and writes on every second-factor verification (both outcomes).
+  // Without these columns the Prisma adapter rejects the write with "Unknown
+  // argument", and because the reset runs on the SUCCESS path, a correct code
+  // failed the sign-in just like a wrong one.
+  failedVerificationCount Int       @default(0) @map("failed_verification_count")
+  lockedUntil             DateTime? @map("locked_until")
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
 
   @@index([userId])
+  @@index([secret])
   @@map("two_factors")
 }
 
