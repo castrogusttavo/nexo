@@ -56,6 +56,16 @@ ENV NEXT_PUBLIC_SENTRY_RELEASE=$NEXT_PUBLIC_SENTRY_RELEASE
 ARG NEXT_PUBLIC_SENTRY_ENVIRONMENT
 ENV NEXT_PUBLIC_SENTRY_ENVIRONMENT=$NEXT_PUBLIC_SENTRY_ENVIRONMENT
 
+# Version skew protection. A tab left open across a deploy posts a Server
+# Action id the new build no longer knows, and Next answers "Failed to find
+# Server Action" — four of those reached Sentry during yesterday's deploys.
+# With a deployment id, the client sees the mismatch in the response header
+# and does a full reload instead of firing the stale action. Build-time only:
+# `next build` bakes the value into the server config the standalone output
+# ships with.
+ARG NEXT_DEPLOYMENT_ID
+ENV NEXT_DEPLOYMENT_ID=$NEXT_DEPLOYMENT_ID
+
 # Source map upload only. Not secret on their own, unlike the auth token
 # below, which is mounted as a BuildKit secret so it stays out of the image
 # history.
@@ -66,11 +76,11 @@ ARG SENTRY_PROJECT
 ENV SENTRY_PROJECT=$SENTRY_PROJECT
 
 ENV DATABASE_URL="postgresql://dummy:dummy@localhost:5432/dummy"
-# `next build` imports every route module to collect its metadata, which
-# evaluates app/jobs/[[...workbench]]/route.ts's top-level `workbench({...})`
-# call — it throws immediately without a redis config (real or not), since
-# this build stage has no Redis to connect to. A syntactically valid but
-# unreachable URL is enough; nothing actually connects until runtime.
+# `next build` imports every route module to collect its metadata, and the
+# modules those routes pull in construct their Redis client at import — which
+# throws without a redis config, real or not, since this build stage has no
+# Redis to connect to. A syntactically valid but unreachable URL is enough;
+# nothing actually connects until runtime.
 ENV REDIS_URL="redis://localhost:6379"
 ENV SKIP_ENV_VALIDATION="true"
 

@@ -98,6 +98,7 @@ jobs:
             NEXT_PUBLIC_SENTRY_DSN=${{ secrets.NEXT_PUBLIC_SENTRY_DSN }}
             NEXT_PUBLIC_SENTRY_ENVIRONMENT=production
             NEXT_PUBLIC_SENTRY_RELEASE=${{ github.event.workflow_run.head_sha }}
+            NEXT_DEPLOYMENT_ID=${{ github.event.workflow_run.head_sha }}
             SENTRY_ORG=${{ secrets.SENTRY_ORG }}
             SENTRY_PROJECT=${{ secrets.SENTRY_PROJECT }}
           secrets: |
