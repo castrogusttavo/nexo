@@ -33,6 +33,16 @@ export const metadata: Metadata = {
   },
 }
 
+// This route's whole output is decided by who is asking: a visitor gets the
+// marketing site, someone signed in is sent to their workspace. That decision
+// needs the session cookie, so the segment cannot produce a static shell and
+// Cache Components' navigation validation says so on every dev page load.
+// Declaring it here states the intent instead of leaving the overlay to
+// report it forever. Moving the redirect up into proxy.ts would make the
+// public page prerenderable again, but the proxy cannot know which workspace
+// to send someone to without a database read.
+export const instant = false
+
 export default async function Page() {
   const session = await auth.api.getSession({ headers: await headers() })
 

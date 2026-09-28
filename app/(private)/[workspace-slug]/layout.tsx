@@ -16,16 +16,14 @@ type WorkspaceLayoutProps = {
   params: Promise<{ 'workspace-slug': string }>
 }
 
-export async function generateMetadata({
-  params,
-}: WorkspaceLayoutProps): Promise<Metadata> {
-  const { 'workspace-slug': slug } = await params
-
-  return {
-    title: `${slug} | Nexo`,
-    description:
-      'Nexo brings projects, docs, and AI-powered workflows into one unified workspace so teams and agents can plan, execute, and stay aligned.',
-  }
+// Every page under this layout sets its own title, so the only thing the
+// slug bought here was the tab title of a page that forgot to. It cost the
+// whole subtree its prerendered metadata: reading `params` inside
+// generateMetadata makes the metadata runtime data under Cache Components.
+export const metadata: Metadata = {
+  title: 'Workspace | Nexo',
+  description:
+    'Nexo brings projects, docs, and AI-powered workflows into one unified workspace so teams and agents can plan, execute, and stay aligned.',
 }
 
 export default async function WorkspaceLayout({

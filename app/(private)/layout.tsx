@@ -3,6 +3,21 @@ import type { ReactNode } from 'react'
 import { getAuthSession } from '@/src/lib/auth-session'
 import { requireConsent } from '@/src/lib/consent'
 
+// Nothing under here can render before we know who is asking: this layout
+// resolves the session and the consent gate and redirects when either is
+// missing, and the workspace layout below adds the membership check. Cache
+// Components validates every navigation for an instant, prerenderable shell
+// and reports each of those reads on every dev page load. There is no honest
+// static shell for a private workspace, so the segment declares that it blocks
+// instead of leaving the dev overlay to repeat it forever — it was covering
+// the page while screenshots were being taken.
+//
+// This is the proportionate fix, not the ambitious one. Making these routes
+// genuinely instant means rendering the chrome from a cached shell and
+// suspending the per-user parts behind skeletons, which is a UX change, not a
+// bug fix.
+export const instant = false
+
 export default async function PrivateLayout({
   children,
 }: {

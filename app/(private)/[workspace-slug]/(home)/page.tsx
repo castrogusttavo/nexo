@@ -65,7 +65,15 @@ function firstName(name: string | null | undefined): string {
 }
 
 export default async function Page() {
-  const session = await getAuthSession()
+  // Awaited, not handed to JSX as promises. Both are `use cache`, so the cost
+  // is a cache read; rendering the promise itself made the greeting a
+  // suspending child with no boundary above it, which is the slowest possible
+  // way to show a string the cache already had.
+  const [session, greeting, fullDate] = await Promise.all([
+    getAuthSession(),
+    getGreeting(),
+    getFullDate(),
+  ])
   const greeted = session.ok ? firstName(session.value.user.name) : ''
 
   return (
@@ -92,10 +100,10 @@ export default async function Page() {
         <div>
           <div className='text-center'>
             <H4>
-              {getGreeting()}
+              {greeting}
               {greeted && `, ${greeted}`}
             </H4>
-            <Muted>{getFullDate()}</Muted>
+            <Muted>{fullDate}</Muted>
           </div>
         </div>
 
