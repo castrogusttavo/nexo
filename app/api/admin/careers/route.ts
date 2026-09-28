@@ -1,6 +1,6 @@
 import type { NextRequest } from 'next/server'
 import { withAxiom } from '@/lib/axiom/server'
-import { getAuthSession } from '@/src/lib/auth-session'
+import { resolvePlatformAdmin } from '@/src/lib/admin-access'
 import { CreateCareerJobSchema } from '@/src/schemas/career-job.schema'
 import { CareerJobService } from '@/src/services/career-job.service'
 import {
@@ -10,18 +10,18 @@ import {
 } from '@/utils/http-response'
 
 export const GET = withAxiom(async () => {
-  const session = await getAuthSession()
-  if (!session.ok) return handleError(session.error)
+  const admin = await resolvePlatformAdmin()
+  if (!admin.ok) return handleError(admin.error)
 
-  const result = await CareerJobService.listAll(session.value.user)
+  const result = await CareerJobService.listAll(admin.value)
   if (!result.ok) return handleError(result.error)
 
   return successResponse(result.value)
 })
 
 export const POST = withAxiom(async (request: NextRequest) => {
-  const session = await getAuthSession()
-  if (!session.ok) return handleError(session.error)
+  const admin = await resolvePlatformAdmin()
+  if (!admin.ok) return handleError(admin.error)
 
   const body = await request.json().catch(() => null)
   const parsed = CreateCareerJobSchema.safeParse(body)
@@ -33,7 +33,7 @@ export const POST = withAxiom(async (request: NextRequest) => {
     )
   }
 
-  const result = await CareerJobService.create(session.value.user, parsed.data)
+  const result = await CareerJobService.create(admin.value, parsed.data)
   if (!result.ok) return handleError(result.error)
   return successResponse(result.value, 201)
 })

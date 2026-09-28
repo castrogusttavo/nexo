@@ -1,6 +1,6 @@
 import type { Metadata } from 'next'
 import { notFound, redirect } from 'next/navigation'
-import { getAuthSession } from '@/src/lib/auth-session'
+import { resolvePlatformAdmin } from '@/src/lib/admin-access'
 import { CareerJobService } from '@/src/services/career-job.service'
 import { CareerJobForm } from '../../_components/career-job-form'
 import { StatusControl } from './status-control'
@@ -12,11 +12,11 @@ interface Props {
 }
 
 export default async function EditCareerJobPage({ params }: Props) {
-  const session = await getAuthSession()
-  if (!session.ok) redirect('/sign-in')
+  const admin = await resolvePlatformAdmin()
+  if (!admin.ok) redirect('/sign-in')
 
   const { id } = await params
-  const result = await CareerJobService.getById(session.value.user, id)
+  const result = await CareerJobService.getById(admin.value, id)
   if (!result.ok) notFound()
 
   const job = result.value

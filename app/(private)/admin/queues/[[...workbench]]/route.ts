@@ -1,11 +1,7 @@
 import { type WorkbenchHandlers, workbench } from '@getworkbench/next'
 import { logger } from '@/lib/axiom/logger'
-import {
-  getWorkbenchPass,
-  getWorkbenchUser,
-  isPlatformAdminEmail,
-} from '@/lib/env/server-admin'
-import { getAuthSession } from '@/src/lib/auth-session'
+import { getWorkbenchPass, getWorkbenchUser } from '@/lib/env/server-admin'
+import { resolvePlatformAdmin } from '@/src/lib/admin-access'
 import { QueueName } from '@/src/lib/queue/jobs'
 import { getQueueByName } from '@/src/lib/queue/queues'
 import { standardError } from '@/utils/http-response'
@@ -13,24 +9,20 @@ import { standardError } from '@/utils/http-response'
 // Route handlers ignore layouts, so `app/(private)/admin/layout.tsx` never
 // runs for this path and the gate has to be repeated here by hand.
 async function denyNonAdmin(): Promise<Response | null> {
-  const session = await getAuthSession()
-  // 404 rather than 401/403 for everyone who has no business here, for the
-  // same reason the admin layout calls notFound(): the existence of an
-  // operations dashboard is itself worth not confirming.
-  if (!session.ok) return new Response(null, { status: 404 })
+  const admin = await resolvePlatformAdmin()
+  if (admin.ok) return null
 
-  const user = session.value.user
-  if (!isPlatformAdminEmail(user.email))
-    return new Response(null, { status: 404 })
-
-  if (!user.twoFactorEnabled) {
+  // Telling a real admin what to fix is worth a distinct answer; everyone
+  // else gets 404, for the same reason the admin layout calls notFound():
+  // the existence of an operations dashboard is itself worth not confirming.
+  if (admin.error.code === 'ADMIN_TWO_FACTOR_REQUIRED') {
     return standardError(
       'ADMIN_TWO_FACTOR_REQUIRED',
       'Ative a verificação em duas etapas para acessar a administração',
     )
   }
 
-  return null
+  return new Response(null, { status: 404 })
 }
 
 let handlers: WorkbenchHandlers | null = null

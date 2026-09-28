@@ -1,7 +1,7 @@
 import { notFound, redirect } from 'next/navigation'
 import type { ReactNode } from 'react'
 import { auditAuth } from '@/lib/axiom/audit'
-import { getPlatformAdminEmails } from '@/lib/env/server-admin'
+import { resolvePlatformAdmin } from '@/src/lib/admin-access'
 import { getAuthSession } from '@/src/lib/auth-session'
 
 export default async function AdminLayout({
@@ -9,38 +9,34 @@ export default async function AdminLayout({
 }: {
   children: ReactNode
 }) {
+  const admin = await resolvePlatformAdmin()
+  if (admin.ok) return <>{children}</>
+
+  if (admin.error.code === 'UNAUTHORIZED') redirect('/sign-in')
+
   const session = await getAuthSession()
-  if (!session.ok) redirect('/sign-in')
+  const userId = session.ok ? session.value.user.id : null
 
-  const user = session.value.user
-  const email = user.email?.toLowerCase()
-
-  // 404, not a redirect home: a redirect confirms the route exists and that
-  // the account merely lacks the rights, which is a free hint to anyone
-  // probing. To everyone outside the allowlist this surface simply is not
-  // there — the same answer a made-up path gets.
-  if (!email || !getPlatformAdminEmails().includes(email)) {
+  // A real admin who has not turned the second factor on is told so: the fix
+  // is on their own account, and a 404 here would read as a broken deploy.
+  if (admin.error.code === 'ADMIN_TWO_FACTOR_REQUIRED') {
     auditAuth({
       event: 'auth.admin_access.denied',
-      userId: user.id,
-      outcome: 'failure',
-      reason: 'not_allowlisted',
-    })
-    notFound()
-  }
-
-  // A real admin with no second factor gets the opposite treatment: say what
-  // is wrong, because the fix is on their own account and a 404 here would
-  // read as a broken deploy.
-  if (!user.twoFactorEnabled) {
-    auditAuth({
-      event: 'auth.admin_access.denied',
-      userId: user.id,
+      userId,
       outcome: 'failure',
       reason: 'two_factor_required',
     })
     redirect('/?2fa=required')
   }
 
-  return <>{children}</>
+  // Everyone else gets the answer a made-up path gets. A redirect would
+  // confirm the route exists and that the account merely lacks the rights,
+  // which is a free hint to anyone probing.
+  auditAuth({
+    event: 'auth.admin_access.denied',
+    userId,
+    outcome: 'failure',
+    reason: 'not_allowlisted',
+  })
+  notFound()
 }

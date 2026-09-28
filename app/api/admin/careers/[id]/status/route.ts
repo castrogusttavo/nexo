@@ -1,6 +1,6 @@
 import type { NextRequest } from 'next/server'
 import { withAxiom } from '@/lib/axiom/server'
-import { getAuthSession } from '@/src/lib/auth-session'
+import { resolvePlatformAdmin } from '@/src/lib/admin-access'
 import { ChangeCareerJobStatusSchema } from '@/src/schemas/career-job.schema'
 import { CareerJobService } from '@/src/services/career-job.service'
 import {
@@ -14,8 +14,8 @@ export const PATCH = withAxiom(
     request: NextRequest,
     { params }: { params: Promise<{ id: string }> },
   ) => {
-    const session = await getAuthSession()
-    if (!session.ok) return handleError(session.error)
+    const admin = await resolvePlatformAdmin()
+    if (!admin.ok) return handleError(admin.error)
 
     const [{ id }, body] = await Promise.all([
       params,
@@ -31,7 +31,7 @@ export const PATCH = withAxiom(
     }
 
     const result = await CareerJobService.changeStatus(
-      session.value.user,
+      admin.value,
       id,
       parsed.data,
     )

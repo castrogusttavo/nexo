@@ -1,6 +1,6 @@
 import type { NextRequest } from 'next/server'
 import { withAxiom } from '@/lib/axiom/server'
-import { getAuthSession } from '@/src/lib/auth-session'
+import { resolvePlatformAdmin } from '@/src/lib/admin-access'
 import { UpdateCareerJobSchema } from '@/src/schemas/career-job.schema'
 import { CareerJobService } from '@/src/services/career-job.service'
 import {
@@ -14,11 +14,11 @@ export const GET = withAxiom(
     _request: NextRequest,
     { params }: { params: Promise<{ id: string }> },
   ) => {
-    const session = await getAuthSession()
-    if (!session.ok) return handleError(session.error)
+    const admin = await resolvePlatformAdmin()
+    if (!admin.ok) return handleError(admin.error)
 
     const { id } = await params
-    const result = await CareerJobService.getById(session.value.user, id)
+    const result = await CareerJobService.getById(admin.value, id)
     if (!result.ok) return handleError(result.error)
 
     return successResponse(result.value)
@@ -30,8 +30,8 @@ export const PATCH = withAxiom(
     request: NextRequest,
     { params }: { params: Promise<{ id: string }> },
   ) => {
-    const session = await getAuthSession()
-    if (!session.ok) return handleError(session.error)
+    const admin = await resolvePlatformAdmin()
+    if (!admin.ok) return handleError(admin.error)
 
     const [{ id }, body] = await Promise.all([
       params,
@@ -46,11 +46,7 @@ export const PATCH = withAxiom(
       )
     }
 
-    const result = await CareerJobService.update(
-      session.value.user,
-      id,
-      parsed.data,
-    )
+    const result = await CareerJobService.update(admin.value, id, parsed.data)
     if (!result.ok) return handleError(result.error)
     return successResponse(result.value, 201)
   },

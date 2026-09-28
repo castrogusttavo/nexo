@@ -3,16 +3,16 @@ import Link from 'next/link'
 import { redirect } from 'next/navigation'
 import { Badge } from '@/components/ui/badge'
 import { buttonVariants } from '@/components/ui/button'
-import { getAuthSession } from '@/src/lib/auth-session'
+import { resolvePlatformAdmin } from '@/src/lib/admin-access'
 import { CareerJobService } from '@/src/services/career-job.service'
 
 export const metadata: Metadata = { title: 'Vagas | Admin Nexo' }
 
 export default async function AdminCareersPage() {
-  const session = await getAuthSession()
-  if (!session.ok) redirect('/sign-in')
+  const admin = await resolvePlatformAdmin()
+  if (!admin.ok) redirect('/sign-in')
 
-  const result = await CareerJobService.listAll(session.value.user)
+  const result = await CareerJobService.listAll(admin.value)
   if (!result.ok) redirect('/sign-in')
 
   const jobs = result.value

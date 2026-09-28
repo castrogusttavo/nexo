@@ -6,6 +6,7 @@ import {
   getJson,
   postJson,
 } from '@/src/__tests__/helpers/e2e'
+import { prisma } from '@/src/lib/prisma'
 
 const ADMIN_EMAIL = process.env.PLATFORM_ADMIN_EMAILS?.split(',')[0] ?? ''
 
@@ -46,6 +47,23 @@ describe('GET /api/admin/careers', () => {
     expect(res.status).toBe(403)
     const body = await res.json()
     expect(body.error.code).toBe('ADMIN_TWO_FACTOR_REQUIRED')
+  })
+
+  // better-auth serves the session from a cookie cache for five minutes, user
+  // row included. Reading the second factor off it meant an admin who had just
+  // turned 2FA on was still told to turn 2FA on. The helper here hands back the
+  // cache cookie untouched, so the session claims no second factor while the
+  // row says otherwise — the exact window that made the admin area unusable.
+  it('should trust the database when the cached session lags behind', async () => {
+    const { id, cookie } = await createAuthenticatedUser({ email: ADMIN_EMAIL })
+    await prisma.user.update({
+      where: { id },
+      data: { twoFactorEnabled: true },
+    })
+
+    const res = await getJson('/api/admin/careers', cookie)
+
+    expect(res.status).toBe(200)
   })
 
   it('should list all career jobs for a platform admin', async () => {
