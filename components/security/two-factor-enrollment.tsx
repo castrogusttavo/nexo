@@ -8,6 +8,7 @@ import { Input } from '@/components/ui/input'
 import { notify } from '@/lib/notify'
 import { authClient } from '@/src/lib/auth-client'
 import { authErrorMessage } from '@/src/lib/auth-errors'
+import { rememberTwoFactorMethod } from '@/src/lib/two-factor-method-hint'
 
 type Method = 'totp' | 'otp'
 type Step = 'method' | 'scan' | 'codes'
@@ -84,6 +85,9 @@ export function TwoFactorEnrollment({
     setPassword('')
 
     if (!data || data.method === 'otp') {
+      // Tells the next sign-in on this browser which step to open on, so an
+      // authenticator user is not mailed a code they will not use.
+      rememberTwoFactorMethod('otp')
       await refreshSession()
       await onEnabled()
       return
@@ -114,6 +118,7 @@ export function TwoFactorEnrollment({
     }
 
     setCode('')
+    rememberTwoFactorMethod('totp')
     await refreshSession()
     setStep('codes')
   }

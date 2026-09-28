@@ -554,3 +554,72 @@ describe('<SignInForm /> trusted device', () => {
     )
   })
 })
+
+// Auto-sending the e-mailed code was costing an authenticator user an e-mail
+// they would never open, on every sign-in. The page cannot ask the server
+// which factor an account uses — there is no session yet, and answering would
+// leak it — so it remembers per browser, and the hint only decides which step
+// opens first.
+describe('<SignInForm /> remembered second factor', () => {
+  it('opens on the app step and mails nothing when the browser remembers totp', async () => {
+    window.localStorage.setItem('nexo.2fa.method', 'totp')
+    signInEmail.mockResolvedValue({
+      data: { twoFactorRedirect: true },
+      error: null,
+    })
+    const { user } = renderWithProviders(<SignInForm />)
+    await fillAndSubmit(user)
+
+    expect(await screen.findByLabelText('Código do aplicativo')).toBeVisible()
+    expect(sendOtp).not.toHaveBeenCalled()
+  })
+
+  it('still mails the code when nothing is remembered', async () => {
+    signInEmail.mockResolvedValue({
+      data: { twoFactorRedirect: true },
+      error: null,
+    })
+    const { user } = renderWithProviders(<SignInForm />)
+    await fillAndSubmit(user)
+
+    await screen.findByText('Confirme seu e-mail')
+    expect(sendOtp).toHaveBeenCalled()
+  })
+
+  // Platform admins with an authenticator are refused the e-mailed factor
+  // server-side; the page must take them somewhere they can finish.
+  it('moves to the app step when the server refuses to mail a code', async () => {
+    sendOtp.mockResolvedValue({
+      data: null,
+      error: { status: 400, code: 'EMAIL_OTP_NOT_ALLOWED' },
+    })
+    signInEmail.mockResolvedValue({
+      data: { twoFactorRedirect: true },
+      error: null,
+    })
+    const { user } = renderWithProviders(<SignInForm />)
+    await fillAndSubmit(user)
+
+    expect(await screen.findByLabelText('Código do aplicativo')).toBeVisible()
+    expect(window.localStorage.getItem('nexo.2fa.method')).toBe('totp')
+  })
+
+  it('remembers the factor that actually worked', async () => {
+    signInEmail.mockResolvedValue({
+      data: { twoFactorRedirect: true },
+      error: null,
+    })
+    const { user } = renderWithProviders(<SignInForm />)
+    await fillAndSubmit(user)
+    await screen.findByText('Confirme seu e-mail')
+
+    await user.type(
+      screen.getByLabelText('Código de verificação de 6 dígitos'),
+      '123456',
+    )
+
+    await waitFor(() =>
+      expect(window.localStorage.getItem('nexo.2fa.method')).toBe('otp'),
+    )
+  })
+})

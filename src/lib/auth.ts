@@ -23,6 +23,7 @@ import { sendVerifyEmailWithOtp } from '@/src/lib/mail/user/send-verify-email-wi
 import { sendWelcomeEmail } from '@/src/lib/mail/user/send-welcome'
 import { AccountLifecycleService } from '@/src/services/account-lifecycle.service'
 import { acquireVerifySlot } from './auth-concurrency-gate'
+import { refuseEmailOtpForAdminsWithTotp } from './auth-email-otp-guard'
 import { refuseTrustedDeviceForAdmins } from './auth-trusted-device'
 import { prisma } from './prisma'
 import { generateUniqueUsername } from './username'
@@ -317,6 +318,7 @@ export const auth = betterAuth({
     },
   },
   hooks: {
+    before: createAuthMiddleware(refuseEmailOtpForAdminsWithTotp),
     after: createAuthMiddleware(refuseTrustedDeviceForAdmins),
   },
   plugins: [

@@ -15,6 +15,10 @@ import { Input } from '@/components/ui/input'
 import { authClient } from '@/src/lib/auth-client'
 import { authErrorMessage } from '@/src/lib/auth-errors'
 import { settleAuthRequest } from '@/src/lib/auth-request'
+import {
+  lastTwoFactorMethod,
+  rememberTwoFactorMethod,
+} from '@/src/lib/two-factor-method-hint'
 
 type Step = 'form' | 'otp' | 'totp' | 'backup'
 
@@ -104,12 +108,29 @@ export function SignInForm({ redirectTo = '/' }: { redirectTo?: string }) {
 
     if (data && 'twoFactorRedirect' in data && data.twoFactorRedirect) {
       setEmail(submittedEmail)
-      setStep('otp')
       setIsPending(false)
+
+      // Whoever used an authenticator app last time opens on the app step and
+      // gets no e-mail: mailing a code they will not open was the whole cost
+      // of auto-sending. The e-mailed code stays one click away.
+      if (lastTwoFactorMethod() === 'totp') {
+        setStep('totp')
+        return
+      }
+
+      setStep('otp')
       const { error: sendError } = await settleAuthRequest(
         authClient.twoFactor.sendOtp(),
       )
       if (sendError) {
+        // Platform admins with an authenticator are refused the e-mailed
+        // factor server-side (src/lib/auth-email-otp-guard.ts). Take them
+        // where they can actually finish instead of showing a dead end.
+        if ('code' in sendError && sendError.code === 'EMAIL_OTP_NOT_ALLOWED') {
+          rememberTwoFactorMethod('totp')
+          setStep('totp')
+          return
+        }
         setOtpError(
           authErrorMessage(
             sendError,
@@ -136,6 +157,7 @@ export function SignInForm({ redirectTo = '/' }: { redirectTo?: string }) {
       return
     }
 
+    rememberTwoFactorMethod('otp')
     push(redirectTo)
   }
 
@@ -194,6 +216,7 @@ export function SignInForm({ redirectTo = '/' }: { redirectTo?: string }) {
       setOtpError(authErrorMessage(verifyError, 'Código inválido ou expirado'))
       return
     }
+    rememberTwoFactorMethod('totp')
     push(redirectTo)
   }
 

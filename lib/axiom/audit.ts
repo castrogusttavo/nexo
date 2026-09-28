@@ -72,6 +72,7 @@ type AuditAuthEvent =
   | 'auth.2fa_enabled'
   | 'auth.2fa_disabled'
   | 'auth.2fa.trust_device_refused'
+  | 'auth.2fa.email_otp_refused'
   | 'auth.admin_access.denied'
   | 'auth.welcome_email.send_failed'
   | 'auth.sign_in.success'
