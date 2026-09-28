@@ -2,14 +2,18 @@ import { describe, expect, it } from 'vitest'
 import { SaveProfileSchema, UpdateUserSchema } from '@/src/schemas/user.schema'
 
 describe('UpdateUserSchema', () => {
-  it('should accept valid name and email', () => {
+  // The e-mail is deliberately not part of a profile update: this endpoint
+  // wrote it straight to the row, keeping the verification flag from the old
+  // address, and the platform admin list is keyed by e-mail. Anything sent
+  // under that key is dropped here, before it reaches the service.
+  it('should drop an email instead of applying it', () => {
     const result = UpdateUserSchema.safeParse({
       name: 'John Doe',
-      email: 'john@example.com',
+      email: 'admin@nexopm.com',
     })
 
     expect(result.success).toBe(true)
-    expect(result.data).toEqual({ name: 'John Doe', email: 'john@example.com' })
+    expect(result.data).toEqual({ name: 'John Doe' })
   })
 
   it('should accept name only', () => {
@@ -19,11 +23,11 @@ describe('UpdateUserSchema', () => {
     expect(result.data).toEqual({ name: 'John Doe' })
   })
 
-  it('should accept email only', () => {
-    const result = UpdateUserSchema.safeParse({ email: 'john@example.com' })
+  it('should turn an email-only update into a no-op', () => {
+    const result = UpdateUserSchema.safeParse({ email: 'admin@nexopm.com' })
 
     expect(result.success).toBe(true)
-    expect(result.data).toEqual({ email: 'john@example.com' })
+    expect(result.data).toEqual({})
   })
 
   it('should accept empty object (all fields optional)', () => {
@@ -40,12 +44,6 @@ describe('UpdateUserSchema', () => {
 
   it('should reject name longer than 100 characters', () => {
     const result = UpdateUserSchema.safeParse({ name: 'A'.repeat(101) })
-
-    expect(result.success).toBe(false)
-  })
-
-  it('should reject invalid email format', () => {
-    const result = UpdateUserSchema.safeParse({ email: 'not-an-email' })
 
     expect(result.success).toBe(false)
   })

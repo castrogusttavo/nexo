@@ -61,22 +61,27 @@ describe('PATCH /api/users/me', () => {
     expect(body.data.name).toBe('Updated Name')
   })
 
-  it('should return 422 for invalid email', async () => {
-    const { cookie } = await createAuthenticatedUser()
+  // These two used to assert the endpoint's own e-mail validation and its
+  // conflict on an address in use. The field no longer reaches the service, so
+  // what matters now is that neither shape can touch the address: a malformed
+  // one is not an error to report, and someone else's is not a conflict to
+  // lose — both are simply ignored.
+  it('should ignore a malformed email instead of failing the update', async () => {
+    const { email, cookie } = await createAuthenticatedUser()
 
     const res = await fetch(`${BASE_URL}/api/users/me`, {
       method: 'PATCH',
       headers: { ...defaultHeaders, Cookie: cookie },
-      body: JSON.stringify({ email: 'not-an-email' }),
+      body: JSON.stringify({ name: 'Nome novo', email: 'not-an-email' }),
     })
 
-    expect(res.status).toBe(422)
+    expect(res.status).toBe(200)
     const body = await res.json()
-    expect(body.success).toBe(false)
+    expect(body.data.email).toBe(email)
   })
 
-  it('should return 409 when email is already taken', async () => {
-    const [{ email: takenEmail }, { cookie }] = await Promise.all([
+  it("should leave another account's address untouched", async () => {
+    const [{ email: takenEmail }, { email, cookie }] = await Promise.all([
       createAuthenticatedUser({
         email: `taken-${Date.now()}@example.com`,
       }),
@@ -89,8 +94,49 @@ describe('PATCH /api/users/me', () => {
       body: JSON.stringify({ email: takenEmail }),
     })
 
-    expect(res.status).toBe(409)
+    expect(res.status).toBe(200)
     const body = await res.json()
-    expect(body.success).toBe(false)
+    expect(body.data.email).toBe(email)
+  })
+})
+
+// The profile endpoint used to accept an `email` and write it to the row with
+// the old address's verification flag intact. Since the platform admin list is
+// keyed by e-mail, any signed-in user could take an unregistered allowlisted
+// address, enable 2FA on their own account, and walk into the admin area —
+// three requests, no verification anywhere. The field is gone; these keep it
+// gone.
+describe('PATCH /api/users/me — identity fields', () => {
+  const ADMIN_EMAIL = process.env.PLATFORM_ADMIN_EMAILS?.split(',')[0] ?? ''
+
+  it('should ignore an email in the payload', async () => {
+    const { email, cookie } = await createAuthenticatedUser()
+
+    const res = await fetch(`${BASE_URL}/api/users/me`, {
+      method: 'PATCH',
+      headers: { ...defaultHeaders, Cookie: cookie },
+      body: JSON.stringify({ name: 'Nome novo', email: ADMIN_EMAIL }),
+    })
+
+    expect(res.status).toBe(200)
+    const body = await res.json()
+    expect(body.data.name).toBe('Nome novo')
+    expect(body.data.email).toBe(email)
+  })
+
+  it('should not open the admin area to whoever asks for the admin address', async () => {
+    const { cookie } = await createAuthenticatedUser()
+
+    await fetch(`${BASE_URL}/api/users/me`, {
+      method: 'PATCH',
+      headers: { ...defaultHeaders, Cookie: cookie },
+      body: JSON.stringify({ email: ADMIN_EMAIL }),
+    })
+
+    const admin = await fetch(`${BASE_URL}/api/admin/careers`, {
+      headers: { ...defaultHeaders, Cookie: cookie },
+    })
+
+    expect(admin.status).toBe(403)
   })
 })

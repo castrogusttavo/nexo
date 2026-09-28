@@ -32,6 +32,12 @@ export async function resolvePlatformAdmin(): Promise<Result<PlatformActor>> {
     return err(forbidden())
   }
 
+  // The allowlist names addresses, so an address the account never proved it
+  // owns must not count. Sign-in already requires a verified e-mail, which
+  // makes this redundant today — and redundant is the point: it is the check
+  // that survives someone loosening that requirement later.
+  if (!user.emailVerified) return err(forbidden())
+
   if (user.twoFactorEnabled) {
     return ok({ id: user.id, email, twoFactorEnabled: true })
   }

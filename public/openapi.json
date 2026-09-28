@@ -9890,11 +9890,6 @@
             "maxLength": 100,
             "example": "João Santos"
           },
-          "email": {
-            "type": "string",
-            "format": "email",
-            "example": "joao.santos@exemplo.com"
-          },
           "username": {
             "type": "string",
             "minLength": 3,
@@ -9908,7 +9903,8 @@
             "description": "URL absoluta ou caminho relativo (iniciado por `/`).",
             "example": "https://exemplo.com/capa.png"
           }
-        }
+        },
+        "description": "Não inclui e-mail: a troca de endereço exige verificação do novo e-mail e não passa por este endpoint."
       },
       "Workspace": {
         "type": "object",

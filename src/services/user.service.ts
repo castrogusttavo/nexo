@@ -2,7 +2,7 @@ import { auditMutation } from '@/lib/axiom/audit'
 import { logger } from '@/lib/axiom/logger'
 import { PRIVACY_VERSION, TERMS_VERSION } from '@/lib/legal/versions'
 import { UserCache } from '@/src/cache/user.cache'
-import { conflict, usernameConflict } from '@/src/errors'
+import { usernameConflict } from '@/src/errors'
 import { err, ok, type Result } from '@/src/lib/result'
 import { toUserDTO } from '@/src/mappers/user.mapper'
 import { UserRepository } from '@/src/repositories/user.repository'
@@ -27,24 +27,6 @@ export const UserService = {
     actorId: string,
     dto: UpdateUserDTO,
   ): Promise<Result<UserDTO>> {
-    if (dto.email) {
-      const existingResult = await UserRepository.findByEmail(dto.email)
-      if (!existingResult.ok) return existingResult
-
-      if (existingResult.value && existingResult.value.id !== actorId) {
-        auditMutation({
-          entity: 'user',
-          action: 'update',
-          actorId,
-          targetId: actorId,
-          outcome: 'failure',
-          reason: 'email_conflict',
-          meta: { fields: Object.keys(dto) },
-        })
-        return err(conflict('E-mail já está em uso'))
-      }
-    }
-
     if (dto.username) {
       const existingResult = await UserRepository.findByUsername(dto.username)
       if (!existingResult.ok) return existingResult
@@ -63,7 +45,15 @@ export const UserService = {
       }
     }
 
-    const updateResult = await UserRepository.update(actorId, dto)
+    // Written field by field rather than handing the DTO over whole: the
+    // repository would persist any key it received, and the identity fields
+    // (e-mail, verification state) are not this endpoint's to change. The Zod
+    // schema already drops them; this is the second lock on the same door.
+    const updateResult = await UserRepository.update(actorId, {
+      ...(dto.name !== undefined ? { name: dto.name } : {}),
+      ...(dto.username !== undefined ? { username: dto.username } : {}),
+      ...(dto.coverImage !== undefined ? { coverImage: dto.coverImage } : {}),
+    })
     if (!updateResult.ok) {
       auditMutation({
         entity: 'user',

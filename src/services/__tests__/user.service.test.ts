@@ -94,27 +94,12 @@ describe('UserService', () => {
       )
     })
 
-    it('should return conflict when email belongs to another user', async () => {
-      const existingUser = createFakeUser({
-        id: 'other-user',
-        email: 'taken@example.com',
-      })
-      mockedUser.findByEmail.mockResolvedValue(ok(existingUser))
-
-      const result = await UserService.updateProfile('user-1', {
-        email: 'taken@example.com',
-      })
-
-      expectErr(result, 'CONFLICT')
-      expect(mockedUser.update).not.toHaveBeenCalled()
-    })
-
-    it('should allow updating to own current email', async () => {
-      const currentUser = createFakeUser({
-        id: 'user-1',
-        email: 'my@example.com',
-      })
-      mockedUser.findByEmail.mockResolvedValue(ok(currentUser))
+    // The profile endpoint used to take an `email` and write it straight to
+    // the row, keeping `emailVerified` from the old address. With the platform
+    // admin list keyed by e-mail, that turned any signed-in user into an admin
+    // the moment an allowlisted address was free. It stays out.
+    it('should ignore an email smuggled into the update', async () => {
+      const currentUser = createFakeUser({ id: 'user-1' })
       mockedUser.update.mockResolvedValue(ok(currentUser))
       mockedUser.findByIdWithMemberships.mockResolvedValue(
         ok(withMemberships(currentUser)),
@@ -123,43 +108,15 @@ describe('UserService', () => {
       mockedUserCache.set.mockResolvedValue(undefined)
 
       const result = await UserService.updateProfile('user-1', {
-        email: 'my@example.com',
-      })
+        name: 'Novo nome',
+        email: 'admin@nexopm.com',
+      } as Parameters<typeof UserService.updateProfile>[1])
 
       expectOk(result)
-      expect(mockedUser.update).toHaveBeenCalled()
-    })
-
-    it('should allow email update when email is not taken', async () => {
-      const updatedUser = createFakeUser({
-        id: 'user-1',
-        email: 'new@example.com',
-      })
-      mockedUser.findByEmail.mockResolvedValue(ok(null))
-      mockedUser.update.mockResolvedValue(ok(updatedUser))
-      mockedUser.findByIdWithMemberships.mockResolvedValue(
-        ok(withMemberships(updatedUser)),
+      expect(mockedUser.update).toHaveBeenCalledWith(
+        'user-1',
+        expect.not.objectContaining({ email: expect.anything() }),
       )
-      mockedUserCache.invalidate.mockResolvedValue(undefined)
-      mockedUserCache.set.mockResolvedValue(undefined)
-
-      const result = await UserService.updateProfile('user-1', {
-        email: 'new@example.com',
-      })
-
-      const value = expectOk(result)
-      expect(value.email).toBe('new@example.com')
-    })
-
-    it('should propagate findByEmail repository error', async () => {
-      mockedUser.findByEmail.mockResolvedValue(err(databaseError()))
-
-      const result = await UserService.updateProfile('user-1', {
-        email: 'any@example.com',
-      })
-
-      expectErr(result, 'DATABASE_ERROR')
-      expect(mockedUser.update).not.toHaveBeenCalled()
     })
 
     it('should return USERNAME_CONFLICT when username belongs to another user', async () => {

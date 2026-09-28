@@ -1,5 +1,4 @@
 import { z } from 'zod'
-import { EmailSchema } from './_shared'
 
 export const UserRoleValues = [
   'PRODUCT_MANAGER',
@@ -27,7 +26,13 @@ export const UpdateUserSchema = z.object({
     .min(2, 'Nome deve ter ao menos 2 caracteres')
     .max(100)
     .optional(),
-  email: EmailSchema.optional(),
+  // No `email` here, on purpose. This endpoint applied one straight to the
+  // row, checking only that nobody else held it and leaving `emailVerified`
+  // as it was — so an account verified under one address could take over
+  // another without ever proving it owned it. With the platform admin list
+  // keyed by e-mail, that was a two-request path from any signed-in user to
+  // platform admin whenever an allowlisted address was unregistered. Changing
+  // an e-mail has to go through a flow that mails the new address.
   username: z
     .string()
     .min(3, 'Username deve ter ao menos 3 caracteres')
