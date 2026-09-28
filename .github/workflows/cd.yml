@@ -10,6 +10,14 @@ env:
   REGISTRY: ghcr.io
   IMAGE_NAME: castrogusttavo/nexo
 
+# Two deploys must never touch the server at once. The runner is the server,
+# and the jobs below run migrations and `docker compose up` against the live
+# stack — overlapping runs would race on both. Queued, never cancelled: a
+# deploy that has already migrated must be allowed to finish.
+concurrency:
+  group: cd-production
+  cancel-in-progress: false
+
 jobs:
   migrate:
     name: Run Database Migrations
