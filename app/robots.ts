@@ -1,10 +1,15 @@
 import type { MetadataRoute } from 'next'
 import { NEXT_PUBLIC_URL } from '@/lib/env/env'
 
+// No '/admin' here on purpose. A Disallow line is a public list of paths:
+// it told every crawler, and everyone who reads robots.txt, exactly where the
+// platform administration lives — while the app's own answer to a stranger is
+// the same 404 a made-up path gets. The gate is the session, the allowlist,
+// the verified address and the second factor; the file was only undoing the
+// one thing it could not enforce.
 const DISALLOWED_PATHS = [
   '/api/',
   '/onboarding',
-  '/admin',
   '/create-workspace',
   '/upgrade',
 ]
