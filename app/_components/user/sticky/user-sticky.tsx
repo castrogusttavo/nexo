@@ -29,19 +29,32 @@ import {
 } from '@/src/hooks/use-sticky-note'
 import type { StickyColorDTO, StickyNoteDTO } from '@/types/sticky-note'
 
+// One class per theme, the same idiom the badges use. The palette was written
+// against the dark theme only — every colour was the 950 shade — so in the
+// light theme a note was a near-black block with dark text on it, unreadable,
+// and the picker offered six squares of almost the same black. The note's text
+// has no colour of its own: it inherits the app foreground, which flips with
+// the theme, so a light shade below it in the light theme reads correctly.
+//
+// 100 for the five hues, 200 for zinc: zinc has no hue to set it apart from
+// the page, and the app background is now near-white, so at 100 the neutral
+// note would disappear into it.
 const STICKY_COLORS: Array<{ value: StickyColorDTO; bg: string }> = [
-  { value: 'RED', bg: 'bg-red-950' },
-  { value: 'YELLOW', bg: 'bg-yellow-950' },
-  { value: 'BLUE', bg: 'bg-blue-950' },
-  { value: 'GREEN', bg: 'bg-green-950' },
-  { value: 'PURPLE', bg: 'bg-purple-950' },
-  { value: 'ZINC', bg: 'bg-zinc-950' },
+  { value: 'RED', bg: 'bg-red-100 dark:bg-red-950' },
+  { value: 'YELLOW', bg: 'bg-yellow-100 dark:bg-yellow-950' },
+  { value: 'BLUE', bg: 'bg-blue-100 dark:bg-blue-950' },
+  { value: 'GREEN', bg: 'bg-green-100 dark:bg-green-950' },
+  { value: 'PURPLE', bg: 'bg-purple-100 dark:bg-purple-950' },
+  { value: 'ZINC', bg: 'bg-zinc-200 dark:bg-zinc-950' },
 ]
 
 const SAVE_DEBOUNCE_MS = 800
 
 function colorToBg(color: StickyColorDTO): string {
-  return STICKY_COLORS.find((c) => c.value === color)?.bg ?? 'bg-zinc-950'
+  return (
+    STICKY_COLORS.find((c) => c.value === color)?.bg ??
+    'bg-zinc-200 dark:bg-zinc-950'
+  )
 }
 
 interface UserStickyProps {

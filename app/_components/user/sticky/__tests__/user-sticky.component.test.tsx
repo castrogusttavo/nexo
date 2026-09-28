@@ -146,7 +146,7 @@ describe('<UserStick /> rendering', () => {
   it('paints the sticky in its own colour', () => {
     const { card } = renderSticky()
 
-    expect(card).toHaveClass('bg-blue-950')
+    expect(card).toHaveClass('bg-blue-100', 'dark:bg-blue-950')
   })
 
   it('falls back to zinc for a colour with no swatch', () => {
@@ -155,7 +155,7 @@ describe('<UserStick /> rendering', () => {
       color: 'CYAN' as StickyNoteDTO['color'],
     })
 
-    expect(card).toHaveClass('bg-zinc-950')
+    expect(card).toHaveClass('bg-zinc-200', 'dark:bg-zinc-950')
   })
 })
 
@@ -258,7 +258,7 @@ describe('<UserStick /> toolbar', () => {
       swatch.querySelectorAll('button')[0] as HTMLButtonElement, // RED
     )
 
-    expect(card).toHaveClass('bg-red-950')
+    expect(card).toHaveClass('bg-red-100', 'dark:bg-red-950')
     await waitFor(() => expect(fetchSpy).toHaveBeenCalledTimes(1))
     expect(getFetchCall(fetchSpy)).toEqual({
       url: '/api/sticky-notes/sticky-1',
