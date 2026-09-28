@@ -46,13 +46,16 @@ export function UserModalCustomProfile({
 
   return (
     <Dialog open={tab !== null} onOpenChange={onOpenChange}>
-      <DialogContent className='flex p-0 m-0 h-183 w-6xl min-w-6xl'>
+      <DialogContent className='flex p-0 m-0 h-183 max-h-[90vh] w-6xl min-w-6xl'>
         {tab && (
           <Tabs
             key={tab}
             defaultValue={tab}
             orientation='vertical'
-            className='w-full'
+            // `min-h-0` so the panel below is allowed to shrink: a flex child
+            // defaults to min-height:auto, which refuses to be smaller than its
+            // content and is what let a tall tab push past the card.
+            className='flex w-full h-full min-h-0'
           >
             <div className='flex flex-col gap-4 w-62 py-4 px-3 border-r border-border bg-card'>
               <div className='flex items-center gap-2'>
@@ -101,7 +104,11 @@ export function UserModalCustomProfile({
                 </TabsList>
               </div>
             </div>
-            <div className='flex-1 px-8 py-9 w-full'>
+            {/* The card has a fixed height, so the tab that is taller than it
+                has to scroll inside instead of spilling out: the security tab
+                grew past the border when the authenticator setup was added,
+                and "Cookies de análise" ended up rendered below the card. */}
+            <div className='flex-1 min-h-0 w-full overflow-y-auto px-8 py-9'>
               <UserModalProfileTab tab='profile' />
               <UserModalPreferencesTab tab='preferences' />
               <UserModalNotificationsTab tab='notifications' />
