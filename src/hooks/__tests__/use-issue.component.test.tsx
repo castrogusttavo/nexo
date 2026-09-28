@@ -1,5 +1,9 @@
 import { act, waitFor } from '@testing-library/react'
-import { describe, expect, it } from 'vitest'
+import { describe, expect, it, vi } from 'vitest'
+
+const { captureEvent } = vi.hoisted(() => ({ captureEvent: vi.fn() }))
+vi.mock('@/lib/posthog/client', () => ({ captureEvent }))
+
 import {
   apiError,
   apiSuccess,
@@ -134,6 +138,35 @@ describe('useIssues', () => {
 })
 
 describe('useCreateIssue', () => {
+  // The activation signal: someone created work, which is the first moment the
+  // product does what it says. PostHog derives "first ever" per person, so the
+  // hook does not have to guess.
+  it('records the creation, and only when the API accepted it', async () => {
+    captureEvent.mockClear()
+    mockFetch()
+      .mockResolvedValueOnce(apiSuccess(buildIssue(), 201))
+      .mockResolvedValueOnce(apiError(422, 'Erro'))
+    const { result } = renderHookWithProviders(() =>
+      useCreateIssue(WORKSPACE_ID, PROJECT_SLUG),
+    )
+    const input = {
+      title: 'Fix login',
+      description: buildIssue().description,
+      stateId: 'state-1',
+    }
+
+    await act(async () => {
+      await result.current.mutateAsync(input)
+    })
+    expect(captureEvent).toHaveBeenCalledWith('issue_created')
+
+    captureEvent.mockClear()
+    await act(async () => {
+      await result.current.mutateAsync(input).catch(() => {})
+    })
+    expect(captureEvent).not.toHaveBeenCalled()
+  })
+
   it('POSTs the issue and invalidates every query of the project', async () => {
     const created = buildIssue()
     const fetchSpy = mockFetch().mockResolvedValueOnce(apiSuccess(created, 201))

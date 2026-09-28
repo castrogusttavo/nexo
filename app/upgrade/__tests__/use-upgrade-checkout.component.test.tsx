@@ -9,7 +9,11 @@ import {
 } from '@/src/__tests__/helpers/component'
 import { useUpgradeCheckout } from '../use-upgrade-checkout'
 
-const { logError } = vi.hoisted(() => ({ logError: vi.fn() }))
+const { logError, captureEvent } = vi.hoisted(() => ({
+  logError: vi.fn(),
+  captureEvent: vi.fn(),
+}))
+vi.mock('@/lib/posthog/client', () => ({ captureEvent }))
 vi.mock('@/lib/axiom/client', () => ({
   useLogger: () => ({ error: logError }),
 }))
@@ -197,6 +201,41 @@ describe('useUpgradeCheckout', () => {
 
     afterEach(() => {
       window.location.hash = ''
+    })
+
+    // Recorded on this screen rather than on the payment webhook: the webhook
+    // has no browser, and capturing there would mean analytics outside the
+    // consent the banner asks for. Someone who abandons the payment page is
+    // therefore counted here and not in PostHog's revenue — the database is
+    // where revenue is counted.
+    it('records the intent before the order leaves, with the plan chosen', async () => {
+      captureEvent.mockClear()
+      mockFetch().mockResolvedValueOnce(apiSuccess({ paymentUrl }))
+      const { result } = renderCheckout({
+        plan: 'BUSINESS',
+        billing: 'monthly',
+      })
+      act(() => {
+        result.current.setWorkspaceId('ws-2')
+        result.current.setSeats(4)
+      })
+
+      await act(() => result.current.handleCheckout())
+
+      expect(captureEvent).toHaveBeenCalledWith('checkout_started', {
+        plan: 'BUSINESS',
+        interval: 'monthly',
+        seats: 4,
+      })
+    })
+
+    it('records nothing when there is no plan to buy', async () => {
+      captureEvent.mockClear()
+      const { result } = renderCheckout({})
+
+      await act(() => result.current.handleCheckout())
+
+      expect(captureEvent).not.toHaveBeenCalled()
     })
 
     it('posts the order and redirects to the payment page', async () => {

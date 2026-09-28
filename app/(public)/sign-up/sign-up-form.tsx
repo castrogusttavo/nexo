@@ -12,6 +12,7 @@ import { Button } from '@/components/ui/button'
 import { Checkbox } from '@/components/ui/checkbox'
 import { Field, FieldError, FieldLabel } from '@/components/ui/field'
 import { Input } from '@/components/ui/input'
+import { captureEvent } from '@/lib/posthog/client'
 import { authClient } from '@/src/lib/auth-client'
 import { authErrorMessage } from '@/src/lib/auth-errors'
 import { settleAuthRequest } from '@/src/lib/auth-request'
@@ -123,6 +124,11 @@ export function SignUpForm({ redirectTo = '/' }: { redirectTo?: string }) {
       return
     }
 
+    // Fired after validation, before the request: the gap between this and
+    // `signup_completed` is how much the API itself costs us in abandoned
+    // signups, which a page view cannot show.
+    captureEvent('signup_submitted')
+
     // Send a client-side timestamp so the request typechecks; the
     // server hook in `auth.ts` overwrites both with `new Date()` to
     // prevent a tampered client from backdating its acceptance.
@@ -145,6 +151,7 @@ export function SignUpForm({ redirectTo = '/' }: { redirectTo?: string }) {
       return
     }
 
+    captureEvent('signup_completed')
     dispatch({ type: 'submitSuccess', email: submittedEmail })
   }
 
@@ -162,6 +169,9 @@ export function SignUpForm({ redirectTo = '/' }: { redirectTo?: string }) {
       return
     }
 
+    // Verification is a hard gate: without it there is no session at all, so
+    // a drop here is the whole funnel dying quietly.
+    captureEvent('email_verified')
     dispatch({ type: 'verifySettled', error: null })
     push(redirectTo)
   }

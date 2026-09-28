@@ -1,4 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
+import { captureEvent } from '@/lib/posthog/client'
 import type { InvitationDTO } from '@/types/invitation'
 import { apiFetch, apiFetchJson, apiSend } from './_fetch'
 
@@ -29,6 +30,9 @@ export function useCreateInvitation(workspaceId: string) {
         'Erro ao enviar convite',
       ),
     onSuccess: () => {
+      // Someone brought another person in: the strongest signal that the tool
+      // is being adopted rather than looked at.
+      captureEvent('invite_sent')
       queryClient.invalidateQueries({ queryKey: [INVITATION_KEY, workspaceId] })
     },
   })

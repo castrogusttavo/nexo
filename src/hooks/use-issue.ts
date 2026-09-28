@@ -8,6 +8,7 @@ import {
 } from '@tanstack/react-query'
 import type { Value } from 'platejs'
 import { useEffect, useMemo } from 'react'
+import { captureEvent } from '@/lib/posthog/client'
 import type { IssueDTO, IssuePriorityDTO } from '@/types/issue'
 import { apiFetch, apiFetchJson, apiSend } from './_fetch'
 
@@ -75,6 +76,10 @@ export function useCreateIssue(workspaceId: string, projectSlug: string) {
         'Erro ao criar issue',
       ),
     onSuccess: () => {
+      // The moment someone sees what the product is for. PostHog computes the
+      // first occurrence per person, so this fires on every issue and the
+      // activation question stays answerable.
+      captureEvent('issue_created')
       queryClient.invalidateQueries({
         queryKey: issuesKey(workspaceId, projectSlug),
       })

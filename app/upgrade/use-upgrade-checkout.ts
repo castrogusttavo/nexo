@@ -1,6 +1,7 @@
 import { useQueryState } from 'nuqs'
 import { useState } from 'react'
 import { useLogger } from '@/lib/axiom/client'
+import { captureEvent } from '@/lib/posthog/client'
 import {
   PAID_PLAN_PRICES,
   yearlyDiscount,
@@ -90,6 +91,13 @@ export function useUpgradeCheckout(workspaces: { id: string }[]) {
     if (!plan || !workspaceId) return
     setError(null)
     setIsPending(true)
+
+    // Fired here, on the screen where the data is filled in, not on the
+    // webhook: the webhook has no browser, and capturing it server-side would
+    // mean analytics outside the consent the banner asks for. The trade is
+    // explicit — someone who closes the tab mid-payment is missing here, and
+    // present in the database, which is where revenue is counted anyway.
+    captureEvent('checkout_started', { plan, interval: billing, seats })
 
     try {
       const response = await fetch('/api/payment/plan', {

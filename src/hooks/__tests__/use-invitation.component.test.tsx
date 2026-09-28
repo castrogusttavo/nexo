@@ -1,5 +1,9 @@
 import { act, waitFor } from '@testing-library/react'
-import { describe, expect, it } from 'vitest'
+import { describe, expect, it, vi } from 'vitest'
+
+const { captureEvent } = vi.hoisted(() => ({ captureEvent: vi.fn() }))
+vi.mock('@/lib/posthog/client', () => ({ captureEvent }))
+
 import {
   apiError,
   apiSuccess,
@@ -94,6 +98,31 @@ describe('useInvitations', () => {
 })
 
 describe('useCreateInvitation', () => {
+  // Someone bringing another person in is the clearest sign the tool is being
+  // adopted rather than looked at, and the only event here that says anything
+  // about a team rather than a person.
+  it('records the invite, and only when the API accepted it', async () => {
+    captureEvent.mockClear()
+    mockFetch()
+      .mockResolvedValueOnce(apiSuccess(buildInvitation(), 201))
+      .mockResolvedValueOnce(apiError(422, 'Erro'))
+    const { result } = renderHookWithProviders(() =>
+      useCreateInvitation('ws-1'),
+    )
+    const input = { email: 'ana@nexo.dev', role: 'MEMBER' }
+
+    await act(async () => {
+      await result.current.mutateAsync(input)
+    })
+    expect(captureEvent).toHaveBeenCalledWith('invite_sent')
+
+    captureEvent.mockClear()
+    await act(async () => {
+      await result.current.mutateAsync(input).catch(() => {})
+    })
+    expect(captureEvent).not.toHaveBeenCalled()
+  })
+
   it('POSTs the email and role and invalidates that workspace list', async () => {
     const invitation = buildInvitation()
     const fetchSpy = mockFetch().mockResolvedValueOnce(

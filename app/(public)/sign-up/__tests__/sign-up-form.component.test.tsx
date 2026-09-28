@@ -3,14 +3,23 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { renderWithProviders } from '@/src/__tests__/helpers/component'
 import { SignUpForm } from '../sign-up-form'
 
-const { push, signUpEmail, signInSocial, verifyEmail, sendVerificationOtp } =
-  vi.hoisted(() => ({
-    push: vi.fn(),
-    signUpEmail: vi.fn(),
-    signInSocial: vi.fn(),
-    verifyEmail: vi.fn(),
-    sendVerificationOtp: vi.fn(),
-  }))
+const {
+  push,
+  signUpEmail,
+  signInSocial,
+  verifyEmail,
+  sendVerificationOtp,
+  captureEvent,
+} = vi.hoisted(() => ({
+  push: vi.fn(),
+  signUpEmail: vi.fn(),
+  signInSocial: vi.fn(),
+  verifyEmail: vi.fn(),
+  sendVerificationOtp: vi.fn(),
+  captureEvent: vi.fn(),
+}))
+
+vi.mock('@/lib/posthog/client', () => ({ captureEvent }))
 
 vi.mock('next/navigation', () => ({
   useRouter: () => ({ push }),
@@ -397,5 +406,81 @@ describe('<SignUpForm /> email verification step', () => {
     await user.click(screen.getByRole('button', { name: 'Voltar' }))
 
     expect(submitButton()).toBeInTheDocument()
+  })
+})
+
+// The three funnel moments this screen owns. `captureEvent` refuses to do
+// anything without analytics consent, so these assert that the call is made —
+// whether it results in a beacon is the consent gate's business, tested where
+// that gate lives.
+describe('<SignUpForm /> analytics', () => {
+  it('records the attempt before the API is asked', async () => {
+    signUpEmail.mockReturnValue(new Promise(() => {}))
+    const { user } = renderWithProviders(<SignUpForm />)
+    await fillForm(user)
+    await user.click(submitButton())
+
+    expect(captureEvent).toHaveBeenCalledWith('signup_submitted')
+    expect(captureEvent).not.toHaveBeenCalledWith('signup_completed')
+  })
+
+  it('does not record an attempt that never left the form', async () => {
+    const { user } = renderWithProviders(<SignUpForm />)
+    await user.click(submitButton())
+
+    expect(captureEvent).not.toHaveBeenCalled()
+  })
+
+  // The gap between these two is what the API costs us in abandoned signups.
+  it('records the account once it exists', async () => {
+    const { user } = renderWithProviders(<SignUpForm />)
+    await fillForm(user)
+    await user.click(submitButton())
+
+    await waitFor(() =>
+      expect(captureEvent).toHaveBeenCalledWith('signup_completed'),
+    )
+  })
+
+  it('does not record an account the API refused', async () => {
+    signUpEmail.mockResolvedValue({
+      data: null,
+      error: { status: 422, code: 'USER_ALREADY_EXISTS' },
+    })
+    const { user } = renderWithProviders(<SignUpForm />)
+    await fillForm(user)
+    await user.click(submitButton())
+
+    await waitFor(() =>
+      expect(captureEvent).toHaveBeenCalledWith('signup_submitted'),
+    )
+    expect(captureEvent).not.toHaveBeenCalledWith('signup_completed')
+  })
+
+  it('records the verification, the gate with no session behind it', async () => {
+    const { user } = await reachOtpStep()
+    await user.type(
+      screen.getByLabelText('Código de verificação de 6 dígitos'),
+      '123456',
+    )
+
+    await waitFor(() =>
+      expect(captureEvent).toHaveBeenCalledWith('email_verified'),
+    )
+  })
+
+  it('does not record a verification the server rejected', async () => {
+    verifyEmail.mockResolvedValue({
+      data: null,
+      error: { status: 400, code: 'INVALID_OTP' },
+    })
+    const { user } = await reachOtpStep()
+    await user.type(
+      screen.getByLabelText('Código de verificação de 6 dígitos'),
+      '000000',
+    )
+
+    await waitFor(() => expect(verifyEmail).toHaveBeenCalled())
+    expect(captureEvent).not.toHaveBeenCalledWith('email_verified')
   })
 })
