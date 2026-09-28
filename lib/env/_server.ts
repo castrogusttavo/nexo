@@ -126,9 +126,30 @@ const serverEnvSchema = z.object({
     .transform((v) => (v?.trim() ? v.trim() : undefined))
 })
 
+type ServerEnv = z.infer<typeof serverEnvSchema>
+
+/**
+ * The escape hatch for tests, CI and image builds, which cannot hold real
+ * credentials.
+ *
+ * It used to hand the environment over untouched, which skipped the
+ * conversions along with the validation: every value stayed the string it was
+ * in `process.env`, so `REDIS_TLS_ENABLED=false` switched TLS *on* — a
+ * non-empty string is truthy — and the Redis client then refused to talk to a
+ * plain `redis://` URL. Parsing a fully optional copy keeps the hatch open,
+ * since nothing is required, while still running the transforms that turn
+ * "false" into false and "25" into 25.
+ */
+function lenientServerEnv(): ServerEnv {
+  const parsed = serverEnvSchema.partial().safeParse(serverEnv)
+  // A value present but malformed (a bad URL in a throwaway .env) must not
+  // stop the process the hatch exists to keep running.
+  return (parsed.success ? parsed.data : serverEnv) as unknown as ServerEnv
+}
+
 const validatedServerEnv =
   process.env.NODE_ENV === 'test' || process.env.SKIP_ENV_VALIDATION === 'true'
-    ? (serverEnv as unknown as z.infer<typeof serverEnvSchema>)
+    ? lenientServerEnv()
     : serverEnvSchema.parse(serverEnv)
 
 export const {
