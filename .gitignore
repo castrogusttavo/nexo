@@ -77,7 +77,9 @@ k6/results/
 CLAUDE.md
 .aider*
 
-/scripts
+# Not /scripts: the five files there are tracked on purpose (seeds, the
+# esbuild resolver, the replica wait). Ignoring the directory meant every
+# one of them had to be force-added, and the next one would be missed.
 
 # playwright (browser e2e)
 /test-results/
