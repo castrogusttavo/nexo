@@ -384,10 +384,16 @@ jobs:
                     current_setting('max_connections')::int, 1) || '%)'
              FROM pg_stat_activity;" | sed 's/^/    /'
 
-          echo '==> is anything going through pgbouncer'
-          docker exec nexo-pgbouncer psql -h 127.0.0.1 -p 5432 -U "$PGUSER" \
-            -d pgbouncer -Atc 'SHOW POOLS;' 2>/dev/null | sed 's/^/    /' ||
-            echo '    (pgbouncer admin console not reachable — it is idle unless DATABASE_URL_POOLED is set)'
+          echo '==> what pgbouncer is holding'
+          # psql runs from the database container: the pgbouncer image ships
+          # the pooler and nothing else, so the client has to come from
+          # somewhere. `cl_waiting` above zero is the signal to raise
+          # DEFAULT_POOL_SIZE; `sv_active` is what actually reaches Postgres.
+          PGPASS=$(grep -m1 '^POSTGRES_PASSWORD=' .env | cut -d= -f2-)
+          docker exec -e PGPASSWORD="$PGPASS" nexo-db-1 psql \
+            -h nexo-pgbouncer -p 5432 -U "$PGUSER" -d pgbouncer \
+            -c 'SHOW POOLS;' 2>&1 | sed 's/^/    /' ||
+            echo '    (could not read the pooler console)'
 
           echo '==> does the app route through it?'
           if grep -q '^DATABASE_URL_POOLED=' .env; then

@@ -125,6 +125,11 @@ services:
       MAX_CLIENT_CONN: 200
       DEFAULT_POOL_SIZE: 20
       AUTH_TYPE: scram-sha-256
+      # Without an admin user the `pgbouncer` console database refuses every
+      # login, so SHOW POOLS — the only place `cl_waiting` exists — could not
+      # be read at all. Not a second credential: the same application user,
+      # allowed to ask the pooler about itself.
+      ADMIN_USERS: ${POSTGRES_USER}
     ports:
       - "127.0.0.1:6432:5432"
     depends_on:
