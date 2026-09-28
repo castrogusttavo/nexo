@@ -53,7 +53,13 @@ const serverEnvSchema = z.object({
     .string()
     .optional()
     .transform((v) => v === 'true'),
-  REDIS_TLS_CA_PATH: z.string().min(1).optional(),
+  // Blank counts as unset: it is how you turn TLS off for a throwaway stack
+  // without editing .env, and a required-but-empty string only ever produced
+  // a confusing "expected >=1 characters" at boot.
+  REDIS_TLS_CA_PATH: z
+    .string()
+    .optional()
+    .transform((v) => (v?.trim() ? v.trim() : undefined)),
   MINIO_ENDPOINT: z.url().startsWith('http'),
   MINIO_USER: z.string().min(3).max(63),
   MINIO_PASSWORD: z.string().min(8).max(128),

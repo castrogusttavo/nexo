@@ -35,10 +35,36 @@ if [ "$installed" != "$tagged" ]; then
 fi
 
 # --- the artifact the suite photographs -------------------------------------
-if [ "${VISUAL_BUILD:-}" = '1' ] || [ ! -f .next/standalone/server.js ]; then
+# Pinned build environment. NEXT_PUBLIC_* values are inlined at build time and
+# some of them reach the pixels: with a developer's real NEXT_PUBLIC_URL, the
+# avatars and covers in the private screens resolve to production and load,
+# while CI's build points at localhost and they do not. Sixteen baselines then
+# "fail" on a machine where nothing is wrong — the image pins the fonts and the
+# browser, and this pins the other half. These are exactly the values ci.yml
+# builds with.
+VISUAL_BUILD_ENV=(
+  NODE_ENV=production
+  NEXT_PUBLIC_URL=http://localhost:3000
+  NEXT_PUBLIC_AXIOM_TOKEN=xaat-ci-token-not-real
+  NEXT_PUBLIC_AXIOM_DATASET=nexo-ci
+  NEXT_PUBLIC_REALTIME_URL=ws://localhost:1234
+)
+STAMP='.next/.visual-build-env'
+stamp_now="$(printf '%s\n' "${VISUAL_BUILD_ENV[@]}")"
+
+# A build made for something else (pnpm dev, a load test, the browser suite)
+# is reused only if it was made with these values; otherwise the screenshots
+# would be of a different application.
+if [ "${VISUAL_BUILD:-}" = '1' ] ||
+   [ ! -f .next/standalone/server.js ] ||
+   [ "$(cat "$STAMP" 2>/dev/null || true)" != "$stamp_now" ]; then
   echo "==> building the standalone artifact on the host (pnpm build)"
-  NODE_ENV=production pnpm build
+  env "${VISUAL_BUILD_ENV[@]}" pnpm build
+  printf '%s' "$stamp_now" > "$STAMP"
 fi
+
+# The server inside the container has to agree with the build it serves.
+export NEXT_PUBLIC_URL=http://localhost:3000
 
 if [ ! -d node_modules/@playwright/test ]; then
   echo 'node_modules is missing; run pnpm install first.' >&2
@@ -76,9 +102,14 @@ PASSTHROUGH=(
   PLAYWRIGHT_HTML_OUTPUT_DIR PLAYWRIGHT_BASE_URL PLAYWRIGHT_PORT
 )
 
+# Set, not merely non-empty: a developer pointing the suite at a throwaway
+# stack needs to blank a variable out (REDIS_TLS_ENABLED= for a Redis without
+# TLS), and skipping empty ones meant the server inside the container fell back
+# to the .env on disk and refused to connect. Unset variables are still left
+# alone, which is what keeps CI's leaner environment working.
 env_args=()
 for name in "${PASSTHROUGH[@]}"; do
-  if [ -n "${!name:-}" ]; then env_args+=(--env "$name"); fi
+  if [ -n "${!name+set}" ]; then env_args+=(--env "$name"); fi
 done
 
 exec docker run --rm --init \
