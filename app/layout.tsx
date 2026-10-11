@@ -39,7 +39,7 @@ export const metadata: Metadata = {
   },
 }
 
-const THEME_INIT_SCRIPT = `(function(){try{var m=document.cookie.match(/(?:^|; )nexo\\.theme=([^;]+)/);var t=m?decodeURIComponent(m[1]):'SYSTEM';var dark=t==='DARK'||(t==='SYSTEM'&&matchMedia('(prefers-color-scheme: dark)').matches);document.documentElement.classList.toggle('dark',dark)}catch(e){}})()`
+const THEME_INIT_SCRIPT = `(function(){try{var m=document.cookie.match(/(?:^|; )nexo\\.theme=([^;]+)/);var t=m?decodeURIComponent(m[1]):'LIGHT';var dark=t==='DARK'||(t==='SYSTEM'&&matchMedia('(prefers-color-scheme: dark)').matches);document.documentElement.classList.toggle('dark',dark)}catch(e){}})()`
 
 // sameAs is left out on purpose: the social links in the footer are
 // still placeholders (generic linkedin.com, "#"). Add it here once
