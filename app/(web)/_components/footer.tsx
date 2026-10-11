@@ -1,10 +1,9 @@
 import {
   AndroidIcon,
   Github01Icon,
+  InstagramIcon,
   LinkedinIcon,
-  NewTwitterIcon,
   WindowsOldIcon,
-  YoutubeIcon,
 } from '@hugeicons-pro/core-solid-rounded'
 import Image from 'next/image'
 import Link from 'next/link'
@@ -663,7 +662,7 @@ export function WebFooter({ showBanner = true }: WebFooterProps = {}) {
           </div>
           <div className='flex items-center gap-4'>
             <ButtonLink
-              href='https://linkedin.com'
+              href='https://www.linkedin.com/company/nexoso'
               variant='outline'
               size='icon-lg'
               className="[&_svg:not([class*='size-'])]:size-5"
@@ -672,31 +671,22 @@ export function WebFooter({ showBanner = true }: WebFooterProps = {}) {
               <NexoIcon icon={LinkedinIcon} />
             </ButtonLink>
             <ButtonLink
-              href='#'
+              href='https://www.instagram.com/nexopmapp'
+              variant='outline'
+              size='icon-lg'
+              className="[&_svg:not([class*='size-'])]:size-5"
+              aria-label='Nexo no Instagram'
+            >
+              <NexoIcon icon={InstagramIcon} />
+            </ButtonLink>
+            <ButtonLink
+              href='https://github.com/castrogusttavo/nexo'
               variant='outline'
               size='icon-lg'
               className="[&_svg:not([class*='size-'])]:size-5"
               aria-label='Nexo no GitHub'
             >
               <NexoIcon icon={Github01Icon} />
-            </ButtonLink>
-            <ButtonLink
-              href='#'
-              variant='outline'
-              size='icon-lg'
-              className="[&_svg:not([class*='size-'])]:size-5"
-              aria-label='Nexo no X'
-            >
-              <NexoIcon icon={NewTwitterIcon} />
-            </ButtonLink>
-            <ButtonLink
-              href='#'
-              variant='outline'
-              size='icon-lg'
-              className="[&_svg:not([class*='size-'])]:size-5"
-              aria-label='Nexo no YouTube'
-            >
-              <NexoIcon icon={YoutubeIcon} />
             </ButtonLink>
           </div>
         </div>

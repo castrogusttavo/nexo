@@ -27,9 +27,4 @@ export const brand = {
      url: 'https://github.com/castrogusttavo/nexo',
      icon: 'https://cdn.brandfetch.io/idZAyF9rlg/theme/dark/symbol.svg?c=1bxid64Mup7aczewSAYMX&t=1779162684348',
    },
-   {
-     name: 'X',
-     url: 'https://x.com/trynexo',
-     icon: 'https://cdn.brandfetch.io/idS5WhqBbM/theme/dark/logo.svg?c=1bxid64Mup7aczewSAYMX&t=1692089092800',
-   },
  ] as const
