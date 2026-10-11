@@ -14,7 +14,7 @@ const PROVIDERS: Record<
   },
   github: {
     label: 'Continuar com GitHub',
-    logoSrc: 'https://cdn.brandfetch.io/idZAyF9rlg/theme/light/symbol.svg?c=1bxid64Mup7aczewSAYMX&t=1719469980826',
+    logoSrc: 'https://cdn.brandfetch.io/idZAyF9rlg/symbol.svg?c=1bxid64Mup7aczewSAYMX&t=1719469980826',
   }
 }
 
