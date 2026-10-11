@@ -44,7 +44,7 @@ export default async function CareersPage() {
               <div className='uppercase text-cyan-500 text-sm md:whitespace-pre-line mb-4'>
                 nexo · careers
               </div>
-              <Title>
+              <Title className='text-white'>
                 Construa a infraestrutura <br />
                 em que o trabalho roda
               </Title>
@@ -52,9 +52,6 @@ export default async function CareersPage() {
             <div className='flex gap-4 items-center flex-wrap justify-start md:justify-center'>
               <ButtonLink href='#vagas' size='lg'>
                 Ver vagas abertas
-              </ButtonLink>
-              <ButtonLink href='/work-trials' variant='secondary' size='lg'>
-                Como contratamos
               </ButtonLink>
             </div>
           </div>
@@ -65,8 +62,8 @@ export default async function CareersPage() {
               times vão reconstruir como planejam, decidem e entregam.
             </SubTitle>
             <SubTitle className='text-neutral-200 md:whitespace-pre-line text-lg'>
-              Estamos construindo a camada por baixo de tudo isso — e
-              contratando pra formar esse time técnico desde o zero.
+              Estamos construindo a camada por baixo de tudo isso, e contratando
+              pra formar esse time técnico desde o zero.
             </SubTitle>
           </div>
         </div>
@@ -99,10 +96,10 @@ export default async function CareersPage() {
         </div>
         <figure className='w-fit mb-10 space-y-1.5'>
           <Image
-            src='https://plane.so/_next/image?url=%2Fapi%2Fmedia%2Ffile%2Fcareers-today-vs-plane-diagram-desktop-light-ae85c175.webp&w=1920&q=75&dpl=dpl_2PXj42WPnnbKpRZyUAz3F34bLCiL'
-            alt='Visão geral do workspace do Nexo'
-            width={5024}
-            height={2752}
+            src='/web/careers/careers_image-1.png'
+            alt='Diagrama comparando o trabalho de hoje, espalhado entre bate-papo, documentos, issues, planilhas, chamados e wiki, com o Nexo, um espaço só que conecta pessoas e agentes'
+            width={3840}
+            height={1650}
             sizes='100vw'
             priority
             className='max-w-5xl h-auto object-cover object-center rounded-sm'
@@ -110,7 +107,7 @@ export default async function CareersPage() {
           <figcaption className='w-full text-center'>
             <Muted className='text-xs whitespace-nowrap'>
               O trabalho vive em ferramentas que não se enxergam. O Nexo dá pra
-              humanos e agentes um espaço de coordenadas só.
+              humanos e agentes um espaço só.
             </Muted>
           </figcaption>
         </figure>
@@ -119,7 +116,7 @@ export default async function CareersPage() {
           <SubTitle>
             O Nexo nasceu da dor de um fundador tentando juntar contexto
             espalhado entre ClickUp, Notion e Trello, e está virando a
-            infraestrutura de trabalho pra qualquer time que sinta a mesma dor —
+            infraestrutura de trabalho pra qualquer time que sinta a mesma dor,
             de startups pequenas a empresas que preferem rodar tudo na própria
             infraestrutura. É cedo: hoje somos duas pessoas construindo a
             fundação.
@@ -136,12 +133,11 @@ export default async function CareersPage() {
         </div>
         <figure className='w-fit mb-10 space-y-1.5'>
           <Image
-            src='https://plane.so/_next/image?url=%2Fapi%2Fmedia%2Ffile%2Fcareers-five-directions-diagram-desktop-light-10110bda.webp&w=1920&q=75&dpl=dpl_2PXj42WPnnbKpRZyUAz3F34bLCiL'
-            alt='Visão geral do workspace do Nexo'
-            width={5024}
-            height={2752}
+            src='/web/careers/careers_image-2.png'
+            alt='Diagrama das cinco direções do Nexo: agentes prontos e personalizados, uma API pra construir em cima, interfaces pra decisões humanas, handoffs nos dois sentidos e dados que aguentam carga real'
+            width={3840}
+            height={1650}
             sizes='100vw'
-            priority
             className='max-w-5xl h-auto object-cover object-center rounded-sm'
           />
           <figcaption className='w-full text-center'>
@@ -157,22 +153,26 @@ export default async function CareersPage() {
           <div className='w-full mx-auto px-4 sm:px-8 xl:px-11 xl:max-w-336 2xl:max-w-384'>
             <div className='max-w-md grid grid-cols-2 gap-8'>
               <div className='space-y-2'>
-                <Title>2</Title>
-                <SubTitle>pessoas formam o time técnico hoje</SubTitle>
+                <Title className='text-white'>2</Title>
+                <SubTitle className='text-neutral-200'>
+                  pessoas formam o time técnico hoje
+                </SubTitle>
               </div>
               <div className='space-y-2'>
-                <Title>8-30</Title>
-                <SubTitle>
+                <Title className='text-white'>8-30</Title>
+                <SubTitle className='text-neutral-200'>
                   pessoas é o tamanho de time que projetamos pra atender
                 </SubTitle>
               </div>
               <div className='space-y-2'>
-                <Title>1</Title>
-                <SubTitle>assinatura só pra projetos, wiki e IA</SubTitle>
+                <Title className='text-white'>1</Title>
+                <SubTitle className='text-neutral-200'>
+                  assinatura só pra projetos, wiki e IA
+                </SubTitle>
               </div>
               <div className='space-y-2'>
-                <Title>100%</Title>
-                <SubTitle>
+                <Title className='text-white'>100%</Title>
+                <SubTitle className='text-neutral-200'>
                   das contratações passam por work trial remunerado
                 </SubTitle>
               </div>
@@ -205,7 +205,7 @@ export default async function CareersPage() {
                 </h3>
                 <p className='text-base text-muted-foreground text-start space-y-2'>
                   Sem fila de pull request travando o que você acabou de
-                  construir — o CI é a rede de segurança, não uma aprovação em
+                  construir. O CI é a rede de segurança, não uma aprovação em
                   série. Seu primeiro commit sobe pra produção rápido, e alguém
                   que decide com você revisa junto, não uma fila de espera.
                 </p>
@@ -325,19 +325,18 @@ export default async function CareersPage() {
             dias úteis depois do seu último dia de trial.
           </SubTitle>
           <SubTitle>
-            Se você já construiu algo publicamente — projeto pessoal,
-            contribuição open-source, artigo técnico — isso conta muito na
+            Se você já construiu algo em público, como um projeto pessoal, uma
+            contribuição open-source ou um artigo técnico, isso conta muito na
             conversa, mas não é obrigatório.
           </SubTitle>
         </div>
         <figure className='w-fit mb-10 space-y-1.5'>
           <Image
-            src='https://plane.so/_next/image?url=%2Fapi%2Fmedia%2Ffile%2Fcareers-hiring-process-timeline-desktop-light-a118dd89.webp&w=1920&q=75&dpl=dpl_2PXj42WPnnbKpRZyUAz3F34bLCiL'
-            alt='Visão geral do workspace do Nexo'
-            width={5024}
-            height={2752}
+            src='/web/careers/careers_image-3.png'
+            alt='Linha do tempo da contratação em quatro etapas: candidatar, conversar, construir com um work trial pago de 2 a 5 dias, e decidir em até 3 dias úteis com feedback específico'
+            width={3840}
+            height={1650}
             sizes='100vw'
-            priority
             className='max-w-5xl h-auto object-cover object-center rounded-sm'
           />
           <figcaption className='w-full text-center'>
@@ -362,8 +361,8 @@ export default async function CareersPage() {
               </h3>
               <p className='text-base text-muted-foreground text-start space-y-2'>
                 Quem constrói o Nexo é dono de parte do Nexo, nas mesmas
-                condições dos fundadores. Toda proposta inclui equity relevante
-                — sem tratamento diferente pra quem chegou depois.
+                condições dos fundadores. Toda proposta inclui equity relevante,
+                sem tratamento diferente pra quem chegou depois.
               </p>
             </div>
             <div className='border border-border flex flex-col gap-3 p-6 md:p-8 bg-card'>
@@ -390,7 +389,7 @@ export default async function CareersPage() {
                 Localização
               </h3>
               <p className='text-base text-muted-foreground text-start space-y-2'>
-                O trabalho é 100% remoto — não importa de onde você é, contanto
+                O trabalho é 100% remoto. Não importa de onde você é, contanto
                 que a colaboração funcione.
               </p>
             </div>
