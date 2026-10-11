@@ -106,6 +106,7 @@ const nextConfig: NextConfig = {
   productionBrowserSourceMaps: canUploadSourcemaps,
   serverExternalPackages: ['@prisma/client'],
   images: {
+    qualities: [75, 90],
     remotePatterns: [
       {
         protocol: 'https',

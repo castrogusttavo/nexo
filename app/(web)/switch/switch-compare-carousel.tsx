@@ -20,38 +20,36 @@ interface CompareCard {
   image: string
 }
 
-const COMPARE_IMAGE = '/web/switch/vsjira-hover.jpg'
-
 const COMPARE_CARDS: CompareCard[] = [
   {
     slug: 'jira',
     title: 'Nexo vs Jira',
     tagline: 'Molde seus workflows do seu jeito.',
-    image: COMPARE_IMAGE,
+    image: '/web/switch/switch_nexo-jira.png',
   },
   {
     slug: 'linear',
     title: 'Nexo vs Linear',
     tagline: 'Junte times de engenharia e negócio.',
-    image: COMPARE_IMAGE,
+    image: '/web/switch/switch_nexo-linear.png',
   },
   {
     slug: 'asana',
     title: 'Nexo vs Asana',
     tagline: 'Conecte o plano do projeto à entrega de engenharia.',
-    image: COMPARE_IMAGE,
+    image: '/web/switch/switch_nexo-asana.png',
   },
   {
     slug: 'clickup',
     title: 'Nexo vs ClickUp',
     tagline: 'Comece simples. Adicione workflows conforme cresce.',
-    image: COMPARE_IMAGE,
+    image: '/web/switch/switch_nexo-clickup.png',
   },
   {
     slug: 'monday',
     title: 'Nexo vs Monday',
     tagline: 'Dê a cada time uma visão clara do trabalho compartilhado.',
-    image: COMPARE_IMAGE,
+    image: '/web/switch/switch_nexo-monday.png',
   },
 ]
 
@@ -102,7 +100,8 @@ export function SwitchCompareCarousel() {
               src={card.image}
               alt=''
               width={352}
-              height={421}
+              height={443}
+              quality={90}
               className='rounded-xl grayscale transition-[filter] duration-500 ease-out group-hover:grayscale-0'
             />
             <div className='text-left'>
