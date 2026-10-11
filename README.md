@@ -1,7 +1,10 @@
-<br />
+<p align="center">
+  <b>Português</b> · <a href="README.en.md">English</a>
+</p>
+
 <br />
 
-<p  align="center">
+<p align="center">
     <a href="https://nexopm.com" target="_blank" align="center">
       <img
         src="./public/brand/nexo-readme.png"
@@ -11,13 +14,24 @@
       />
     </a>
 </p>
-<p align="center"><b>Project management that actually works for your team</b></p>
+<p align="center"><b>Gestão de projetos que funciona de verdade para o seu time</b></p>
 
 <p align="center">
-    <a href="https://nexopm.com/"><b>Website</b></a> •
+    <a href="https://nexopm.com/"><b>Site</b></a> •
     <a href="https://nexopm.com/status"><b>Status</b></a> •
-    <a href="https://x.com/nexopowers"><b>X</b></a> •
-    <a href="https://nexopm.com/docs"><b>Documentation</b></a>
+    <a href="https://www.instagram.com/nexopmapp"><b>Instagram</b></a> •
+    <a href="https://www.linkedin.com/company/nexoso"><b>LinkedIn</b></a> •
+    <a href="https://nexopm.com/docs"><b>Documentação</b></a>
+</p>
+
+<p align="center">
+  <a href="https://nexopm.com" target="_blank">
+    <img
+      src="./.github/assets/readme-banner.png"
+      alt="Nexo: gestão de projetos e conhecimento num lugar só"
+      width="100%"
+    />
+  </a>
 </p>
 
 <p align="center">
@@ -38,61 +52,69 @@
   </a>
 
   <a href="LICENSE">
-    <img src="https://img.shields.io/badge/license-AGPL--3.0-blue.svg" alt="License: AGPL v3" />
+    <img src="https://img.shields.io/badge/licen%C3%A7a-AGPL--3.0-blue.svg" alt="Licença: AGPL v3" />
   </a>
 
   <a href="CONTRIBUTING.md">
-    <img src="https://img.shields.io/badge/PRs-welcome-brightgreen.svg" alt="PRs welcome" />
+    <img src="https://img.shields.io/badge/PRs-bem--vindos-brightgreen.svg" alt="PRs bem-vindos" />
   </a>
 </p>
 
-Meet [Nexo](https://nexopm.com/), a project management platform built for teams that want to ship without fighting their tools. Multi-tenant by default, opinionated where it matters, and ready to grow with you.
+Conheça o [Nexo](https://nexopm.com/), uma plataforma de gestão de projetos feita para times que querem entregar sem brigar com as próprias ferramentas. Multi-tenant por padrão, opinativa onde importa e pronta para crescer com você.
 
-> Nexo is in active development. The foundation — auth, workspaces, billing, status, and docs — is in place, and project tracking primitives are landing next. Suggestions, ideas, and reported bugs help us immensely.
+> O Nexo está em desenvolvimento ativo. Projetos, issues, wiki colaborativa, cobrança e página de status já estão no ar; IA embarcada, dashboards e integrações vêm a seguir. Sugestões, ideias e bugs reportados ajudam muito.
 
-## Installation
+## Instalação
 
-Two ways to run Nexo:
+Duas formas de rodar o Nexo:
 
-- **Nexo Cloud.** Sign up at [nexopm.com](https://nexopm.com) — the fastest path to get started, with no infrastructure to manage.
-- **Self-host with Docker.** Bring your own infrastructure. The full stack runs from a single Compose file — see [`infra/app.yml`](./infra/app.yml) to get started.
+- **Nexo Cloud.** Crie sua conta em [nexopm.com](https://nexopm.com). É o caminho mais rápido para começar, sem nenhuma infraestrutura para manter.
+- **Auto-hospedado com Docker.** Use a sua própria infraestrutura. A stack completa roda a partir de um único arquivo Compose: veja [`infra/app.yml`](./infra/app.yml) para começar.
 
-| Installation method | Documentation                                    |
+| Forma de instalação | Documentação                                     |
 | ------------------- | ------------------------------------------------ |
 | Docker              | [`infra/app.yml`](./infra/app.yml)               |
 
-## Features
+## Funcionalidades
 
-- **Workspaces.** Multi-tenant from day one. Slug-based URLs, role-based access (`OWNER`, `ADMIN`, `MEMBER`, `VIEWER`), and isolated data per team.
-- **Authentication.** Email and password, Google and GitHub OAuth, two-factor auth via OTP, email verification, and password reset.
-- **Billing.** Plans (`FREE`, `PRO`, `BUSINESS`, `ENTERPRISE`) with AbacatePay integration and a webhook-driven subscription lifecycle.
-- **Status page.** Built-in `/status` with proactive probes across seven components (app, database, cache, auth, payment, email, storage), incident timelines, post-mortems, and uptime history.
-- **Transactional email.** React Email templates for welcome, OTP, password reset, account deletion, data export, invites, trial promotions, and incident post-mortems.
-- **API documentation.** OpenAPI reference rendered with Scalar at `/docs`.
+- **Projetos e issues.** Estados, prioridades, etiquetas, responsáveis, datas de início e prazo, sub-issues, dependências, relações, comentários, anexos e votos.
+- **Quatro visualizações.** Lista, quadro (kanban), calendário e cronograma, com os mesmos filtros em todas.
+- **Filtros e PQL.** Filtro visual ou a PQL, uma linguagem de consulta por texto: `priority IN (HIGH, URGENT) isOverdue() order-by due-date`.
+- **Estimativas.** Três sistemas (pontos, categorias e tempo) e seis modelos, como Fibonacci e tamanhos de camiseta. Cada projeto escolhe o seu, e os valores são editáveis.
+- **Ciclos e módulos.** Cada issue pode ser associada a um ciclo (período) e a um módulo (assunto).
+- **Wiki colaborativa.** Edição em tempo real com várias pessoas, diagramas por código (Mermaid, PlantUML e Graphviz), quadro branco com Excalidraw, equações, comentários, e importação e exportação em Markdown, HTML, Word, PDF e imagem.
+- **Notas adesivas.** Notas pessoais com checklist e seis cores, visíveis só para quem as criou.
+- **Workspaces.** Multi-tenant desde o primeiro dia. URLs por slug, acesso por papel (`OWNER`, `ADMIN`, `MEMBER`, `VIEWER`), convites e dados isolados por time.
+- **Autenticação.** E-mail e senha, login com Google e GitHub, confirmação de e-mail, redefinição de senha e verificação em duas etapas por app autenticador ou código por e-mail, com códigos de backup.
+- **Cobrança.** Planos (`FREE`, `PRO`, `BUSINESS`, `ENTERPRISE`) com integração à AbacatePay, trial de 14 dias e ciclo de vida da assinatura guiado por webhooks.
+- **Página de status.** `/status` público, com verificações ativas em oito componentes (aplicação, banco de dados, cache, autenticação, pagamento, e-mail, armazenamento e processamento em segundo plano), linha do tempo de incidentes, post-mortems, histórico de 90 dias e alertas no Slack.
+- **Privacidade (LGPD).** Consentimento de cookies, exportação de dados e exclusão de conta de verdade após 30 dias, com o conteúdo do time mantido de forma anônima.
+- **E-mails transacionais.** Templates em React Email para boas-vindas, códigos de verificação, redefinição de senha, exclusão de conta, exportação de dados, convites, trial e post-mortems de incidentes.
+- **Documentação da API.** Referência OpenAPI renderizada com Scalar em `/docs`.
 
 ## Roadmap
 
-Project management primitives are next on deck:
+O que vem a seguir:
 
-- **Work items** — rich-text issues with sub-tasks, links, and file uploads.
-- **Cycles** — time-boxed sprints with burn-down charts.
-- **Modules** — break large initiatives into manageable units.
-- **Views** — saved filters and shared queries.
-- **Pages** — collaborative documents with rich editing.
-- **Analytics** — real-time insights across projects.
+- **IA embarcada:** chat que enxerga os projetos e a wiki do time, sem colar contexto na mão.
+- **Dashboards e análises:** indicadores em tempo real entre projetos.
+- **Ciclos completos:** criação e gestão de ciclos e módulos, tela de ciclos ativos e gráficos de burn-down.
+- **Integrações:** GitHub, Slack e outras ferramentas do dia a dia.
+- **Busca e atalhos:** barra de comandos (Ctrl+K) e atalhos de teclado.
+- **Caixa de entrada:** notificações e atualizações do workspace num lugar só.
 
 ## Stack
 
-- **Backend** — Next.js 16 (App Router), PostgreSQL, Prisma 7, Redis, BullMQ, Silo (S3), Better Auth, Resend.
-- **Frontend** — React 19, Tailwind CSS 4, Base UI, TanStack Query, React Email, Hugeicons.
-- **Quality** — Vitest, Biome, Commitlint, Husky.
-- **Observability** — Axiom (logs, audit trail, web vitals), Sentry (error tracking), PostHog (product analytics, consent-gated).
+- **Backend:** Next.js 16 (App Router), PostgreSQL, Prisma 7, Redis, BullMQ, Silo (S3), Better Auth, Resend.
+- **Frontend:** React 19, Tailwind CSS 4, Base UI, TanStack Query, React Email, Hugeicons.
+- **Qualidade:** Vitest, Playwright, Stryker, Biome, Commitlint, Husky.
+- **Observabilidade:** Axiom (logs, trilha de auditoria, web vitals), Sentry (rastreamento de erros), PostHog (análise de produto, só com consentimento).
 
-## Screenshots
+## Capturas de tela
 
 <!--
-  Drop product screenshots in the slots below — one per feature or flow.
-  Suggested folder: ./public/brand/screens/<name>.png
+  Coloque capturas do produto nos espaços abaixo, uma por funcionalidade ou fluxo.
+  Pasta sugerida: ./public/brand/screens/<nome>.png
 -->
 
 <p>
@@ -103,53 +125,53 @@ Project management primitives are next on deck:
 
 <p>
     <a href="https://nexopm.com" target="_blank">
-      <!-- <img src="./public/brand/screens/auth.png" alt="Authentication" width="100%" /> -->
+      <!-- <img src="./public/brand/screens/auth.png" alt="Autenticação" width="100%" /> -->
     </a>
 </p>
 
 <p>
     <a href="https://nexopm.com" target="_blank">
-      <!-- <img src="./public/brand/screens/billing.png" alt="Billing" width="100%" /> -->
+      <!-- <img src="./public/brand/screens/billing.png" alt="Cobrança" width="100%" /> -->
     </a>
 </p>
 
 <p>
     <a href="https://nexopm.com" target="_blank">
-      <!-- <img src="./public/brand/screens/status.png" alt="Status page" width="100%" /> -->
+      <!-- <img src="./public/brand/screens/status.png" alt="Página de status" width="100%" /> -->
     </a>
 </p>
 
 <p>
     <a href="https://nexopm.com" target="_blank">
-      <!-- <img src="./public/brand/screens/docs.png" alt="API docs" width="100%" /> -->
+      <!-- <img src="./public/brand/screens/docs.png" alt="Documentação da API" width="100%" /> -->
     </a>
 </p>
 
-## Local development
+## Desenvolvimento local
 
-Spin up the infrastructure (Postgres, Redis, BullMQ worker, Silo for S3 storage) with Docker Compose, then run the dev server:
+Suba a infraestrutura (Postgres, Redis, worker do BullMQ e Silo para armazenamento S3) com Docker Compose e depois rode o servidor de desenvolvimento:
 
 ```bash
 pnpm install
-pnpm docker:create        # first run only — creates and starts containers
-pnpm prisma:migrate:dev   # apply migrations
+pnpm docker:create        # só na primeira vez: cria e inicia os containers
+pnpm prisma:migrate:dev   # aplica as migrations
 pnpm dev
 ```
 
-For subsequent runs, `pnpm infra` starts the containers and applies pending migrations in one step. The compose files live in `infra/`: `dev.yml` (this stack), `app.yml` (the application containers), `prod.yml` (the server's infrastructure) and `loadtest.yml`. See them and the `scripts` block in `package.json` for the full picture.
+Nas próximas vezes, `pnpm infra` inicia os containers e aplica as migrations pendentes num passo só. Os arquivos Compose ficam em `infra/`: `dev.yml` (esta stack), `app.yml` (os containers da aplicação), `prod.yml` (a infraestrutura do servidor) e `loadtest.yml`. Veja esses arquivos e o bloco `scripts` do `package.json` para o panorama completo.
 
-## Documentation
+## Documentação
 
-API reference and product documentation live at [nexopm.com/docs](https://nexopm.com/docs).
+A referência da API e a documentação do produto ficam em [nexopm.com/docs](https://nexopm.com/docs).
 
-## Contributing
+## Como contribuir
 
-Contributions are welcome — see [`CONTRIBUTING.md`](CONTRIBUTING.md) for setup instructions, coding conventions, and the PR process. By participating, you agree to follow our [Code of Conduct](CODE_OF_CONDUCT.md).
+Contribuições são bem-vindas. Veja o [`CONTRIBUTING.md`](CONTRIBUTING.md) para as instruções de ambiente, as convenções de código e o processo de PR. Ao participar, você concorda em seguir o nosso [Código de Conduta](CODE_OF_CONDUCT.md).
 
-## Security
+## Segurança
 
-If you discover a security vulnerability, please report it responsibly instead of opening a public issue. See [`SECURITY.md`](SECURITY.md) for how to report one privately — email **security@nexopm.com** with a description and reproduction steps. We take all legitimate reports seriously and investigate them promptly.
+Se você encontrar uma vulnerabilidade, reporte de forma responsável em vez de abrir uma issue pública. Veja o [`SECURITY.md`](SECURITY.md) para saber como reportar de forma privada: envie um e-mail para **security@nexopm.com** com a descrição e os passos para reproduzir. Levamos todo relato legítimo a sério e investigamos com rapidez.
 
-## License
+## Licença
 
-Nexo is licensed under the [GNU Affero General Public License v3.0](LICENSE) (AGPLv3).
+O Nexo é distribuído sob a [GNU Affero General Public License v3.0](LICENSE) (AGPLv3).
