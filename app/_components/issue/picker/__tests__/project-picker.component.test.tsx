@@ -84,9 +84,8 @@ describe('<ProjectPicker />', () => {
     mockProjects()
     renderPicker({ value: 'nexo' })
 
-    expect(
-      await screen.findByRole('button', { name: '🚀 Nexo' }),
-    ).toBeInTheDocument()
+    const trigger = await screen.findByRole('button', { name: 'Nexo' })
+    expect(trigger).toHaveTextContent('🚀')
   })
 
   it('drops the leading space when the selected project has no emoji', async () => {
@@ -98,11 +97,29 @@ describe('<ProjectPicker />', () => {
     ).toBeInTheDocument()
   })
 
+  it('labels a project without emoji by its name alone', async () => {
+    mockProjects()
+    renderPicker({ value: 'atlas' })
+
+    expect(
+      await screen.findByRole('button', { name: 'Atlas' }),
+    ).toBeInTheDocument()
+  })
+
+  it('renders a picked icon instead of spelling out its name', async () => {
+    mockProjects([buildProject({ emoji: 'activity:#f97316' })])
+    renderPicker({ value: 'nexo' })
+
+    const trigger = await screen.findByRole('button', { name: 'Nexo' })
+    expect(trigger.querySelector('svg')).not.toBeNull()
+    expect(trigger).not.toHaveTextContent(/activity/i)
+  })
+
   it('reports the picked project by slug', async () => {
     mockProjects()
     const { user, onChange } = renderPicker({ value: 'nexo' })
 
-    await user.click(await screen.findByRole('button', { name: '🚀 Nexo' }))
+    await user.click(await screen.findByRole('button', { name: 'Nexo' }))
     await user.click(await screen.findByRole('option', { name: 'Atlas' }))
 
     expect(onChange).toHaveBeenCalledExactlyOnceWith('atlas')
