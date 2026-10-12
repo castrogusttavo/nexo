@@ -8,7 +8,7 @@ interface ProjectEmojiProps {
 
 export function ProjectEmoji({
   value,
-  size = 20,
+  size = 24,
   fallback = '📁',
 }: ProjectEmojiProps) {
   if (!value) return <>{fallback}</>
@@ -20,7 +20,7 @@ export function ProjectEmoji({
   const lucide = LUCIDE_ICONS.find((i) => i.name === name)
   if (lucide) {
     const Icon = lucide.icon
-    return <Icon size={size} color={color} />
+    return <Icon size={size} color={color} strokeWidth={2} />
   }
 
   return <>{value}</>
