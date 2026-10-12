@@ -140,20 +140,16 @@ beforeEach(() => {
 })
 
 describe('workspace sidebars accessibility', () => {
-  it('has no axe violations with every group and project row expanded', async () => {
+  it('has no axe violations with every group expanded', async () => {
     const { container, user } = renderSidebars()
 
     await user.click(screen.getByRole('button', { name: 'Favoritos' }))
-    await user.click(screen.getByRole('button', { name: 'Plataforma' }))
-    await screen.findByRole('link', { name: 'Visão geral' })
 
     await expectNoA11yViolations(container, { disabledRules: ['region'] })
   })
 
   it('nests no control inside another (axe nested-interactive)', async () => {
-    const { container, user } = renderSidebars()
-    await user.click(screen.getByRole('button', { name: 'Plataforma' }))
-    await screen.findByRole('link', { name: 'Visão geral' })
+    const { container } = renderSidebars()
 
     // axe's nested-interactive only inspects roles whose children are
     // presentational (a button holding a link), not a link holding a button,
@@ -197,7 +193,7 @@ describe('workspace sidebars accessibility', () => {
     const rowMenu = screen.getByRole('button', {
       name: 'Opções do projeto Plataforma',
     })
-    const row = screen.getByRole('button', { name: 'Plataforma' })
+    const row = screen.getByRole('link', { name: 'Plataforma' })
     expect(row).not.toContainElement(rowMenu)
 
     const create = screen.getByRole('button', { name: 'Novo projeto' })

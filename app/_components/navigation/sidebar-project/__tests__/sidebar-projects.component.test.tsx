@@ -13,10 +13,14 @@ import {
 import type { ProjectDTO } from '@/types/project'
 import { SidebarProjects } from '../sidebar-projects'
 
-const { push } = vi.hoisted(() => ({ push: vi.fn() }))
+const { push, replace, pathname } = vi.hoisted(() => ({
+  push: vi.fn(),
+  replace: vi.fn(),
+  pathname: { current: '/acme' },
+}))
 vi.mock('next/navigation', () => ({
-  useRouter: () => ({ push }),
-  usePathname: () => '/acme',
+  useRouter: () => ({ push, replace }),
+  usePathname: () => pathname.current,
 }))
 
 vi.mock('sonner', () => ({
@@ -71,8 +75,8 @@ function renderSidebar(projects: ProjectDTO[]) {
   )
 }
 
-const projectTrigger = (name: string | RegExp) =>
-  screen.getByRole('button', { name })
+const projectLink = (name: string | RegExp) =>
+  screen.getByRole('link', { name })
 
 /** The row's "..." menu, a span trigger next to the project name. */
 function rowMenu(name: string) {
@@ -89,6 +93,8 @@ async function openRowMenu(
 
 beforeEach(() => {
   push.mockReset()
+  replace.mockReset()
+  pathname.current = '/acme'
 })
 
 describe('<SidebarProjects /> listing', () => {
@@ -99,14 +105,23 @@ describe('<SidebarProjects /> listing', () => {
     ])
 
     expect(screen.getByText('Projetos')).toBeInTheDocument()
-    expect(projectTrigger(/^Alpha$/)).toBeInTheDocument()
-    expect(projectTrigger(/^Beta$/)).toBeInTheDocument()
+    expect(projectLink(/^Alpha$/)).toBeInTheDocument()
+    expect(projectLink(/^Beta$/)).toBeInTheDocument()
   })
 
   it('prefixes the name with the project emoji', () => {
     renderSidebar([buildProject({ emoji: '🚀' })])
 
-    expect(projectTrigger(/^🚀 Alpha$/)).toBeInTheDocument()
+    const row = projectLink(/^Alpha$/)
+    expect(row).toHaveTextContent('🚀')
+  })
+
+  it('renders a picked icon instead of spelling out its name', () => {
+    renderSidebar([buildProject({ emoji: 'rocket:#f97316' })])
+
+    const row = projectLink(/^Alpha$/)
+    expect(row.querySelector('svg')).not.toBeNull()
+    expect(row).not.toHaveTextContent(/rocket/i)
   })
 
   it('hides the favorites group while nothing is favorited', () => {
@@ -128,13 +143,13 @@ describe('<SidebarProjects /> listing', () => {
 
     // "Projetos" is open by default and holds only the plain project; the
     // favorites group stays collapsed, so its rows are not mounted yet.
-    expect(projectTrigger('Alpha')).toBeInTheDocument()
-    expect(screen.queryByRole('button', { name: 'Favorito' })).toBeNull()
+    expect(projectLink('Alpha')).toBeInTheDocument()
+    expect(screen.queryByRole('link', { name: 'Favorito' })).toBeNull()
 
     await user.click(screen.getByRole('button', { name: 'Favoritos' }))
 
     expect(
-      await screen.findByRole('button', { name: 'Favorito' }),
+      await screen.findByRole('link', { name: 'Favorito' }),
     ).toBeInTheDocument()
   })
 
@@ -142,27 +157,40 @@ describe('<SidebarProjects /> listing', () => {
     renderSidebar([])
 
     expect(screen.getByText('Projetos')).toBeInTheDocument()
-    expect(screen.queryByText('Visão geral')).not.toBeInTheDocument()
+    expect(screen.queryAllByRole('link')).toEqual([])
   })
 
-  it('reveals the project sections when the row is expanded', async () => {
-    const { user } = renderSidebar([buildProject()])
+  it('links each row straight to the project overview', () => {
+    renderSidebar([buildProject()])
 
-    await user.click(projectTrigger(/^Alpha$/))
-
-    expect(
-      await screen.findByRole('link', { name: 'Visão geral' }),
-    ).toHaveAttribute('href', `${BASE}/projects/alpha/overview`)
-    expect(screen.getByRole('link', { name: 'Issues' })).toHaveAttribute(
+    expect(projectLink(/^Alpha$/)).toHaveAttribute(
       'href',
-      `${BASE}/projects/alpha/issues`,
+      `${BASE}/projects/alpha/overview`,
     )
+    // The sections moved to the project tabs: the row has nothing to expand.
+    expect(screen.queryByRole('link', { name: 'Issues' })).toBeNull()
   })
 
-  it('only links to project sections that have a page', async () => {
-    const { container, user } = renderSidebar([buildProject()])
-    await user.click(projectTrigger(/^Alpha$/))
-    await screen.findByRole('link', { name: 'Visão geral' })
+  it('keeps the row highlighted on any tab of the project', () => {
+    pathname.current = `${BASE}/projects/alpha/issues/ALP-1`
+    renderSidebar([
+      buildProject(),
+      buildProject({ id: 'project-2', name: 'Beta', slug: 'beta' }),
+    ])
+
+    expect(projectLink(/^Alpha$/)).toHaveAttribute('aria-current', 'true')
+    expect(projectLink(/^Beta$/)).not.toHaveAttribute('aria-current')
+  })
+
+  it('does not highlight a project whose slug only shares a prefix', () => {
+    pathname.current = `${BASE}/projects/alpha-2/overview`
+    renderSidebar([buildProject()])
+
+    expect(projectLink(/^Alpha$/)).not.toHaveAttribute('aria-current')
+  })
+
+  it('only links to project sections that have a page', () => {
+    const { container } = renderSidebar([buildProject()])
     const routes = appPageRoutes()
 
     const hrefs = [...container.querySelectorAll('a[href]')].map(
@@ -198,7 +226,7 @@ describe('<SidebarProjects /> row menu', () => {
     const { user } = renderSidebar([buildProject({ isFavorited: true })])
 
     await user.click(screen.getByRole('button', { name: 'Favoritos' }))
-    await screen.findByRole('button', { name: /^Alpha$/ })
+    await screen.findByRole('link', { name: /^Alpha$/ })
     const menu = await openRowMenu(user, 'Alpha')
     await user.click(
       within(menu).getByRole('menuitem', { name: 'Remover dos favoritos' }),
@@ -256,6 +284,35 @@ describe('<SidebarProjects /> row menu', () => {
     await waitFor(() =>
       expect(toast.success).toHaveBeenCalledWith('Projeto arquivado'),
     )
+    // Archived from elsewhere in the workspace: nothing on screen went away.
+    expect(replace).not.toHaveBeenCalled()
+  })
+
+  it('leaves the project after archiving the one on screen', async () => {
+    pathname.current = `${BASE}/projects/alpha/issues`
+    mockFetch().mockResolvedValue(apiSuccess(buildProject()))
+    const { user } = renderSidebar([buildProject()])
+
+    const menu = await openRowMenu(user, 'Alpha')
+    await user.click(within(menu).getByRole('menuitem', { name: 'Arquivar' }))
+
+    await waitFor(() =>
+      expect(replace).toHaveBeenCalledWith(`${BASE}/projects`),
+    )
+  })
+
+  it('stays on the project when the archive fails', async () => {
+    pathname.current = `${BASE}/projects/alpha/issues`
+    mockFetch().mockResolvedValue(apiError(403, 'Sem permissão'))
+    const { user } = renderSidebar([buildProject()])
+
+    const menu = await openRowMenu(user, 'Alpha')
+    await user.click(within(menu).getByRole('menuitem', { name: 'Arquivar' }))
+
+    await waitFor(() =>
+      expect(toast.error).toHaveBeenCalledWith('Sem permissão'),
+    )
+    expect(replace).not.toHaveBeenCalled()
   })
 
   it('reports a failed archive', async () => {

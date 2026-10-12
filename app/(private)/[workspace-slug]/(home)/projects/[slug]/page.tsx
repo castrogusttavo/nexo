@@ -1,10 +1,11 @@
-import type { Metadata } from 'next'
+import { redirect } from 'next/navigation'
 
-export const metadata: Metadata = {
-  title: 'Projetos | Nexo',
-  description: 'Gerencie os projetos do seu workspace.',
-}
-
-export default function ProjectsPage() {
-  return <h1>Projects</h1>
+// A project has no page of its own: its landing tab is the overview.
+export default async function ProjectPage({
+  params,
+}: {
+  params: Promise<{ 'workspace-slug': string; slug: string }>
+}) {
+  const { 'workspace-slug': workspaceSlug, slug } = await params
+  redirect(`/${workspaceSlug}/projects/${slug}/overview`)
 }
