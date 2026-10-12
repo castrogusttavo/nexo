@@ -6,7 +6,7 @@ type SocialProvider = 'google' | 'github'
 
 const PROVIDERS: Record<
   SocialProvider,
-  { label: string; logoSrc: string }
+  { label: string; logoSrc: string; logoClassName?: string }
 > = {
   google: {
     label: 'Continuar com Google',
@@ -15,7 +15,9 @@ const PROVIDERS: Record<
   github: {
     label: 'Continuar com GitHub',
     logoSrc: 'https://cdn.brandfetch.io/idZAyF9rlg/symbol.svg?c=1bxid64Mup7aczewSAYMX&t=1719469980826',
-  }
+    // The mark is black: flip it or it disappears on the dark theme
+    logoClassName: 'dark:invert',
+  },
 }
 
 interface SocialLoginButtonProps {
@@ -29,7 +31,7 @@ export function SocialLoginButtonProps({
   isPending,
   callbackURL = '/'
 }: SocialLoginButtonProps) {
-  const { label, logoSrc } = PROVIDERS[provider]
+  const { label, logoSrc, logoClassName } = PROVIDERS[provider]
 
   async function handleSocialSignIn() {
     await authClient.signIn.social({
@@ -49,7 +51,7 @@ export function SocialLoginButtonProps({
       {/* Decorative: the label already names the provider. An alt text here
           became part of the button's accessible name, so screen readers
           announced "google-logo Continuar com Google". */}
-      <Image alt='' src={logoSrc} width={14} height={14} />
+      <Image alt='' src={logoSrc} width={14} height={14} className={logoClassName} />
       {label}
     </Button>
   )
