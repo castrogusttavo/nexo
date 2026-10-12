@@ -59,6 +59,7 @@ export async function seedSubscription(data: {
   seats?: number
   interval?: BillingInterval
   paymentUrl?: string
+  createdAt?: Date
 }) {
   return prisma.subscription.create({
     data: {
@@ -70,6 +71,7 @@ export async function seedSubscription(data: {
       interval: data.interval ?? 'MONTHLY',
       paymentUrl: data.paymentUrl ?? 'https://pay.example.com/checkout',
       workspaceId: data.workspaceId,
+      createdAt: data.createdAt,
     },
   })
 }
