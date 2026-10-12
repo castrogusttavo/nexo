@@ -10,7 +10,6 @@ import {
 } from '@hugeicons-pro/core-stroke-rounded'
 import Image from 'next/image'
 import { useRouter } from 'next/navigation'
-import { useRef } from 'react'
 import { NexoIcon } from '@/components/icon/icon'
 import { Button } from '@/components/ui/button'
 import {
@@ -25,11 +24,7 @@ import {
   TooltipContent,
   TooltipTrigger,
 } from '@/components/ui/tooltip'
-import { notify } from '@/lib/notify'
-import {
-  useFavoriteProject,
-  useUnfavoriteProject,
-} from '@/src/hooks/use-project'
+import { useProjectActions } from '@/src/hooks/use-project-actions'
 import type { ProjectDTO } from '@/types/project'
 import { ProjectEmoji } from '../workspace-project-emoji'
 import { ProjectCardActions } from './workspace-project-card-action-button'
@@ -47,10 +42,11 @@ export function ProjectCard({
   workspaceId,
 }: ProjectCardProps) {
   const router = useRouter()
-  const favorite = useFavoriteProject(workspaceId)
-  const unfavorite = useUnfavoriteProject(workspaceId)
-
-  const favoriting = useRef(false)
+  const { toggleFavorite, copyLink } = useProjectActions(
+    workspaceId,
+    `/${workspaceSlug}/projects/${project.slug}`,
+    project,
+  )
 
   function navigate() {
     router.push(`/${workspaceSlug}/projects/${project.slug}`)
@@ -59,25 +55,6 @@ export function ProjectCard({
   function goToSettings(e: React.MouseEvent) {
     e.stopPropagation()
     router.push(`/${workspaceSlug}/projects/${project.slug}/settings`)
-  }
-
-  function copyLink(e: React.MouseEvent) {
-    e.stopPropagation()
-    const url = `${window.location.origin}/${workspaceSlug}/projects/${project.slug}`
-    navigator.clipboard.writeText(url)
-  }
-
-  function toggleFavorite(e: React.MouseEvent) {
-    e.stopPropagation()
-    if (favoriting.current) return
-    favoriting.current = true
-    const mutation = project.isFavorited ? unfavorite : favorite
-    mutation.mutate(project.slug, {
-      onError: notify.error,
-      onSettled: () => {
-        favoriting.current = false
-      },
-    })
   }
 
   return (
@@ -111,11 +88,20 @@ export function ProjectCard({
               </div>
             </div>
             <div className='flex gap-2.5'>
-              <ProjectCardActions onClick={copyLink} aria-label='Copiar link'>
+              <ProjectCardActions
+                onClick={(e) => {
+                  e.stopPropagation()
+                  copyLink()
+                }}
+                aria-label='Copiar link'
+              >
                 <NexoIcon icon={Link01Icon} strokeWidth={2} />
               </ProjectCardActions>
               <ProjectCardActions
-                onClick={toggleFavorite}
+                onClick={(e) => {
+                  e.stopPropagation()
+                  toggleFavorite()
+                }}
                 aria-label={project.isFavorited ? 'Desfavoritar' : 'Favoritar'}
               >
                 <NexoIcon
