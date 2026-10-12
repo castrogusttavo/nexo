@@ -83,7 +83,7 @@ export function Combobox<T>(
         className={cn('w-64 p-0', contentClassName)}
       >
         <Command>
-          <CommandInput placeholder={searchPlaceholder} />
+          <CommandInput className='px-3 py-2' placeholder={searchPlaceholder} />
           <CommandList>
             <CommandEmpty>{emptyMessage}</CommandEmpty>
             <CommandGroup>
