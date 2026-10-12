@@ -6,7 +6,6 @@ import {
   HeaderBreadcrumbList,
 } from '@/app/_components/header/breadcrumb-page'
 import HeaderInternalNavigation from '@/app/_components/header/header-internal-navigation'
-import { IssueProjectSwitcher } from '@/app/_components/issue/issue-project-switcher'
 import { NexoIcon } from '@/components/icon/icon'
 import { getProjectContext } from '@/src/lib/project-context'
 import { IssueService } from '@/src/services/issue.service'
@@ -48,13 +47,6 @@ export default async function ProjectIssuesPage({
     <div className='w-full overflow-y-scroll'>
       <HeaderInternalNavigation>
         <HeaderBreadcrumbList>
-          <HeaderBreadcrumbCrumb>
-            <IssueProjectSwitcher
-              workspaceId={context.workspaceId}
-              workspaceSlug={workspaceSlug}
-              projectSlug={context.project.slug}
-            />
-          </HeaderBreadcrumbCrumb>
           <HeaderBreadcrumbCrumb title={'Issues'}>
             <NexoIcon
               icon={KeyframesMultipleAddIcon}
