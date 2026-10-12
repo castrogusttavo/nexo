@@ -157,12 +157,12 @@ model ConsentEvent {
 }
 
 model TwoFactor {
-  id          String   @id @default(cuid())
+  id          String  @id @default(cuid())
   secret      String
-  backupCodes String   @map("backup_codes")
-  userId      String   @map("user_id")
-  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  verified    Boolean  @default(true)
+  backupCodes String  @map("backup_codes")
+  userId      String  @map("user_id")
+  user        User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  verified    Boolean @default(true)
 
   // Account-level lockout, which better-auth's two-factor plugin enables by
   // default and writes on every second-factor verification (both outcomes).
