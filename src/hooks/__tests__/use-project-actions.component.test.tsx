@@ -207,6 +207,64 @@ describe('useProjectActions archive', () => {
   })
 })
 
+describe('useProjectActions togglePublic', () => {
+  it('makes a private project public', async () => {
+    const fetchSpy = mockFetch().mockResolvedValue(
+      apiSuccess(buildProject({ isPublic: true })),
+    )
+    const { result } = renderActions()
+
+    await act(() => result.current.togglePublic())
+
+    expect(getFetchCall(fetchSpy)).toMatchObject({
+      url: PROJECT_URL,
+      method: 'PATCH',
+      body: { isPublic: true },
+    })
+    expect(toast.success).toHaveBeenCalledWith('Projeto tornado público')
+  })
+
+  it('makes a public project private', async () => {
+    const fetchSpy = mockFetch().mockResolvedValue(apiSuccess(buildProject()))
+    const { result } = renderActions(buildProject({ isPublic: true }))
+
+    await act(() => result.current.togglePublic())
+
+    expect(getFetchCall(fetchSpy).body).toEqual({ isPublic: false })
+    expect(toast.success).toHaveBeenCalledWith('Projeto tornado privado')
+  })
+
+  it('reports a failed change without rejecting', async () => {
+    mockFetch().mockResolvedValue(apiError(403, 'Sem permissão'))
+    const { result } = renderActions()
+
+    await act(() =>
+      expect(result.current.togglePublic()).resolves.toBeUndefined(),
+    )
+
+    expect(toast.error).toHaveBeenCalledWith('Sem permissão')
+    expect(toast.success).not.toHaveBeenCalled()
+  })
+
+  it('sends one request for a double click', async () => {
+    const response = deferredResponse()
+    const fetchSpy = mockFetch().mockReturnValueOnce(response.promise)
+    const { result } = renderActions()
+
+    let first: Promise<void> = Promise.resolve()
+    act(() => {
+      first = result.current.togglePublic()
+      void result.current.togglePublic()
+    })
+
+    await waitFor(() => expect(fetchSpy).toHaveBeenCalledTimes(1))
+    response.resolve(apiSuccess(buildProject({ isPublic: true })))
+    await act(() => first)
+
+    expect(fetchSpy).toHaveBeenCalledTimes(1)
+  })
+})
+
 describe('useProjectActions copyLink', () => {
   it('copies the absolute project url with a link confirmation', async () => {
     const { result } = renderActions()

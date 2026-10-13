@@ -5,6 +5,7 @@ import {
   useArchiveProject,
   useFavoriteProject,
   useUnfavoriteProject,
+  useUpdateProject,
 } from './use-project'
 import { useSingleFlight } from './use-single-flight'
 
@@ -16,13 +17,27 @@ export function useProjectActions(
   const favorite = useFavoriteProject(workspaceId)
   const unfavorite = useUnfavoriteProject(workspaceId)
   const archiveProject = useArchiveProject(workspaceId, project.slug)
+  const updateProject = useUpdateProject(workspaceId, project.slug)
+  // One guard per action: a pending favorite must not swallow an archive.
   const favoriteFlight = useSingleFlight()
+  const visibilityFlight = useSingleFlight()
   const archiveFlight = useSingleFlight()
 
   async function toggleFavorite(): Promise<void> {
     const mutation = project.isFavorited ? unfavorite : favorite
     await favoriteFlight(() =>
       mutation.mutateAsync(project.slug).catch(notify.error),
+    )
+  }
+
+  async function togglePublic(): Promise<void> {
+    const isPublic = !project.isPublic
+    await visibilityFlight(() =>
+      updateProject.mutateAsync({ isPublic }).then(() => {
+        notify.success(
+          isPublic ? 'Projeto tornado público' : 'Projeto tornado privado',
+        )
+      }, notify.error),
     )
   }
 
@@ -51,5 +66,5 @@ export function useProjectActions(
     return archived ?? false
   }
 
-  return { toggleFavorite, copyLink, archive }
+  return { toggleFavorite, togglePublic, copyLink, archive }
 }
