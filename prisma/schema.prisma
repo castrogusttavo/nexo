@@ -225,21 +225,24 @@ model Verification {
 }
 
 model Workspace {
-  id            String         @id @default(cuid())
-  name          String
-  slug          String         @unique
-  activePlan    Plan           @default(FREE) @map("active_plan")
-  trialEndsAt   DateTime?      @map("trial_ends_at")
+  id                   String    @id @default(cuid())
+  name                 String
+  slug                 String    @unique
+  activePlan           Plan      @default(FREE) @map("active_plan")
+  trialEndsAt          DateTime? @map("trial_ends_at")
   // Onboarding team-size bucket (TEAM_SIZES in workspace.schema.ts).
-  teamSize      String?        @map("team_size")
-  createdAt     DateTime       @default(now()) @map("created_at")
-  updatedAt     DateTime       @updatedAt @map("updated_at")
+  teamSize             String?   @map("team_size")
+  // Settings switch: off hides the state and refuses setting it on a project.
+  projectStatesEnabled Boolean   @default(true) @map("project_states_enabled")
+  createdAt            DateTime  @default(now()) @map("created_at")
+  updatedAt            DateTime  @updatedAt @map("updated_at")
+
   memberships   Membership[]
   subscriptions Subscription[]
   projects      Project[]
-
-  invitations WorkspaceInvitation[]
-  wikiPages   WikiPage[]
+  projectStates ProjectState[]
+  invitations   WorkspaceInvitation[]
+  wikiPages     WikiPage[]
 
   @@map("workspaces")
 }
@@ -458,12 +461,17 @@ model Project {
   estimatesEnabled  Boolean   @default(true) @map("estimates_enabled")
   issueSequence     Int       @default(0) @map("issue_sequence")
   leadId            String?   @map("lead_id")
+  stateId           String    @map("state_id")
   workspaceId       String    @map("workspace_id")
   archivedAt        DateTime? @map("archived_at")
   createdAt         DateTime  @default(now()) @map("created_at")
   updatedAt         DateTime  @updatedAt @map("updated_at")
 
   lead             User?                 @relation("ProjectLead", fields: [leadId], references: [id], onDelete: SetNull)
+  // NoAction, not Restrict: a workspace delete cascades into both projects
+  // and project_states, and Restrict would fire mid-cascade if the states go
+  // first. NoAction checks at the end of statement, after both are gone.
+  state            ProjectState          @relation(fields: [stateId], references: [id], onDelete: NoAction)
   workspace        Workspace             @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
   members          ProjectMember[]
   favourites       ProjectFavorite[]
@@ -480,6 +488,7 @@ model Project {
   @@unique([workspaceId, identifier])
   @@index([workspaceId, archivedAt])
   @@index([leadId])
+  @@index([stateId])
   @@map("projects")
 }
 
@@ -511,6 +520,35 @@ model ProjectFavorite {
   @@index([userId])
   @@index([projectId])
   @@map("project_favorites")
+}
+
+model ProjectState {
+  id          String            @id @default(cuid())
+  name        String
+  description String?
+  group       ProjectStateGroup
+  color       TagColor          @default(ZINC)
+  order       Int               @default(0)
+  isDefault   Boolean           @default(false) @map("is_default")
+  workspaceId String            @map("workspace_id")
+  createdAt   DateTime          @default(now()) @map("created_at")
+  updatedAt   DateTime          @updatedAt @map("updated_at")
+
+  workspace Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  projects  Project[]
+
+  @@unique([workspaceId, name])
+  @@index([workspaceId, group])
+  @@map("project_states")
+}
+
+enum ProjectStateGroup {
+  DRAFT
+  PLANNING
+  EXECUTION
+  MONITORING
+  COMPLETED
+  CANCELLED
 }
 
 model CareerJob {

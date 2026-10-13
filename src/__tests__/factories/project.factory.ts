@@ -3,6 +3,7 @@ import type { Project, ProjectMember } from '@prisma/client'
 import { prisma } from '@/src/lib/prisma'
 import { ProjectRepository } from '@/src/repositories/project.repository'
 import type { ProjectDTO } from '@/types/project'
+import { defaultProjectStateId } from './project-state.factory'
 
 export function createFakeProject(overrides?: Partial<Project>): Project {
   const now = new Date()
@@ -21,6 +22,7 @@ export function createFakeProject(overrides?: Partial<Project>): Project {
     estimatesEnabled: true,
     issueSequence: 0,
     leadId: createId(),
+    stateId: createId(),
     workspaceId: createId(),
     archivedAt: null,
     createdAt: now,
@@ -70,6 +72,7 @@ export async function seedProject(
       | 'coverImage'
       | 'isPublic'
       | 'archivedAt'
+      | 'stateId'
     >
   >,
 ) {
@@ -81,6 +84,7 @@ export async function seedProject(
       identifier: createId().slice(0, 6).toUpperCase(),
       workspaceId,
       leadId,
+      stateId: overrides?.stateId ?? (await defaultProjectStateId(workspaceId)),
       ...overrides,
     },
   })
@@ -113,6 +117,8 @@ export async function seedProjectWithDefaults(
   >,
 ): Promise<Project> {
   const slug = overrides?.slug ?? `proj-${createId().slice(0, 8)}`
+  // ProjectRepository.create puts the project in the workspace default state
+  await defaultProjectStateId(workspaceId)
 
   const result = await ProjectRepository.create({
     name: overrides?.name ?? 'Seed Project',

@@ -1,5 +1,6 @@
 import { createId } from '@paralleldrive/cuid2'
 import { describe, expect, it } from 'vitest'
+import { defaultProjectStateId } from '@/src/__tests__/factories/project-state.factory'
 import {
   addMember,
   authenticatedOwner,
@@ -23,6 +24,7 @@ async function seedProject(
       identifier: createId().slice(0, 6).toUpperCase(),
       workspaceId,
       leadId,
+      stateId: await defaultProjectStateId(workspaceId),
       isPublic: opts?.isPublic ?? false,
       archivedAt: opts?.archivedAt ?? null,
     },

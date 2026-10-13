@@ -11,6 +11,7 @@ import type {
 import { ARGON2_OPTIONS } from '@/src/lib/argon2-config'
 import { prisma } from '@/src/lib/prisma'
 import { DEFAULT_STATES } from '@/src/repositories/state.repository'
+import { DEFAULT_PROJECT_STATES } from '@/src/config/project-states'
 
 // ---------------------------------------------------------------------------
 // Escala — ajuste via env antes de rodar, ex.: SEED_MAIN_ISSUES=30000 pnpm seed:load-test
@@ -153,6 +154,13 @@ async function seedWorkspaceAndMembers(onboarded: Array<{ id: string }>) {
     data: { name: 'Load Test Workspace', slug: WORKSPACE_SLUG, activePlan: 'BUSINESS' },
   })
 
+  await prisma.projectState.createMany({
+    data: DEFAULT_PROJECT_STATES.map((state) => ({
+      ...state,
+      workspaceId: workspace.id
+    }))
+  })
+
   const memberships: Prisma.MembershipCreateManyInput[] = onboarded.map((user, i) => ({
     id: createId(),
     userId: user.id,
@@ -172,6 +180,10 @@ async function seedProject(
   memberIds: string[],
   spec: { name: string; identifier: string; issueCount: number },
 ) {
+  const defaultState = await prisma.projectState.findFirstOrThrow({
+    where: { workspaceId, isDefault: true },
+    select: { id: true },
+  })
   const project = await prisma.project.create({
     data: {
       name: spec.name,
@@ -179,6 +191,7 @@ async function seedProject(
       identifier: spec.identifier,
       leadId,
       workspaceId,
+      stateId: defaultState.id,
     },
   })
 

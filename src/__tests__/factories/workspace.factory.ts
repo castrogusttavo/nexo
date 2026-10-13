@@ -12,6 +12,7 @@ export function createFakeWorkspace(overrides?: Partial<Workspace>): Workspace {
     activePlan: 'FREE' as Plan,
     trialEndsAt: null,
     teamSize: null,
+    projectStatesEnabled: true,
     createdAt: now,
     updatedAt: now,
     ...overrides,

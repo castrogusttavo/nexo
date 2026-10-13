@@ -2,6 +2,7 @@ import { createId } from '@paralleldrive/cuid2'
 import type { Plan, Role } from '@prisma/client'
 import { BASE_URL } from '@/src/__tests__/setup.e2e'
 import { prisma } from '@/src/lib/prisma'
+import { seedDefaultProjectStates } from '../factories/project-state.factory'
 
 export const defaultHeaders = {
   'Content-Type': 'application/json',
@@ -116,6 +117,8 @@ export async function createWorkspaceForUser(
   await prisma.membership.create({
     data: { userId, workspaceId: ws.id, role: data?.role ?? 'OWNER' },
   })
+  // A real workspace starts with its project states (WorkspaceRepository)
+  await seedDefaultProjectStates(ws.id)
   return ws
 }
 

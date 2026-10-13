@@ -178,7 +178,14 @@ export const ProjectRepository = {
   }): Promise<Result<Project>> {
     try {
       const project = await prisma.$transaction(async (tx) => {
-        const p = await tx.project.create({ data })
+        // Every project starts in its workspace's default state.
+        const defaultState = await tx.projectState.findFirstOrThrow({
+          where: { workspaceId: data.workspaceId, isDefault: true },
+          select: { id: true },
+        })
+        const p = await tx.project.create({
+          data: { ...data, stateId: defaultState.id },
+        })
         const estimateSettings = await tx.estimateSettings.create({
           data: { projectId: p.id },
         })

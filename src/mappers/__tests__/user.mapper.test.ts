@@ -37,6 +37,7 @@ describe('toUserDTO()', () => {
             activePlan: 'FREE',
             trialEndsAt: null,
             teamSize: null,
+            projectStatesEnabled: true,
             createdAt: new Date(),
             updatedAt: new Date(),
           },
