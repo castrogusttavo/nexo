@@ -53,7 +53,7 @@ export function ProjectPicker({
       emptyMessage='Nenhum resultado.'
       contentClassName='w-56'
       trigger={
-        <Button variant={buttonVariant} size='xs' className='h-8'>
+        <Button variant={buttonVariant} size='sm' className='h-8'>
           {selected ? <ProjectLabel project={selected} /> : 'Projeto'}
         </Button>
       }
