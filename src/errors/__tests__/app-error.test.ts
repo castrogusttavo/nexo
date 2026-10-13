@@ -7,11 +7,19 @@ import {
   forbidden,
   invalidCredentials,
   notFound,
+  projectStateAlreadyExists,
+  projectStateForbidden,
+  projectStateInvalid,
+  projectStateIsDefault,
+  projectStateLastInGroup,
+  projectStateNotFound,
+  projectStatesDisabled,
   rateLimited,
   unauthorized,
   usernameConflict,
   validationError,
 } from '@/src/errors/app-error'
+import { ERROR_CODES } from '@/src/errors/codes'
 
 describe('AppError factories', () => {
   describe('appError()', () => {
@@ -169,6 +177,25 @@ describe('AppError factories', () => {
       expect(
         (error.details as { retryAfterSeconds: number }).retryAfterSeconds,
       ).toBe(60)
+    })
+  })
+
+  describe('project state factories', () => {
+    it.each([
+      ['projectStateNotFound', projectStateNotFound(), 404],
+      ['projectStateForbidden', projectStateForbidden(), 403],
+      ['projectStateAlreadyExists', projectStateAlreadyExists(), 409],
+      ['projectStateIsDefault', projectStateIsDefault(), 409],
+      ['projectStateLastInGroup', projectStateLastInGroup(), 409],
+      ['projectStateInvalid', projectStateInvalid(), 422],
+      ['projectStatesDisabled', projectStatesDisabled(), 409],
+    ] as const)('%s() maps to a registered %i code', (_, error, status) => {
+      expect(ERROR_CODES[error.code].status).toBe(status)
+      expect(error.message).not.toBe('')
+    })
+
+    it('accepts a custom message', () => {
+      expect(projectStateForbidden('Sem acesso').message).toBe('Sem acesso')
     })
   })
 })

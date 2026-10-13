@@ -136,4 +136,34 @@ describe('UpdateWorkspaceSchema', () => {
 
     expect(result.success).toBe(false)
   })
+
+  it('should accept the project states switch alone', () => {
+    const result = UpdateWorkspaceSchema.safeParse({
+      projectStatesEnabled: false,
+    })
+
+    expect(result.success).toBe(true)
+    expect(result.data).toEqual({ projectStatesEnabled: false })
+  })
+
+  it('should reject a switch that is not a boolean', () => {
+    expect(
+      UpdateWorkspaceSchema.safeParse({ projectStatesEnabled: 'false' })
+        .success,
+    ).toBe(false)
+  })
+})
+
+describe('CreateWorkspaceSchema switches', () => {
+  // A new workspace start with the switch on; turning it off is a settings
+  // concern
+  it('should drop the switch on create', () => {
+    const result = CreateWorkspaceSchema.safeParse({
+      name: 'Acme',
+      slug: 'acme',
+      projectStatesEnabled: false,
+    })
+
+    expect(result.success && 'projectStateEnabled' in result.data).toBe(false)
+  })
 })

@@ -189,3 +189,22 @@ describe('ListProjectsSchema', () => {
     expect(result.data?.archived).toBe(false)
   })
 })
+
+describe('UpdateProjectSchema stateId', () => {
+  it('accepts a state id', () => {
+    expect(
+      UpdateProjectSchema.safeParse({ stateId: 'clh3am8hi0000qwer1234abcd' })
+        .success,
+    ).toBe(true)
+  })
+
+  it('rejects a malformed state id', () => {
+    expect(
+      UpdateProjectSchema.safeParse({ stateId: 'not a cuid' }).success,
+    ).toBe(false)
+  })
+
+  it('rejects a null state id', () => {
+    expect(UpdateProjectSchema.safeParse({ stateId: null }).success).toBe(false)
+  })
+})

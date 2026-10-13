@@ -330,3 +330,32 @@ export const wikiCommentForbidden = (
 export const wikiCommentNestingTooDeep = (
   message = 'Não é possível responder a uma resposta',
 ): AppError => appError('WIKI_COMMENT_NESTING_TOO_DEEP', message)
+
+export const projectStateNotFound = (): AppError =>
+  appError('PROJECT_STATE_NOT_FOUND', 'Estado não encontrado')
+
+export const projectStateForbidden = (
+  message = 'Apenas OWNER ou ADMIN podem configurar estados de projeto',
+): AppError => appError('PROJECT_STATE_FORBIDDEN', message)
+
+export const projectStateAlreadyExists = (
+  message = 'Já existe um estado do projeto com esse nome',
+): AppError => appError('PROJECT_STATE_ALREADY_EXISTS', message)
+
+export const projectStateIsDefault = (
+  message = 'Defina outro estado como padrão antes de excluir este',
+): AppError => appError('PROJECT_STATE_IS_DEFAULT', message)
+
+export const projectStateLastInGroup = (
+  message = 'O grupo precisa manter ao menos um estado',
+): AppError => appError('PROJECT_STATE_LAST_IN_GROUP', message)
+
+// 422, not 404: on a project update the state is a field of the body not
+// the resource the URL asks for.
+export const projectStateInvalid = (
+  message = 'Estado inválido para este workspace',
+): AppError => appError('PROJECT_STATE_INVALID', message)
+
+export const projectStatesDisabled = (
+  message = 'Os estados de projeto estão desativados neste workspace',
+): AppError => appError('PROJECT_STATES_DISABLED', message)

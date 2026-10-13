@@ -28,6 +28,8 @@ export const CreateWorkspaceSchema = z.object({
 
 export type CreateWorkspaceDTO = z.infer<typeof CreateWorkspaceSchema>
 
-export const UpdateWorkspaceSchema = CreateWorkspaceSchema.partial()
+export const UpdateWorkspaceSchema = CreateWorkspaceSchema.partial().extend({
+  projectStatesEnabled: z.boolean().optional(),
+})
 
 export type UpdateWorkspaceDTO = z.infer<typeof UpdateWorkspaceSchema>

@@ -64,6 +64,7 @@ export const UpdateProjectSchema = z.object({
   estimatesEnabled: z.boolean().optional(),
   identifier: projectIdentifier.optional(),
   leadId: z.cuid2('ID de usuário inválido').optional(),
+  stateId: z.cuid2('Estado inválido').optional(),
 })
 
 export type UpdateProjectDTO = z.infer<typeof UpdateProjectSchema>
