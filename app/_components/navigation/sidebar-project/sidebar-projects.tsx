@@ -2,10 +2,13 @@
 
 import {
   Add01Icon,
-  Archive01Icon,
-  Link01Icon,
+  Archive03Icon,
+  InternetIcon,
+  Link04Icon,
+  Logout01Icon,
   MoreVerticalCircle01Icon,
   Settings01Icon,
+  SquareLock02Icon,
   StarIcon,
 } from '@hugeicons-pro/core-stroke-rounded'
 import { usePathname, useRouter } from 'next/navigation'
@@ -30,15 +33,18 @@ export function ProjectRow({
   project,
   base,
   workspaceId,
+  canManage,
 }: {
   project: ProjectDTO
   base: string
   workspaceId: string
+  /** Workspace admin or project lead: may publish and archive. */
+  canManage: boolean
 }) {
   const projectBase = `${base}/projects/${project.slug}`
   const pathname = usePathname()
   const router = useRouter()
-  const { toggleFavorite, copyLink, archive } = useProjectActions(
+  const { toggleFavorite, togglePublic, copyLink, archive } = useProjectActions(
     workspaceId,
     projectBase,
     project,
@@ -94,27 +100,48 @@ export function ProjectRow({
               size={10}
             />
           </DropdownMenuTrigger>
-          <DropdownMenuContent side='bottom' align='end' className='w-full'>
+          <DropdownMenuContent side='bottom' align='end' className='w-56'>
+            <DropdownMenuItem
+              onClick={() => router.push(`${projectBase}/settings`)}
+            >
+              <NexoIcon icon={Settings01Icon} strokeWidth={2} />
+              Configurações
+            </DropdownMenuItem>
+            <DropdownMenuItem onClick={copyLink}>
+              <NexoIcon icon={Link04Icon} strokeWidth={2} />
+              Copiar link
+            </DropdownMenuItem>
             <DropdownMenuItem onClick={toggleFavorite}>
               <NexoIcon icon={StarIcon} strokeWidth={2} />
               {project.isFavorited
                 ? 'Remover dos favoritos'
                 : 'Adicionar aos favoritos'}
             </DropdownMenuItem>
-            <DropdownMenuItem onClick={copyLink}>
-              <NexoIcon icon={Link01Icon} strokeWidth={2} />
-              Copiar link
+            {canManage && (
+              <DropdownMenuItem onClick={togglePublic}>
+                <NexoIcon
+                  icon={project.isPublic ? SquareLock02Icon : InternetIcon}
+                  strokeWidth={2}
+                />
+                {project.isPublic ? 'Tornar privado' : 'Tornar público'}
+              </DropdownMenuItem>
+            )}
+            <DropdownMenuItem onClick={() => router.push(`${base}/archives`)}>
+              <NexoIcon icon={Archive03Icon} strokeWidth={2} />
+              Arquivados
             </DropdownMenuItem>
             <DropdownMenuSeparator />
-            <DropdownMenuItem onClick={archiveProject}>
-              <NexoIcon icon={Archive01Icon} strokeWidth={2} />
-              Arquivar
-            </DropdownMenuItem>
-            <DropdownMenuItem
-              onClick={() => router.push(`${projectBase}/settings`)}
-            >
-              <NexoIcon icon={Settings01Icon} strokeWidth={2} />
-              Configurações
+            {canManage && (
+              <DropdownMenuItem onClick={archiveProject}>
+                <NexoIcon icon={Archive03Icon} strokeWidth={2} />
+                Arquivar projeto
+              </DropdownMenuItem>
+            )}
+            {/* ProjectService.removeMember only lets an admin or the lead
+                remove members; leaving needs a self-removal rule first. */}
+            <DropdownMenuItem variant='destructive' disabled>
+              <NexoIcon icon={Logout01Icon} strokeWidth={2} />
+              Sair do projeto
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
@@ -126,9 +153,14 @@ export function ProjectRow({
 export function SidebarProjects({
   workspaceId,
   base,
+  userId,
+  isPrivileged,
 }: {
   workspaceId: string
   base: string
+  userId: string
+  /** Workspace OWNER/ADMIN — may manage a project they do not lead. */
+  isPrivileged: boolean
 }) {
   const { data: projects = [] } = useProjects(workspaceId)
   const favorites = projects.filter((p) => p.isFavorited)
@@ -143,6 +175,7 @@ export function SidebarProjects({
               project={p}
               base={base}
               workspaceId={workspaceId}
+              canManage={isPrivileged || p.leadId === userId}
             />
           ))}
         </NavGroupAccordion>
@@ -169,6 +202,7 @@ export function SidebarProjects({
               project={p}
               base={base}
               workspaceId={workspaceId}
+              canManage={isPrivileged || p.leadId === userId}
             />
           ))}
       </NavGroupAccordion>

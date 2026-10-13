@@ -1,11 +1,10 @@
 'use client'
 
-import { More01Icon } from '@hugeicons-pro/core-solid-rounded'
+import { MoreHorizontalIcon } from '@hugeicons-pro/core-solid-rounded'
 import {
-  Archive01Icon,
-  Folder01Icon,
-  GlobeIcon,
-  Link01Icon,
+  Archive03Icon,
+  InternetIcon,
+  Link04Icon,
   Logout01Icon,
   Settings01Icon,
   SquareLock02Icon,
@@ -23,9 +22,8 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
-import { notify } from '@/lib/notify'
 import { cn } from '@/lib/utils'
-import { useProject, useUpdateProject } from '@/src/hooks/use-project'
+import { useProject } from '@/src/hooks/use-project'
 import { useProjectActions } from '@/src/hooks/use-project-actions'
 import type { ProjectDTO } from '@/types/project'
 
@@ -83,12 +81,11 @@ export function ProjectTabs({
     initialProject.slug,
   )
   const projectBase = `/${workspaceSlug}/projects/${project.slug}`
-  const { toggleFavorite, copyLink, archive } = useProjectActions(
+  const { toggleFavorite, togglePublic, copyLink, archive } = useProjectActions(
     workspaceId,
     projectBase,
     project,
   )
-  const update = useUpdateProject(workspaceId, project.slug)
 
   const tabs = PROJECT_TABS.filter(
     (tab) => !tab.feature || project[tab.feature],
@@ -101,21 +98,6 @@ export function ProjectTabs({
   const currentSegment =
     tabs.find((tab) => !tab.comingSoon && isActive(tab.segment))?.segment ??
     'overview'
-
-  function togglePublic() {
-    update.mutate(
-      { isPublic: !project.isPublic },
-      {
-        onSuccess: () =>
-          notify.success(
-            project.isPublic
-              ? 'Projeto tornado privado'
-              : 'Projeto tornado público',
-          ),
-        onError: notify.error,
-      },
-    )
-  }
 
   async function archiveAndLeave() {
     // `replace`, not `push`: Back must not return to the archived project.
@@ -144,7 +126,7 @@ export function ProjectTabs({
                 size='icon-sm'
                 aria-label={`Opções do projeto ${project.name}`}
               >
-                <NexoIcon icon={More01Icon} strokeWidth={2} />
+                <NexoIcon icon={MoreHorizontalIcon} strokeWidth={2} />
               </Button>
             }
           />
@@ -156,7 +138,7 @@ export function ProjectTabs({
               Configurações
             </DropdownMenuItem>
             <DropdownMenuItem onClick={copyLink}>
-              <NexoIcon icon={Link01Icon} strokeWidth={2} />
+              <NexoIcon icon={Link04Icon} strokeWidth={2} />
               Copiar link
             </DropdownMenuItem>
             <DropdownMenuItem onClick={toggleFavorite}>
@@ -166,26 +148,24 @@ export function ProjectTabs({
                 : 'Adicionar aos favoritos'}
             </DropdownMenuItem>
             {canManage && (
-              <DropdownMenuItem
-                onClick={togglePublic}
-                disabled={update.isPending}
-              >
+              <DropdownMenuItem onClick={togglePublic}>
                 <NexoIcon
-                  icon={project.isPublic ? SquareLock02Icon : GlobeIcon}
+                  icon={project.isPublic ? SquareLock02Icon : InternetIcon}
                   strokeWidth={2}
                 />
                 {project.isPublic ? 'Tornar privado' : 'Tornar público'}
               </DropdownMenuItem>
             )}
-            {/* No project files page or endpoint yet. */}
-            <DropdownMenuItem disabled>
-              <NexoIcon icon={Folder01Icon} strokeWidth={2} />
-              Abrir arquivos
+            <DropdownMenuItem
+              onClick={() => router.push(`/${workspaceSlug}/archives`)}
+            >
+              <NexoIcon icon={Archive03Icon} strokeWidth={2} />
+              Arquivados
             </DropdownMenuItem>
             <DropdownMenuSeparator />
             {canManage && (
               <DropdownMenuItem onClick={archiveAndLeave}>
-                <NexoIcon icon={Archive01Icon} strokeWidth={2} />
+                <NexoIcon icon={Archive03Icon} strokeWidth={2} />
                 Arquivar projeto
               </DropdownMenuItem>
             )}

@@ -109,7 +109,12 @@ function renderSidebars() {
             Projetos
           </NavItem>
         </NavGroupAccordion>
-        <SidebarProjects workspaceId={WORKSPACE_ID} base='/acme' />
+        <SidebarProjects
+          workspaceId={WORKSPACE_ID}
+          base='/acme'
+          userId='user-1'
+          isPrivileged={false}
+        />
       </ContextSidebar>
     </div>,
     { queryClient },

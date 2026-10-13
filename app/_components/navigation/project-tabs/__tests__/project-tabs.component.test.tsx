@@ -343,16 +343,22 @@ describe('<ProjectTabs /> menu', () => {
     ).toBeInTheDocument()
   })
 
-  it('keeps the actions without a backend disabled', async () => {
+  it('opens the workspace archives', async () => {
+    const { user } = renderTabs()
+
+    const menu = await openMenu(user)
+    await user.click(within(menu).getByRole('menuitem', { name: 'Arquivados' }))
+
+    expect(push).toHaveBeenCalledWith('/acme/archives')
+  })
+
+  it('keeps leaving the project disabled until it has a backend', async () => {
     const { user } = renderTabs()
 
     const menu = await openMenu(user)
 
-    for (const name of ['Abrir arquivos', 'Sair do projeto']) {
-      expect(within(menu).getByRole('menuitem', { name })).toHaveAttribute(
-        'aria-disabled',
-        'true',
-      )
-    }
+    expect(
+      within(menu).getByRole('menuitem', { name: 'Sair do projeto' }),
+    ).toHaveAttribute('aria-disabled', 'true')
   })
 })

@@ -62,15 +62,26 @@ function buildProject(overrides: Partial<ProjectDTO> = {}): ProjectDTO {
   }
 }
 
-/** Seeds the projects query so the sidebar renders without a round trip. */
-function renderSidebar(projects: ProjectDTO[]) {
+/**
+ * Seeds the projects query so the sidebar renders without a round trip. The
+ * default viewer leads every built project, so the managing actions show.
+ */
+function renderSidebar(
+  projects: ProjectDTO[],
+  { userId = 'user-1', isPrivileged = false } = {},
+) {
   const queryClient = createTestQueryClient()
   queryClient.setQueryData(
     [['projects'], WORKSPACE_ID, { archived: false }],
     projects,
   )
   return renderWithProviders(
-    <SidebarProjects workspaceId={WORKSPACE_ID} base={BASE} />,
+    <SidebarProjects
+      workspaceId={WORKSPACE_ID}
+      base={BASE}
+      userId={userId}
+      isPrivileged={isPrivileged}
+    />,
     { queryClient },
   )
 }
@@ -274,7 +285,9 @@ describe('<SidebarProjects /> row menu', () => {
     const { user } = renderSidebar([buildProject()])
 
     const menu = await openRowMenu(user, 'Alpha')
-    await user.click(within(menu).getByRole('menuitem', { name: 'Arquivar' }))
+    await user.click(
+      within(menu).getByRole('menuitem', { name: 'Arquivar projeto' }),
+    )
 
     await waitFor(() => expect(fetchSpy).toHaveBeenCalled())
     expect(getFetchCall(fetchSpy)).toMatchObject({
@@ -294,7 +307,9 @@ describe('<SidebarProjects /> row menu', () => {
     const { user } = renderSidebar([buildProject()])
 
     const menu = await openRowMenu(user, 'Alpha')
-    await user.click(within(menu).getByRole('menuitem', { name: 'Arquivar' }))
+    await user.click(
+      within(menu).getByRole('menuitem', { name: 'Arquivar projeto' }),
+    )
 
     await waitFor(() =>
       expect(replace).toHaveBeenCalledWith(`${BASE}/projects`),
@@ -307,7 +322,9 @@ describe('<SidebarProjects /> row menu', () => {
     const { user } = renderSidebar([buildProject()])
 
     const menu = await openRowMenu(user, 'Alpha')
-    await user.click(within(menu).getByRole('menuitem', { name: 'Arquivar' }))
+    await user.click(
+      within(menu).getByRole('menuitem', { name: 'Arquivar projeto' }),
+    )
 
     await waitFor(() =>
       expect(toast.error).toHaveBeenCalledWith('Sem permissão'),
@@ -320,7 +337,9 @@ describe('<SidebarProjects /> row menu', () => {
     const { user } = renderSidebar([buildProject()])
 
     const menu = await openRowMenu(user, 'Alpha')
-    await user.click(within(menu).getByRole('menuitem', { name: 'Arquivar' }))
+    await user.click(
+      within(menu).getByRole('menuitem', { name: 'Arquivar projeto' }),
+    )
 
     await waitFor(() =>
       expect(toast.error).toHaveBeenCalledWith('Sem permissão'),
@@ -337,5 +356,87 @@ describe('<SidebarProjects /> row menu', () => {
     )
 
     expect(push).toHaveBeenCalledWith(`${BASE}/projects/alpha/settings`)
+  })
+
+  it('opens the workspace archives', async () => {
+    const { user } = renderSidebar([buildProject()])
+
+    const menu = await openRowMenu(user, 'Alpha')
+    await user.click(within(menu).getByRole('menuitem', { name: 'Arquivados' }))
+
+    expect(push).toHaveBeenCalledWith(`${BASE}/archives`)
+  })
+
+  it('makes a private project public', async () => {
+    const fetchSpy = mockFetch().mockResolvedValue(
+      apiSuccess(buildProject({ isPublic: true })),
+    )
+    const { user } = renderSidebar([buildProject()])
+
+    const menu = await openRowMenu(user, 'Alpha')
+    await user.click(
+      within(menu).getByRole('menuitem', { name: 'Tornar público' }),
+    )
+
+    await waitFor(() =>
+      expect(toast.success).toHaveBeenCalledWith('Projeto tornado público'),
+    )
+    expect(getFetchCall(fetchSpy)).toMatchObject({
+      url: `${PROJECTS_URL}/alpha`,
+      method: 'PATCH',
+      body: { isPublic: true },
+    })
+  })
+
+  it('offers to make a public project private', async () => {
+    const { user } = renderSidebar([buildProject({ isPublic: true })])
+
+    const menu = await openRowMenu(user, 'Alpha')
+
+    expect(
+      within(menu).getByRole('menuitem', { name: 'Tornar privado' }),
+    ).toBeInTheDocument()
+  })
+
+  it('hides publishing and archiving from a member who does not lead the project', async () => {
+    const { user } = renderSidebar([buildProject()], { userId: 'user-2' })
+
+    const menu = await openRowMenu(user, 'Alpha')
+
+    expect(
+      within(menu).queryByRole('menuitem', { name: 'Tornar público' }),
+    ).toBeNull()
+    expect(
+      within(menu).queryByRole('menuitem', { name: 'Arquivar projeto' }),
+    ).toBeNull()
+    expect(
+      within(menu).getByRole('menuitem', { name: 'Configurações' }),
+    ).toBeInTheDocument()
+  })
+
+  it('lets a workspace admin manage a project they do not lead', async () => {
+    const { user } = renderSidebar([buildProject()], {
+      userId: 'user-2',
+      isPrivileged: true,
+    })
+
+    const menu = await openRowMenu(user, 'Alpha')
+
+    expect(
+      within(menu).getByRole('menuitem', { name: 'Tornar público' }),
+    ).toBeInTheDocument()
+    expect(
+      within(menu).getByRole('menuitem', { name: 'Arquivar projeto' }),
+    ).toBeInTheDocument()
+  })
+
+  it('keeps leaving the project disabled until it has a backend', async () => {
+    const { user } = renderSidebar([buildProject()])
+
+    const menu = await openRowMenu(user, 'Alpha')
+
+    expect(
+      within(menu).getByRole('menuitem', { name: 'Sair do projeto' }),
+    ).toHaveAttribute('aria-disabled', 'true')
   })
 })
