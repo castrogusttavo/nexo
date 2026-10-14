@@ -109,6 +109,10 @@
       "description": "States (etapas do workflow) de um projeto — grupo, cor, ordem e state padrão"
     },
     {
+      "name": "Estados de projeto",
+      "description": "Estados do ciclo de vida de um projeto (rascunho, planejamento, execução, monitoramento, concluído, cancelado), configurados no workspace"
+    },
+    {
       "name": "Wiki",
       "description": "Páginas de wiki de um workspace — árvore hierárquica, mídia embutida e comentários ancorados"
     },
@@ -9560,6 +9564,272 @@
           }
         }
       }
+    },
+    "/workspaces/{id}/project-states": {
+      "parameters": [
+        {
+          "name": "id",
+          "in": "path",
+          "required": true,
+          "description": "ID do workspace (cuid2).",
+          "schema": {
+            "type": "string"
+          }
+        }
+      ],
+      "get": {
+        "tags": [
+          "Estados de projeto"
+        ],
+        "summary": "Listar estados de projeto",
+        "description": "Retorna os estados de projeto do workspace, ordenados por grupo e ordem. Disponível para qualquer membro do workspace.",
+        "security": [
+          {
+            "cookieAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Lista de estados retornada com sucesso.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProjectStateListResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/UnauthorizedError"
+          },
+          "403": {
+            "$ref": "#/components/responses/ForbiddenError"
+          },
+          "429": {
+            "$ref": "#/components/responses/RateLimitError"
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "Estados de projeto"
+        ],
+        "summary": "Criar estado de projeto",
+        "description": "Cria um estado de projeto no workspace. Requer role OWNER/ADMIN do workspace e consentimento de cookies aceito. Falha com `PROJECT_STATE_ALREADY_EXISTS` (409) se o nome já existe no workspace.",
+        "security": [
+          {
+            "cookieAuth": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateProjectStateInput"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Estado criado com sucesso.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProjectStateResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/UnauthorizedError"
+          },
+          "403": {
+            "$ref": "#/components/responses/ForbiddenError"
+          },
+          "409": {
+            "$ref": "#/components/responses/ConflictError"
+          },
+          "422": {
+            "$ref": "#/components/responses/ValidationError"
+          },
+          "429": {
+            "$ref": "#/components/responses/RateLimitError"
+          }
+        }
+      }
+    },
+    "/workspaces/{id}/project-states/{stateId}": {
+      "parameters": [
+        {
+          "name": "id",
+          "in": "path",
+          "required": true,
+          "description": "ID do workspace (cuid2).",
+          "schema": {
+            "type": "string"
+          }
+        },
+        {
+          "name": "stateId",
+          "in": "path",
+          "required": true,
+          "description": "ID do estado de projeto (cuid2).",
+          "schema": {
+            "type": "string"
+          }
+        }
+      ],
+      "patch": {
+        "tags": [
+          "Estados de projeto"
+        ],
+        "summary": "Atualizar estado de projeto",
+        "description": "Atualiza nome, descrição, cor ou ordem de um estado de projeto. Requer role OWNER/ADMIN do workspace e consentimento de cookies aceito. Falha com `PROJECT_STATE_ALREADY_EXISTS` (409) se o novo nome já existe no workspace.",
+        "security": [
+          {
+            "cookieAuth": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateProjectStateInput"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Estado atualizado com sucesso.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProjectStateResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/UnauthorizedError"
+          },
+          "403": {
+            "$ref": "#/components/responses/ForbiddenError"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFoundError"
+          },
+          "409": {
+            "$ref": "#/components/responses/ConflictError"
+          },
+          "422": {
+            "$ref": "#/components/responses/ValidationError"
+          },
+          "429": {
+            "$ref": "#/components/responses/RateLimitError"
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "Estados de projeto"
+        ],
+        "summary": "Excluir estado de projeto",
+        "description": "Remove um estado de projeto e move os projetos dele para outro estado do mesmo grupo. Requer role OWNER/ADMIN do workspace e consentimento de cookies aceito. Falha com `PROJECT_STATE_IS_DEFAULT` (409) se for o estado padrão do workspace, e com `PROJECT_STATE_LAST_IN_GROUP` (409) se for o último estado do grupo.",
+        "security": [
+          {
+            "cookieAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Estado excluído; a resposta diz para onde os projetos foram e quantos eram.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProjectStateDeleteResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/UnauthorizedError"
+          },
+          "403": {
+            "$ref": "#/components/responses/ForbiddenError"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFoundError"
+          },
+          "409": {
+            "$ref": "#/components/responses/ConflictError"
+          },
+          "429": {
+            "$ref": "#/components/responses/RateLimitError"
+          }
+        }
+      }
+    },
+    "/workspaces/{id}/project-states/{stateId}/default": {
+      "parameters": [
+        {
+          "name": "id",
+          "in": "path",
+          "required": true,
+          "description": "ID do workspace (cuid2).",
+          "schema": {
+            "type": "string"
+          }
+        },
+        {
+          "name": "stateId",
+          "in": "path",
+          "required": true,
+          "description": "ID do estado de projeto (cuid2).",
+          "schema": {
+            "type": "string"
+          }
+        }
+      ],
+      "patch": {
+        "tags": [
+          "Estados de projeto"
+        ],
+        "summary": "Definir estado padrão",
+        "description": "Torna o estado o padrão do workspace, onde todo projeto novo começa. O padrão anterior deixa de ser. Requer role OWNER/ADMIN do workspace e consentimento de cookies aceito.",
+        "security": [
+          {
+            "cookieAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Estado definido como padrão.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProjectStateResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/UnauthorizedError"
+          },
+          "403": {
+            "$ref": "#/components/responses/ForbiddenError"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFoundError"
+          },
+          "429": {
+            "$ref": "#/components/responses/RateLimitError"
+          }
+        }
+      }
     }
   },
   "components": {
@@ -9947,6 +10217,11 @@
             "format": "date-time",
             "description": "Fim do período de teste; `null` fora de um trial.",
             "example": null
+          },
+          "projectStatesEnabled": {
+            "type": "boolean",
+            "description": "Quando false, os estados de projeto ficam ocultos e não podem ser atribuídos.",
+            "example": true
           }
         }
       },
@@ -10014,6 +10289,10 @@
             ],
             "description": "Faixa de tamanho do time, informada no onboarding e usada para segmentação de plano.",
             "example": "51-200"
+          },
+          "projectStatesEnabled": {
+            "type": "boolean",
+            "description": "Liga ou desliga os estados de projeto no workspace. Apenas OWNER/ADMIN."
           }
         }
       },
@@ -10929,6 +11208,11 @@
           "estimatesEnabled": {
             "type": "boolean",
             "example": true
+          },
+          "stateId": {
+            "type": "string",
+            "description": "Estado do projeto (cuid2), sempre de um estado do mesmo workspace.",
+            "example": "clx0v5k2p0000qwerpstat01"
           }
         }
       },
@@ -11061,6 +11345,11 @@
             "type": "string",
             "description": "cuid2 do membro do projeto que passa a ser o lead.",
             "example": "clx0v5k2p0000qwer5678efgh"
+          },
+          "stateId": {
+            "type": "string",
+            "description": "cuid2 de um estado de projeto do mesmo workspace. Falha com `PROJECT_STATE_INVALID` (422) para um estado inexistente ou de outro workspace, e com `PROJECT_STATES_DISABLED` (409) se o workspace desligou os estados.",
+            "example": "clx0v5k2p0000qwerpstat01"
           }
         }
       },
@@ -14630,6 +14919,174 @@
                 "type": "array",
                 "items": {
                   "$ref": "#/components/schemas/WikiComment"
+                }
+              }
+            }
+          }
+        ]
+      },
+      "ProjectStateGroup": {
+        "type": "string",
+        "enum": [
+          "DRAFT",
+          "PLANNING",
+          "EXECUTION",
+          "MONITORING",
+          "COMPLETED",
+          "CANCELLED"
+        ],
+        "description": "Grupo do ciclo de vida do projeto. Todo workspace mantém ao menos um estado por grupo."
+      },
+      "ProjectState": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "example": "clx0v5k2p0000qwerpstat01"
+          },
+          "name": {
+            "type": "string",
+            "example": "Execução"
+          },
+          "description": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "example": "Projeto em andamento"
+          },
+          "group": {
+            "$ref": "#/components/schemas/ProjectStateGroup"
+          },
+          "color": {
+            "$ref": "#/components/schemas/TagColor"
+          },
+          "order": {
+            "type": "integer",
+            "example": 0
+          },
+          "isDefault": {
+            "type": "boolean",
+            "example": false
+          },
+          "workspaceId": {
+            "type": "string",
+            "example": "clx0v5k2p0000qwer1234abcd"
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "updatedAt": {
+            "type": "string",
+            "format": "date-time"
+          }
+        }
+      },
+      "CreateProjectStateInput": {
+        "type": "object",
+        "required": [
+          "name",
+          "group"
+        ],
+        "properties": {
+          "name": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 50
+          },
+          "description": {
+            "type": "string",
+            "maxLength": 280
+          },
+          "group": {
+            "$ref": "#/components/schemas/ProjectStateGroup"
+          },
+          "color": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/TagColor"
+              }
+            ],
+            "default": "ZINC"
+          }
+        }
+      },
+      "UpdateProjectStateInput": {
+        "type": "object",
+        "description": "Todos os campos são opcionais. O grupo não muda depois de criado.",
+        "properties": {
+          "name": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 50
+          },
+          "description": {
+            "type": "string",
+            "maxLength": 280
+          },
+          "color": {
+            "$ref": "#/components/schemas/TagColor"
+          },
+          "order": {
+            "type": "integer"
+          }
+        }
+      },
+      "ProjectStateResponse": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/SuccessResponse"
+          },
+          {
+            "type": "object",
+            "properties": {
+              "data": {
+                "$ref": "#/components/schemas/ProjectState"
+              }
+            }
+          }
+        ]
+      },
+      "ProjectStateListResponse": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/SuccessResponse"
+          },
+          {
+            "type": "object",
+            "properties": {
+              "data": {
+                "type": "array",
+                "items": {
+                  "$ref": "#/components/schemas/ProjectState"
+                }
+              }
+            }
+          }
+        ]
+      },
+      "ProjectStateDeleteResponse": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/SuccessResponse"
+          },
+          {
+            "type": "object",
+            "properties": {
+              "data": {
+                "type": "object",
+                "properties": {
+                  "movedTo": {
+                    "type": "string",
+                    "description": "Estado do mesmo grupo que recebeu os projetos.",
+                    "example": "clx0v5k2p0000qwerpstat02"
+                  },
+                  "count": {
+                    "type": "integer",
+                    "description": "Quantos projetos foram movidos.",
+                    "example": 3
+                  }
                 }
               }
             }

@@ -153,6 +153,36 @@ describe('PATCH /api/workspaces/[id]', () => {
     )
     expect(res.status).toBe(409)
   })
+
+  it('should let the OWNER turn the project states off', async () => {
+    const { user, workspace } = await authenticatedOwner()
+
+    const res = await patchJson(
+      `/api/workspaces/${workspace.id}`,
+      { projectStatesEnabled: false },
+      user.cookie,
+    )
+
+    expect(res.status).toBe(200)
+    expect((await res.json()).data.projectStatesEnabled).toBe(false)
+    const stored = await prisma.workspace.findUniqueOrThrow({
+      where: { id: workspace.id },
+    })
+    expect(stored.projectStatesEnabled).toBe(false)
+  })
+
+  it('should not let a MEMBER flip the project states switch', async () => {
+    const { workspace } = await authenticatedOwner()
+    const member = await addMember(workspace.id, 'MEMBER')
+
+    const res = await patchJson(
+      `/api/workspaces/${workspace.id}`,
+      { projectStatesEnabled: false },
+      member.cookie,
+    )
+
+    expect(res.status).toBe(403)
+  })
 })
 
 describe('DELETE /api/workspaces/[id]', () => {

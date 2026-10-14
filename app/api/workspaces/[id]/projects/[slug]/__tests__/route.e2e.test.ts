@@ -208,3 +208,75 @@ describe('DELETE /api/workspaces/[workspaceId]/projects/[slug]', () => {
     expect(deleted).toBeNull()
   })
 })
+
+describe('PATCH /api/workspaces/[id]/projects/[slug] stateId', () => {
+  function stateOf(workspaceId: string) {
+    return prisma.projectState.findFirstOrThrow({
+      where: { workspaceId, group: 'EXECUTION' },
+    })
+  }
+
+  it('should let the lead move the project to another state', async () => {
+    const { user, workspace } = await authenticatedOwner()
+    const project = await seedProject(workspace.id, user.id)
+    const execution = await stateOf(workspace.id)
+
+    const res = await patchJson(
+      `/api/workspaces/${workspace.id}/projects/${project.slug}`,
+      { stateId: execution.id },
+      user.cookie,
+    )
+
+    expect(res.status).toBe(200)
+    expect((await res.json()).data.stateId).toBe(execution.id)
+  })
+
+  it('should return 422 PROJECT_STATE_INVALID for a state of another workspace', async () => {
+    const { user, workspace } = await authenticatedOwner()
+    const { workspace: other } = await authenticatedOwner()
+    const project = await seedProject(workspace.id, user.id)
+    const foreign = await stateOf(other.id)
+
+    const res = await patchJson(
+      `/api/workspaces/${workspace.id}/projects/${project.slug}`,
+      { stateId: foreign.id },
+      user.cookie,
+    )
+
+    expect(res.status).toBe(422)
+    expect((await res.json()).error.code).toBe('PROJECT_STATE_INVALID')
+  })
+
+  it('should return 409 PROJECT_STATES_DISABLED while the workspace switch is off', async () => {
+    const { user, workspace } = await authenticatedOwner()
+    const project = await seedProject(workspace.id, user.id)
+    const execution = await stateOf(workspace.id)
+    await prisma.workspace.update({
+      where: { id: workspace.id },
+      data: { projectStatesEnabled: false },
+    })
+
+    const res = await patchJson(
+      `/api/workspaces/${workspace.id}/projects/${project.slug}`,
+      { stateId: execution.id },
+      user.cookie,
+    )
+
+    expect(res.status).toBe(409)
+    expect((await res.json()).error.code).toBe('PROJECT_STATES_DISABLED')
+  })
+
+  it('should return 422 VALIDATION_ERROR for a malformed state id', async () => {
+    const { user, workspace } = await authenticatedOwner()
+    const project = await seedProject(workspace.id, user.id)
+
+    const res = await patchJson(
+      `/api/workspaces/${workspace.id}/projects/${project.slug}`,
+      { stateId: 'not a cuid' },
+      user.cookie,
+    )
+
+    expect(res.status).toBe(422)
+    expect((await res.json()).error.code).toBe('VALIDATION_ERROR')
+  })
+})
