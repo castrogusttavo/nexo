@@ -1,11 +1,11 @@
 import { ArrowUpRightIcon } from '@hugeicons-pro/core-stroke-rounded'
-import {
-  SiAsana,
-  SiClickup,
-  SiJira,
-  SiLinear,
-} from '@icons-pack/react-simple-icons'
 import Link from 'next/link'
+import {
+  AsanaIcon,
+  ClickUpIcon,
+  JiraIcon,
+  LinearIcon,
+} from '@/components/icon/brand-icons'
 import { NexoIcon } from '@/components/icon/icon'
 import { Muted } from '@/components/typography/text/muted'
 import { Badge } from '@/components/ui/badge'
@@ -83,7 +83,7 @@ export function WebHeaderSolutionsMenu() {
                     className='py-3'
                     render={
                       <Link href='#'>
-                        <SiLinear size={16} />
+                        <LinearIcon size={16} />
                         Linear
                         <NexoIcon icon={ArrowUpRightIcon} />
                       </Link>
@@ -93,7 +93,7 @@ export function WebHeaderSolutionsMenu() {
                     className='py-3'
                     render={
                       <Link href='#'>
-                        <SiJira size={16} />
+                        <JiraIcon size={16} />
                         Jira
                         <NexoIcon icon={ArrowUpRightIcon} />
                       </Link>
@@ -103,7 +103,7 @@ export function WebHeaderSolutionsMenu() {
                     className='py-3'
                     render={
                       <Link href='#'>
-                        <SiAsana size={16} />
+                        <AsanaIcon size={16} />
                         Asana
                         <NexoIcon icon={ArrowUpRightIcon} />
                       </Link>
@@ -113,7 +113,7 @@ export function WebHeaderSolutionsMenu() {
                     className='py-3'
                     render={
                       <Link href='#'>
-                        <SiClickup size={16} />
+                        <ClickUpIcon size={16} />
                         ClickUp
                         <NexoIcon icon={ArrowUpRightIcon} />
                       </Link>
