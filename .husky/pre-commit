@@ -5,3 +5,4 @@ pnpm check:staged
 git update-index --again
 
 pnpm tsc --noEmit
+pnpm tsc --noEmit -p e2e

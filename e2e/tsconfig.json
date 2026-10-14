@@ -1,0 +1,7 @@
+{
+	// Playwright specs get their own project so @playwright/test's ~50k lines of
+	// types stay out of the app's program (editor LSP and the main tsc run).
+	"extends": "../tsconfig.json",
+	"include": ["**/*.ts", "../playwright.config.ts"],
+	"exclude": ["visual/__screenshots__"]
+}

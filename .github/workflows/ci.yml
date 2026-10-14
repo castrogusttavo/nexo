@@ -48,7 +48,9 @@ jobs:
         run: pnpm prisma:generate
 
       - name: Type check
-        run: pnpm tsc --noEmit
+        run: |
+          pnpm tsc --noEmit
+          pnpm tsc --noEmit -p e2e
 
       - name: Lint
         run: pnpm biome lint --error-on-warnings
