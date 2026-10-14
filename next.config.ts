@@ -159,7 +159,8 @@ const nextConfig: NextConfig = {
     },
   },
   experimental: {
-    webpackMemoryOptimizations: true
+    webpackMemoryOptimizations: true,
+    useTypeScriptCli: true
   },
   typescript: {
     ignoreBuildErrors: true
