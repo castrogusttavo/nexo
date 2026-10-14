@@ -6,6 +6,7 @@ export interface WorkspaceDTO {
   slug: string
   activePlan: Plan
   trialEndsAt: string | null
+  projectStatesEnabled: boolean
   createdAt: string
   updatedAt: string
 }

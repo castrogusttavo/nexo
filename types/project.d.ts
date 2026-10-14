@@ -13,6 +13,7 @@ export interface ProjectDTO {
   estimatesEnabled: boolean,
   isFavorited: boolean
   leadId: string | null
+  stateId: string
   workspaceId: string
   archivedAt: string | null
   createdAt: string

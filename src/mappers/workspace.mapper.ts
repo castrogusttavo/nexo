@@ -9,6 +9,7 @@ export function toWorkspaceDTO(workspace: Workspace): WorkspaceDTO {
     slug: workspace.slug,
     activePlan: workspace.activePlan,
     trialEndsAt: workspace.trialEndsAt?.toISOString() ?? null,
+    projectStatesEnabled: workspace.projectStatesEnabled,
     ...withTimestamps(workspace),
   }
 }

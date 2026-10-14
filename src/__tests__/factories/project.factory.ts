@@ -50,6 +50,7 @@ export function createFakeProjectDTO(
     estimatesEnabled: true,
     isFavorited: false,
     leadId: createId(),
+    stateId: createId(),
     workspaceId: createId(),
     archivedAt: null,
     createdAt: now,

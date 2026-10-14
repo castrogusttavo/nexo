@@ -19,6 +19,7 @@ describe('toWorkspaceDTO()', () => {
       slug: 'acme',
       activePlan: 'PRO',
       trialEndsAt: null,
+      projectStatesEnabled: true,
       createdAt: ws.createdAt.toISOString(),
       updatedAt: ws.updatedAt.toISOString(),
     })
@@ -39,5 +40,13 @@ describe('toWorkspaceDTO()', () => {
     const dto = toWorkspaceDTO(createFakeWorkspace())
 
     expect(dto.activePlan).toBe('FREE')
+  })
+
+  it('should carry the project states switch', () => {
+    const dto = toWorkspaceDTO(
+      createFakeWorkspace({ projectStatesEnabled: false }),
+    )
+
+    expect(dto.projectStatesEnabled).toBe(false)
   })
 })

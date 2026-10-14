@@ -2,7 +2,9 @@ import type { UserDTO } from '@/types/user'
 import { createKeyedCache } from './_cache'
 
 export const UserCache = createKeyedCache<UserDTO>({
-  prefix: 'user:',
+  // v2: memberships embed WorkspaceDTO, which gained projectStatesEnabled;
+  // see workspace.cache.ts.
+  prefix: 'user:v2:',
   ttl: 15 * 60, // 15 min
   name: 'user',
 })

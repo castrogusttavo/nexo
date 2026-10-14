@@ -3,15 +3,18 @@ import type { ProjectState } from '@prisma/client'
 import { DEFAULT_PROJECT_STATES } from '@/src/config/project-states'
 import { prisma } from '@/src/lib/prisma'
 
-export function createFakeProjectState(overrides?: Partial<ProjectState>) {
+export function createFakeProjectState(
+  overrides?: Partial<ProjectState>,
+): ProjectState {
   const now = new Date()
   return {
     id: createId(),
+    name: 'Rascunho',
     description: null,
     group: 'DRAFT',
     color: 'ZINC',
     order: 0,
-    isDefault: true,
+    isDefault: false,
     workspaceId: createId(),
     createdAt: now,
     updatedAt: now,

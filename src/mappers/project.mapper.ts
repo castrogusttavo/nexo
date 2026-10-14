@@ -22,6 +22,7 @@ export function toProjectDTO(
     estimatesEnabled: project.estimatesEnabled,
     isFavorited,
     leadId: project.leadId,
+    stateId: project.stateId,
     workspaceId: project.workspaceId,
     archivedAt: project.archivedAt?.toISOString() ?? null,
     ...withTimestamps(project),

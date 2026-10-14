@@ -29,6 +29,7 @@ export function createFakeWorkspaceDTO(
     slug: `ws-${createId().slice(0, 8)}`,
     activePlan: 'FREE',
     trialEndsAt: null,
+    projectStatesEnabled: true,
     createdAt: now,
     updatedAt: now,
     ...overrides,

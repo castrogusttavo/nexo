@@ -27,6 +27,7 @@ function buildProject(overrides: Partial<ProjectDTO> = {}): ProjectDTO {
     estimatesEnabled: true,
     isFavorited: false,
     leadId: 'user-1',
+    stateId: 'pstate-1',
     workspaceId: WORKSPACE_ID,
     archivedAt: null,
     createdAt: '2026-01-01T00:00:00.000Z',
