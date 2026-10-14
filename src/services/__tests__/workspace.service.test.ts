@@ -317,6 +317,38 @@ describe('WorkspaceService', () => {
       expectErr(result, 'DATABASE_ERROR')
       expect(mockedWorkspaceCache.invalidate).not.toHaveBeenCalled()
     })
+
+    it('should forward the project states switch to the repository', async () => {
+      mockedMembershipRepo.findByUserAndWorkspace.mockResolvedValue(
+        ok(
+          createFakeMembership({
+            userId: 'owner',
+            workspaceId: 'ws1',
+            role: 'OWNER',
+          }),
+        ),
+      )
+      mockedMembershipRepo.listUserIdsByWorkspace.mockResolvedValue(
+        ok(['owner']),
+      )
+      mockedWorkspaceRepo.update.mockResolvedValue(
+        ok(createFakeWorkspace({ id: 'ws1', projectStatesEnabled: false })),
+      )
+      mockedWorkspaceCache.invalidate.mockResolvedValue(undefined)
+      mockedUserCache.invalidate.mockResolvedValue(undefined)
+
+      const value = expectOk(
+        await WorkspaceService.update('owner', 'ws1', {
+          projectStatesEnabled: false,
+        }),
+      )
+
+      expect(value.projectStatesEnabled).toBe(false)
+      expect(mockedWorkspaceRepo.update).toHaveBeenCalledWith('ws1', {
+        projectStatesEnabled: false,
+      })
+      expect(mockedWorkspaceCache.invalidate).toHaveBeenCalledWith('ws1')
+    })
   })
 
   describe('delete()', () => {

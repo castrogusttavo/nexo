@@ -4,16 +4,42 @@ import {
   projectForbidden,
   projectMemberNotFound,
   projectMemberNotInWorkspace,
+  projectStateInvalid,
+  projectStatesDisabled,
 } from '../errors'
 import { err, ok, type Result } from '../lib/result'
 import { toProjectDTO, toProjectMemberDTO } from '../mappers/project.mapper'
 import { ProjectRepository } from '../repositories/project.repository'
+import { ProjectStateRepository } from '../repositories/project-state.repository'
+import { WorkspaceRepository } from '../repositories/workspace.repository'
 import type {
   CreateProjectDTO,
   ListProjectsDTO,
   UpdateProjectDTO,
 } from '../schemas/project.schema'
 import { assertMember } from './_authz'
+
+// A project may only move to a state of its own workspace, and only while the
+// workspace has project states switched on. A missing state and a foreign one
+// answer alike, so the response reveals nothing about other workspaces.
+async function assertStateAssignable(
+  workspaceId: string,
+  stateId: string,
+): Promise<Result<void>> {
+  const workspace = await WorkspaceRepository.findById(workspaceId)
+  if (!workspace.ok) return workspace
+  if (!workspace.value.projectStatesEnabled) return err(projectStatesDisabled())
+
+  const state = await ProjectStateRepository.findById(stateId)
+  if (!state.ok) {
+    return state.error.code === 'PROJECT_STATE_NOT_FOUND'
+      ? err(projectStateInvalid())
+      : state
+  }
+  if (state.value.workspaceId !== workspaceId) return err(projectStateInvalid())
+
+  return ok(undefined)
+}
 
 function baseIdentifierFrom(name: string): string {
   const cleaned = name.toUpperCase().replace(/[^A-Z0-9]/g, '')
@@ -283,6 +309,11 @@ export const ProjectService = {
 
     if (dto.leadId && !project.members.some((m) => m.userId === dto.leadId)) {
       return err(projectMemberNotFound())
+    }
+
+    if (dto.stateId) {
+      const assignable = await assertStateAssignable(workspaceId, dto.stateId)
+      if (!assignable.ok) return assignable
     }
 
     const result = await ProjectRepository.update(project.id, dto)

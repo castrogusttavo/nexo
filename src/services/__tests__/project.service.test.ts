@@ -2,11 +2,15 @@ import type { ProjectMember } from '@prisma/client'
 import { describe, expect, it, vi } from 'vitest'
 import { createFakeMembership } from '@/src/__tests__/factories/membership.factory'
 import { createFakeProject } from '@/src/__tests__/factories/project.factory'
+import { createFakeProjectState } from '@/src/__tests__/factories/project-state.factory'
+import { createFakeWorkspace } from '@/src/__tests__/factories/workspace.factory'
 import { expectErr, expectOk } from '@/src/__tests__/helpers/result.helpers'
-import { databaseError } from '@/src/errors'
+import { databaseError, projectStateNotFound } from '@/src/errors'
 import { err, ok } from '@/src/lib/result'
 import { MembershipRepository } from '@/src/repositories/membership.repository'
 import { ProjectRepository } from '@/src/repositories/project.repository'
+import { ProjectStateRepository } from '@/src/repositories/project-state.repository'
+import { WorkspaceRepository } from '@/src/repositories/workspace.repository'
 import { ProjectService } from '../project.service'
 import {
   describeProjectAccessGate,
@@ -15,9 +19,13 @@ import {
 
 vi.mock('@/src/repositories/membership.repository')
 vi.mock('@/src/repositories/project.repository')
+vi.mock('@/src/repositories/project-state.repository')
+vi.mock('@/src/repositories/workspace.repository')
 
 const mockedMembership = vi.mocked(MembershipRepository)
 const mockedProject = vi.mocked(ProjectRepository)
+const mockedProjectState = vi.mocked(ProjectStateRepository)
+const mockedWorkspace = vi.mocked(WorkspaceRepository)
 
 const ownerMembership = createFakeMembership({
   userId: 'actor',
@@ -534,6 +542,124 @@ describe('ProjectService', () => {
       })
 
       expectErr(result, 'DATABASE_ERROR')
+    })
+  })
+
+  describe('update() stateId', () => {
+    const project = createFakeProject({
+      id: 'proj-1',
+      leadId: 'actor',
+      workspaceId: 'ws1',
+    })
+
+    function asLeadOf(workspace = createFakeWorkspace({ id: 'ws1' })) {
+      mockedMembership.findByUserAndWorkspace.mockResolvedValue(
+        ok(memberMembership),
+      )
+      mockedProject.findByWorkspaceAndSlug.mockResolvedValue(
+        ok({ ...project, members: [], favourites: [] as [] }),
+      )
+      mockedWorkspace.findById.mockResolvedValue(ok(workspace))
+    }
+
+    it('should move the project to a staet of its workspace', async () => {
+      asLeadOf()
+      mockedProjectState.findById.mockResolvedValue(
+        ok(createFakeProjectState({ id: 'pstate-2', workspaceId: 'ws1' })),
+      )
+      mockedProject.update.mockResolvedValue(
+        ok({ ...project, stateId: 'pstate-2' }),
+      )
+
+      const dto = expectOk(
+        await ProjectService.update('actor', 'ws1', project.slug, {
+          stateId: 'pstate-2',
+        }),
+      )
+
+      expect(dto.stateId).toBe('pstate-2')
+      expect(mockedProject.update).toHaveBeenCalledWith('proj-1', {
+        stateId: 'pstate-2',
+      })
+    })
+
+    it('should return PROJECT_STATES_DISABLED when the workspace switched them off', async () => {
+      asLeadOf(createFakeWorkspace({ id: 'ws1', projectStatesEnabled: false }))
+
+      const result = await ProjectService.update('actor', 'ws1', project.slug, {
+        stateId: 'pstate-2',
+      })
+
+      expectErr(result, 'PROJECT_STATES_DISABLED')
+      expect(mockedProject.update).not.toHaveBeenCalled()
+    })
+
+    it('should return PROJECT_STATE_INVALID for a state of another workspace', async () => {
+      asLeadOf()
+      mockedProjectState.findById.mockResolvedValue(
+        ok(createFakeProjectState({ id: 'pstate-9', workspaceId: 'ws2' })),
+      )
+
+      const result = await ProjectService.update('actor', 'ws1', project.slug, {
+        stateId: 'pstate-9',
+      })
+
+      expectErr(result, 'PROJECT_STATE_INVALID')
+      expect(mockedProject.update).not.toHaveBeenCalled()
+    })
+
+    it('should return PROJECT_STATE_INVALID for a state that does not exist', async () => {
+      asLeadOf()
+      mockedProjectState.findById.mockResolvedValue(err(projectStateNotFound()))
+
+      const result = await ProjectService.update('actor', 'ws1', project.slug, {
+        stateId: 'pstate-9',
+      })
+
+      expectErr(result, 'PROJECT_STATE_INVALID')
+    })
+
+    it('should propagate a database error from the state lookup', async () => {
+      asLeadOf()
+      mockedProjectState.findById.mockResolvedValue(err(databaseError('boom')))
+
+      const result = await ProjectService.update('actor', 'ws1', project.slug, {
+        stateId: 'pstate-9',
+      })
+
+      expectErr(result, 'DATABASE_ERROR')
+    })
+
+    it('should check permisson before looking the state up', async () => {
+      mockedMembership.findByUserAndWorkspace.mockResolvedValue(
+        ok(memberMembership),
+      )
+      mockedProject.findByWorkspaceAndSlug.mockResolvedValue(
+        ok({ ...project, leadId: 'other', members: [], favourites: [] as [] }),
+      )
+
+      const result = await ProjectService.update('actor', 'ws1', project.slug, {
+        stateId: 'pstate-2',
+      })
+
+      expectErr(result, 'PROJECT_FORBIDDEN')
+      expect(mockedProjectState.findById).not.toHaveBeenCalled()
+    })
+
+    it('should not look the workspace or a setup up when stateId is absent', async () => {
+      asLeadOf()
+      mockedProject.update.mockResolvedValue(
+        ok({ ...project, name: 'Renomeado' }),
+      )
+
+      expectOk(
+        await ProjectService.update('actor', 'ws1', project.slug, {
+          name: 'Renomeado',
+        }),
+      )
+
+      expect(mockedWorkspace.findById).not.toHaveBeenCalled()
+      expect(mockedProjectState.findById).not.toHaveBeenCalled()
     })
   })
 
