@@ -3,6 +3,7 @@ import { seedSubscription } from '@/src/__tests__/factories/subscription.factory
 import { seedUser } from '@/src/__tests__/factories/user.factory'
 import { seedWorkspace } from '@/src/__tests__/factories/workspace.factory'
 import { expectErr, expectOk } from '@/src/__tests__/helpers/result.helpers'
+import { DEFAULT_PROJECT_STATES } from '@/src/config/project-states'
 import { prisma } from '@/src/lib/prisma'
 import { WorkspaceRepository } from '@/src/repositories/workspace.repository'
 
@@ -164,6 +165,30 @@ describe('WorkspaceRepository', () => {
         where: { id: owner.id },
       })
       expect(after.onboardingStep).toBeNull()
+    })
+
+    it('should start the workspace with the default project states', async () => {
+      const owner = await seedUser()
+
+      const ws = expectOk(
+        await WorkspaceRepository.createWithOwner(
+          { name: 'Acme', slug: 'acme-states' },
+          owner.id,
+        ),
+      )
+
+      const states = await prisma.projectState.findMany({
+        where: { workspaceId: ws.id },
+        orderBy: { group: 'asc' },
+      })
+      expect(states.map((s) => [s.name, s.group, s.isDefault])).toEqual(
+        DEFAULT_PROJECT_STATES.map((s) => [s.name, s.group, s.isDefault]),
+      )
+      // Independent of the config list: a typo there would make both sides of
+      // the check above agree on a wrong value.
+      expect(states.filter((s) => s.isDefault).map((s) => s.name)).toEqual([
+        'Rascunho',
+      ])
     })
   })
 

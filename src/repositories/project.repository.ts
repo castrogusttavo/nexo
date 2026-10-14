@@ -249,6 +249,7 @@ export const ProjectRepository = {
       cyclesEnabled?: boolean
       estimatesEnabled?: boolean
       leadId?: string
+      stateId?: string
     },
   ): Promise<Result<Project>> {
     try {

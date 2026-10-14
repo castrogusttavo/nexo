@@ -4,6 +4,10 @@ import {
   seedProject,
   seedProjectMember,
 } from '@/src/__tests__/factories/project.factory'
+import {
+  defaultProjectStateId,
+  seedProjectState,
+} from '@/src/__tests__/factories/project-state.factory'
 import { seedUser } from '@/src/__tests__/factories/user.factory'
 import { seedWorkspace } from '@/src/__tests__/factories/workspace.factory'
 import { expectErr, expectOk } from '@/src/__tests__/helpers/result.helpers'
@@ -156,6 +160,7 @@ describe('ProjectRepository', () => {
     it('should presist project and auto-add lead as member', async () => {
       const user = await seedUser()
       const ws = await seedWorkspace()
+      await defaultProjectStateId(ws.id)
 
       const result = await ProjectRepository.create({
         name: 'New Project',
@@ -184,6 +189,7 @@ describe('ProjectRepository', () => {
     it('should return PROJECT_SLUG_CONFLICT on duplicate workspace+slug', async () => {
       const user = await seedUser()
       const ws = await seedWorkspace()
+      await defaultProjectStateId(ws.id)
       await seedProject(ws.id, user.id, { slug: 'dup-slug' })
 
       const result = await ProjectRepository.create({
@@ -204,6 +210,7 @@ describe('ProjectRepository', () => {
     it('should seed the 5 default states', async () => {
       const user = await seedUser()
       const ws = await seedWorkspace()
+      await defaultProjectStateId(ws.id)
 
       const result = await ProjectRepository.create({
         name: 'New Project',
@@ -233,6 +240,7 @@ describe('ProjectRepository', () => {
     it('should seed the 2 default labels', async () => {
       const user = await seedUser()
       const ws = await seedWorkspace()
+      await defaultProjectStateId(ws.id)
 
       const result = await ProjectRepository.create({
         name: 'New Project',
@@ -258,6 +266,7 @@ describe('ProjectRepository', () => {
     it('should seed default estimate settings', async () => {
       const user = await seedUser()
       const ws = await seedWorkspace()
+      await defaultProjectStateId(ws.id)
 
       const result = await ProjectRepository.create({
         name: 'New Project',
@@ -278,6 +287,48 @@ describe('ProjectRepository', () => {
 
       expect(settings?.system).toBe('POINTS')
       expect(settings?.model).toBe('FIBONACCI')
+    })
+
+    it('should put the new project in the workspace default state', async () => {
+      const user = await seedUser()
+      const ws = await seedWorkspace()
+      await seedProjectState(ws.id, { group: 'PLANNING' })
+      const defaultId = await defaultProjectStateId(ws.id)
+
+      const project = expectOk(
+        await ProjectRepository.create({
+          name: 'Com estado',
+          slug: 'com-estado',
+          identifier: 'CEST',
+          isPublic: false,
+          issueTypesEnabled: true,
+          modulesEnabled: true,
+          cyclesEnabled: true,
+          leadId: user.id,
+          workspaceId: ws.id,
+        }),
+      )
+
+      expect(project.stateId).toBe(defaultId)
+    })
+
+    it('should return DATABASE_ERROR when the workspace has no default state', async () => {
+      const user = await seedUser()
+      const ws = await seedWorkspace()
+
+      const result = await ProjectRepository.create({
+        name: 'Sem estado',
+        slug: 'sem-estado',
+        identifier: 'SEST',
+        isPublic: false,
+        issueTypesEnabled: true,
+        modulesEnabled: true,
+        cyclesEnabled: true,
+        leadId: user.id,
+        workspaceId: ws.id,
+      })
+
+      expectErr(result, 'DATABASE_ERROR')
     })
   })
 
@@ -346,6 +397,19 @@ describe('ProjectRepository', () => {
       const result = await ProjectRepository.update('any', { name: 'X' })
 
       expectErr(result, 'DATABASE_ERROR')
+    })
+
+    it('should move the project to another state', async () => {
+      const user = await seedUser()
+      const ws = await seedWorkspace()
+      const project = await seedProject(ws.id, user.id)
+      const next = await seedProjectState(ws.id, { group: 'EXECUTION' })
+
+      const updated = expectOk(
+        await ProjectRepository.update(project.id, { stateId: next.id }),
+      )
+
+      expect(updated.stateId).toBe(next.id)
     })
   })
 

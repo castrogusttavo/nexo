@@ -1,4 +1,5 @@
 import type { Plan, Workspace } from '@prisma/client'
+import { DEFAULT_PROJECT_STATES } from '@/src/config/project-states'
 import { conflict, notFound } from '@/src/errors'
 import { prisma } from '@/src/lib/prisma'
 import { err, ok, type Result } from '@/src/lib/result'
@@ -56,6 +57,14 @@ export const WorkspaceRepository = {
     try {
       const workspace = await prisma.$transaction(async (tx) => {
         const ws = await tx.workspace.create({ data })
+        // A workspace is never without project states: every project needs
+        // one, and the default one is where ProjectRepository.create puts it.
+        await tx.projectState.createMany({
+          data: DEFAULT_PROJECT_STATES.map((state) => ({
+            ...state,
+            workspaceId: ws.id,
+          })),
+        })
         await tx.membership.create({
           data: { userId, workspaceId: ws.id, role: 'OWNER' },
         })
@@ -77,7 +86,12 @@ export const WorkspaceRepository = {
 
   async update(
     id: string,
-    data: { name?: string; slug?: string },
+    data: {
+      name?: string
+      slug?: string
+      teamSize?: string | null
+      projectStatesEnabled?: boolean
+    },
   ): Promise<Result<Workspace>> {
     try {
       const workspace = await prisma.workspace.update({ where: { id }, data })
