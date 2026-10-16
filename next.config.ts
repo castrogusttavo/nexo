@@ -94,6 +94,11 @@ const nextConfig: NextConfig = {
   ...posthogProxy,
   poweredByHeader: false,
   output: 'standalone',
+  // nginx compresses instead (gzip_proxied): gzipping every response in the
+  // Node process cost more CPU than serving a prerendered page, and /pricing
+  // alone is 1 MB of HTML. Locally, static pages went from 16.6 to 6.2 ms of
+  // CPU per request with this off (2026-10-16).
+  compress: false,
   // Turbopack emits no browser source map unless asked, and the Sentry plugin
   // does not ask for us: without this it created the release and had nothing
   // to upload, so every client stack trace in Sentry was minified (no
