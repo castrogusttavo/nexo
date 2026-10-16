@@ -5,9 +5,11 @@ import exec from 'k6/execution'
 import http from 'k6/http'
 import { textSummary } from 'https://jslib.k6.io/k6-summary/0.1.0/index.js'
 
-// Run on the production host against localhost:3000 (see EXPERIMENT-LOG,
-// Round 2): nginx's limit_req is keyed by socket IP, so a single external
-// load generator is throttled within seconds. ORIGIN must match
+// Runs against https://nexopm.com from the `Load Test (Production)` workflow
+// with LOAD_TEST_TOKEN so nginx exempts it from limit_req and forwards the
+// spoofed per-VU X-Forwarded-For untouched (one auth bucket per VU, as with
+// real users). Without the token, run it on the production host against
+// localhost:3000 instead (EXPERIMENT-LOG, Round 2). ORIGIN must match
 // BETTER_AUTH_URL or sign-in answers 403.
 const BASE_URL = __ENV.BASE_URL || 'http://localhost:3000'
 const ORIGIN = __ENV.ORIGIN || BASE_URL
@@ -16,9 +18,20 @@ const VUS = Number(__ENV.VUS || 2500) // hold: users kept at the plateau
 const RAMP = __ENV.RAMP || '4m' // hold: ramp-up (logins are ~20/s max)
 const HOLD = __ENV.HOLD || '5m' // hold: 2m or 5m
 const STEP = Number(__ENV.STEP || 500) // breakpoint: size of each step
-const MAX = Number(__ENV.MAX || 5000) // breakpoint: ceiling
+const MAX = Number(__ENV.MAX || 2000) // breakpoint: ceiling
 const P95_MS = Number(__ENV.P95_MS || 1500) // what counts as "holding up"
 const ISSUES_LIMIT = __ENV.ISSUES_LIMIT || '50'
+
+// Every request asks for compression like a browser does: uncompressed, the
+// marketing pages average ~470 KB (/pricing is 1MB) agains ~42 KB gzipped,
+// which saturates the generator's uplink before it saturates the server.
+// LOAD_TEST_TOKEN lets nginx skip limit_req for this run (see the
+// $http_x_load_test map in the production nginx config); without it, a single
+// generator IP is throttled within seconds.
+const COMMON_HEADERS = {
+  'Accept-Enconding': 'gzip, br',
+  ...(__ENV.LOAD_TEST_TOKEN ? { 'X-Load-Test': __ENV.LOAD_TEST_TOKEN } : {})
+}
 
 // open() resolves relative to this file, not to the working directory
 const manifest = JSON.parse(open('../scripts/.load-test-manifest.json'))
@@ -65,6 +78,9 @@ const slo = (threshold) => [{ threshold, abortOnFail: abort, delayAbortEval: '1m
 
 export const options = {
   scenarios: { [PROFILE]: scenarios[PROFILE] },
+  // Bodies are never read (checks look at status only); keeping them costs
+  // memory per VU, which is what limits a 2-vCPU runner.
+  discardResponseBodies: true,
   summaryTrendStats: ['avg', 'med', 'p(90)', 'p(95)', 'p(99)', 'max'],
   thresholds: {
     'http_req_failed{kind:api}': slo('rate<0.01'),
@@ -83,7 +99,7 @@ export function setup() {
       `${users.length} seeded users for up to ${peak} VUs: users will be shared and may hit the 100 req/min apiLimiter`,
     )
   }
-  const res = http.get(`${BASE_URL}/api/health`)
+  const res = http.get(`${BASE_URL}/api/health`, { headers: COMMON_HEADERS })
   if (res.status !== 200) throw new Error(`${BASE_URL} answered ${res.status}`)
 }
 
@@ -102,6 +118,7 @@ function signIn() {
     JSON.stringify({ email, password: manifest.password }),
     {
       headers: {
+        ...COMMON_HEADERS,
         'Content-Type': 'application/json',
         Origin: ORIGIN,
         'X-Forwarded-For': randomIp(),
@@ -121,9 +138,8 @@ function signIn() {
 
 function api(path, name) {
   const res = http.get(`${BASE_URL}${path}`, {
-    headers: { Cookie: cookieHeader },
+    headers: { ...COMMON_HEADERS, Cookie: cookieHeader },
     tags: { kind: 'api', name },
-    responseType: 'none',
   })
   if (res.status === 401) cookieHeader = null // re-login next iteration
   check(res, { [`${name} 200`]: (r) => r.status === 200 })
@@ -132,8 +148,8 @@ function api(path, name) {
 function hitPage() {
   const path = PAGES[Math.floor(Math.random() * PAGES.length)]
   const res = http.get(`${BASE_URL}${path}`, {
+    headers: COMMON_HEADERS,
     tags: { kind: 'page', name: `GET ${path}` },
-    responseType: 'none',
   })
   check(res, { 'page 200': (r) => r.status === 200 })
 }
