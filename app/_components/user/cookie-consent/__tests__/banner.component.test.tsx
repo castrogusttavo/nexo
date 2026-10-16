@@ -1,5 +1,5 @@
-import { screen } from '@testing-library/react'
-import { describe, expect, it } from 'vitest'
+import { render, screen, waitFor } from '@testing-library/react'
+import { afterEach, describe, expect, it, vi } from 'vitest'
 import type { CookieConsent } from '@/lib/cookie-consent/types'
 import {
   getFetchCall,
@@ -8,6 +8,10 @@ import {
 } from '@/src/__tests__/helpers/component'
 import { CookieConsentBanner } from '../banner'
 import { CookieConsentProvider } from '../provider'
+
+vi.mock('@/src/lib/auth-client', () => ({
+  authClient: { useSession: () => ({ data: null }) },
+}))
 
 const CONSENT_URL = '/api/users/me/cookie-consent'
 
@@ -87,5 +91,37 @@ describe('<CookieConsentBanner />', () => {
 
     expect(banner()).not.toBeInTheDocument()
     expect(fetchSpy).not.toHaveBeenCalled()
+  })
+})
+
+// The root layout hands the provider nothing: the cookie is read after mount.
+describe('<CookieConsentBanner /> with the consent read in the browser', () => {
+  afterEach(() => {
+    // biome-ignore lint/suspicious/noDocumentCookie: test fixture for the consent cookie.
+    document.cookie = 'nx_cookie_consent=; path=/; max-age=0'
+  })
+
+  it('never shows for someone who already decided', async () => {
+    // biome-ignore lint/suspicious/noDocumentCookie: test fixture for the consent cookie.
+    document.cookie = 'nx_cookie_consent=accepted; path=/'
+    const { container } = render(
+      <CookieConsentProvider>
+        <CookieConsentBanner />
+      </CookieConsentProvider>,
+    )
+
+    // Before the effect and after it alike: no flash of the banner.
+    expect(banner()).not.toBeInTheDocument()
+    await waitFor(() => expect(container).toBeEmptyDOMElement())
+  })
+
+  it('shows once the cookie turns out to be missing', async () => {
+    render(
+      <CookieConsentProvider>
+        <CookieConsentBanner />
+      </CookieConsentProvider>,
+    )
+
+    await waitFor(() => expect(banner()).toBeInTheDocument())
   })
 })

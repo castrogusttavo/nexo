@@ -5,9 +5,11 @@ import { Button } from '@/components/ui/button'
 import { useCookieConsent } from './provider'
 
 export function CookieConsentBanner() {
-  const { consent, setConsent } = useCookieConsent()
+  const { consent, ready, setConsent } = useCookieConsent()
 
-  if (consent !== null) return null
+  // Not before the cookie is read: someone who already decided would see the
+  // banner flash on every page load.
+  if (!ready || consent !== null) return null
 
   return (
     <section

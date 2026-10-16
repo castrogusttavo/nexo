@@ -12,7 +12,7 @@ import { cn } from '@/lib/utils'
 import { Providers } from './_components/providers'
 import { CookieConsentBanner } from './_components/user/cookie-consent/banner'
 import { ConsentedTrackers } from './_components/user/cookie-consent/consented-trackers'
-import { CookieConsentInit } from './_components/user/cookie-consent/init'
+import { CookieConsentProvider } from './_components/user/cookie-consent/provider'
 
 const TITLE = 'Nexo — gestão de projetos nativa em IA'
 const DESCRIPTION =
@@ -71,14 +71,16 @@ export default function RootLayout({
         <Suspense>
           <NuqsAdapter>
             <Providers>
-              <CookieConsentInit>
+              {/* Reads nothing from the request (consent and session are
+                  resolved in the browser), so pages below can prerender. */}
+              <CookieConsentProvider>
                 <TooltipProvider>
                   {children}
                   <Toaster />
                 </TooltipProvider>
                 <ConsentedTrackers />
                 <CookieConsentBanner />
-              </CookieConsentInit>
+              </CookieConsentProvider>
             </Providers>
           </NuqsAdapter>
         </Suspense>

@@ -5,16 +5,24 @@ import {
   type ReactNode,
   use,
   useCallback,
+  useEffect,
   useState,
 } from 'react'
 import {
   COOKIE_MAX_AGE,
   COOKIE_NAME,
   type CookieConsent,
+  parseCookieConsent,
 } from '@/lib/cookie-consent/types'
+import { authClient } from '@/src/lib/auth-client'
 
 interface CookieConsentCtx {
   consent: CookieConsent
+  /**
+   * False until the consent cookie has been read in the browser. The banner
+   * waits for it, so a visitor who already decided never sees it flash.
+   */
+  ready: boolean
   isAuthenticated: boolean
   /**
    * The signed-in user's id, or `null`. Read by the consented trackers so
@@ -27,27 +35,63 @@ interface CookieConsentCtx {
 
 const Ctx = createContext<CookieConsentCtx | null>(null)
 
-interface ProviderProps {
-  initial: CookieConsent
+interface SessionState {
   isAuthenticated: boolean
+  userId: string | null
+}
+
+interface ProviderProps {
+  /**
+   * Known consent, for tests and server-rendered islands. Omitted in the root
+   * layout, where the cookie is read in the browser after mount.
+   */
+  initial?: CookieConsent
+  /**
+   * Known session. Omitted in the root layout, where it comes from Better
+   * Auth's client session instead.
+   */
+  isAuthenticated?: boolean
   userId?: string | null
   children: ReactNode
 }
 
+function readConsentCookie(): CookieConsent {
+  const prefix = `${COOKIE_NAME}=`
+  const entry = document.cookie
+    .split('; ')
+    .find((cookie) => cookie.startsWith(prefix))
+  return parseCookieConsent(entry?.slice(prefix.length))
+}
+
+// The root layout used to await cookies() and getSession() above every page,
+// which made every route render on each request (a public page cost ~4x the
+// CPU of an API call, 2026-10-16). Reading both in the browser instead lets
+// the marketing pages be prerendered as static HTML.
 export function CookieConsentProvider({
   initial,
   isAuthenticated,
   userId = null,
   children,
 }: ProviderProps) {
-  const [consent, setConsentState] = useState<CookieConsent>(initial)
+  const [consent, setConsentState] = useState<CookieConsent>(initial ?? null)
+  const [ready, setReady] = useState(initial !== undefined)
+  const [session, setSession] = useState<SessionState>({
+    isAuthenticated: isAuthenticated ?? false,
+    userId,
+  })
+
+  useEffect(() => {
+    if (initial !== undefined) return
+    setConsentState(readConsentCookie())
+    setReady(true)
+  }, [initial])
 
   const setConsent = useCallback(
     (next: 'accepted' | 'rejected') => {
       // biome-ignore lint/suspicious/noDocumentCookie: first-party persistent cookie set client-side by the banner; same pattern as components/ui/sidebar.tsx.
       document.cookie = `${COOKIE_NAME}=${next}; path=/; max-age=${COOKIE_MAX_AGE}; SameSite=Lax${location.protocol === 'https:' ? '; Secure' : ''}`
       setConsentState(next)
-      if (isAuthenticated) {
+      if (session.isAuthenticated) {
         // Fire-and-forget: cookie is authoritative for the client; the
         // server call only writes the audit trail. Failure here doesn't
         // change the user's experience.
@@ -58,14 +102,40 @@ export function CookieConsentProvider({
         }).catch(() => {})
       }
     },
-    [isAuthenticated],
+    [session.isAuthenticated],
   )
 
   return (
-    <Ctx.Provider value={{ consent, isAuthenticated, userId, setConsent }}>
+    <Ctx.Provider
+      value={{
+        consent,
+        ready,
+        isAuthenticated: session.isAuthenticated,
+        userId: session.userId,
+        setConsent,
+      }}
+    >
       {children}
+      {isAuthenticated === undefined && <SessionBridge onChange={setSession} />}
     </Ctx.Provider>
   )
+}
+
+// Rendered only when the session was not handed in: subscribes to Better
+// Auth's client session and reports who is signed in.
+function SessionBridge({
+  onChange,
+}: {
+  onChange: (session: SessionState) => void
+}) {
+  const { data } = authClient.useSession()
+  const userId = data?.user.id ?? null
+
+  useEffect(() => {
+    onChange({ isAuthenticated: userId !== null, userId })
+  }, [onChange, userId])
+
+  return null
 }
 
 export function useCookieConsent(): CookieConsentCtx {
