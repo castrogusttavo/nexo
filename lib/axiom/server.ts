@@ -1,10 +1,31 @@
-import { createAxiomRouteHandler } from '@axiomhq/nextjs'
+import { createAxiomRouteHandler, getLogLevelFromStatusCode, getNextErrorStatusCode, transformRouteHandlerErrorResult, transformRouteHandlerSuccessResult } from '@axiomhq/nextjs'
 import { connection } from 'next/server'
 import { logger } from '@/lib/axiom/logger'
 
 export { logger }
 
-const withAxiomLogging = createAxiomRouteHandler(logger)
+// The library's default callbacks `await logger.flush()` inside after() on
+// every request. @axiomhq/js serializes flushes and each on is a POST to
+// Axiom (~400ms from here), so under load they queue faster than they drain
+// and every pending flush keeps its whole request alive: locally, 8.7k
+// request left 14k suspended flushes and 3.7k ServerResponse objects behind,
+// and production died of heap exhaution on 2026-10-16. Logging without
+// flushing leaves batching to the client (every is or 1000 events).
+const withAxiomLogging = createAxiomRouteHandler(logger, {
+  onSuccess: (data) => {
+    logger.info(...transformRouteHandlerSuccessResult(data))
+  },
+  onError: (data) => {
+    if (data.error instanceof Error) logger.error(data.error.message, data.error)
+    const status = 
+      data.error instanceof Error ? getNextErrorStatusCode(data.error) : 500
+    logger.log(
+      getLogLevelFromStatusCode(status),
+      ...transformRouteHandlerErrorResult(data)
+    )
+  }
+})
+
 
 /**
  * Axiom request logging for route handlers, gated on a real request.

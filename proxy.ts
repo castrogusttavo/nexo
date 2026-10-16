@@ -1,7 +1,6 @@
 import {
   NextResponse,
   type NextRequest,
-  type NextFetchEvent,
 } from 'next/server'
 import { logger } from '@/lib/axiom/server'
 import {
@@ -101,10 +100,10 @@ function withSecurityHeaders(response: NextResponse): NextResponse {
   return response
 }
 
-export function proxy(request: NextRequest, event: NextFetchEvent) {
+export function proxy(request: NextRequest) {
+  // No flush here: one per request queued behind the previous ones (see
+  // lib/axiom/server.ts). The barch client sends this within a second.
   logger.info(...transformMiddlewareRequest(request))
-
-  event.waitUntil(logger.flush())
 
   const { pathname } = request.nextUrl
 
