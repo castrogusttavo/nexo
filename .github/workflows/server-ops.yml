@@ -259,7 +259,7 @@ jobs:
           docker compose -f docker-compose.yml up -d
           sleep 5
           docker ps --format '  {{.Names}} | {{.Image}} | {{.Status}}'
-          curl -fsS -o /dev/null -w '  app health %{http_code}\n' http://localhost:3000/api/health || true
+          curl -fsS -o /dev/null -w '  app health %{http_code}\n' http://localhost:3001/api/health || true
 
       # Replication needs two things on the primary that only appear by
       # themselves when a Postgres volume is initialised from empty: a role
@@ -437,5 +437,5 @@ jobs:
           cd '${{ env.SERVER_DIR }}'
           docker compose -f docker-compose.yml up -d
           sleep 6
-          docker ps --format '  {{.Names}} | {{.Status}}' | grep -E 'nextjs|worker|realtime'
-          curl -fsS -o /dev/null -w '  app health %{http_code}\n' http://localhost:3000/api/health || true
+          docker ps --format '  {{.Names}} | {{.Status}}' | grep -E 'nexo-app|worker|realtime'
+          curl -fsS -o /dev/null -w '  app health %{http_code}\n' http://localhost:3001/api/health || true

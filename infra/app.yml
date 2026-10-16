@@ -24,24 +24,53 @@ x-public-env: &public-env
   BETTER_AUTH_URL: https://nexopm.com
   NEXT_PUBLIC_REALTIME_URL: wss://nexopm.com/realtime
 
+# The web app runs as three identical instances behind nginx's `nexo_app`
+# upstream (least_conn over 127.0.0.1:3001-3003): one Node process saturates
+# a single core at ~45 req/s, and the host has four physical cores. Sessions
+# live in Postgres and every rate limit in Redis, so any instance can serve
+# any request. Each settles around 1 GB of RSS under load.
+x-app: &app
+  image: ghcr.io/castrogusttavo/nexo:latest
+  restart: unless-stopped
+  env_file:
+    - .env
+  environment: *public-env
+  extra_hosts: *internal-hosts
+  volumes:
+    - ./redis-tls/ca.crt:/etc/redis-tls/ca.crt:ro
+  dns:
+    - 8.8.8.8
+    - 8.8.4.4
+  networks:
+    - app-network
+  # The CD replaces the instances one at a time and waits for this before
+  # moving to the next, so nginx always has two serving.
+  healthcheck:
+    test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://127.0.0.1:3000/api/health"]
+    interval: 5s
+    timeout: 3s
+    retries: 3
+    start_period: 15s
+
 services:
-  nexo-app:
-    image: ghcr.io/castrogusttavo/nexo:latest
-    container_name: nextjs-app
-    restart: unless-stopped
+  # Loopback only: nginx is the public entry point.
+  nexo-app-1:
+    <<: *app
+    container_name: nexo-app-1
     ports:
-      - "3000:3000"
-    env_file:
-      - .env
-    environment: *public-env
-    extra_hosts: *internal-hosts
-    volumes:
-      - ./redis-tls/ca.crt:/etc/redis-tls/ca.crt:ro
-    dns:
-      - 8.8.8.8
-      - 8.8.4.4
-    networks:
-      - app-network
+      - "127.0.0.1:3001:3000"
+
+  nexo-app-2:
+    <<: *app
+    container_name: nexo-app-2
+    ports:
+      - "127.0.0.1:3002:3000"
+
+  nexo-app-3:
+    <<: *app
+    container_name: nexo-app-3
+    ports:
+      - "127.0.0.1:3003:3000"
 
   nexo-worker:
     image: ghcr.io/castrogusttavo/nexo:latest

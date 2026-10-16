@@ -164,7 +164,23 @@ jobs:
           cp infra/prod.yml /var/www/nexo/docker-compose.infra.yml
           cd /var/www/nexo/
           docker compose pull
-          docker compose up -d
+          docker compose up -d --no-deps nexo-worker nexo-realtime
+          # One app instance at a time, each healthy before the next goes
+          # down, so nginx's upstream always has two left to serve from.
+          for svc in nexo-app-1 nexo-app-2 nexo-app-3; do
+            docker compose up -d --no-deps "$svc"
+            status=starting
+            for _ in $(seq 1 30); do
+              status=$(docker inspect -f '{{.State.Health.Status}}' "$svc")
+              [ "$status" = healthy ] && break
+              sleep 3
+            done
+            if [ "$status" != healthy ]; then
+              echo "::error::$svc is $status after 90s, stopping the rollout"
+              docker logs --tail 50 "$svc"
+              exit 1
+            fi
+          done
           docker image prune -f
           docker builder prune -f --filter until=168h
 

@@ -123,7 +123,11 @@ services:
       DB_NAME: ${POSTGRES_DB}
       POOL_MODE: transaction
       MAX_CLIENT_CONN: 200
-      DEFAULT_POOL_SIZE: 20
+      # Shared by every app instance (the pool is per user/database pair, not
+      # per client): three instances at full load can need more than the 20
+      # that one used to. 40 + 5 reserve stays well under Postgres' 100.
+      DEFAULT_POOL_SIZE: 40
+      RESERVE_POOL_SIZE: 5
       AUTH_TYPE: scram-sha-256
       # Without an admin user the `pgbouncer` console database refuses every
       # login, so SHOW POOLS — the only place `cl_waiting` exists — could not
