@@ -1,3 +1,4 @@
+import type { BetterAuthOptions } from 'better-auth'
 import {
   RateLimiterMemory,
   RateLimiterRedis,
@@ -155,4 +156,55 @@ export async function consume(
     })
     return ok(undefined)
   }
+}
+
+type BetterAuthRateLimitStorage = NonNullable<
+  NonNullable<BetterAuthOptions['rateLimit']>['customStorage']
+>
+
+// Better Auth's own limiter keeps its counters in process memory by default,
+// so with several app instances behind nginx every client got one bucket per
+// instance. It now counts in Redis like the app's limiters. Rules come from
+// Better Auth (window/max per path), hence one limiter per distinct rule;
+// there are only a handful, so the map stays small.
+const betterAuthLimiters = new Map<string, RateLimiterRedis>()
+
+function betterAuthLimiter(window: number, max: number): RateLimiterRedis {
+  const id = `${window}:${max}`
+  let limiter = betterAuthLimiters.get(id)
+  if (!limiter) {
+    limiter = new RateLimiterRedis({
+      storeClient: redis,
+      storeType: 'redis',
+      useRedisPackage: true,
+      keyPrefix: `rl:better-auth:${id}`,
+      points: max,
+      duration: window,
+      insuranceLimiter: new RateLimiterMemory({
+        points: max,
+        duration: window,
+        keyPrefix: `rl:better-auth:mem:${id}`,
+      }),
+    })
+    betterAuthLimiters.set(id, limiter)
+  }
+  return limiter
+}
+
+export const betterAuthRateLimitStorage: BetterAuthRateLimitStorage = {
+  async consume(key, { window, max }) {
+    try {
+      await ensureConnection()
+      await betterAuthLimiter(window, max).consume(key)
+      return { allowed: true, retryAfter: null }
+    } catch (cause) {
+      if (cause instanceof RateLimiterRes) {
+        return {
+          allowed: false,
+          retryAfter: Math.max(1, Math.ceil(cause.msBeforeNext / 1000)),
+        }
+      }
+      throw cause
+    }
+  },
 }

@@ -21,6 +21,7 @@ vi.mock('@/lib/axiom/server', () => ({
 import {
   apiLimiter,
   authLimiter,
+  betterAuthRateLimitStorage,
   consume,
   emailLimiter,
 } from '@/src/lib/rate-limit'
@@ -166,5 +167,38 @@ describe('rate-limit', () => {
         expect(d2.retryAfterSeconds).toBeGreaterThan(0)
       }
     })
+  })
+})
+
+describe('betterAuthRateLimitStorage', () => {
+  it('allows up to max per window and then reports when to retry', async () => {
+    const key = `ba-test:${crypto.randomUUID()}`
+    const rule = { window: 10, max: 2 }
+
+    expect(await betterAuthRateLimitStorage.consume(key, rule)).toEqual({
+      allowed: true,
+      retryAfter: null,
+    })
+    expect(await betterAuthRateLimitStorage.consume(key, rule)).toEqual({
+      allowed: true,
+      retryAfter: null,
+    })
+
+    const third = await betterAuthRateLimitStorage.consume(key, rule)
+    expect(third.allowed).toBe(false)
+    expect(third.retryAfter).toBeGreaterThanOrEqual(1)
+    expect(third.retryAfter).toBeLessThanOrEqual(10)
+  })
+
+  it('counts each rule separately for the same key', async () => {
+    const key = `ba-test:${crypto.randomUUID()}`
+
+    await betterAuthRateLimitStorage.consume(key, { window: 10, max: 1 })
+    const otherRule = await betterAuthRateLimitStorage.consume(key, {
+      window: 60,
+      max: 1,
+    })
+
+    expect(otherRule.allowed).toBe(true)
   })
 })

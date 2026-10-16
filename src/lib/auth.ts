@@ -27,6 +27,7 @@ import { acquireVerifySlot } from './auth-concurrency-gate'
 import { refuseEmailOtpForAdminsWithTotp } from './auth-email-otp-guard'
 import { refuseTrustedDeviceForAdmins } from './auth-trusted-device'
 import { prisma } from './prisma'
+import { betterAuthRateLimitStorage } from './rate-limit'
 import { generateUniqueUsername } from './username'
 
 export const auth = betterAuth({
@@ -54,6 +55,8 @@ export const auth = betterAuth({
       process.env.DISABLE_AUTH_RATE_LIMIT === 'true'
         ? false
         : NODE_ENV === 'production',
+    // Counted in Redis so every app instance shares one bucket per client.
+    customStorage: betterAuthRateLimitStorage,
   },
   baseURL: BETTER_AUTH_URL,
   trustedOrigins: [BETTER_AUTH_URL],
