@@ -1,0 +1,128 @@
+name: Load Test (Production)
+
+# Manual only: it pushes production to its limit. Before dispatching, pick a
+# window, warn whoever watches the Slack alerts and the status page, and expect
+# Axiom/Sentry volume to spike for the length of the run.
+#
+# breakpoint climbs in STEP-sized stages and aborts as soon as the SLO breaks
+# (p95 over 1.5s or more than 1% failures on pages or API); the stage before
+# the abort is the ceiling. hold then keeps that many VUs for HOLD and reports
+# the full distribution.
+on:
+  workflow_dispatch:
+    inputs:
+      profile:
+        description: 'breakpoint finds the ceiling, hold sustains it'
+        type: choice
+        options: [breakpoint, hold]
+        default: breakpoint
+      max:
+        description: 'breakpoint: VU ceiling'
+        default: '2000'
+      step:
+        description: 'breakpoint: VUs added per stage'
+        default: '500'
+      vus:
+        description: 'hold: VUs reakpoint stage)'
+        default: '1000'
+      ramp:
+        description: 'hold: ramp-up (sign-ins are throttled, keep it gentle)'
+        default: '4m'
+      hold:
+        description: 'hold: plateau duration'
+        default: '5m'
+
+# One run at a time: two generators against production would measure each
+# other.
+concurrency:
+  group: load-production
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+jobs:
+  load:
+    name: k6 ${{ inputs.profile }} against nexopm.com
+    runs-on: avrea-ubuntu-latest-2-vcpu
+    timeout-minutes: 60
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+
+      - name: Setup k6
+        uses: grafana/setup-k6-action@db07bd9765aac508ef18982e52ab937fe633a065 # v1
+
+      # The manifest carries the seeded users' password, so it is gitignored
+      # and lives in a secret.
+      - name: Write load-test manifest
+        run: |
+          printf '%s' "$MANIFEST" > scripts/.load-test-manifest.json
+          mkdir -p k6/results
+        env:
+          MANIFEST: ${{ secrets.LOAD_TEST_MANIFEST }}
+
+      # In breakpoint an aborted threshold (exit 99) is the expected outcome:
+      # it is how the ceiling is found, not a failure of the run.
+      - name: Run k6
+        run: |
+          code=0
+          k6 run k6/load.js || code=$?
+          if [ "$code" = 99 ] && [ "$PROFILE" = breakpoint ]; then
+            echo "SLO broke: ceiling reached."
+            exit 0
+          fi
+          exit "$code"
+        env:
+          BASE_URL: https://nexopm.com
+          ORIGIN: https://nexopm.com
+          PROFILE: ${{ inputs.profile }}
+          MAX: ${{ inputs.max }}
+          STEP: ${{ inputs.step }}
+          VUS: ${{ inputs.vus }}
+          RAMP: ${{ inputs.ramp }}
+          HOLD: ${{ inputs.hold }}
+          LOAD_TEST_TOKEN: ${{ secrets.LOAD_TEST_TOKEN }}
+
+      - name: Write job summary
+        if: always()
+        run: |
+          f=$(ls k6/results/*.json 2>/dev/null | head -1)
+          if [ -z "$f" ]; then
+            echo "No k6 summary was written." >> "$GITHUB_STEP_SUMMARY"
+            exit 0
+          fi
+          {
+            echo "### k6 ${PROFILE} against nexopm.com"
+            echo
+            echo "| request | p90 | p95 | p99 | max |"
+            echo "|---|---|---|---|---|"
+            for kind in page api auth; do
+              jq -r --arg m "http_req_duration{kind:${kind}}" --arg k "$kind" '
+                .metrics[$m].values // empty
+                | "| \($k) | \(.["p(90)"]|floor)ms | \(.["p(95)"]|floor)ms | \(.["p(99)"]|floor)ms | \(.max|floor)ms |"
+              ' "$f"
+            done
+            echo
+            jq -r '
+              "- peak VUs: \(.metrics.vus_max.values.max)",
+              "- throughput: \(.metrics.http_reqs.values.rate * 10 | floor / 10) req/s",
+              "- failed requests: \(.metrics.http_req_failed.values.rate * 10000 | floor / 100)%",
+              "- 429s: \(.metrics["http_reqs{status:429}"].values.count // 0)"
+            ' "$f"
+            if [ "$PROFILE" = breakpoint ]; then
+              echo
+              echo "Ceiling = the last full stage below peak VUs (stages of ${STEP})."
+            fi
+          } >> "$GITHUB_STEP_SUMMARY"
+        env:
+          PROFILE: ${{ inputs.profile }}
+          STEP: ${{ inputs.step }}
+
+      - name: Upload results
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: k6-${{ inputs.profile }}-${{ github.run_id }}
+          path: k6/results/
+          if-no-files-found: ignore
