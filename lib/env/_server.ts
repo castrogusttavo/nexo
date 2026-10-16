@@ -33,7 +33,8 @@ const serverEnv = {
   AUTH_VERIFY_QUEUE_DEPTH: process.env.AUTH_VERIFY_QUEUE_DEPTH,
   AUTH_VERIFY_QUEUE_WAIT_MS: process.env.AUTH_VERIFY_QUEUE_WAIT_MS,
   REALTIME_PORT: process.env.REALTIME_PORT,
-  SLACK_ALERTS_WEBHOOK_URL: process.env.SLACK_ALERTS_WEBHOOK_URL
+  SLACK_ALERTS_WEBHOOK_URL: process.env.SLACK_ALERTS_WEBHOOK_URL,
+  TRUSTED_PROXIES: process.env.TRUSTED_PROXIES
 }
 
 const serverEnvSchema = z.object({
@@ -129,7 +130,20 @@ const serverEnvSchema = z.object({
   SLACK_ALERTS_WEBHOOK_URL: z
     .string()
     .optional()
-    .transform((v) => (v?.trim() ? v.trim() : undefined))
+    .transform((v) => (v?.trim() ? v.trim() : undefined)),
+  // Proxies whose X-Forwarded-For entries are stripped when resolving the
+  // client IP (comma-separated IPs or CIDRs). nginx appends the real client
+  // address and never itself, so loopback only switches multi-entry parsing
+  // on; list a CDN's ranges here if one ever sits in front.
+  TRUSTED_PROXIES: z
+    .string()
+    .optional()
+    .transform((v) => 
+      (v ?? '127.0.0.1,::1')
+        .split(',')
+        .map((entry) => entry.trim())
+        .filter(Boolean)
+    ),
 })
 
 type ServerEnv = z.infer<typeof serverEnvSchema>
@@ -190,5 +204,6 @@ export const {
   AUTH_VERIFY_QUEUE_WAIT_MS,
   DB_POOL_MAX,
   REALTIME_PORT,
-  SLACK_ALERTS_WEBHOOK_URL
+  SLACK_ALERTS_WEBHOOK_URL,
+  TRUSTED_PROXIES
 } = validatedServerEnv

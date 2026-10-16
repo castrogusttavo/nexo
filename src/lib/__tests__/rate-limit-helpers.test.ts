@@ -5,6 +5,11 @@ vi.mock('@/lib/axiom/server', () => ({
   withAxiom: <T>(handler: T) => handler,
 }))
 
+vi.mock('@/lib/env/server', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('@/lib/env/server')>()),
+  TRUSTED_PROXIES: ['127.0.0.1', '10.0.0.0/8'],
+}))
+
 import { rateLimited } from '@/src/errors/app-error'
 import * as rateLimitModule from '@/src/lib/rate-limit'
 import { getClientIp, withRateLimit } from '@/src/lib/rate-limit-helpers'
@@ -15,19 +20,32 @@ function makeRequest(headers: Record<string, string> = {}): Request {
 }
 
 describe('getClientIp()', () => {
-  it('should return first IP from x-forwarded-for', () => {
+  it('should return the rightmost entry, the one nginx appended', () => {
     const req = makeRequest({ 'x-forwarded-for': '1.1.1.1, 2.2.2.2, 3.3.3.3' })
-    expect(getClientIp(req)).toBe('1.1.1.1')
+    expect(getClientIp(req)).toBe('3.3.3.3')
   })
 
-  it('should trim whitespace from x-forwarded-for entries', () => {
-    const req = makeRequest({ 'x-forwarded-for': '  4.4.4.4 , 5.5.5.5' })
+  it('should not let a spoofed leftmost entry pick the bucket', () => {
+    const spoofed = makeRequest({ 'x-forwarded-for': '9.9.9.9, 3.3.3.3' })
+    const honest = makeRequest({ 'x-forwarded-for': '3.3.3.3' })
+    expect(getClientIp(spoofed)).toBe(getClientIp(honest))
+  })
+
+  it('should skip trusted proxies from the right', () => {
+    const req = makeRequest({
+      'x-forwarded-for': '4.4.4.4, 10.1.2.3, 127.0.0.1',
+    })
     expect(getClientIp(req)).toBe('4.4.4.4')
   })
 
-  it('should fall back to x-real-ip when x-forwarded-for is absent', () => {
+  it('should trim whitespace around entries', () => {
+    const req = makeRequest({ 'x-forwarded-for': '  5.5.5.5 ' })
+    expect(getClientIp(req)).toBe('5.5.5.5')
+  })
+
+  it('should ignore x-real-ip, which nginx derives from the client header', () => {
     const req = makeRequest({ 'x-real-ip': '6.6.6.6' })
-    expect(getClientIp(req)).toBe('6.6.6.6')
+    expect(getClientIp(req)).toBe('unknown')
   })
 
   it('should return "unknown" when no headers are present', () => {

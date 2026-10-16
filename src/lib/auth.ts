@@ -13,6 +13,7 @@ import {
   GITHUB_CLIENT_SECRET,
   GOOGLE_CLIENT_ID,
   GOOGLE_CLIENT_SECRET,
+  TRUSTED_PROXIES,
 } from '@/lib/env/server'
 
 import { PRIVACY_VERSION, TERMS_VERSION } from '@/lib/legal/versions'
@@ -33,6 +34,14 @@ export const auth = betterAuth({
   advanced: {
     database: {
       generateId: () => createId(),
+    },
+    // nginx appendsthe client's address to X-Forwarded-For, so the leftmost
+    // entry is whatever the client sent. Without trustedProxies Better Auth
+    // only trusts a single-entry header and drops everyone else into one
+    // shared sign-in bucket.
+    ipAddress: {
+      ipAddressHeaders: ['x-forwarded-for'],
+      trustedProxies: TRUSTED_PROXIES,
     },
   },
   // The app already applies its own rate limit (Redis) on auth routes via route.ts.
