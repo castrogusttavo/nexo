@@ -6,10 +6,12 @@ import { Calendar04Icon } from '@hugeicons-pro/core-solid-rounded'
 import { InformationCircleIcon } from '@hugeicons-pro/core-stroke-rounded'
 import type { Metadata } from 'next'
 import Image from 'next/image'
+import { Suspense } from 'react'
 import { ButtonLink } from '@/components/button-link'
 import { NexoIcon } from '@/components/icon/icon'
 import { Muted } from '@/components/typography/text/muted'
 import { P } from '@/components/typography/text/p'
+import { Skeleton } from '@/components/ui/skeleton'
 import {
   Tooltip,
   TooltipContent,
@@ -42,7 +44,32 @@ export const metadata: Metadata = {
   },
 }
 
-export default async function StatusPage() {
+// The snapshot comes from Redis/Postgres on every request, so it streams in
+// behind a placeholder: outside a boundary it blocks the route's prerender and
+// every navigation into it (Cache Components).
+export default function StatusPage() {
+  return (
+    <Suspense fallback={<StatusSkeleton />}>
+      <StatusContent />
+    </Suspense>
+  )
+}
+
+function StatusSkeleton() {
+  return (
+    <div
+      role='status'
+      aria-label='Carregando o status'
+      className='max-w-3xl flex flex-col items-center mx-auto py-4 gap-y-8'
+    >
+      <Skeleton className='h-8 w-full' />
+      <Skeleton className='h-28 w-full' />
+      <Skeleton className='h-80 w-full' />
+    </div>
+  )
+}
+
+async function StatusContent() {
   const result = await StatusService.getCurrentSnapshot()
 
   if (!result.ok) {

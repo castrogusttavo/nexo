@@ -1,8 +1,9 @@
 import type { Metadata } from 'next'
 import { headers } from 'next/headers'
 import { redirect } from 'next/navigation'
+import { Suspense } from 'react'
 import { auth } from '@/src/lib/auth'
-import { safeRedirectPath } from '@/src/lib/safe-redirect'
+import { SIGNED_IN_HOME, safeRedirectPath } from '@/src/lib/safe-redirect'
 import { SignInForm } from './sign-in-form'
 
 export const metadata: Metadata = {
@@ -11,13 +12,26 @@ export const metadata: Metadata = {
   robots: { index: false, follow: false },
 }
 
-export default async function SignInPage({
+type SearchParams = Promise<{ redirect?: string }>
+
+// The redirect target and the "already signed in" check both need the
+// request, so they run inside a boundary: read at the page root they blocked
+// the route's prerender and every navigation into it (Cache Components).
+export default function SignInPage({
   searchParams,
 }: {
-  searchParams: Promise<{ redirect?: string }>
+  searchParams: SearchParams
 }) {
+  return (
+    <Suspense>
+      <SignIn searchParams={searchParams} />
+    </Suspense>
+  )
+}
+
+async function SignIn({ searchParams }: { searchParams: SearchParams }) {
   const { redirect: redirectParam } = await searchParams
-  const redirectTo = safeRedirectPath(redirectParam) ?? '/'
+  const redirectTo = safeRedirectPath(redirectParam) ?? SIGNED_IN_HOME
 
   const session = await auth.api.getSession({ headers: await headers() })
   if (session) redirect(redirectTo)

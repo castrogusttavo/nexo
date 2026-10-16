@@ -2,8 +2,10 @@ import type { Metadata } from 'next'
 import Image from 'next/image'
 import Link from 'next/link'
 import { connection } from 'next/server'
+import { Suspense } from 'react'
 import { ButtonLink } from '@/components/button-link'
 import { Muted } from '@/components/typography/text/muted'
+import { Skeleton } from '@/components/ui/skeleton'
 import { cn } from '@/lib/utils'
 import { StatusService } from '@/src/services/status/status.service'
 import { STATUS_META } from '@/src/services/status/status-map'
@@ -62,7 +64,31 @@ function groupByMonth(
   return groups
 }
 
-export default async function StatusHistoryPage() {
+// Incidents are read on every request, so the list streams in behind a
+// placeholder: outside a boundary it blocks the route's prerender and every
+// navigation into it (Cache Components).
+export default function StatusHistoryPage() {
+  return (
+    <Suspense fallback={<StatusHistorySkeleton />}>
+      <StatusHistory />
+    </Suspense>
+  )
+}
+
+function StatusHistorySkeleton() {
+  return (
+    <div
+      role='status'
+      aria-label='Carregando o histórico'
+      className='max-w-3xl flex flex-col items-center mx-auto py-4 gap-y-8'
+    >
+      <Skeleton className='h-8 w-full' />
+      <Skeleton className='h-96 w-full' />
+    </div>
+  )
+}
+
+async function StatusHistory() {
   await connection()
   const result = await StatusService.listIncidents()
 

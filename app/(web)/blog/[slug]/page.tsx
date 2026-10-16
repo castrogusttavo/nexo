@@ -8,7 +8,7 @@ import { Button } from '@/components/ui/button'
 import { NEXT_PUBLIC_URL } from '@/lib/env/env'
 import { BLOG_POST_TAG_LABELS } from '@/src/lib/blog/blog-labels'
 import { formatPostDate } from '@/src/lib/blog/format-ṕost-date'
-import { getPostBySlug } from '@/src/lib/blog/post'
+import { getAllPostsMeta, getPostBySlug } from '@/src/lib/blog/post'
 import { BlogContent } from './blog-content'
 import { BlogPostViewTracker } from './blog-post-view-tracker'
 import { CopyMarkdownButton } from './copy-markdown-button'
@@ -16,6 +16,14 @@ import { TableOfContents } from './table-of-contents'
 
 interface Props {
   params: Promise<{ slug: string }>
+}
+
+// Every post is a file in the build, so every slug is known up front and each
+// post prerenders. Reading `params` for an unlisted slug is what kept the
+// route from being prerendered under Cache Components.
+export async function generateStaticParams() {
+  const posts = await getAllPostsMeta()
+  return posts.map(({ slug }) => ({ slug }))
 }
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {

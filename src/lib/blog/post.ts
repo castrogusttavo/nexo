@@ -1,7 +1,7 @@
 import fs from 'node:fs/promises'
 import path from 'node:path'
 import matter from 'gray-matter'
-import { cache } from 'react'
+import { cacheLife } from 'next/cache'
 import rehypeSanitize from 'rehype-sanitize'
 import rehypeSlug from 'rehype-slug'
 import rehypeStringify from 'rehype-stringify'
@@ -53,7 +53,14 @@ async function listMarkdownFiles() {
   }
 }
 
-export const getAllPostsMeta = cache(async (): Promise<BlogPostMetaDTO[]> => {
+// Posts are files shipped with the build, so both readers are cached for
+// good: the blog renders from the prerender instead of reading the disk (and
+// compiling Markdown) on each request, which also kept /blog from being
+// prerendered under Cache Components. A new post arrives with a new deploy.
+export async function getAllPostsMeta(): Promise<BlogPostMetaDTO[]> {
+  'use cache'
+  cacheLife('max')
+
   const fileNames = await listMarkdownFiles()
   const posts = await Promise.all(
     fileNames.map(async (fileName) => {
@@ -63,32 +70,33 @@ export const getAllPostsMeta = cache(async (): Promise<BlogPostMetaDTO[]> => {
   )
 
   return posts.sort((a, b) => (a.date < b.date ? 1 : -1))
-})
+}
 
-export const getPostBySlug = cache(
-  async (slug: string): Promise<BlogPostDTO | null> => {
-    const fileNames = await listMarkdownFiles()
+export async function getPostBySlug(slug: string): Promise<BlogPostDTO | null> {
+  'use cache'
+  cacheLife('max')
 
-    for (const fileName of fileNames) {
-      const { frontmatter, content } = await readPostFile(fileName)
-      if (frontmatter.slug !== slug) continue
+  const fileNames = await listMarkdownFiles()
 
-      const compiled = await remark()
-        .use(remarkRehype)
-        .use(rehypeSlug)
-        .use(rehypeSanitize)
-        .use(rehypeStringify)
-        .process(content)
-      const contentHtml = compiled.toString()
+  for (const fileName of fileNames) {
+    const { frontmatter, content } = await readPostFile(fileName)
+    if (frontmatter.slug !== slug) continue
 
-      return {
-        ...toMeta(frontmatter),
-        content,
-        contentHtml,
-        headings: extractHeadings(contentHtml),
-      }
+    const compiled = await remark()
+      .use(remarkRehype)
+      .use(rehypeSlug)
+      .use(rehypeSanitize)
+      .use(rehypeStringify)
+      .process(content)
+    const contentHtml = compiled.toString()
+
+    return {
+      ...toMeta(frontmatter),
+      content,
+      contentHtml,
+      headings: extractHeadings(contentHtml),
     }
+  }
 
-    return null
-  },
-)
+  return null
+}
