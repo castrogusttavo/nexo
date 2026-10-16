@@ -122,9 +122,11 @@ services:
       DB_PASSWORD: ${POSTGRES_PASSWORD}
       DB_NAME: ${POSTGRES_DB}
       POOL_MODE: transaction
-      MAX_CLIENT_CONN: 200
+      # Five app instances open up to 25 client connections each (DB_POOL_MAX),
+      # plus the worker and realtime: 200 would leave almost no headroom.
+      MAX_CLIENT_CONN: 300
       # Shared by every app instance (the pool is per user/database pair, not
-      # per client): three instances at full load can need more than the 20
+      # per client): several instances at full load can need more than the 20
       # that one used to. 40 + 5 reserve stays well under Postgres' 100.
       DEFAULT_POOL_SIZE: 40
       RESERVE_POOL_SIZE: 5
