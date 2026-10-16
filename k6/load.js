@@ -21,6 +21,8 @@ const STEP = Number(__ENV.STEP || 500) // breakpoint: size of each step
 const MAX = Number(__ENV.MAX || 2000) // breakpoint: ceiling
 const P95_MS = Number(__ENV.P95_MS || 1500) // what counts as "holding up"
 const ISSUES_LIMIT = __ENV.ISSUES_LIMIT || '50'
+const THINK_MIN = Number(__ENV.THINK_MIN || 3) // seconds between requests
+const THINK_MAX = Number(__ENV.THINK_MAX || 15)
 
 // Every request asks for compression like a browser does: uncompressed, the
 // marketing pages average ~470 KB (/pricing is 1MB) agains ~42 KB gzipped,
@@ -175,7 +177,7 @@ export default function () {
     hitApi()
   }
 
-  sleep(5 + Math.random() * 2) // 5–7s between requests
+  sleep(THINK_MIN + Math.random() * (THINK_MAX - THINK_MIN))
 }
 
 // handleSummary paths resolve against the working directory: run from the repo root
