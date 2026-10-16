@@ -130,7 +130,7 @@ describe('<SignInForm /> credentials step', () => {
 
     await fillAndSubmit(user)
 
-    await waitFor(() => expect(push).toHaveBeenCalledWith('/'))
+    await waitFor(() => expect(push).toHaveBeenCalledWith('/home'))
   })
 
   it('disables the form and shows a pending label while signing in', async () => {
@@ -236,7 +236,7 @@ describe('<SignInForm /> credentials step', () => {
 
     await fillAndSubmit(user)
 
-    await waitFor(() => expect(push).toHaveBeenCalledWith('/'))
+    await waitFor(() => expect(push).toHaveBeenCalledWith('/home'))
     expect(signInEmail).toHaveBeenCalledTimes(2)
   })
 
@@ -476,7 +476,7 @@ describe('<SignInForm /> authenticator step', () => {
         trustDevice: false,
       }),
     )
-    await waitFor(() => expect(push).toHaveBeenCalledWith('/'))
+    await waitFor(() => expect(push).toHaveBeenCalledWith('/home'))
   })
 
   it('refuses an empty code without calling the API', async () => {

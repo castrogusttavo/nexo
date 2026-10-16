@@ -102,7 +102,7 @@ function withSecurityHeaders(response: NextResponse): NextResponse {
 
 export function proxy(request: NextRequest) {
   // No flush here: one per request queued behind the previous ones (see
-  // lib/axiom/server.ts). The barch client sends this within a second.
+  // lib/axiom/server.ts). The batch client sends this within a second.
   logger.info(...transformMiddlewareRequest(request))
 
   const { pathname } = request.nextUrl
@@ -118,13 +118,19 @@ export function proxy(request: NextRequest) {
     (route) => pathname === route || pathname.startsWith(`${route}/`),
   )
 
-  if (isPublic) {
-    return withSecurityHeaders(NextResponse.next())
-  }
-
   const sessionToken =
     request.cookies.get('better-auth.session_token')?.value ||
     request.cookies.get('__Secure-better-auth.session_token')?.value
+
+  // The root is a static marketing page; a signed-in visitor belongs in their
+  // workspace, which /home resolves (and which clears a stale cookie).
+  if (pathname === '/' && sessionToken) {
+    return NextResponse.redirect(new URL('/home', request.url))
+  }
+
+  if (isPublic) {
+    return withSecurityHeaders(NextResponse.next())
+  }
 
   if (!sessionToken) {
     // API routes should return 401, not redirect to the sign-in page.

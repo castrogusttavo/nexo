@@ -1,14 +1,10 @@
 import { ArrowRight02Icon, CheckIcon } from '@hugeicons-pro/core-stroke-rounded'
 import type { Metadata } from 'next'
-import { headers } from 'next/headers'
 import Image from 'next/image'
-import { redirect } from 'next/navigation'
 import { WebHeader } from '@/app/(web)/_components/header/web-header'
 import { ButtonLink } from '@/components/button-link'
 import { NexoIcon } from '@/components/icon/icon'
 import { Muted } from '@/components/typography/text/muted'
-import { auth } from '@/src/lib/auth'
-import { MembershipService } from '@/src/services/membership.service'
 import { WebFooter } from './(web)/_components/footer'
 import { NexoAiShowcase } from './(web)/_components/nexo-ai-showcase'
 
@@ -33,28 +29,11 @@ export const metadata: Metadata = {
   },
 }
 
-// This route's whole output is decided by who is asking: a visitor gets the
-// marketing site, someone signed in is sent to their workspace. That decision
-// needs the session cookie, so the segment cannot produce a static shell and
-// Cache Components' navigation validation says so on every dev page load.
-// Declaring it here states the intent instead of leaving the overlay to
-// report it forever. Moving the redirect up into proxy.ts would make the
-// public page prerenderable again, but the proxy cannot know which workspace
-// to send someone to without a database read.
-export const instant = false
-
-export default async function Page() {
-  const session = await auth.api.getSession({ headers: await headers() })
-
-  if (session) {
-    const memberships = await MembershipService.listByUser(session.user.id)
-    if (memberships.ok && memberships.value.length > 0) {
-      redirect(`/${memberships.value[0].workspace.slug}`)
-    }
-    redirect('/onboarding')
-  }
-
-  // Deslogado: serve o site de marketing na raiz
+// Public marketing page, prerendered. A signed-in visitor never reaches it:
+// proxy.ts sends anyone with a session cookie to /home, which resolves their
+// workspace. Reading the session here made the whole page render on every
+// request (2026-10-16).
+export default function Page() {
   return (
     <div className='min-h-dvh w-full flex flex-col items-center'>
       <WebHeader />

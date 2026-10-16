@@ -2,6 +2,7 @@ import type { Metadata } from 'next'
 import { headers } from 'next/headers'
 import { redirect } from 'next/navigation'
 import { auth } from '@/src/lib/auth'
+import { SIGNED_IN_HOME } from '@/src/lib/safe-redirect'
 import { ForgetPasswordForm } from './forget-password-form'
 
 export const metadata: Metadata = {
@@ -12,6 +13,6 @@ export const metadata: Metadata = {
 
 export default async function ForgetPasswordPage() {
   const session = await auth.api.getSession({ headers: await headers() })
-  if (session) redirect('/')
+  if (session) redirect(SIGNED_IN_HOME)
   return <ForgetPasswordForm />
 }

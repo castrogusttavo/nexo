@@ -16,6 +16,7 @@ import { captureEvent } from '@/lib/posthog/client'
 import { authClient } from '@/src/lib/auth-client'
 import { authErrorMessage } from '@/src/lib/auth-errors'
 import { settleAuthRequest } from '@/src/lib/auth-request'
+import { SIGNED_IN_HOME } from '@/src/lib/safe-redirect'
 
 type Step = 'form' | 'otp'
 
@@ -86,7 +87,11 @@ function signUpReducer(state: SignUpState, action: SignUpAction): SignUpState {
   }
 }
 
-export function SignUpForm({ redirectTo = '/' }: { redirectTo?: string }) {
+export function SignUpForm({
+  redirectTo = SIGNED_IN_HOME,
+}: {
+  redirectTo?: string
+}) {
   const { push } = useRouter()
   const [formState, dispatch] = useReducer(signUpReducer, initialSignUpState)
   const [acceptedTerms, setAcceptedTerms] = useState(false)
@@ -96,7 +101,7 @@ export function SignUpForm({ redirectTo = '/' }: { redirectTo?: string }) {
     formState
 
   const signInHref =
-    redirectTo === '/'
+    redirectTo === SIGNED_IN_HOME
       ? '/sign-in'
       : `/sign-in?redirect=${encodeURIComponent(redirectTo)}`
 

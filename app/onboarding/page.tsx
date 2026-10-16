@@ -1,6 +1,7 @@
 import type { OnboardingStep } from '@prisma/client'
 import { redirect } from 'next/navigation'
 import { getAuthSession } from '@/src/lib/auth-session'
+import { SIGNED_IN_HOME } from '@/src/lib/safe-redirect'
 import { UserService } from '@/src/services/user.service'
 
 const STEP_ROUTES: Record<OnboardingStep, string> = {
@@ -23,14 +24,14 @@ export default async function OnboardingPage() {
     redirect('/onboarding/consent-setup')
   }
 
-  if (!user.onboardingStep) redirect('/')
+  if (!user.onboardingStep) redirect(SIGNED_IN_HOME)
 
   if (
     user.onboardingStep === 'PROFILE' ||
     user.onboardingStep === 'ROLE' ||
     user.onboardingStep === 'BRINGS'
   ) {
-    if (user.memberships.length > 0) redirect('/')
+    if (user.memberships.length > 0) redirect(SIGNED_IN_HOME)
   }
 
   redirect(STEP_ROUTES[user.onboardingStep])

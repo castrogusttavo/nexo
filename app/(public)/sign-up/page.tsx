@@ -2,7 +2,7 @@ import type { Metadata } from 'next'
 import { headers } from 'next/headers'
 import { redirect } from 'next/navigation'
 import { auth } from '@/src/lib/auth'
-import { safeRedirectPath } from '@/src/lib/safe-redirect'
+import { SIGNED_IN_HOME, safeRedirectPath } from '@/src/lib/safe-redirect'
 import { SignUpForm } from './sign-up-form'
 
 export const metadata: Metadata = {
@@ -18,7 +18,7 @@ export default async function SignUpPage({
   searchParams: Promise<{ redirect?: string }>
 }) {
   const { redirect: redirectParam } = await searchParams
-  const redirectTo = safeRedirectPath(redirectParam) ?? '/'
+  const redirectTo = safeRedirectPath(redirectParam) ?? SIGNED_IN_HOME
 
   const session = await auth.api.getSession({ headers: await headers() })
   if (session) redirect(redirectTo)

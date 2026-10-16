@@ -15,6 +15,7 @@ import { Input } from '@/components/ui/input'
 import { authClient } from '@/src/lib/auth-client'
 import { authErrorMessage } from '@/src/lib/auth-errors'
 import { settleAuthRequest } from '@/src/lib/auth-request'
+import { SIGNED_IN_HOME } from '@/src/lib/safe-redirect'
 import {
   lastTwoFactorMethod,
   rememberTwoFactorMethod,
@@ -28,7 +29,11 @@ function sleep(ms: number) {
   return new Promise((resolve) => setTimeout(resolve, ms))
 }
 
-export function SignInForm({ redirectTo = '/' }: { redirectTo?: string }) {
+export function SignInForm({
+  redirectTo = SIGNED_IN_HOME,
+}: {
+  redirectTo?: string
+}) {
   const { push } = useRouter()
   const [step, setStep] = useState<Step>('form')
   const [email, setEmail] = useState('')
@@ -49,7 +54,7 @@ export function SignInForm({ redirectTo = '/' }: { redirectTo?: string }) {
   const [trustDevice, setTrustDevice] = useState(false)
 
   const signUpHref =
-    redirectTo === '/'
+    redirectTo === SIGNED_IN_HOME
       ? '/sign-up'
       : `/sign-up?redirect=${encodeURIComponent(redirectTo)}`
 
