@@ -19,37 +19,17 @@ function makeRequest(headers: Record<string, string> = {}): Request {
   return new Request('https://example.com/x', { headers })
 }
 
+// How the address is resolved is covered in client-ip.test.ts; here only what
+// the rate limiter adds on top: a string key, 'unknown' when there is none.
 describe('getClientIp()', () => {
-  it('should return the rightmost entry, the one nginx appended', () => {
-    const req = makeRequest({ 'x-forwarded-for': '1.1.1.1, 2.2.2.2, 3.3.3.3' })
+  it('should key the bucket on the address nginx saw', () => {
+    const req = makeRequest({ 'x-forwarded-for': '9.9.9.9, 3.3.3.3' })
     expect(getClientIp(req)).toBe('3.3.3.3')
   })
 
-  it('should not let a spoofed leftmost entry pick the bucket', () => {
-    const spoofed = makeRequest({ 'x-forwarded-for': '9.9.9.9, 3.3.3.3' })
-    const honest = makeRequest({ 'x-forwarded-for': '3.3.3.3' })
-    expect(getClientIp(spoofed)).toBe(getClientIp(honest))
-  })
-
-  it('should skip trusted proxies from the right', () => {
-    const req = makeRequest({
-      'x-forwarded-for': '4.4.4.4, 10.1.2.3, 127.0.0.1',
-    })
-    expect(getClientIp(req)).toBe('4.4.4.4')
-  })
-
-  it('should trim whitespace around entries', () => {
-    const req = makeRequest({ 'x-forwarded-for': '  5.5.5.5 ' })
-    expect(getClientIp(req)).toBe('5.5.5.5')
-  })
-
-  it('should ignore x-real-ip, which nginx derives from the client header', () => {
-    const req = makeRequest({ 'x-real-ip': '6.6.6.6' })
-    expect(getClientIp(req)).toBe('unknown')
-  })
-
-  it('should return "unknown" when no headers are present', () => {
+  it('should return "unknown" when there is no address', () => {
     expect(getClientIp(makeRequest())).toBe('unknown')
+    expect(getClientIp(makeRequest({ 'x-real-ip': '6.6.6.6' }))).toBe('unknown')
   })
 })
 

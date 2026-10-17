@@ -2,6 +2,7 @@ import type { NextRequest } from 'next/server'
 import { z } from 'zod'
 import { withAxiom } from '@/lib/axiom/server'
 import { getAuthSession } from '@/src/lib/auth-session'
+import { clientIp } from '@/src/lib/client-ip'
 import { apiLimiter, consume } from '@/src/lib/rate-limit'
 import { ConsentService } from '@/src/services/consent.service'
 import {
@@ -29,10 +30,7 @@ export const POST = withAxiom(async (request: NextRequest) => {
     )
   }
 
-  const ipAddress =
-    request.headers.get('x-forwarded-for')?.split(',')[0]?.trim() ||
-    request.headers.get('x-real-ip') ||
-    null
+  const ipAddress = clientIp(request.headers)
   const userAgent = request.headers.get('user-agent') ?? null
 
   const result = await ConsentService.recordCookieConsent(

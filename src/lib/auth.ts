@@ -26,6 +26,7 @@ import { AccountLifecycleService } from '@/src/services/account-lifecycle.servic
 import { acquireVerifySlot } from './auth-concurrency-gate'
 import { refuseEmailOtpForAdminsWithTotp } from './auth-email-otp-guard'
 import { refuseTrustedDeviceForAdmins } from './auth-trusted-device'
+import { clientIp } from './client-ip'
 import { prisma } from './prisma'
 import { betterAuthRateLimitStorage } from './rate-limit'
 import { generateUniqueUsername } from './username'
@@ -196,10 +197,7 @@ export const auth = betterAuth({
 
           if (user.acceptedTermsAt || user.acceptedPrivacyAt) {
             const reqHeaders = context?.request?.headers
-            const ipAddress =
-              reqHeaders?.get('x-forwarded-for')?.split(',')[0]?.trim() ||
-              reqHeaders?.get('x-real-ip') ||
-              null
+            const ipAddress = clientIp(reqHeaders)
             const userAgent = reqHeaders?.get('user-agent') ?? null
 
             const events: {

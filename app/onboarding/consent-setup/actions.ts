@@ -4,6 +4,7 @@ import { cookies, headers } from 'next/headers'
 import { redirect } from 'next/navigation'
 import { SESSION_DATA_COOKIE } from '@/src/lib/auth-cookie'
 import { getAuthSession } from '@/src/lib/auth-session'
+import { clientIp } from '@/src/lib/client-ip'
 import { AcceptConsentSchema } from '@/src/schemas/user.schema'
 import { UserService } from '@/src/services/user.service'
 import { onboardingDestination } from '../_lib/destination'
@@ -32,10 +33,7 @@ export async function acceptOnboardingConsent(
   }
 
   const reqHeaders = await headers()
-  const ipAddress =
-    reqHeaders.get('x-forwarded-for')?.split(',')[0]?.trim() ||
-    reqHeaders.get('x-real-ip') ||
-    null
+  const ipAddress = clientIp(reqHeaders)
   const userAgent = reqHeaders.get('user-agent') ?? null
 
   const result = await UserService.acceptConsents(auth.value.user.id, {
