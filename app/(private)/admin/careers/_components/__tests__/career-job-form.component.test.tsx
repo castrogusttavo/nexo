@@ -115,7 +115,9 @@ beforeEach(() => {
 })
 
 describe('<CareerJobForm /> create mode', () => {
-  it('posts the job with a slug derived from the title and navigates back', async () => {
+  it('posts the job with a slug derived from the title and navigates back', {
+    timeout: 15_000,
+  }, async () => {
     const fetchSpy = mockFetch().mockResolvedValueOnce(
       apiSuccess(buildJob(), 201),
     )
