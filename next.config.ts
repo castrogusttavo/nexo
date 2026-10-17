@@ -138,6 +138,7 @@ const nextConfig: NextConfig = {
     ],
   },
   cacheComponents: true,
+  partialPrefetching: true,
   // Without this, Turbopack walks up until it finds the stray package-lock.json
   // in /home/castrogusttavo and treats the whole $HOME as the workspace root,
   // breaking React Server Components manifest module resolution.
