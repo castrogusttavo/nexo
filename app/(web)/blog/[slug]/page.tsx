@@ -21,6 +21,11 @@ interface Props {
 // Every post is a file in the build, so every slug is known up front and each
 // post prerenders. Reading `params` for an unlisted slug is what kept the
 // route from being prerendered under Cache Components.
+// Every known post is prerendered above, so navigating to one is already
+// instant; the validator still reads `params` as URL data because an unknown
+// slug would render at request time (and 404). Nothing to stream here.
+export const instant = false
+
 export async function generateStaticParams() {
   const posts = await getAllPostsMeta()
   return posts.map(({ slug }) => ({ slug }))

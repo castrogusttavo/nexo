@@ -16,6 +16,10 @@ interface IncidentMetadataProps {
   params: Promise<{ id: string }>
 }
 
+// Blocking on purpose: the page is the record itself, and an unknown id must
+// answer a real 404 (a streamed one is a 200 to crawlers).
+export const instant = false
+
 export async function generateMetadata({
   params,
 }: IncidentMetadataProps): Promise<Metadata> {

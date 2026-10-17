@@ -14,8 +14,8 @@ export const metadata: Metadata = {
 
 type SearchParams = Promise<{ redirect?: string }>
 
-// Opted into instant-navigation validation (next.config.ts validates only
-// segments that declare it): a blocking read here is a regression.
+// Navigations into this page are instant: a blocking read here is a
+// regression the dev overlay reports.
 export const instant = true
 
 // The redirect target and the "already signed in" check both need the

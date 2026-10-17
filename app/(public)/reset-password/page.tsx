@@ -1,4 +1,5 @@
 import type { Metadata } from 'next'
+import { Suspense } from 'react'
 import { ResetPasswordForm } from './reset-password-form'
 
 export const metadata: Metadata = {
@@ -7,14 +8,29 @@ export const metadata: Metadata = {
   robots: { index: false, follow: false },
 }
 
-export default async function ResetPasswordPage({
+// Navigations into this page are instant: a blocking read here is a
+// regression the dev overlay reports.
+export const instant = true
+
+type SearchParams = Promise<{
+  token?: string | string[]
+  error?: string | string[]
+}>
+
+// The token comes from the URL, so the form waits inside the boundary.
+export default function ResetPasswordPage({
   searchParams,
 }: {
-  searchParams: Promise<{
-    token?: string | string[]
-    error?: string | string[]
-  }>
+  searchParams: SearchParams
 }) {
+  return (
+    <Suspense>
+      <ResetPassword searchParams={searchParams} />
+    </Suspense>
+  )
+}
+
+async function ResetPassword({ searchParams }: { searchParams: SearchParams }) {
   const params = await searchParams
   // Next.js may surface a repeated query param as an array; the form expects a
   // single value, so collapse to the first element.

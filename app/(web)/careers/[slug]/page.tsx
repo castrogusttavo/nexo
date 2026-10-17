@@ -20,6 +20,10 @@ import { WebFooter } from '../../_components/footer'
 import { Title } from '../../_components/text/title'
 import { CareerApplicationForm } from './career-application-form'
 
+// Blocking on purpose: the page is the record itself, and an unknown id must
+// answer a real 404 (a streamed one is a 200 to crawlers).
+export const instant = false
+
 // Mapeia pro enum schema.org/employmentType — nomes diferentes do enum do
 // Prisma (INTERNSHIP -> INTERN, CONTRACT -> CONTRACTOR).
 const JOB_POSTING_EMPLOYMENT_TYPE: Record<

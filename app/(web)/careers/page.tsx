@@ -1,7 +1,9 @@
 import type { Metadata } from 'next'
 import Image from 'next/image'
+import { Suspense } from 'react'
 import { ButtonLink } from '@/components/button-link'
 import { Muted } from '@/components/typography/text/muted'
+import { Skeleton } from '@/components/ui/skeleton'
 import { CareerJobService } from '@/src/services/career-job.service'
 import { WebFooter } from '../_components/footer'
 import { SubTitle } from '../_components/text/sub-title'
@@ -11,6 +13,10 @@ import { CareersList } from './careers-list'
 
 const TITLE = 'Carreiras | Nexo'
 const DESCRIPTION = 'Vagas abertas no Nexo.'
+
+// Navigations into this page are instant: a blocking read here is a
+// regression the dev overlay reports.
+export const instant = true
 
 export const metadata: Metadata = {
   title: TITLE,
@@ -31,10 +37,9 @@ export const metadata: Metadata = {
   },
 }
 
-export default async function CareersPage() {
-  const result = await CareerJobService.listPublic()
-  const jobs = result.ok ? result.value : []
-
+// The page is copy; only the list of openings reads the database, so it
+// streams into its section and the rest renders at once.
+export default function CareersPage() {
   return (
     <main className='mx-auto w-full flex flex-col items-center gap-10'>
       <div className="w-full flex min-h-[calc(100vh-75px)] flex-col justify-end items-center py-12 md:py-16 bg-cover bg-center bg-no-repeat bg-[url('/web/home/career-hero-bg.webp')]">
@@ -347,7 +352,11 @@ export default async function CareersPage() {
         </figure>
       </div>
       <div id='vagas' className='w-full scroll-mt-[72px]'>
-        <CareersList jobs={jobs} />
+        <Suspense
+          fallback={<Skeleton className='mx-auto h-64 w-full max-w-188' />}
+        >
+          <OpenJobs />
+        </Suspense>
       </div>
       <div className='w-full bg-surface-highlight py-12 md:py-16'>
         <div className='mx-auto w-full flex flex-col items-center justify-center px-4 py-3 sm:px-8 xl:max-w-336 xl:px-11 2xl:max-w-384 gap-10 pt-0'>
@@ -410,4 +419,9 @@ export default async function CareersPage() {
       <WebFooter />
     </main>
   )
+}
+
+async function OpenJobs() {
+  const result = await CareerJobService.listPublic()
+  return <CareersList jobs={result.ok ? result.value : []} />
 }

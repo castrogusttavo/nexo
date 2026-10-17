@@ -24,8 +24,8 @@ export const metadata: Metadata = {
   },
 }
 
-// Opted into instant-navigation validation (next.config.ts validates only
-// segments that declare it): a blocking read here is a regression.
+// Navigations into this page are instant: a blocking read here is a
+// regression the dev overlay reports.
 export const instant = true
 
 export default function AboutPage() {

@@ -1,11 +1,25 @@
 import { redirect } from 'next/navigation'
+import { Suspense } from 'react'
 import { getAuthSession } from '@/src/lib/auth-session'
 import { MembershipService } from '@/src/services/membership.service'
 import { UpgradeForm } from './upgrade-form'
 
 const BILLING_ROLES = ['OWNER', 'ADMIN'] as const
 
-export default async function UpgradePage() {
+// Navigations into this page are instant: a blocking read here is a
+// regression the dev overlay reports.
+export const instant = true
+
+// The form lists the viewer's workspaces, so it waits inside the boundary.
+export default function UpgradePage() {
+  return (
+    <Suspense>
+      <Upgrade />
+    </Suspense>
+  )
+}
+
+async function Upgrade() {
   const session = await getAuthSession()
   if (!session.ok) redirect('/sign-in?redirect=%2Fupgrade')
 
