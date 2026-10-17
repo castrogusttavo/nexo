@@ -1,8 +1,7 @@
 import { cache } from 'react'
 import type { WikiPageDTO } from '@/types/wiki-page'
-import { MembershipService } from '../services/membership.service'
 import { WikiPageService } from '../services/wiki-page.service'
-import { getAuthSession } from './auth-session'
+import { requireMembership } from './dal'
 
 export interface WikiContext {
   userId: string
@@ -13,19 +12,12 @@ export interface WikiContext {
 
 export const getWikiContext = cache(
   async (workspaceSlug: string): Promise<WikiContext | null> => {
-    const session = await getAuthSession()
-    if (!session.ok) return null
-
-    const membership = await MembershipService.getByUserAndSlug(
-      session.value.user.id,
-      workspaceSlug,
-    )
-    if (!membership.ok || !membership.value) return null
+    const { user, membership } = await requireMembership(workspaceSlug)
 
     return {
-      userId: session.value.user.id,
-      userName: session.value.user.name,
-      workspaceId: membership.value.workspaceId,
+      userId: user.id,
+      userName: user.name,
+      workspaceId: membership.workspaceId,
       workspaceSlug,
     }
   },

@@ -1,7 +1,6 @@
 import { Diamond02Icon } from '@hugeicons-pro/core-bulk-rounded'
 import { CreditCardIcon } from '@hugeicons-pro/core-stroke-rounded'
 import type { Metadata } from 'next'
-import { notFound, redirect } from 'next/navigation'
 import {
   HeaderBreadcrumbCrumb,
   HeaderBreadcrumbList,
@@ -13,7 +12,7 @@ import { H3 } from '@/components/typography/heading/h3'
 import { Muted } from '@/components/typography/text/muted'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
-import { getAuthSession } from '@/src/lib/auth-session'
+import { requireMembership } from '@/src/lib/dal'
 import { limitOf } from '@/src/lib/plans'
 import { MembershipService } from '@/src/services/membership.service'
 import { SubscriptionService } from '@/src/services/subscription.service'
@@ -42,18 +41,10 @@ export default async function SettingsBillingPage({
 }: {
   params: Promise<{ 'workspace-slug': string }>
 }) {
-  const [{ 'workspace-slug': slug }, session] = await Promise.all([
-    params,
-    getAuthSession(),
-  ])
-  if (!session.ok) redirect('/sign-in')
+  const { 'workspace-slug': slug } = await params
+  const { membership } = await requireMembership(slug)
+  const workspace = membership.workspace
 
-  const membership = await MembershipService.getByUserAndSlug(
-    session.value.user.id,
-    slug,
-  )
-  if (!membership.ok || !membership.value) notFound()
-  const workspace = membership.value.workspace
   const trialEndsAt = workspace.trialEndsAt
     ? new Date(workspace.trialEndsAt)
     : null

@@ -7,17 +7,10 @@ vi.mock('next/navigation', () => ({
   usePathname: () => '/acme',
 }))
 
-vi.mock('@/src/lib/auth-session', () => ({
-  getAuthSession: vi.fn(async () => ({
-    ok: true,
-    value: { user: { id: 'user-1' } },
-  })),
-}))
-
-vi.mock('@/src/lib/workspace-context', () => ({
-  getWorkspaceMembership: vi.fn(async () => ({
-    ok: true,
-    value: { workspaceId: 'ws-1' },
+vi.mock('@/src/lib/dal', () => ({
+  requireMembership: vi.fn(async () => ({
+    user: { id: 'user-1' },
+    membership: { workspaceId: 'ws1', role: 'MEMBRE' },
   })),
 }))
 

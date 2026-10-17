@@ -1,6 +1,5 @@
 import { PencilEdit01Icon } from '@hugeicons-pro/core-stroke-rounded'
 import type { Metadata } from 'next'
-import { notFound } from 'next/navigation'
 import {
   HeaderBreadcrumbCrumb,
   HeaderBreadcrumbList,
@@ -11,8 +10,7 @@ import { ProjectFilterButton } from '@/app/_components/workspace/projects/worksp
 import { ProjectList } from '@/app/_components/workspace/projects/workspace-project-list'
 import { ProjectorderButton } from '@/app/_components/workspace/projects/workspace-project-order-button'
 import { NexoIcon } from '@/components/icon/icon'
-import { getAuthSession } from '@/src/lib/auth-session'
-import { MembershipService } from '@/src/services/membership.service'
+import { requireMembership } from '@/src/lib/dal'
 
 export const metadata: Metadata = {
   title: 'Projetos | Nexo',
@@ -22,20 +20,10 @@ export const metadata: Metadata = {
 type Props = { params: Promise<{ 'workspace-slug': string }> }
 
 export default async function ProjectsPage({ params }: Props) {
-  const [{ 'workspace-slug': slug }, session] = await Promise.all([
-    params,
-    getAuthSession(),
-  ])
-  if (!session.ok) notFound()
+  const { 'workspace-slug': slug } = await params
+  const { membership } = await requireMembership(slug)
 
-  const membership = await MembershipService.getByUserAndSlug(
-    session.value.user.id,
-    slug,
-  )
-  if (!membership.ok || !membership.value) notFound()
-
-  const workspaceId = membership.value.workspace.id
-
+  const workspaceId = membership.workspace.id
   return (
     <div className='w-full overflow-y-scroll'>
       <HeaderInternalNavigation>

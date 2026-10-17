@@ -16,7 +16,7 @@ import { H4 } from '@/components/typography/heading/h4'
 import { Muted } from '@/components/typography/text/muted'
 import { Small } from '@/components/typography/text/small'
 import { Button } from '@/components/ui/button'
-import { getAuthSession } from '@/src/lib/auth-session'
+import { getCurrentUser } from '@/src/lib/dal'
 
 export const metadata: Metadata = {
   title: 'Página inicial | Nexo',
@@ -69,12 +69,12 @@ export default async function Page() {
   // is a cache read; rendering the promise itself made the greeting a
   // suspending child with no boundary above it, which is the slowest possible
   // way to show a string the cache already had.
-  const [session, greeting, fullDate] = await Promise.all([
-    getAuthSession(),
+  const [user, greeting, fullDate] = await Promise.all([
+    getCurrentUser(),
     getGreeting(),
     getFullDate(),
   ])
-  const greeted = session.ok ? firstName(session.value.user.name) : ''
+  const greeted = firstName(user.name)
 
   return (
     <div className='w-full h-full overflow-y-scroll'>

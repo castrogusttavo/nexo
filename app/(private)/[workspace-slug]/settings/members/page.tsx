@@ -1,6 +1,5 @@
 import { UserMultipleIcon } from '@hugeicons-pro/core-stroke-rounded'
 import type { Metadata } from 'next'
-import { notFound, redirect } from 'next/navigation'
 import {
   HeaderBreadcrumbCrumb,
   HeaderBreadcrumbList,
@@ -9,8 +8,7 @@ import HeaderInternalNavigation from '@/app/_components/header/header-internal-n
 import { NexoIcon } from '@/components/icon/icon'
 import { H3 } from '@/components/typography/heading/h3'
 import { Muted } from '@/components/typography/text/muted'
-import { getAuthSession } from '@/src/lib/auth-session'
-import { MembershipService } from '@/src/services/membership.service'
+import { requireMembership } from '@/src/lib/dal'
 import { MembersManager } from './members-manager'
 
 export const metadata: Metadata = {
@@ -25,19 +23,10 @@ export default async function SettingsMembersPage({
 }: {
   params: Promise<{ 'workspace-slug': string }>
 }) {
-  const [{ 'workspace-slug': slug }, session] = await Promise.all([
-    params,
-    getAuthSession(),
-  ])
-  if (!session.ok) redirect('/sign-in')
+  const { 'workspace-slug': slug } = await params
+  const { membership } = await requireMembership(slug)
 
-  const membership = await MembershipService.getByUserAndSlug(
-    session.value.user.id,
-    slug,
-  )
-  if (!membership.ok || !membership.value) notFound()
-
-  const canManage = PRIVILEGED_ROLES.includes(membership.value.role)
+  const canManage = PRIVILEGED_ROLES.includes(membership.role)
 
   return (
     <div className='w-full h-full flex flex-col overflow-hidden'>
@@ -58,7 +47,7 @@ export default async function SettingsMembersPage({
           <Muted>Gerencie o acesso a este workspace.</Muted>
         </div>
         {canManage ? (
-          <MembersManager workspaceId={membership.value.workspaceId} />
+          <MembersManager workspaceId={membership.workspaceId} />
         ) : (
           <Muted>
             Apenas o dono e os administradores do workspace podem gerenciar

@@ -25,8 +25,7 @@ import {
 import { SidebarProjects } from '@/app/_components/navigation/sidebar-project/sidebar-projects'
 import { NexoIcon } from '@/components/icon/icon'
 import { Button } from '@/components/ui/button'
-import { getAuthSession } from '@/src/lib/auth-session'
-import { getWorkspaceMembership } from '@/src/lib/workspace-context'
+import { requireMembership } from '@/src/lib/dal'
 import { isPrivilegedRole } from '@/src/services/_authz'
 
 export default async function HomeLayout({
@@ -39,22 +38,12 @@ export default async function HomeLayout({
   const { 'workspace-slug': slug } = await params
   const base = `/${slug}`
 
-  const session = await getAuthSession()
-  // Who is looking decides which project actions the sidebar offers.
-  let viewer: {
-    workspaceId: string
-    userId: string
-    isPrivileged: boolean
-  } | null = null
-  if (session.ok) {
-    const membership = await getWorkspaceMembership(session.value.user.id, slug)
-    if (membership.ok && membership.value) {
-      viewer = {
-        workspaceId: membership.value.workspaceId,
-        userId: session.value.user.id,
-        isPrivileged: isPrivilegedRole(membership.value.role),
-      }
-    }
+  const { user, membership } = await requireMembership(slug)
+
+  const viewer = {
+    workspaceId: membership.workspaceId,
+    userId: user.id,
+    isPrivileged: isPrivilegedRole(membership.role),
   }
 
   return (
@@ -124,14 +113,12 @@ export default async function HomeLayout({
             Dashboards
           </NavItem>
         </NavGroupAccordion>
-        {viewer && (
-          <SidebarProjects
-            workspaceId={viewer.workspaceId}
-            base={base}
-            userId={viewer.userId}
-            isPrivileged={viewer.isPrivileged}
-          />
-        )}
+        <SidebarProjects
+          workspaceId={viewer.workspaceId}
+          base={base}
+          userId={viewer.userId}
+          isPrivileged={viewer.isPrivileged}
+        />
       </ContextSidebar>
       {children}
     </>
