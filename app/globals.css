@@ -211,3 +211,30 @@ body {
   --typeset-leading: 1.75;
   --typeset-flow: 1.25em;
 }
+
+/* Page loading mark (components/brand/nexo-mark-loader.tsx): the two pieces
+   of the symbol light up in turn. */
+@keyframes nexo-mark-piece {
+  0%,
+  100% {
+    opacity: 0.25;
+  }
+  50% {
+    opacity: 1;
+  }
+}
+
+.nexo-mark-loader path {
+  animation: nexo-mark-piece 1.2s ease-in-out infinite;
+}
+
+.nexo-mark-loader path:last-child {
+  animation-delay: -0.6s;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .nexo-mark-loader path {
+    animation: none;
+    opacity: 1;
+  }
+}
