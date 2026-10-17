@@ -1,11 +1,5 @@
 'use client'
 
-import {
-  CheckIcon,
-  InformationCircleIcon,
-  SolidLine01Icon,
-} from '@hugeicons-pro/core-stroke-rounded'
-import { NexoIcon } from '@/components/icon/icon'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import {
   Tooltip,
@@ -13,6 +7,7 @@ import {
   TooltipTrigger,
 } from '@/components/ui/tooltip'
 import { formatPlanName, PLAN_ORDER, type PlanGrid } from '../plans'
+import { IncludedIcon, InfoIcon, NotIncludedIcon } from './pricing-icons'
 import {
   PRICING_GROUPS,
   type PricingCell,
@@ -59,10 +54,7 @@ function PlanFeatureList({ plan }: { plan: PlanGrid }) {
                     {row.label}
                     <Tooltip>
                       <TooltipTrigger>
-                        <NexoIcon
-                          icon={InformationCircleIcon}
-                          strokeWidth={2}
-                        />
+                        <InfoIcon />
                       </TooltipTrigger>
                       <TooltipContent align='start'>
                         {row.tooltip}
@@ -81,27 +73,8 @@ function PlanFeatureList({ plan }: { plan: PlanGrid }) {
 }
 
 function CellValue({ cell }: { cell: PricingCell }) {
-  if (cell.kind === 'check') {
-    return (
-      <NexoIcon
-        icon={CheckIcon}
-        size={20}
-        strokeWidth={2}
-        className='shrink-0'
-      />
-    )
-  }
-
-  if (cell.kind === 'dash') {
-    return (
-      <NexoIcon
-        icon={SolidLine01Icon}
-        size={20}
-        strokeWidth={2}
-        className='shrink-0 text-muted-foreground'
-      />
-    )
-  }
+  if (cell.kind === 'check') return <IncludedIcon className='shrink-0' />
+  if (cell.kind === 'dash') return <NotIncludedIcon className='shrink-0' />
 
   return <span className='shrink-0 text-muted-foreground'>{cell.text}</span>
 }
