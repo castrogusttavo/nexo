@@ -56,6 +56,8 @@ let secrets: string[]
 let pages: string[]
 
 // The suite truncates every table after each test, so each one seeds its own.
+// Signing up is the first request after a change, which `next dev` compiles
+// on the spot: past the 10 s hook default.
 beforeEach(async () => {
   const tag = createId().slice(0, 8)
   const { user, workspace } = await authenticatedOwner()
@@ -87,7 +89,7 @@ beforeEach(async () => {
     `${projectBase}/settings`,
     `${projectBase}/settings/labels`,
   ]
-})
+}, ALL_PAGES.timeout)
 
 function expectNoSecrets(page: Visit) {
   for (const secret of secrets) expect(page.body).not.toContain(secret)
