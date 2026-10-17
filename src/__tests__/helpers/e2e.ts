@@ -92,7 +92,29 @@ export async function createAuthenticatedUser(overrides?: {
     cookie = stripSessionCache(cookie)
   }
 
-  return { id: user.id, name, email, cookie }
+  // With the cache, like a browser; what proxy.ts reads.
+  const browserCookie = toCookieHeader(signInRes)
+
+  return { id: user.id, name, email, cookie, browserCookie }
+}
+
+// The Cookie header a browser would send: name=value pairs only. `cookie`
+// (the raw Set-Cookie header) joins cookies with ", " and keeps their
+// attributes, so a server reads the session token and folds the rest into
+// attribute names: better-auth's session cache never arrives with it.
+function toCookieHeader(res: Response): string {
+  return res.headers
+    .getSetCookie()
+    .map((setCookie) => setCookie.split(';')[0])
+    .join('; ')
+}
+
+/** A browser cookie header without better-auth's session cache. */
+export function withoutSessionCache(browserCookie: string): string {
+  return browserCookie
+    .split('; ')
+    .filter((pair) => !/^(__Secure-)?better-auth\.session_data/.test(pair))
+    .join('; ')
 }
 
 function stripSessionCache(cookie: string): string {

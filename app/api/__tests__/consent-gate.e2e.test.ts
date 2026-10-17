@@ -5,6 +5,7 @@ import {
   getJson,
   patchJson,
   postJson,
+  withoutSessionCache,
 } from '@/src/__tests__/helpers/e2e'
 
 const GATED: Array<{
@@ -97,9 +98,21 @@ describe('consent gate - authenticated but unconsented user', () => {
     expect(res.status).toBe(201)
   })
 
-  it('blocks an unconsented user from /create-workspace (soft redirect by layout)', async () => {
+  it('sends an unconsented user from /create-workspace to the consent step (proxy)', async () => {
     const user = await createAuthenticatedUser({ skipConsent: true })
-    const res = await getJson('/create-workspace', { cookie: user.cookie })
+    const res = await getJson('/create-workspace', {
+      cookie: user.browserCookie,
+    })
+
+    expect(res.status).toBe(307)
+    expect(res.headers.get('location')).toContain('/onboarding/consent-setup')
+  })
+
+  it('still blocks /create-workspace when the proxy cannot tell (no cookie cache)', async () => {
+    const user = await createAuthenticatedUser({ skipConsent: true })
+    const res = await getJson('/create-workspace', {
+      cookie: withoutSessionCache(user.browserCookie),
+    })
     const body = await res.text()
 
     expect(body).toContain('/onboarding/consent')
