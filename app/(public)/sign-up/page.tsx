@@ -1,6 +1,7 @@
 import type { Metadata } from 'next'
 import { headers } from 'next/headers'
 import { redirect } from 'next/navigation'
+import { Suspense } from 'react'
 import { auth } from '@/src/lib/auth'
 import { SIGNED_IN_HOME, safeRedirectPath } from '@/src/lib/safe-redirect'
 import { SignUpForm } from './sign-up-form'
@@ -12,11 +13,28 @@ export const metadata: Metadata = {
   robots: { index: false, follow: false },
 }
 
-export default async function SignUpPage({
+// Opted into instant-navigation validation (next.config.ts validates only
+// segments that declare it): a blocking read here is a regression.
+export const instant = true
+
+type SearchParams = Promise<{ redirect?: string }>
+
+// Same shape as /sign-in: the redirect target and the "already signed in"
+// check need the request, so they run inside a boundary instead of blocking
+// the route.
+export default function SignUpPage({
   searchParams,
 }: {
-  searchParams: Promise<{ redirect?: string }>
+  searchParams: SearchParams
 }) {
+  return (
+    <Suspense>
+      <SignUp searchParams={searchParams} />
+    </Suspense>
+  )
+}
+
+async function SignUp({ searchParams }: { searchParams: SearchParams }) {
   const { redirect: redirectParam } = await searchParams
   const redirectTo = safeRedirectPath(redirectParam) ?? SIGNED_IN_HOME
 
