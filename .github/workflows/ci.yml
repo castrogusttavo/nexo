@@ -86,9 +86,17 @@ jobs:
       - name: Run contract tests
         run: pnpm test:contract --run
 
+  # Two suites share this job's definition (services, env, build) and run on
+  # separate runners: the HTTP e2e suite against `next start`, and the
+  # Playwright browser + visual suites against the standalone artifact. They
+  # used to run one after the other and were the slowest path through CI.
   e2e-tests:
-    name: E2E Tests (API + Browser)
+    name: E2E Tests (${{ matrix.suite }})
     runs-on: avrea-ubuntu-latest-2-vcpu
+    strategy:
+      fail-fast: false
+      matrix:
+        suite: [api, browser]
     services:
       postgres:
         image: postgres:16
@@ -227,12 +235,14 @@ jobs:
           NODE_OPTIONS: ''
 
       - name: Start server
+        if: ${{ matrix.suite == 'api' }}
         run: pnpm start &
         env:
           PORT: 3000
           NODE_OPTIONS: ''
 
       - name: Wait for server to be ready
+        if: ${{ matrix.suite == 'api' }}
         run: |
           for i in $(seq 1 30); do
             if curl -s http://localhost:3000 > /dev/null 2>&1; then
@@ -246,34 +256,20 @@ jobs:
           exit 1
 
       - name: Run e2e tests
+        if: ${{ matrix.suite == 'api' }}
         run: pnpm test:e2e
 
-      # The browser suite reuses this job's build, database and MinIO instead
-      # of paying for a second `next build`. It boots its own server (the
-      # standalone artifact production runs), so the `next start` above has to
-      # let go of the port first.
-      - name: Stop the API test server
-        run: |
-          # `pnpm start &` leaves a next-server child, so match the port, not
-          # the command name, and wait for it to actually let go.
-          fuser -k 3000/tcp 2>/dev/null || true
-          for i in $(seq 1 20); do
-            if ! curl -s --max-time 2 http://localhost:3000/api/health > /dev/null 2>&1; then
-              echo "Port 3000 is free"
-              exit 0
-            fi
-            sleep 1
-          done
-          echo "Something is still listening on port 3000"
-          exit 1
-
+      # The browser suite boots its own server (the standalone artifact
+      # production runs) from this job's build.
       - name: Cache Playwright browsers
+        if: ${{ matrix.suite == 'browser' }}
         uses: actions/cache@0400d5f644dc74513175e3cd8d07132dd4860809 # v4
         with:
           path: ~/.cache/ms-playwright
           key: playwright-${{ runner.os }}-${{ hashFiles('pnpm-lock.yaml') }}
 
       - name: Install Chromium
+        if: ${{ matrix.suite == 'browser' }}
         run: pnpm exec playwright install --with-deps chromium
 
       # playwright.config.ts also boots the realtime server (Hocuspocus,
@@ -283,6 +279,7 @@ jobs:
       # BETTER_AUTH_SECRET against DATABASE_URL, and uses the plain-TCP Redis
       # service (REDIS_TLS_ENABLED is unset, so no TLS).
       - name: Run browser tests
+        if: ${{ matrix.suite == 'browser' }}
         run: pnpm test:browser
         env:
           PLAYWRIGHT_SKIP_BUILD: 'true'
@@ -290,7 +287,7 @@ jobs:
 
       - name: Upload Playwright report
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
-        if: ${{ !cancelled() }}
+        if: ${{ !cancelled() && matrix.suite == 'browser' }}
         with:
           name: playwright-report
           path: playwright-report/
@@ -301,6 +298,7 @@ jobs:
       # machine, and reuses this job's build, database and MinIO. It comes
       # after the browser suite because both want port 3000.
       - name: Run visual regression tests
+        if: ${{ matrix.suite == 'browser' }}
         run: ./e2e/visual/run-in-docker.sh --output=test-results-visual
         env:
           PLAYWRIGHT_SKIP_BUILD: 'true'
@@ -309,17 +307,17 @@ jobs:
 
       - name: Upload visual diff report
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
-        if: ${{ !cancelled() }}
+        if: ${{ !cancelled() && matrix.suite == 'browser' }}
         with:
           name: playwright-report-visual
           path: playwright-report-visual/
           retention-days: 7
 
-  # Single run of unit + integration (with coverage, uploaded to Codecov) and
-  # component tests. Separate unit/integration jobs used to repeat the exact
-  # same suites without coverage.
+  # Single run of unit + integration with coverage, uploaded to Codecov.
+  # Separate unit/integration jobs used to repeat the exact same suites
+  # without coverage.
   coverage-tests:
-    name: Unit, Integration & Component Tests
+    name: Unit & Integration Tests
     runs-on: avrea-ubuntu-latest-2-vcpu
     services:
       postgres:
@@ -377,11 +375,8 @@ jobs:
       - name: Run unit + integration tests with coverage
         run: pnpm test:coverage
 
-      - name: Run component tests with coverage
-        run: pnpm test:coverage:component
-
-      # Two uploads under separate flags so the frontend number (still being
-      # built up) never drags the backend's down — see codecov.yml.
+      # The frontend flag is uploaded by the component-tests shards; separate
+      # flags keep that number from dragging the backend's down (codecov.yml).
       - name: Upload backend coverage to Codecov
         uses: codecov/codecov-action@0fb7174895f61a3b6b78fc075e0cd60383518dac # v5
         with:
@@ -389,6 +384,45 @@ jobs:
           files: ./coverage/lcov.info
           flags: backend
           disable_search: true
+
+
+  # Component tests need no database or Redis, and alone they were ~280 s of
+  # the slowest job, so they run in three shards. Each shard uploads its own
+  # frontend report; Codecov merges the uploads of a commit (codecov.yml
+  # waits for all four before reporting a status).
+  component-tests:
+    name: Component Tests (${{ matrix.shard }}/3)
+    runs-on: avrea-ubuntu-latest-2-vcpu
+    strategy:
+      fail-fast: false
+      matrix:
+        shard: [1, 2, 3]
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@d9184bf108216479bc5a137cc391f4d7b14c870b # v6
+
+      - name: Setup Node.js
+        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7
+        with:
+          node-version: 24
+          cache: 'pnpm'
+
+      - name: Configure HugeIcons registry
+        run: |
+          echo "@hugeicons-pro:registry=https://npm.hugeicons.com" > .npmrc
+          echo "//npm.hugeicons.com/:_authToken=${{ secrets.HUGEICONS_TOKEN }}" >> .npmrc
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Generate Prisma Client
+        run: pnpm prisma:generate
+
+      - name: Run component tests with coverage
+        run: pnpm test:coverage:component --shard=${{ matrix.shard }}/3
 
       - name: Upload frontend coverage to Codecov
         uses: codecov/codecov-action@0fb7174895f61a3b6b78fc075e0cd60383518dac # v5
@@ -699,6 +733,7 @@ jobs:
       - contract-tests
       - e2e-tests
       - coverage-tests
+      - component-tests
       - semgrep
       - gitleaks
       - redis-tls-smoke

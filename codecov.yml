@@ -1,3 +1,9 @@
+codecov:
+  notify:
+    # One backend upload plus one frontend upload per component-tests shard
+    # (ci.yml): reporting before the last shard lands would read as a drop.
+    after_n_builds: 4
+
 coverage:
   status:
     # Bloqueia se a cobertura do projeto cair em relação à base (sem cravar um número).
