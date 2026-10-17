@@ -8,6 +8,9 @@ import { CareerJobService } from '@/src/services/career-job.service'
 
 export const metadata: Metadata = { title: 'Vagas | Admin Nexo' }
 
+// Blocking like the admin layout above it (see there).
+export const instant = false
+
 export default async function AdminCareersPage() {
   const admin = await resolvePlatformAdmin()
   if (!admin.ok) redirect('/sign-in')

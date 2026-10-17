@@ -1,23 +1,29 @@
 import { BlocksIcon } from '@hugeicons-pro/core-stroke-rounded'
 import { notFound } from 'next/navigation'
+import { Suspense } from 'react'
 import {
   HeaderBreadcrumbCrumb,
   HeaderBreadcrumbList,
 } from '@/app/_components/header/breadcrumb-page'
 import HeaderInternalNavigation from '@/app/_components/header/header-internal-navigation'
+import { PageSkeleton } from '@/app/(private)/_components/page-skeleton'
 import { NexoIcon } from '@/components/icon/icon'
 import { getProjectContext } from '@/src/lib/project-context'
 import { FeatureToggleSettings } from '../feature-toggle-settings'
 
-export default async function ProjectModulesSettingsPage({
+// Navigations into this page are instant: a blocking read here is a
+// regression the dev overlay reports.
+export const instant = true
+
+type Params = Promise<{ 'workspace-slug': string; slug: string }>
+
+// The heading renders at once; the settings below need the project and wait
+// inside the boundary.
+export default function ProjectModulesSettingsPage({
   params,
 }: {
-  params: Promise<{ 'workspace-slug': string; slug: string }>
+  params: Params
 }) {
-  const { 'workspace-slug': workspaceSlug, slug } = await params
-  const context = await getProjectContext(workspaceSlug, slug)
-  if (!context) notFound()
-
   return (
     <div className='w-full'>
       <HeaderInternalNavigation>
@@ -31,15 +37,27 @@ export default async function ProjectModulesSettingsPage({
           </HeaderBreadcrumbCrumb>
         </HeaderBreadcrumbList>
       </HeaderInternalNavigation>
-      <FeatureToggleSettings
-        workspaceId={context.workspaceId}
-        projectSlug={context.project.slug}
-        field='modulesEnabled'
-        title='Módulos'
-        description='Organize o trabalho em subprojetos com líderes e responsáveis dedicados.'
-        toggleLabel='Ativar módulos'
-        toggleDescription='Os membros do projeto podem criar e editar módulos.'
-      />
+      <Suspense fallback={<PageSkeleton />}>
+        <Content params={params} />
+      </Suspense>
     </div>
+  )
+}
+
+async function Content({ params }: { params: Params }) {
+  const { 'workspace-slug': workspaceSlug, slug } = await params
+  const context = await getProjectContext(workspaceSlug, slug)
+  if (!context) notFound()
+
+  return (
+    <FeatureToggleSettings
+      workspaceId={context.workspaceId}
+      projectSlug={context.project.slug}
+      field='modulesEnabled'
+      title='Módulos'
+      description='Organize o trabalho em subprojetos com líderes e responsáveis dedicados.'
+      toggleLabel='Ativar módulos'
+      toggleDescription='Os membros do projeto podem criar e editar módulos.'
+    />
   )
 }

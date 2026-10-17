@@ -1,5 +1,6 @@
 import { Archive03Icon } from '@hugeicons-pro/core-stroke-rounded'
 import type { Metadata } from 'next'
+import { Suspense } from 'react'
 import {
   HeaderBreadcrumbCrumb,
   HeaderBreadcrumbList,
@@ -8,6 +9,7 @@ import HeaderInternalNavigation from '@/app/_components/header/header-internal-n
 import { ArchivedProjectList } from '@/app/_components/workspace/projects/workspace-archived-project-list'
 import { ProjectFilterButton } from '@/app/_components/workspace/projects/workspace-project-filter-button'
 import { ProjectorderButton } from '@/app/_components/workspace/projects/workspace-project-order-button'
+import { PageSkeleton } from '@/app/(private)/_components/page-skeleton'
 import { NexoIcon } from '@/components/icon/icon'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { requireMembership } from '@/src/lib/dal'
@@ -17,14 +19,15 @@ export const metadata: Metadata = {
   description: 'Projetos arquivados do workspace.',
 }
 
-type Props = { params: Promise<{ 'workspace-slug': string }> }
+// Navigations into this page are instant: a blocking read here is a
+// regression the dev overlay reports.
+export const instant = true
 
-export default async function ArchivesPage({ params }: Props) {
-  const { 'workspace-slug': slug } = await params
-  const { membership } = await requireMembership(slug)
+type Params = Promise<{ 'workspace-slug': string }>
 
-  const workspaceId = membership.workspace.id
-
+// The heading and the tabs render at once; the archived list needs the
+// workspace and waits inside the boundary.
+export default function ArchivesPage({ params }: { params: Params }) {
   return (
     <div className='w-full overflow-y-scroll'>
       <HeaderInternalNavigation>
@@ -57,9 +60,17 @@ export default async function ArchivesPage({ params }: Props) {
           </div>
         </TabsList>
         <TabsContent value='projects'>
-          <ArchivedProjectList workspaceId={workspaceId} />
+          <Suspense fallback={<PageSkeleton />}>
+            <Archived params={params} />
+          </Suspense>
         </TabsContent>
       </Tabs>
     </div>
   )
+}
+
+async function Archived({ params }: { params: Params }) {
+  const { 'workspace-slug': slug } = await params
+  const { membership } = await requireMembership(slug)
+  return <ArchivedProjectList workspaceId={membership.workspaceId} />
 }

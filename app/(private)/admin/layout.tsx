@@ -5,6 +5,11 @@ import { resolvePlatformAdmin } from '@/src/lib/admin-access'
 import { getAuthSession } from '@/src/lib/auth-session'
 import { requireConsentedUser } from '@/src/lib/dal'
 
+// Blocking on purpose: the admin check decides between the area and a 404
+// before anything renders, and a handful of people use it. Opted out of
+// instant-navigation validation rather than streamed.
+export const instant = false
+
 export default async function AdminLayout({
   children,
 }: {

@@ -1,6 +1,7 @@
 import { KeyframesMultipleAddIcon } from '@hugeicons-pro/core-stroke-rounded'
 import type { Metadata } from 'next'
 import { notFound } from 'next/navigation'
+import { Suspense } from 'react'
 import {
   HeaderBreadcrumbCrumb,
   HeaderBreadcrumbList,
@@ -15,15 +16,40 @@ export const metadata: Metadata = {
   description: '',
 }
 
-export default async function ProjectIssuesPage({
-  params,
-}: {
-  params: Promise<{
-    'workspace-slug': string
-    slug: string
-    issueIdentifier: string
-  }>
-}) {
+// Navigations into this page are instant: a blocking read here is a
+// regression the dev overlay reports.
+export const instant = true
+
+type Params = Promise<{
+  'workspace-slug': string
+  slug: string
+  issueIdentifier: string
+}>
+
+// The breadcrumb renders at once; the issue's own crumb needs the issue and
+// streams in after it.
+export default function ProjectIssuePage({ params }: { params: Params }) {
+  return (
+    <div className='w-full overflow-y-scroll'>
+      <HeaderInternalNavigation>
+        <HeaderBreadcrumbList>
+          <HeaderBreadcrumbCrumb title={'Issues'}>
+            <NexoIcon
+              icon={KeyframesMultipleAddIcon}
+              strokeWidth={2}
+              className='text-primary'
+            />
+          </HeaderBreadcrumbCrumb>
+          <Suspense fallback={null}>
+            <IssueCrumb params={params} />
+          </Suspense>
+        </HeaderBreadcrumbList>
+      </HeaderInternalNavigation>
+    </div>
+  )
+}
+
+async function IssueCrumb({ params }: { params: Params }) {
   const {
     'workspace-slug': workspaceSlug,
     slug,
@@ -44,21 +70,8 @@ export default async function ProjectIssuesPage({
   const displayIdentifier = `${context.project.identifier}-${issue.number}`
 
   return (
-    <div className='w-full overflow-y-scroll'>
-      <HeaderInternalNavigation>
-        <HeaderBreadcrumbList>
-          <HeaderBreadcrumbCrumb title={'Issues'}>
-            <NexoIcon
-              icon={KeyframesMultipleAddIcon}
-              strokeWidth={2}
-              className='text-primary'
-            />
-          </HeaderBreadcrumbCrumb>
-          <HeaderBreadcrumbCrumb title={`${displayIdentifier} ${issue.title}`}>
-            {null}
-          </HeaderBreadcrumbCrumb>
-        </HeaderBreadcrumbList>
-      </HeaderInternalNavigation>
-    </div>
+    <HeaderBreadcrumbCrumb title={`${displayIdentifier} ${issue.title}`}>
+      {null}
+    </HeaderBreadcrumbCrumb>
   )
 }

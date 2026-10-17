@@ -1,10 +1,12 @@
 import { UserMultipleIcon } from '@hugeicons-pro/core-stroke-rounded'
 import type { Metadata } from 'next'
+import { Suspense } from 'react'
 import {
   HeaderBreadcrumbCrumb,
   HeaderBreadcrumbList,
 } from '@/app/_components/header/breadcrumb-page'
 import HeaderInternalNavigation from '@/app/_components/header/header-internal-navigation'
+import { PageSkeleton } from '@/app/(private)/_components/page-skeleton'
 import { NexoIcon } from '@/components/icon/icon'
 import { H3 } from '@/components/typography/heading/h3'
 import { Muted } from '@/components/typography/text/muted'
@@ -16,18 +18,17 @@ export const metadata: Metadata = {
   description: 'Convide e gerencie os membros do workspace',
 }
 
+// Navigations into this page are instant: a blocking read here is a
+// regression the dev overlay reports.
+export const instant = true
+
 const PRIVILEGED_ROLES = ['OWNER', 'ADMIN']
 
-export default async function SettingsMembersPage({
-  params,
-}: {
-  params: Promise<{ 'workspace-slug': string }>
-}) {
-  const { 'workspace-slug': slug } = await params
-  const { membership } = await requireMembership(slug)
+type Params = Promise<{ 'workspace-slug': string }>
 
-  const canManage = PRIVILEGED_ROLES.includes(membership.role)
-
+// The heading is the same for everyone and renders at once; who is asking
+// decides what goes under it, so that part waits inside the boundary.
+export default function SettingsMembersPage({ params }: { params: Params }) {
   return (
     <div className='w-full h-full flex flex-col overflow-hidden'>
       <HeaderInternalNavigation>
@@ -46,15 +47,26 @@ export default async function SettingsMembersPage({
           <H3>Membros</H3>
           <Muted>Gerencie o acesso a este workspace.</Muted>
         </div>
-        {canManage ? (
-          <MembersManager workspaceId={membership.workspaceId} />
-        ) : (
-          <Muted>
-            Apenas o dono e os administradores do workspace podem gerenciar
-            convites.
-          </Muted>
-        )}
+        <Suspense fallback={<PageSkeleton />}>
+          <Members params={params} />
+        </Suspense>
       </div>
     </div>
   )
+}
+
+async function Members({ params }: { params: Params }) {
+  const { 'workspace-slug': slug } = await params
+  const { membership } = await requireMembership(slug)
+
+  if (!PRIVILEGED_ROLES.includes(membership.role)) {
+    return (
+      <Muted>
+        Apenas o dono e os administradores do workspace podem gerenciar
+        convites.
+      </Muted>
+    )
+  }
+
+  return <MembersManager workspaceId={membership.workspaceId} />
 }

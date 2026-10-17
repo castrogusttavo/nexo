@@ -1,6 +1,7 @@
 import { KeyframesDoubleIcon } from '@hugeicons-pro/core-stroke-rounded'
 import type { Metadata } from 'next'
 import { notFound } from 'next/navigation'
+import { type ReactNode, Suspense } from 'react'
 import {
   HeaderBreadcrumbCrumb,
   HeaderBreadcrumbList,
@@ -11,6 +12,7 @@ import { IssueGanttView } from '@/app/_components/issue/issue-gantt-view'
 import { IssueKanbanView } from '@/app/_components/issue/issue-kanban-view'
 import { IssueListView } from '@/app/_components/issue/issue-list-view'
 import { IssueModal } from '@/app/_components/issue/modal/issue-modal'
+import { PageSkeleton } from '@/app/(private)/_components/page-skeleton'
 import { NexoIcon } from '@/components/icon/icon'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
@@ -24,15 +26,56 @@ export const metadata: Metadata = {
   description: '',
 }
 
-export default async function ProjectIssuesPage({
+// Navigations into this page are instant: a blocking read here is a
+// regression the dev overlay reports.
+export const instant = true
+
+type Params = Promise<{ 'workspace-slug': string; slug: string }>
+type SearchParams = Promise<{ layout?: string }>
+
+// The breadcrumb renders at once; the count, the actions and the issues need
+// the project and stream in, each part in its own boundary.
+export default function ProjectIssuesPage({
   params,
   searchParams,
 }: {
-  params: Promise<{ 'workspace-slug': string; slug: string }>
-  searchParams: Promise<{ layout?: string }>
+  params: Params
+  searchParams: SearchParams
 }) {
+  return (
+    <div className='w-full h-full overflow-y-scroll no-scrollbar'>
+      <Suspense
+        fallback={
+          <HeaderInternalNavigation>
+            <IssuesBreadcrumb />
+          </HeaderInternalNavigation>
+        }
+      >
+        <IssuesHeader params={params} />
+      </Suspense>
+      <Suspense fallback={<PageSkeleton />}>
+        <Issues params={params} searchParams={searchParams} />
+      </Suspense>
+    </div>
+  )
+}
+
+function IssuesBreadcrumb({ after }: { after?: ReactNode }) {
+  return (
+    <HeaderBreadcrumbList>
+      <HeaderBreadcrumbCrumb title={'Issues'} after={after}>
+        <NexoIcon
+          icon={KeyframesDoubleIcon}
+          strokeWidth={2}
+          className='text-primary'
+        />
+      </HeaderBreadcrumbCrumb>
+    </HeaderBreadcrumbList>
+  )
+}
+
+async function IssuesHeader({ params }: { params: Params }) {
   const { 'workspace-slug': workspaceSlug, slug } = await params
-  const { layout } = await searchParams
   const context = await getProjectContext(workspaceSlug, slug)
   if (!context) notFound()
 
@@ -41,78 +84,80 @@ export default async function ProjectIssuesPage({
     context.workspaceId,
     context.project.slug,
   )
-
   const issueCount = countResult.ok ? countResult.value : 0
 
   return (
-    <div className='w-full h-full overflow-y-scroll no-scrollbar'>
-      <HeaderInternalNavigation>
-        <HeaderBreadcrumbList>
-          <HeaderBreadcrumbCrumb
-            title={'Issues'}
-            after={<Badge variant='info'>{issueCount}</Badge>}
-          >
-            <NexoIcon
-              icon={KeyframesDoubleIcon}
-              strokeWidth={2}
-              className='text-primary'
-            />
-          </HeaderBreadcrumbCrumb>
-        </HeaderBreadcrumbList>
-        <div className='flex items-center gap-2'>
-          <IssueLayoutToggle />
-          <IssuesFilters
-            workspaceId={context.workspaceId}
-            projectSlug={context.project.slug}
-          />
-          <IssueModal
-            trigger={
-              <Button size='sm' className='h-8'>
-                Adicionar issue
-              </Button>
-            }
-            workspaceId={context.workspaceId}
-            workspaceSlug={workspaceSlug}
-            projectSlug={context.project.slug}
-          />
-        </div>
-      </HeaderInternalNavigation>
-      <div>
-        {(!layout || layout === 'list') && (
-          <IssueListView
-            workspaceId={context.workspaceId}
-            workspaceSlug={workspaceSlug}
-            projectSlug={context.project.slug}
-            projectIdentifier={context.project.identifier}
-          />
-        )}
-        {layout === 'kanban' && (
-          <IssueKanbanView
-            workspaceId={context.workspaceId}
-            projectSlug={context.project.slug}
-            projectIdentifier={context.project.identifier}
-          />
-        )}
-        {layout === 'calendar' && (
-          <IssueCalendarView
-            workspaceId={context.workspaceId}
-            projectSlug={context.project.slug}
-            projectIdentifier={context.project.identifier}
-          />
-        )}
-        {layout === 'timeline' && (
-          <IssueGanttView
-            workspaceId={context.workspaceId}
-            projectSlug={context.project.slug}
-            projectIdentifier={context.project.identifier}
-          />
-        )}
-        {layout === 'table' && (
-          <div className='p-6 text-muted-foreground text-sm'>
-            Layout em breve.
-          </div>
-        )}
+    <HeaderInternalNavigation>
+      <IssuesBreadcrumb after={<Badge variant='info'>{issueCount}</Badge>} />
+      <div className='flex items-center gap-2'>
+        <IssueLayoutToggle />
+        <IssuesFilters
+          workspaceId={context.workspaceId}
+          projectSlug={context.project.slug}
+        />
+        <IssueModal
+          trigger={
+            <Button size='sm' className='h-8'>
+              Adicionar issue
+            </Button>
+          }
+          workspaceId={context.workspaceId}
+          workspaceSlug={workspaceSlug}
+          projectSlug={context.project.slug}
+        />
       </div>
+    </HeaderInternalNavigation>
+  )
+}
+
+async function Issues({
+  params,
+  searchParams,
+}: {
+  params: Params
+  searchParams: SearchParams
+}) {
+  const [{ 'workspace-slug': workspaceSlug, slug }, { layout }] =
+    await Promise.all([params, searchParams])
+  const context = await getProjectContext(workspaceSlug, slug)
+  if (!context) notFound()
+
+  return (
+    <div>
+      {(!layout || layout === 'list') && (
+        <IssueListView
+          workspaceId={context.workspaceId}
+          workspaceSlug={workspaceSlug}
+          projectSlug={context.project.slug}
+          projectIdentifier={context.project.identifier}
+        />
+      )}
+      {layout === 'kanban' && (
+        <IssueKanbanView
+          workspaceId={context.workspaceId}
+          projectSlug={context.project.slug}
+          projectIdentifier={context.project.identifier}
+        />
+      )}
+      {layout === 'calendar' && (
+        <IssueCalendarView
+          workspaceId={context.workspaceId}
+          projectSlug={context.project.slug}
+          projectIdentifier={context.project.identifier}
+        />
+      )}
+      {layout === 'timeline' && (
+        <IssueGanttView
+          workspaceId={context.workspaceId}
+          projectSlug={context.project.slug}
+          projectIdentifier={context.project.identifier}
+        />
+      )}
+      {layout === 'table' && (
+        <div className='p-6 text-muted-foreground text-sm'>
+          Layout em breve.
+        </div>
+      )}
     </div>
   )
 }

@@ -1,11 +1,13 @@
 import { Diamond02Icon } from '@hugeicons-pro/core-bulk-rounded'
 import { CreditCardIcon } from '@hugeicons-pro/core-stroke-rounded'
 import type { Metadata } from 'next'
+import { Suspense } from 'react'
 import {
   HeaderBreadcrumbCrumb,
   HeaderBreadcrumbList,
 } from '@/app/_components/header/breadcrumb-page'
 import HeaderInternalNavigation from '@/app/_components/header/header-internal-navigation'
+import { PageSkeleton } from '@/app/(private)/_components/page-skeleton'
 import { formatPlanName } from '@/app/(web)/_components/pricing/plans'
 import { NexoIcon } from '@/components/icon/icon'
 import { H3 } from '@/components/typography/heading/h3'
@@ -23,6 +25,10 @@ export const metadata: Metadata = {
   description: '',
 }
 
+// Navigations into this page are instant: a blocking read here is a
+// regression the dev overlay reports.
+export const instant = true
+
 const dateFmt = new Intl.DateTimeFormat('pt-BR', {
   day: '2-digit',
   month: 'short',
@@ -36,11 +42,41 @@ function addInterval(date: Date, interval: 'MONTHLY' | 'YEARLY'): Date {
   return next
 }
 
-export default async function SettingsBillingPage({
-  params,
-}: {
-  params: Promise<{ 'workspace-slug': string }>
-}) {
+type Params = Promise<{ 'workspace-slug': string }>
+
+// The heading is the same for everyone and renders at once; the plan, the
+// seats and the trial depend on the workspace and wait inside the boundary.
+export default function SettingsBillingPage({ params }: { params: Params }) {
+  return (
+    <div className='w-full overflow-y-auto'>
+      <HeaderInternalNavigation>
+        <HeaderBreadcrumbList>
+          <HeaderBreadcrumbCrumb title={'Assinatura e Planos'}>
+            <NexoIcon
+              icon={CreditCardIcon}
+              strokeWidth={2}
+              className='text-primary'
+            />
+          </HeaderBreadcrumbCrumb>
+        </HeaderBreadcrumbList>
+      </HeaderInternalNavigation>
+      <div className='w-full p-6 space-y-6'>
+        <div>
+          <H3>Assinatura e Planos</H3>
+          <Muted>
+            Escolha seu plano, gerencie assinaturas e faça upgrade facilmente
+            conforme suas necessidades crescem.
+          </Muted>
+        </div>
+        <Suspense fallback={<PageSkeleton />}>
+          <Billing params={params} />
+        </Suspense>
+      </div>
+    </div>
+  )
+}
+
+async function Billing({ params }: { params: Params }) {
   const { 'workspace-slug': slug } = await params
   const { membership } = await requireMembership(slug)
   const workspace = membership.workspace
@@ -84,90 +120,65 @@ export default async function SettingsBillingPage({
       : '—'
 
   return (
-    <div className='w-full overflow-y-auto'>
-      <HeaderInternalNavigation>
-        <HeaderBreadcrumbList>
-          <HeaderBreadcrumbCrumb title={'Assinatura e Planos'}>
-            <NexoIcon
-              icon={CreditCardIcon}
-              strokeWidth={2}
-              className='text-primary'
-            />
-          </HeaderBreadcrumbCrumb>
-        </HeaderBreadcrumbList>
-      </HeaderInternalNavigation>
-      <div className='w-full p-6 space-y-6'>
-        <div>
-          <H3>Assinatura e Planos</H3>
-          <Muted>
-            Escolha seu plano, gerencie assinaturas e faça upgrade facilmente
-            conforme suas necessidades crescem.
-          </Muted>
+    <>
+      {isTrialing && (
+        <div className='w-full bg-muted flex items-center px-4 py-3 gap-3 rounded-lg border border-border overflow-hidden'>
+          <div className='p-2 rounded-sm bg-blue-950 w-fit flex items-center justify-center'>
+            <NexoIcon icon={Diamond02Icon} className='text-primary' size={24} />
+          </div>
+          <div className='flex-1 flex flex-col gap-1.5 min-w-0'>
+            <div className='flex items-center gap-2'>
+              <h4 className='font-bold text-sm'>
+                Seu teste de 14 dias do plano Business está ativo!
+              </h4>
+              <Badge variant='warning'>
+                {trialDaysLeft === 1
+                  ? 'O teste termina em 1 dia'
+                  : `O teste termina em ${trialDaysLeft} dias`}
+              </Badge>
+            </div>
+            <Muted>
+              Explore todos os recursos Business. Quando estiver pronto, escolha
+              assinar. Você não será cobrado automaticamente.
+            </Muted>
+          </div>
+        </div>
+      )}
+
+      <div className='w-full bg-muted flex flex-col items-center rounded-lg border border-border overflow-hidden'>
+        <div className='w-full flex items-center justify-between px-4 py-3 gap-2'>
+          <div className='flex items-center gap-1.5'>
+            <h4 className='text-sm font-semibold'>{planLabel}</h4>
+            <Badge variant='info'>Seu Plano</Badge>
+          </div>
+          {subscription && (
+            <Button variant='outline' size='sm'>
+              Gerenciar assinatura
+            </Button>
+          )}
         </div>
 
-        {isTrialing && (
-          <div className='w-full bg-muted flex items-center px-4 py-3 gap-3 rounded-lg border border-border overflow-hidden'>
-            <div className='p-2 rounded-sm bg-blue-950 w-fit flex items-center justify-center'>
-              <NexoIcon
-                icon={Diamond02Icon}
-                className='text-primary'
-                size={24}
-              />
+        <div className='w-full bg-app p-4'>
+          <div className='grid grid-cols-3 max-w-4xl'>
+            <div className='space-y-2'>
+              <Muted>Total de usuários</Muted>
+              <p className='text-sm font-medium'>{usedSeats}</p>
             </div>
-            <div className='flex-1 flex flex-col gap-1.5 min-w-0'>
-              <div className='flex items-center gap-2'>
-                <h4 className='font-bold text-sm'>
-                  Seu teste de 14 dias do plano Business está ativo!
-                </h4>
-                <Badge variant='warning'>
-                  {trialDaysLeft === 1
-                    ? 'O teste termina em 1 dia'
-                    : `O teste termina em ${trialDaysLeft} dias`}
-                </Badge>
-              </div>
-              <Muted>
-                Explore todos os recursos Business. Quando estiver pronto,
-                escolha assinar. Você não será cobrado automaticamente.
-              </Muted>
+            <div className='space-y-2'>
+              <Muted>Assentos livres</Muted>
+              <p className='text-sm font-medium'>
+                {freeSeats === null ? 'Ilimitado' : freeSeats}
+              </p>
             </div>
-          </div>
-        )}
-
-        <div className='w-full bg-muted flex flex-col items-center rounded-lg border border-border overflow-hidden'>
-          <div className='w-full flex items-center justify-between px-4 py-3 gap-2'>
-            <div className='flex items-center gap-1.5'>
-              <h4 className='text-sm font-semibold'>{planLabel}</h4>
-              <Badge variant='info'>Seu Plano</Badge>
-            </div>
-            {subscription && (
-              <Button variant='outline' size='sm'>
-                Gerenciar assinatura
-              </Button>
-            )}
-          </div>
-
-          <div className='w-full bg-app p-4'>
-            <div className='grid grid-cols-3 max-w-4xl'>
-              <div className='space-y-2'>
-                <Muted>Total de usuários</Muted>
-                <p className='text-sm font-medium'>{usedSeats}</p>
-              </div>
-              <div className='space-y-2'>
-                <Muted>Assentos livres</Muted>
-                <p className='text-sm font-medium'>
-                  {freeSeats === null ? 'Ilimitado' : freeSeats}
-                </p>
-              </div>
-              <div className='space-y-2'>
-                <Muted>Período da assinatura</Muted>
-                <p className='text-sm font-medium'>{periodLabel}</p>
-              </div>
+            <div className='space-y-2'>
+              <Muted>Período da assinatura</Muted>
+              <p className='text-sm font-medium'>{periodLabel}</p>
             </div>
           </div>
         </div>
-
-        <BillingUpgrade currentPlan={workspace.activePlan} />
       </div>
-    </div>
+
+      <BillingUpgrade currentPlan={workspace.activePlan} />
+    </>
   )
 }

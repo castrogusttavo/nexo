@@ -7,6 +7,9 @@ import { StatusControl } from './status-control'
 
 export const metadata: Metadata = { title: 'Editar vaga | Admin Nexo' }
 
+// Blocking like the admin layout above it (see there).
+export const instant = false
+
 interface Props {
   params: Promise<{ id: string }>
 }
