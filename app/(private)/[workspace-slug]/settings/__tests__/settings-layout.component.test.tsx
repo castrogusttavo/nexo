@@ -1,15 +1,14 @@
 import { render, within } from '@testing-library/react'
 import { describe, expect, it, vi } from 'vitest'
 import { appPageRoutes, hasAppPage } from '@/src/__tests__/helpers/app-routes'
-import SettingsLayout from '../layout'
+import { SettingsSidebar } from '../settings-sidebar'
 
 vi.mock('next/navigation', () => ({
   usePathname: () => '/acme/settings',
 }))
 
 async function renderLayout() {
-  const ui = await SettingsLayout({
-    children: <main>conteúdo</main>,
+  const ui = await SettingsSidebar({
     params: Promise.resolve({ 'workspace-slug': 'acme' }),
   })
   return render(ui)

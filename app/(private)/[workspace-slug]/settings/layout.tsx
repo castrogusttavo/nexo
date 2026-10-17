@@ -1,42 +1,21 @@
-import {
-  Building02Icon,
-  CreditCardIcon,
-  UserMultipleIcon,
-} from '@hugeicons-pro/core-stroke-rounded'
-import type { ReactNode } from 'react'
-import {
-  ContextHeader,
-  ContextSidebar,
-  NavGroup,
-  NavItem,
-} from '@/app/_components/navigation/sidebar-context'
+import { type ReactNode, Suspense } from 'react'
+import { ContextSidebarSkeleton } from '@/app/_components/navigation/sidebar-context'
+import { SettingsSidebar } from './settings-sidebar'
 
-export default async function SettingsLayout({
+// The page renders beside the sidebar instead of waiting for it; the sidebar
+// needs the slug or the viewer, so it streams into its own boundary.
+export default function SettingsLayout({
   children,
   params,
 }: {
   children: ReactNode
   params: Promise<{ 'workspace-slug': string }>
 }) {
-  const { 'workspace-slug': slug } = await params
-  const base = `/${slug}/settings`
-
   return (
     <>
-      <ContextSidebar>
-        <ContextHeader title='Ajustes do Workspace' />
-        <NavGroup>
-          <NavItem href={base} icon={Building02Icon}>
-            Geral
-          </NavItem>
-          <NavItem href={`${base}/members`} icon={UserMultipleIcon}>
-            Membros
-          </NavItem>
-          <NavItem href={`${base}/billing`} icon={CreditCardIcon}>
-            Assinatura e Planos
-          </NavItem>
-        </NavGroup>
-      </ContextSidebar>
+      <Suspense fallback={<ContextSidebarSkeleton />}>
+        <SettingsSidebar params={params} />
+      </Suspense>
       {children}
     </>
   )

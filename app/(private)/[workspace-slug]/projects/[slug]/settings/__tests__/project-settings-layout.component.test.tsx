@@ -1,7 +1,7 @@
 import { render, within } from '@testing-library/react'
 import { describe, expect, it, vi } from 'vitest'
 import { appPageRoutes, hasAppPage } from '@/src/__tests__/helpers/app-routes'
-import ProjectSettingsLayout from '../layout'
+import { ProjectSettingsSidebar } from '../project-settings-sidebar'
 
 vi.mock('next/navigation', () => ({
   usePathname: () => '/acme/projects/web/settings',
@@ -15,8 +15,7 @@ vi.mock('@/src/lib/project-context', () => ({
 }))
 
 async function renderLayout() {
-  const ui = await ProjectSettingsLayout({
-    children: <main>conteúdo</main>,
+  const ui = await ProjectSettingsSidebar({
     params: Promise.resolve({ 'workspace-slug': 'acme', slug: 'web' }),
   })
   return render(ui)

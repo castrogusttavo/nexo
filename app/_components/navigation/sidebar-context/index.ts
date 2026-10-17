@@ -1,4 +1,7 @@
-export { ContextSidebar } from './navigation-sidebar-context'
+export {
+  ContextSidebar,
+  ContextSidebarSkeleton,
+} from './navigation-sidebar-context'
 export { NavGroupAccordion } from './navigation-sidebar-context-accordion'
 export { ContextPrimaryAction } from './navigation-sidebar-context-action'
 export { NavAction } from './navigation-sidebar-context-action-item'

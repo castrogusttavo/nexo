@@ -1,7 +1,7 @@
 import { render, within } from '@testing-library/react'
 import { describe, expect, it, vi } from 'vitest'
 import { appPageRoutes, hasAppPage } from '@/src/__tests__/helpers/app-routes'
-import HomeLayout from '../layout'
+import { HomeSidebar } from '../home-sidebar'
 
 vi.mock('next/navigation', () => ({
   usePathname: () => '/acme',
@@ -26,8 +26,7 @@ vi.mock(
 )
 
 async function renderLayout() {
-  const ui = await HomeLayout({
-    children: <main>conteúdo</main>,
+  const ui = await HomeSidebar({
     params: Promise.resolve({ 'workspace-slug': 'acme' }),
   })
   return render(ui)
