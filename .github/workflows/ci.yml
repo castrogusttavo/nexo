@@ -397,6 +397,10 @@ jobs:
       fail-fast: false
       matrix:
         shard: [1, 2, 3]
+    env:
+      # prisma.config.ts resolves it even for `prisma generate`, which never
+      # connects: there is no database in this job.
+      DATABASE_URL: postgresql://test:test@localhost:5432/nexo_test
     steps:
       - name: Checkout repository
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
