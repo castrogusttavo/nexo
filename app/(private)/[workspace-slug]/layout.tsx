@@ -1,16 +1,14 @@
 import type { Metadata } from 'next'
-import { notFound, redirect } from 'next/navigation'
-import type { ReactNode } from 'react'
+import { type ReactNode, Suspense } from 'react'
 import { UserHeader } from '@/app/_components/header/header-layout-user'
 import { HeaderPromotionBanner } from '@/app/_components/header/header-promotion-banner'
 import { GlobalSidebarNavigation } from '@/app/_components/navigation/sidebar-global'
-import { onboardingDestination } from '@/app/onboarding/_lib/destination'
+import { Skeleton } from '@/components/ui/skeleton'
 import { TRIAL_BANNER_DAYS } from '@/src/config/trial'
-import { getAuthSession } from '@/src/lib/auth-session'
-import { getWorkspaceMembership } from '@/src/lib/workspace-context'
-import { MembershipService } from '@/src/services/membership.service'
+import { requireMembership } from '@/src/lib/dal'
 import { SubscriptionService } from '@/src/services/subscription.service'
-import { UserService } from '@/src/services/user.service'
+
+type Params = Promise<{ 'workspace-slug': string }>
 
 type WorkspaceLayoutProps = {
   children: ReactNode
@@ -27,75 +25,66 @@ export const metadata: Metadata = {
     'Nexo brings projects, docs, and AI-powered workflows into one unified workspace so teams and agents can plan, execute, and stay aligned.',
 }
 
-export default async function WorkspaceLayout({
+// The frame renders at once; everything that needs the slug or the viewer
+// waits inside its own boundary. Access is not decided here: the DAL checks
+// session, consent (STR-61) and membership wherever workspace data is read,
+// and the banner's requireMembership routes a visitor who does not belong
+// (onboarding step, /create-workspace or 404) on pages with no server data.
+export default function WorkspaceLayout({
   children,
   params,
 }: WorkspaceLayoutProps) {
-  const [{ 'workspace-slug': slug }, session] = await Promise.all([
-    params,
-    getAuthSession(),
-  ])
-
-  if (!session.ok) redirect('/sign-in')
-
-  const [userResult, membership] = await Promise.all([
-    UserService.getProfile(session.value.user.id),
-    getWorkspaceMembership(session.value.user.id, slug),
-  ])
-
-  const isMember = membership.ok && membership.value !== null
-
-  if (!isMember && userResult.ok && userResult.value.onboardingStep !== null) {
-    // Straight to the step: /onboarding is a route handler, which a
-    // client-side navigation cannot land on.
-    redirect(await onboardingDestination(session.value.user.id))
-  }
-
-  if (!membership.ok || !membership.value) {
-    const memberships = await MembershipService.listByUser(
-      session.value.user.id,
-    )
-    if (memberships.ok && memberships.value.length === 0) {
-      redirect('/create-workspace')
-    }
-    notFound()
-  }
-
-  const workspace = membership.value.workspace
-  const trialEndsAt = workspace.trialEndsAt
-    ? new Date(workspace.trialEndsAt)
-    : null
-
-  // Banner only during the last TRIAL_BANNER_DAYS days of the trial.
-  const now = Date.now()
-  const trialEndingSoon =
-    trialEndsAt !== null &&
-    trialEndsAt.getTime() > now &&
-    trialEndsAt.getTime() <= now + TRIAL_BANNER_DAYS * 86_400_000
-  let showTrialBanner = false
-  if (trialEndingSoon) {
-    const activeSub = await SubscriptionService.getActiveByWorkspace(
-      workspace.id,
-    )
-    showTrialBanner = !(activeSub.ok && activeSub.value !== null)
-  }
-
   return (
     <div className='flex flex-col h-screen overflow-hidden gap-y-0.5'>
-      {showTrialBanner && workspace.trialEndsAt && (
-        <HeaderPromotionBanner
-          endDate={workspace.trialEndsAt}
-          plan={workspace.activePlan}
-          slug={slug}
-        />
-      )}
-      <UserHeader slug={slug} />
+      <Suspense fallback={null}>
+        <TrialBanner params={params} />
+      </Suspense>
+      <Suspense fallback={<Skeleton className='mx-3.5 h-8' />}>
+        <Header params={params} />
+      </Suspense>
       <div className='flex gap-x-1.5 flex-1 overflow-hidden min-h-0 pr-2 pb-2'>
-        <GlobalSidebarNavigation slug={slug} />
+        <Suspense fallback={<div className='h-screen w-12' />}>
+          <Sidebar params={params} />
+        </Suspense>
         <div className='flex-1 w-full flex items-start bg-app rounded-lg border border-border overflow-hidden'>
           {children}
         </div>
       </div>
     </div>
+  )
+}
+
+async function Header({ params }: { params: Params }) {
+  const { 'workspace-slug': slug } = await params
+  return <UserHeader slug={slug} />
+}
+
+async function Sidebar({ params }: { params: Params }) {
+  const { 'workspace-slug': slug } = await params
+  return <GlobalSidebarNavigation slug={slug} />
+}
+
+async function TrialBanner({ params }: { params: Params }) {
+  const { 'workspace-slug': slug } = await params
+  const { membership } = await requireMembership(slug)
+  const workspace = membership.workspace
+  if (!workspace.trialEndsAt) return null
+
+  // Banner only during the last TRIAL_BANNER_DAYS days of the trial.
+  const trialEndsAt = new Date(workspace.trialEndsAt).getTime()
+  const now = Date.now()
+  const endingSoon =
+    trialEndsAt > now && trialEndsAt <= now + TRIAL_BANNER_DAYS * 86_400_000
+  if (!endingSoon) return null
+
+  const activeSub = await SubscriptionService.getActiveByWorkspace(workspace.id)
+  if (activeSub.ok && activeSub.value !== null) return null
+
+  return (
+    <HeaderPromotionBanner
+      endDate={workspace.trialEndsAt}
+      plan={workspace.activePlan}
+      slug={slug}
+    />
   )
 }

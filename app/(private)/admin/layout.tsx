@@ -3,6 +3,7 @@ import type { ReactNode } from 'react'
 import { auditAuth } from '@/lib/axiom/audit'
 import { resolvePlatformAdmin } from '@/src/lib/admin-access'
 import { getAuthSession } from '@/src/lib/auth-session'
+import { requireConsentedUser } from '@/src/lib/dal'
 
 export default async function AdminLayout({
   children,
@@ -10,7 +11,11 @@ export default async function AdminLayout({
   children: ReactNode
 }) {
   const admin = await resolvePlatformAdmin()
-  if (admin.ok) return <>{children}</>
+  if (admin.ok) {
+    // STR-61, after the admin check so a non-admin still gets the 404.
+    await requireConsentedUser('page:admin')
+    return <>{children}</>
+  }
 
   if (admin.error.code === 'UNAUTHORIZED') redirect('/sign-in')
 
