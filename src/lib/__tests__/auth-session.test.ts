@@ -4,6 +4,7 @@ import { expectErr, expectOk } from '@/src/__tests__/helpers/result.helpers'
 vi.mock('next/headers', () => ({
   headers: async () => new Headers(),
 }))
+vi.mock('next/server', () => ({ connection: async () => {} }))
 vi.mock('@/src/lib/auth', () => ({
   auth: { api: { getSession: vi.fn() } },
 }))
