@@ -1,6 +1,7 @@
 'use client'
 
 import { useQueryState } from 'nuqs'
+import { Suspense } from 'react'
 import { ButtonLink } from '@/components/button-link'
 import { Muted } from '@/components/typography/text/muted'
 import {
@@ -13,11 +14,24 @@ import {
   priceForBilling,
   upgradeUrl,
 } from '../plans'
-import { billingParser } from '../plans-params'
+import { billingParser, DEFAULT_BILLING } from '../plans-params'
 
+// The server renders the default billing; the URL's value takes over in the
+// browser (see billingParser).
 export function PricingTableHeader() {
-  const [billing] = useQueryState('billing', billingParser)
+  return (
+    <Suspense fallback={<TableHeader billing={DEFAULT_BILLING} />}>
+      <TableHeaderFromUrl />
+    </Suspense>
+  )
+}
 
+function TableHeaderFromUrl() {
+  const [billing] = useQueryState('billing', billingParser)
+  return <TableHeader billing={billing} />
+}
+
+function TableHeader({ billing }: { billing: Billing }) {
   return (
     <div className='border-b border-border z-30 hidden lg:sticky lg:top-16 lg:flex lg:justify-end bg-background'>
       <div className='w-full lg:w-[30%] p-4 border-border'>

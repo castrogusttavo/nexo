@@ -6,6 +6,7 @@ import {
   CheckIcon,
 } from '@hugeicons-pro/core-stroke-rounded'
 import { useQueryState } from 'nuqs'
+import { Suspense } from 'react'
 import { ButtonLink } from '@/components/button-link'
 import { NexoIcon } from '@/components/icon/icon'
 import { Muted } from '@/components/typography/text/muted'
@@ -18,6 +19,7 @@ import {
 import { captureEvent } from '@/lib/posthog/client'
 import { cn } from '@/lib/utils'
 import {
+  type Billing,
   formatCurrency,
   formatPlanName,
   getPrice,
@@ -28,15 +30,28 @@ import {
   upgradeUrl,
   yearlyDiscount,
 } from './plans'
-import { billingParser } from './plans-params'
+import { billingParser, DEFAULT_BILLING } from './plans-params'
 
 interface PricingCardPlanProps {
   plan: PlanGrid
 }
 
+// The server renders the default billing; the URL's value takes over in the
+// browser (see billingParser).
 export function PricingCardPlan({ plan }: PricingCardPlanProps) {
-  const [billing] = useQueryState('billing', billingParser)
+  return (
+    <Suspense fallback={<CardPlan plan={plan} billing={DEFAULT_BILLING} />}>
+      <CardPlanFromUrl plan={plan} />
+    </Suspense>
+  )
+}
 
+function CardPlanFromUrl({ plan }: PricingCardPlanProps) {
+  const [billing] = useQueryState('billing', billingParser)
+  return <CardPlan plan={plan} billing={billing} />
+}
+
+function CardPlan({ plan, billing }: { plan: PlanGrid; billing: Billing }) {
   const { description, features } = PLANS[plan]
   const price = getPrice(plan)
   const previous = previousPlan(plan)

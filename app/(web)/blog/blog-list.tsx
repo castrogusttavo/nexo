@@ -4,7 +4,7 @@ import { Search01Icon } from '@hugeicons-pro/core-stroke-rounded'
 import Image from 'next/image'
 import Link from 'next/link'
 import { useQueryStates } from 'nuqs'
-import { useMemo, useState, useTransition } from 'react'
+import { Suspense, useMemo, useState, useTransition } from 'react'
 import { NexoIcon } from '@/components/icon/icon'
 import { Muted } from '@/components/typography/text/muted'
 import { Button } from '@/components/ui/button'
@@ -38,11 +38,46 @@ function getPageWindow(current: number, total: number) {
   return Array.from({ length: PAGE_WINDOW_SIZE }, (_, i) => start + i)
 }
 
+const FILTERS = { tag: blogTagParser, search: blogSearchParser }
+
+type SetFilters = ReturnType<typeof useQueryStates<typeof FILTERS>>[1]
+
+// The filters live in the URL, and reading it suspends while the page
+// prerenders: without a boundary of its own the list bailed the whole page
+// out to client rendering. The server renders every post unfiltered; the URL
+// takes over in the browser.
 export function BlogList({ posts }: BlogListProps) {
-  const [{ tag, search }, setFilters] = useQueryStates({
-    tag: blogTagParser,
-    search: blogSearchParser,
-  })
+  return (
+    <Suspense
+      fallback={<BlogListContent posts={posts} tag={null} search={null} />}
+    >
+      <BlogListFromUrl posts={posts} />
+    </Suspense>
+  )
+}
+
+function BlogListFromUrl({ posts }: BlogListProps) {
+  const [{ tag, search }, setFilters] = useQueryStates(FILTERS)
+  return (
+    <BlogListContent
+      posts={posts}
+      tag={tag}
+      search={search}
+      setFilters={setFilters}
+    />
+  )
+}
+
+function BlogListContent({
+  posts,
+  tag,
+  search,
+  setFilters,
+}: BlogListProps & {
+  tag: (typeof BLOG_POST_TAGS)[number] | null
+  search: string | null
+  setFilters?: SetFilters
+}) {
   const [page, setPage] = useState(1)
   const [_isPending, startTransition] = useTransition()
 
@@ -68,9 +103,9 @@ export function BlogList({ posts }: BlogListProps) {
   )
   const pageWindow = getPageWindow(currentPage, totalPages)
 
-  function updateFilters(next: Parameters<typeof setFilters>[0]) {
+  function updateFilters(next: Parameters<SetFilters>[0]) {
     startTransition(() => {
-      setFilters(next)
+      setFilters?.(next)
       setPage(1)
     })
     document
