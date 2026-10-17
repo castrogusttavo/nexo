@@ -9,6 +9,7 @@ import { UserService } from '@/src/services/user.service'
 import { OnboardingFormSkeleton } from '../_components/onboarding-form-skeleton'
 import { onboardingDestination } from '../_lib/destination'
 import { ConsentForm } from './consent-form'
+import { ConsentRefresh } from './consent-refresh'
 
 export const metadata: Metadata = {
   title: 'Aceite de termos | Nexo',
@@ -54,7 +55,12 @@ async function ConsentStep() {
   if (!userResult.ok) redirect('/sign-in')
 
   if (userResult.value.acceptedTermsAt && userResult.value.acceptedPrivacyAt) {
-    redirect(await onboardingDestination(auth.value.user.id))
+    return (
+      <>
+        <OnboardingFormSkeleton />
+        <ConsentRefresh to={await onboardingDestination(auth.value.user.id)} />
+      </>
+    )
   }
 
   return <ConsentForm />

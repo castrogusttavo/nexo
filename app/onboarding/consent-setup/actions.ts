@@ -1,7 +1,8 @@
 'use server'
 
-import { headers } from 'next/headers'
+import { cookies, headers } from 'next/headers'
 import { redirect } from 'next/navigation'
+import { SESSION_DATA_COOKIE } from '@/src/lib/auth-cookie'
 import { getAuthSession } from '@/src/lib/auth-session'
 import { AcceptConsentSchema } from '@/src/schemas/user.schema'
 import { UserService } from '@/src/services/user.service'
@@ -45,6 +46,21 @@ export async function acceptOnboardingConsent(
     return {
       ok: false,
       error: 'Não foi possível salvar seu consentimento. Tente novamente',
+    }
+  }
+
+  // The signed cookie cache still says "no consent" for up to 5 min, and the
+  // proxy would sen the user straight back here. Drop it; the netx session
+  // read re-issues it from the database. A __Secure- cookie can only be
+  // overwritten by a Secure Set-Cookir
+  const jar = await cookies()
+  for (const { name } of jar.getAll()) {
+    if (SESSION_DATA_COOKIE.test(name)) {
+      jar.set(name, '', {
+        maxAge: 0,
+        path: '/',
+        secure: name.startsWith('__Secure-'),
+      })
     }
   }
 

@@ -11,6 +11,7 @@ import {
 } from '@/lib/env/env'
 import { POSTHOG_PROXY_PATH } from '@/lib/posthog/constants'
 import { transformMiddlewareRequest } from '@axiomhq/nextjs'
+import { readCookieConsent } from './src/lib/auth-cookie';
 
 const PUBLIC_ROUTES = [
   '/', '/sign-in', '/sign-up', '/forget-password',
@@ -100,7 +101,7 @@ function withSecurityHeaders(response: NextResponse): NextResponse {
   return response
 }
 
-export function proxy(request: NextRequest) {
+export async function proxy(request: NextRequest) {
   // No flush here: one per request queued behind the previous ones (see
   // lib/axiom/server.ts). The batch client sends this within a second.
   logger.info(...transformMiddlewareRequest(request))
@@ -145,6 +146,25 @@ export function proxy(request: NextRequest) {
     return NextResponse.redirect(
       new URL(`/sign-in?redirect=${redirectTo}`, request.url),
     )
+  }
+
+  // Optimistic consent gate (STR-61), form the signed cookie cache: sends a
+  // user who has not accepted the terms to the consent step before anything
+  // renders. Only page GETs: a server action (POST) cannot follow a redirect,
+  // and the API routes enforce consent themselves. The definitive check is
+  // the DAL's requireConsentedUser / requireMembership.
+  if (
+    request.method === 'GET' &&
+    !pathname.startsWith('/api/') &&
+    !pathname.startsWith('/onboarding') &&
+    !request.headers.has('next-action')
+  ) {
+    const isSecure = request.cookies.has('__Secure-better-auth.session_token')
+    if ((await readCookieConsent(request, isSecure)) === 'missing') {
+      return NextResponse.redirect(
+        new URL('/onboarding/consent-setup', request.url)
+      )
+    }
   }
 
   return withSecurityHeaders(NextResponse.next())
