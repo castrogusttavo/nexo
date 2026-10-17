@@ -14,6 +14,10 @@ export const metadata: Metadata = {
 
 type SearchParams = Promise<{ redirect?: string }>
 
+// Opted into instant-navigation validation (next.config.ts validates only
+// segments that declare it): a blocking read here is a regression.
+export const instant = true
+
 // The redirect target and the "already signed in" check both need the
 // request, so they run inside a boundary: read at the page root they blocked
 // the route's prerender and every navigation into it (Cache Components).

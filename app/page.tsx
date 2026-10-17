@@ -29,6 +29,10 @@ export const metadata: Metadata = {
   },
 }
 
+// Opted into instant-navigation validation (next.config.ts validates only
+// segments that declare it): a blocking read here is a regression.
+export const instant = true
+
 // Public marketing page, prerendered. A signed-in visitor never reaches it:
 // proxy.ts sends anyone with a session cookie to /home, which resolves their
 // workspace. Reading the session here made the whole page render on every

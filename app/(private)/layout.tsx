@@ -5,17 +5,15 @@ import { requireConsent } from '@/src/lib/consent'
 
 // Nothing under here can render before we know who is asking: this layout
 // resolves the session and the consent gate and redirects when either is
-// missing, and the workspace layout below adds the membership check. Cache
-// Components validates every navigation for an instant, prerenderable shell
-// and reports each of those reads on every dev page load. There is no honest
-// static shell for a private workspace, so the segment declares that it blocks
-// instead of leaving the dev overlay to repeat it forever — it was covering
-// the page while screenshots were being taken.
+// missing, and the workspace layout below adds the membership check, so the
+// private app blocks by design. next.config.ts validates instant navigation
+// only where a segment opts in; `instant = false` here also keeps the static
+// shell check off for this tree (prerendering it hits Better Auth's
+// `new Date()` in the session read).
 //
-// This is the proportionate fix, not the ambitious one. Making these routes
-// genuinely instant means rendering the chrome from a cached shell and
-// suspending the per-user parts behind skeletons, which is a UX change, not a
-// bug fix.
+// Do not wrap the gate in <Suspense> to quiet the dev overlay: the page would
+// render before the check finishes. The way out is moving the checks out of
+// render (see the plan in the vault, 2026-10-16-instant-private-app-plan).
 export const instant = false
 
 export default async function PrivateLayout({

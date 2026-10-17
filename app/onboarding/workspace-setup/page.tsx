@@ -11,6 +11,10 @@ import { WorkspaceForm } from './workspace-form'
 
 export const metadata: Metadata = { title: 'Criar workspace | Nexo' }
 
+// Opted into instant-navigation validation (next.config.ts validates only
+// segments that declare it): a blocking read here is a regression.
+export const instant = true
+
 // The title is the same for everyone and renders at once; the step check and
 // the form wait for the session inside the boundary, so moving between steps
 // never blocks on it.

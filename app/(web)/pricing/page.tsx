@@ -52,6 +52,10 @@ const PRODUCT_SCHEMA = {
   ],
 }
 
+// Opted into instant-navigation validation (next.config.ts validates only
+// segments that declare it): a blocking read here is a regression.
+export const instant = true
+
 export default function PricingPage() {
   return (
     <>

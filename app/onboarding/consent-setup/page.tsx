@@ -16,6 +16,10 @@ export const metadata: Metadata = {
     'Aceite os Termos de Serviço e a Política de Privacidade para continuar usando o Nexo.',
 }
 
+// Opted into instant-navigation validation (next.config.ts validates only
+// segments that declare it): a blocking read here is a regression.
+export const instant = true
+
 // The copy is the same for everyone and renders at once; the check for who is
 // asking (and whether they already accepted) waits inside the boundary, so the
 // step never blocks on it.

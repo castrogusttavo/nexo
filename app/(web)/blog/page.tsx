@@ -28,6 +28,10 @@ export const metadata: Metadata = {
   },
 }
 
+// Opted into instant-navigation validation (next.config.ts validates only
+// segments that declare it): a blocking read here is a regression.
+export const instant = true
+
 export default async function BlogPage() {
   const posts = await getAllPostsMeta()
   const [featured, ...rest] = posts

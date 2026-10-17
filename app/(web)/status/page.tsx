@@ -44,6 +44,10 @@ export const metadata: Metadata = {
   },
 }
 
+// Opted into instant-navigation validation (next.config.ts validates only
+// segments that declare it): a blocking read here is a regression.
+export const instant = true
+
 // The snapshot comes from Redis/Postgres on every request, so it streams in
 // behind a placeholder: outside a boundary it blocks the route's prerender and
 // every navigation into it (Cache Components).

@@ -64,6 +64,10 @@ function groupByMonth(
   return groups
 }
 
+// Opted into instant-navigation validation (next.config.ts validates only
+// segments that declare it): a blocking read here is a regression.
+export const instant = true
+
 // Incidents are read on every request, so the list streams in behind a
 // placeholder: outside a boundary it blocks the route's prerender and every
 // navigation into it (Cache Components).
