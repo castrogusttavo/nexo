@@ -4,6 +4,7 @@ import { redirect } from 'next/navigation'
 import { getAuthSession } from '@/src/lib/auth-session'
 import { SaveGoalsSchema } from '@/src/schemas/user.schema'
 import { OnboardingService } from '@/src/services/onboarding.service'
+import { onboardingDestination } from '../_lib/destination'
 
 export type GoalsSetupState = { ok: boolean; error?: string }
 
@@ -29,7 +30,7 @@ export async function saveGoalsSetup(
       }
     }
 
-    redirect('/onboarding')
+    redirect(await onboardingDestination(auth.value.user.id))
   }
 
   const rawGoals = formData.getAll('goals') as string[]
@@ -47,5 +48,5 @@ export async function saveGoalsSetup(
   if (!result.ok)
     return { ok: false, error: 'Não foi possível salvar. Tente novamente' }
 
-  redirect('/onboarding')
+  redirect(await onboardingDestination(auth.value.user.id))
 }

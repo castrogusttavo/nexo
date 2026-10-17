@@ -4,6 +4,7 @@ import { redirect } from 'next/navigation'
 import { getAuthSession } from '@/src/lib/auth-session'
 import { SaveRoleSchema } from '@/src/schemas/user.schema'
 import { OnboardingService } from '@/src/services/onboarding.service'
+import { onboardingDestination } from '../_lib/destination'
 
 export type RoleSetupState = { ok: boolean; error?: string }
 
@@ -29,7 +30,7 @@ export async function saveRoleSetup(
       }
     }
 
-    redirect('/onboarding')
+    redirect(await onboardingDestination(auth.value.user.id))
   }
 
   const parsed = SaveRoleSchema.safeParse({ role: formData.get('role') })
@@ -46,5 +47,5 @@ export async function saveRoleSetup(
   if (!result.ok)
     return { ok: false, error: 'Não foi possível salvar. Tente novamente.' }
 
-  redirect('/onboarding')
+  redirect(await onboardingDestination(auth.value.user.id))
 }

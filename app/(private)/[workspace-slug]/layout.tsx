@@ -4,6 +4,7 @@ import type { ReactNode } from 'react'
 import { UserHeader } from '@/app/_components/header/header-layout-user'
 import { HeaderPromotionBanner } from '@/app/_components/header/header-promotion-banner'
 import { GlobalSidebarNavigation } from '@/app/_components/navigation/sidebar-global'
+import { onboardingDestination } from '@/app/onboarding/_lib/destination'
 import { TRIAL_BANNER_DAYS } from '@/src/config/trial'
 import { getAuthSession } from '@/src/lib/auth-session'
 import { getWorkspaceMembership } from '@/src/lib/workspace-context'
@@ -45,7 +46,9 @@ export default async function WorkspaceLayout({
   const isMember = membership.ok && membership.value !== null
 
   if (!isMember && userResult.ok && userResult.value.onboardingStep !== null) {
-    redirect('/onboarding')
+    // Straight to the step: /onboarding is a route handler, which a
+    // client-side navigation cannot land on.
+    redirect(await onboardingDestination(session.value.user.id))
   }
 
   if (!membership.ok || !membership.value) {

@@ -1,4 +1,5 @@
 import { type NextRequest, NextResponse } from 'next/server'
+import { onboardingDestination } from '@/app/onboarding/_lib/destination'
 import { withAxiom } from '@/lib/axiom/server'
 import { auth } from '@/src/lib/auth'
 import { MembershipService } from '@/src/services/membership.service'
@@ -39,10 +40,10 @@ export const GET = withAxiom(async (request: NextRequest) => {
   }
 
   const memberships = await MembershipService.listByUser(session.user.id)
-  const target =
-    memberships.ok && memberships.value.length > 0
-      ? `/${memberships.value[0].workspace.slug}`
-      : '/onboarding'
+  if (memberships.ok && memberships.value.length > 0) {
+    return redirectTo(`/${memberships.value[0].workspace.slug}`)
+  }
 
-  return redirectTo(target)
+  // Straight to the step rather than through /onboarding: one hop fewer.
+  return redirectTo(await onboardingDestination(session.user.id))
 })

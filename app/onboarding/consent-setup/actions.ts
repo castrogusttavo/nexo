@@ -5,6 +5,7 @@ import { redirect } from 'next/navigation'
 import { getAuthSession } from '@/src/lib/auth-session'
 import { AcceptConsentSchema } from '@/src/schemas/user.schema'
 import { UserService } from '@/src/services/user.service'
+import { onboardingDestination } from '../_lib/destination'
 
 export type AcceptConsentState = { ok: boolean; error?: string }
 
@@ -47,5 +48,5 @@ export async function acceptOnboardingConsent(
     }
   }
 
-  redirect('/onboarding')
+  redirect(await onboardingDestination(auth.value.user.id))
 }

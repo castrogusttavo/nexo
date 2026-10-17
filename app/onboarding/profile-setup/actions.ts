@@ -4,6 +4,7 @@ import { redirect } from 'next/navigation'
 import { getAuthSession } from '@/src/lib/auth-session'
 import { SaveProfileSchema } from '@/src/schemas/user.schema'
 import { OnboardingService } from '@/src/services/onboarding.service'
+import { onboardingDestination } from '../_lib/destination'
 
 export type ProfileSetupState = { ok: boolean; error?: string }
 
@@ -32,5 +33,5 @@ export async function saveProfileSetup(
   if (!result.ok)
     return { ok: false, error: 'Não foi possível salvar. Tente novamente.' }
 
-  redirect('/onboarding')
+  redirect(await onboardingDestination(auth.value.user.id))
 }

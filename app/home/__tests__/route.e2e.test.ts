@@ -44,13 +44,13 @@ describe('GET /home', () => {
     expect(locationPath(res)).toBe(`/${workspace.slug}`)
   })
 
-  it('redirects someone without a workspace to onboarding', async () => {
+  it('sends someone without a workspace straight to their onboarding step', async () => {
     const { cookie } = await createAuthenticatedUser()
 
     const res = await get('/home', cookie)
 
     expect(res.status).toBe(307)
-    expect(locationPath(res)).toBe('/onboarding')
+    expect(locationPath(res)).toBe('/onboarding/profile-setup')
   })
 
   it('clears a stale session cookie and returns to the public root', async () => {

@@ -4,6 +4,7 @@ import type { OnboardingStep } from '@prisma/client'
 import { redirect } from 'next/navigation'
 import { getAuthSession } from '@/src/lib/auth-session'
 import { OnboardingService } from '@/src/services/onboarding.service'
+import { onboardingDestination } from './_lib/destination'
 
 export async function advanceOboardingStep(currentStep: OnboardingStep) {
   const auth = await getAuthSession()
@@ -14,7 +15,7 @@ export async function advanceOboardingStep(currentStep: OnboardingStep) {
     currentStep,
   )
 
-  redirect('/onboarding')
+  redirect(await onboardingDestination(auth.value.user.id))
 }
 
 export async function goBackOnboarding() {
