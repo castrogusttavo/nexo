@@ -167,13 +167,6 @@ const nextConfig: NextConfig = {
   experimental: {
     webpackMemoryOptimizations: true,
     useTypeScriptCli: true,
-    // Instant-navigation validation only where a segment opts in with
-    // `export const instant = true`. The private app is blocking by design:
-    // its layouts gate session, consent (STR-61) and membership before
-    // anything renders, and the framework default validated every page, so
-    // all of them reported it. The routes made instant on purpose (public
-    // pages, sign-in/up, the onboarding steps) opt in to stay guarded.
-    instantInsights: { validationLevel: 'manual-warning' }
   },
   typescript: {
     ignoreBuildErrors: true
