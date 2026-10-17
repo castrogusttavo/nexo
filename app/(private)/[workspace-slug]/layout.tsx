@@ -1,10 +1,9 @@
 import type { Metadata } from 'next'
 import { type ReactNode, Suspense } from 'react'
 import { UserHeader } from '@/app/_components/header/header-layout-user'
-import { HeaderPromotionBanner } from '@/app/_components/header/header-promotion-banner'
+import { HeaderTrialBanner } from '@/app/_components/header/header-trial-banner'
 import { GlobalSidebarNavigation } from '@/app/_components/navigation/sidebar-global'
 import { Skeleton } from '@/components/ui/skeleton'
-import { TRIAL_BANNER_DAYS } from '@/src/config/trial'
 import { requireMembership } from '@/src/lib/dal'
 import { SubscriptionService } from '@/src/services/subscription.service'
 
@@ -70,18 +69,11 @@ async function TrialBanner({ params }: { params: Params }) {
   const workspace = membership.workspace
   if (!workspace.trialEndsAt) return null
 
-  // Banner only during the last TRIAL_BANNER_DAYS days of the trial.
-  const trialEndsAt = new Date(workspace.trialEndsAt).getTime()
-  const now = Date.now()
-  const endingSoon =
-    trialEndsAt > now && trialEndsAt <= now + TRIAL_BANNER_DAYS * 86_400_000
-  if (!endingSoon) return null
-
   const activeSub = await SubscriptionService.getActiveByWorkspace(workspace.id)
   if (activeSub.ok && activeSub.value !== null) return null
 
   return (
-    <HeaderPromotionBanner
+    <HeaderTrialBanner
       endDate={workspace.trialEndsAt}
       plan={workspace.activePlan}
       slug={slug}
