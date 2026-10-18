@@ -5,6 +5,8 @@ import {
   decideComponentAlert,
   FLAP_TRANSITION_THRESHOLD,
   FLAP_WINDOW_MS,
+  isOutageReminderDue,
+  OUTAGE_REMINDER_INTERVAL_MS,
   STABLE_PERIOD_MS,
   type StatusPoint,
 } from '@/src/services/status/status-alerts'
@@ -222,5 +224,62 @@ describe('componentAlertText', () => {
         { ...base, from: M, to: M },
       ),
     ).toContain('estabilizou fora do ar')
+  })
+})
+
+describe('isOutageReminderDue', () => {
+  const HOUR = 60 * MINUTE
+  const since = new Date(T0)
+  const at = (ms: number) => new Date(T0 + ms)
+
+  it('reminds every six hours of an open incident', () => {
+    expect(OUTAGE_REMINDER_INTERVAL_MS).toBe(6 * HOUR)
+  })
+
+  it('stays quiet before the first interval has passed', () => {
+    expect(
+      isOutageReminderDue(since, at(5 * HOUR), at(5 * HOUR + MINUTE)),
+    ).toBe(false)
+  })
+
+  it('fires once, on the check that crosses each interval', () => {
+    expect(
+      isOutageReminderDue(since, at(6 * HOUR - MINUTE), at(6 * HOUR)),
+    ).toBe(true)
+    expect(
+      isOutageReminderDue(since, at(6 * HOUR), at(6 * HOUR + MINUTE)),
+    ).toBe(false)
+    expect(
+      isOutageReminderDue(
+        since,
+        at(12 * HOUR - MINUTE),
+        at(12 * HOUR + MINUTE),
+      ),
+    ).toBe(true)
+  })
+
+  it('does not repeat a reminder after a gap in collection', () => {
+    expect(
+      isOutageReminderDue(since, at(6 * HOUR + MINUTE), at(11 * HOUR)),
+    ).toBe(false)
+  })
+})
+
+describe('componentAlertText - reminder', () => {
+  it('says how long the component has been down', () => {
+    const since = new Date(T0)
+    const text = componentAlertText(
+      { action: 'reminder', since },
+      {
+        componentKey: 'storage',
+        from: M,
+        to: M,
+        at: new Date(T0 + 6 * 60 * MINUTE),
+        incidentStartedAt: since,
+        error: 'Timed out after 5000ms',
+      },
+    )
+    expect(text).toContain('continua fora do ar há')
+    expect(text).toContain('Timed out after 5000ms')
   })
 })

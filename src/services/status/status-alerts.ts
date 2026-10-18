@@ -44,6 +44,14 @@ export const FLAP_WINDOW_MS = 30 * 60_000
 export const STABLE_PERIOD_MS = 15 * 60_000
 export const ALERT_HISTORY_LOOKBACK_MS = 3 * 60 * 60_000
 
+/**
+ * A component that stays down posts nothing after its first message: a held
+ * state is not a transition. So while its incident is open, one reminder goes
+ * out every `OUTAGE_REMINDER_INTERVAL_MS` of it. Without this, App and Storage
+ * sat at 0% for 17 days (2026-10-01 to 10-18) after a single alert.
+ */
+export const OUTAGE_REMINDER_INTERVAL_MS = 6 * 60 * 60_000
+
 export const STATUS_PAGE_URL = 'https://nexopm.com/status'
 
 export interface StatusPoint {
@@ -57,6 +65,7 @@ export type AlertDecision =
   | { action: 'unstable'; transitions: number }
   | { action: 'suppressed' }
   | { action: 'stabilized'; since: Date }
+  | { action: 'reminder'; since: Date }
 
 /**
  * What to post for the newest point, given the component's checks in time
@@ -99,6 +108,27 @@ export function decideComponentAlert(points: StatusPoint[]): AlertDecision {
   }
 
   return decision
+}
+
+/**
+ * Whether the incident open since `openSince` crossed a multiple of the
+ * reminder interval between the previous check and this one. Keyed on the
+ * incident's age rather than a stored "last reminded" mark, so it needs no
+ * state and a missed collection only delays a reminder, never repeats one.
+ */
+export function isOutageReminderDue(
+  openSince: Date,
+  previousAt: Date,
+  now: Date,
+): boolean {
+  const start = openSince.getTime()
+  const before = Math.floor(
+    (previousAt.getTime() - start) / OUTAGE_REMINDER_INTERVAL_MS,
+  )
+  const after = Math.floor(
+    (now.getTime() - start) / OUTAGE_REMINDER_INTERVAL_MS,
+  )
+  return after > before && after >= 1
 }
 
 export interface ComponentAlertContext {
@@ -212,6 +242,15 @@ export function componentAlertText(
           ? `:white_check_mark: ${name} estabilizou e está operacional`
           : `${STATE_EMOJI[ctx.to]} ${name} estabilizou ${STATE_WORDS[ctx.to]}`,
         `Estável desde ${formatAlertTime(decision.since)}. Alertas retomados.`,
+        errorLine(ctx.error),
+        LINK_LINE,
+      )
+    case 'reminder':
+      return lines(
+        `${STATE_EMOJI[ctx.to]} ${name} continua ${STATE_WORDS[ctx.to]} há ${formatAlertDuration(
+          ctx.at.getTime() - decision.since.getTime(),
+        )}`,
+        `Desde: ${formatAlertTime(decision.since)}`,
         errorLine(ctx.error),
         LINK_LINE,
       )

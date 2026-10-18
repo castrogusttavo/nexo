@@ -39,10 +39,12 @@ import {
 } from './probes'
 import {
   ALERT_HISTORY_LOOKBACK_MS,
+  type AlertDecision,
   alertCollectFailed,
   alertCollectRecovered,
   alertComponent,
   decideComponentAlert,
+  isOutageReminderDue,
   type StatusPoint,
 } from './status-alerts'
 import { STATUS_META } from './status-map'
@@ -150,6 +152,8 @@ interface IncidentEvaluation {
   transition: IncidentTransition | null
   /** Set when an incident read or write failed; the transition still stands. */
   error: AppError | null
+  /** Start of the incident still open after this check, if any. */
+  openSince: Date | null
 }
 
 /**
@@ -177,11 +181,17 @@ async function evaluateIncidentFor(
     from === status ? null : { from, to: status, incidentStartedAt }
 
   if (!openResult.ok) {
-    return { transition: transition(null), error: openResult.error }
+    return {
+      transition: transition(null),
+      error: openResult.error,
+      openSince: null,
+    }
   }
 
   if (status === 'OPERATIONAL') {
-    if (!open) return { transition: transition(null), error: null }
+    if (!open) {
+      return { transition: transition(null), error: null, openSince: null }
+    }
     const closed = await IncidentRepository.close(
       open.id,
       now,
@@ -190,6 +200,7 @@ async function evaluateIncidentFor(
     return {
       transition: transition(open.startedAt),
       error: closed.ok ? null : closed.error,
+      openSince: null,
     }
   }
 
@@ -208,6 +219,7 @@ async function evaluateIncidentFor(
     return {
       transition: transition(now),
       error: created.ok ? null : created.error,
+      openSince: created.ok ? now : null,
     }
   }
 
@@ -215,7 +227,11 @@ async function evaluateIncidentFor(
   if (STATUS_RANK[status] > STATUS_RANK[open.severity]) {
     const bumped = await IncidentRepository.bumpSeverity(open.id, status)
     if (!bumped.ok) {
-      return { transition: transition(open.startedAt), error: bumped.error }
+      return {
+        transition: transition(open.startedAt),
+        error: bumped.error,
+        openSince: open.startedAt,
+      }
     }
     const updateResult = await IncidentRepository.addUpdate(
       open.id,
@@ -226,11 +242,16 @@ async function evaluateIncidentFor(
       return {
         transition: transition(open.startedAt),
         error: updateResult.error,
+        openSince: open.startedAt,
       }
     }
   }
 
-  return { transition: transition(open.startedAt), error: null }
+  return {
+    transition: transition(open.startedAt),
+    error: null,
+    openSince: open.startedAt,
+  }
 }
 
 /**
@@ -502,7 +523,7 @@ export const StatusService = {
         if (!probe) return null
         const past = history.get(key) ?? []
         const previous = past.at(-1)?.status ?? null
-        const { transition, error } = await evaluateIncidentFor(
+        const { transition, error, openSince } = await evaluateIncidentFor(
           key,
           probe,
           previous,
@@ -524,11 +545,21 @@ export const StatusService = {
           past.length === 0 && transition
             ? [{ status: transition.from, at: new Date(now.getTime() - 1) }]
             : []
-        const decision = decideComponentAlert([
+        const replayed = decideComponentAlert([
           ...seed,
           ...past,
           { status: current, at: now },
         ])
+        // A held state posts nothing, so an outage would go quiet after its
+        // first message: remind while the incident stays open.
+        const previousAt = past.at(-1)?.at ?? null
+        const decision: AlertDecision =
+          replayed.action === 'none' &&
+          openSince &&
+          previousAt &&
+          isOutageReminderDue(openSince, previousAt, now)
+            ? { action: 'reminder', since: openSince }
+            : replayed
         if (decision.action === 'none' || decision.action === 'suppressed') {
           return null
         }
