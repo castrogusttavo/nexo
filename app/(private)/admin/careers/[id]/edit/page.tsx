@@ -1,11 +1,11 @@
-import type { Metadata } from 'next'
 import { notFound, redirect } from 'next/navigation'
 import { resolvePlatformAdmin } from '@/src/lib/admin-access'
+import { adminMetadata } from '@/src/lib/admin-metadata'
 import { CareerJobService } from '@/src/services/career-job.service'
 import { CareerJobForm } from '../../_components/career-job-form'
 import { StatusControl } from './status-control'
 
-export const metadata: Metadata = { title: 'Editar vaga | Admin Nexo' }
+export const generateMetadata = adminMetadata('Editar vaga | Admin Nexo')
 
 // Blocking like the admin layout above it (see there).
 export const instant = false

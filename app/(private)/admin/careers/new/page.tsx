@@ -1,7 +1,7 @@
-import type { Metadata } from 'next'
+import { adminMetadata } from '@/src/lib/admin-metadata'
 import { CareerJobForm } from '../_components/career-job-form'
 
-export const metadata: Metadata = { title: 'Nova vaga | Admin Nexo' }
+export const generateMetadata = adminMetadata('Nova vaga | Admin Nexo')
 
 export default function NewCareerJobPage() {
   return (

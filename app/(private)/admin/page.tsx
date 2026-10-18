@@ -1,7 +1,7 @@
-import type { Metadata } from 'next'
 import Link from 'next/link'
+import { adminMetadata } from '@/src/lib/admin-metadata'
 
-export const metadata: Metadata = { title: 'Admin | Nexo' }
+export const generateMetadata = adminMetadata('Admin | Nexo')
 
 // The admin area had no index: /admin matched no page and answered with the
 // 404 screen, even for an allowlisted admin with a second factor. Everything

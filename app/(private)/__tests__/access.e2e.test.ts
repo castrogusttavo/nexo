@@ -165,3 +165,22 @@ describe('private pages - member without consent (STR-61)', () => {
     },
   )
 })
+
+describe('admin pages - signed in, not an admin', () => {
+  // The admin layout answers 404, but each page's title was static metadata,
+  // resolved apart from the layout: the <title> named the area to anyone
+  // signed in.
+  it('answers 404 without naming the admin area', ALL_PAGES, async () => {
+    const stranger = await createAuthenticatedUser()
+    await prisma.user.update({
+      where: { id: stranger.id },
+      data: { onboardingStep: null },
+    })
+
+    for (const path of ['/admin', '/admin/careers', '/admin/careers/new']) {
+      const page = await visit(path, stranger.cookie)
+      expectNotFound(page)
+      expect(page.body, path).not.toMatch(/<title>[^<]*Admin/)
+    }
+  })
+})

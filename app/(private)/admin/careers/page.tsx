@@ -1,12 +1,12 @@
-import type { Metadata } from 'next'
 import Link from 'next/link'
 import { redirect } from 'next/navigation'
 import { Badge } from '@/components/ui/badge'
 import { buttonVariants } from '@/components/ui/button'
 import { resolvePlatformAdmin } from '@/src/lib/admin-access'
+import { adminMetadata } from '@/src/lib/admin-metadata'
 import { CareerJobService } from '@/src/services/career-job.service'
 
-export const metadata: Metadata = { title: 'Vagas | Admin Nexo' }
+export const generateMetadata = adminMetadata('Vagas | Admin Nexo')
 
 // Blocking like the admin layout above it (see there).
 export const instant = false
