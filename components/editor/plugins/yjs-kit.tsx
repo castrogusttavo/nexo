@@ -24,17 +24,10 @@ export function createYjsKit({
             options: { name: documentName, url: NEXT_PUBLIC_REALTIME_URL }
           }
         ],
-        onConnect: ({ type }) => {
-          console.log('[yjs] connected', type)
-        },
-        onDisconnect: ({ type }) => {
-          console.log('[yjs] disconnected', type)
-        },
         onError: ({ type, error }) => {
           console.error('[yjs] error', type, error)
         },
-        onSyncChange: ({ type, isSynced }) => {
-          console.log('[yjs] sync change', type, isSynced)
+        onSyncChange: ({ isSynced }) => {
           if (isSynced) onSyncChange?.(isSynced)
         }
       }
