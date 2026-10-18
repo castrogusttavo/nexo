@@ -5,7 +5,7 @@ vi.mock('@/lib/env/server', async (importOriginal) => ({
   TRUSTED_PROXIES: ['127.0.0.1', '10.0.0.0/8'],
 }))
 
-import { clientIp } from '@/src/lib/client-ip'
+import { clientIp, clientIpBucket } from '@/src/lib/client-ip'
 
 function headers(values: Record<string, string> = {}): Headers {
   return new Headers(values)
@@ -50,5 +50,30 @@ describe('clientIp()', () => {
     expect(clientIp(headers())).toBeNull()
     expect(clientIp(null)).toBeNull()
     expect(clientIp(undefined)).toBeNull()
+  })
+
+  it('should keep every bit of an IPv6 address', () => {
+    expect(
+      clientIp(
+        headers({
+          'x-forwarded-for': '2804:14c:abcd:1234:5678:9abc:def0:1, 127.0.0.1',
+        }),
+      ),
+    ).toBe('2804:014c:abcd:1234:5678:9abc:def0:0001')
+  })
+})
+
+describe('clientIpBucket()', () => {
+  it('should key an IPv6 address by its /64', () => {
+    const a = headers({ 'x-forwarded-for': '2804:14c:abcd:1234:5678::1' })
+    const b = headers({ 'x-forwarded-for': '2804:14c:abcd:1234:ffff::2' })
+    expect(clientIpBucket(a)).toBe('2804:014c:abcd:1234:0000:0000:0000:0000')
+    expect(clientIpBucket(a)).toBe(clientIpBucket(b))
+  })
+
+  it('should leave IPv4 untouched', () => {
+    expect(
+      clientIpBucket(headers({ 'x-forwarded-for': '9.9.9.9, 3.3.3.3' })),
+    ).toBe('3.3.3.3')
   })
 })

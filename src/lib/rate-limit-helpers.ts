@@ -1,14 +1,14 @@
 import type { Limiter } from '@/src/lib/rate-limit'
 import { consume } from '@/src/lib/rate-limit'
 import { handleError } from '@/utils/http-response'
-import { clientIp } from './client-ip'
+import { clientIpBucket } from './client-ip'
 
 // Same resolution as Better Auth's own limiter (see advanced.ipAddress in
 // src/lib/auth.ts): walk X-Forwarded-For from the right to the first
-// untrusted hop. The leftmost entry is client-controlled, and X-Real-IP is
-// set from it by nginx, so neither is read.
+// untrusted hop, IPv6 keyed by its /64. The leftmost entry is
+// client-controlled, and X-Real-IP is set from it by nginx, so neither is read.
 export function getClientIp(request: Request): string {
-  return clientIp(request.headers) ?? 'unknown'
+  return clientIpBucket(request.headers) ?? 'unknown'
 }
 
 type RateLimitTarget = { limiter: Limiter; key: string; points?: number }

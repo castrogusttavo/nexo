@@ -1,5 +1,6 @@
 import type { NextRequest } from 'next/server'
 import { withAxiom } from '@/lib/axiom/server'
+import { clientIp } from '@/src/lib/client-ip'
 import { apiLimiter } from '@/src/lib/rate-limit'
 import { getClientIp, withRateLimit } from '@/src/lib/rate-limit-helpers'
 import { CreateCareerApplicationSchema } from '@/src/schemas/career-application.schema'
@@ -62,7 +63,7 @@ export const POST = withAxiom(
 
       const result = await CareerApplicationService.submit(parsed.data, {
         slug,
-        ipAddress: getClientIp(request),
+        ipAddress: clientIp(request.headers) ?? 'unknown',
         resumeFile: {
           buffer,
           contentType: resume.type,
