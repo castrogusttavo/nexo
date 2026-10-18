@@ -28,7 +28,17 @@ export default defineConfig({
       'utils/__tests__/*.test.ts',
       'lib/__tests__/*.test.ts',
     ],
-    exclude: ['**/*.integration.test.ts', '**/*.smoke.test.ts'],
+    exclude: [
+      '**/*.integration.test.ts',
+      '**/*.smoke.test.ts',
+      // Calls vi.resetModules() and re-imports career-job.service inside a
+      // test, which re-runs app-error.ts's module initialisation there.
+      // perTest coverage then counts that test as covering every static
+      // mutant in the file, ignoreStatic stops dropping them, and a test
+      // that never calls an error factory reports 88 false survivors (since
+      // the 2026-09-28 run). It guards lib/env, which is not mutated anyway.
+      'lib/__tests__/server-admin-env.test.ts',
+    ],
     setupFiles: ['./src/__tests__/setup.ts', './src/__tests__/setup.unit.ts'],
     // Higher than the 5s of the unit project: a mutant that pushes a loop or a
     // retry one step further is still a *survivor* to be reported, not a test
