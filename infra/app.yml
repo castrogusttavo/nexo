@@ -12,12 +12,15 @@ name: nexo
 # nginx proxies /realtime (same origin, so the session cookie reaches the
 # Hocuspocus server) to the realtime service on 127.0.0.1:1234.
 # The router does not hairpin: a container resolving the public names to the
-# public IP times out. Point them at the host's LAN address instead, where
-# nginx terminates TLS with the same certificates, so presigned storage URLs
-# (signed for the public host) and any self-call work from inside too.
+# public IP times out. Point them at the Docker host itself (host-gateway),
+# where nginx terminates TLS with the same certificates, so presigned storage
+# URLs (signed for the public host) and any self-call work from inside too.
+# Not the LAN address: the host moved from 192.168.100.197 to .101.245 on
+# 2026-10-01 and every self-call (the app and storage probes, server-side S3)
+# went unreachable for 17 days.
 x-internal-hosts: &internal-hosts
-  - 'storage.nexopm.com:192.168.100.197'
-  - 'nexopm.com:192.168.100.197'
+  - 'storage.nexopm.com:host-gateway'
+  - 'nexopm.com:host-gateway'
 
 x-public-env: &public-env
   NEXT_PUBLIC_URL: https://nexopm.com
