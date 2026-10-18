@@ -239,7 +239,7 @@ const SECTIONS: LegalSection[] = [
       {
         heading: '10.3 Sinais de não rastreamento',
         paragraphs: [
-          'Nossos sites não respondem atualmente a sinais de "Do Not Track" do navegador. Honramos sinais de Global Privacy Control ("GPC") quando exigido pela legislação aplicável. Quando detectamos um sinal de GPC, tratamos como uma recusa válida ao compartilhamento de informações pessoais para fins de publicidade.',
+          'Nossos sites não respondem atualmente a sinais de "Do Not Track" do navegador. Honramos sinais de Global Privacy Control ("GPC") quando exigido pela legislação aplicável. Não compartilhamos informações pessoais para fins de publicidade, com ou sem sinal de GPC. A coleta de dados de análise depende apenas da escolha que você faz no aviso de cookies, que pode ser revogada a qualquer momento.',
         ],
       },
     ],
