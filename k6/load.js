@@ -25,13 +25,13 @@ const THINK_MIN = Number(__ENV.THINK_MIN || 3) // seconds between requests
 const THINK_MAX = Number(__ENV.THINK_MAX || 15)
 
 // Every request asks for compression like a browser does: uncompressed, the
-// marketing pages average ~470 KB (/pricing is 1MB) agains ~42 KB gzipped,
+// marketing pages average ~470 KB (/pricing is 1MB) against ~42 KB gzipped,
 // which saturates the generator's uplink before it saturates the server.
 // LOAD_TEST_TOKEN lets nginx skip limit_req for this run (see the
 // $http_x_load_test map in the production nginx config); without it, a single
 // generator IP is throttled within seconds.
 const COMMON_HEADERS = {
-  'Accept-Enconding': 'gzip, br',
+  'Accept-Encoding': 'gzip, br',
   ...(__ENV.LOAD_TEST_TOKEN ? { 'X-Load-Test': __ENV.LOAD_TEST_TOKEN } : {})
 }
 
