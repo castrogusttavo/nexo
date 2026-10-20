@@ -2,6 +2,7 @@ import { screen, waitFor } from '@testing-library/react'
 import type { ImgHTMLAttributes } from 'react'
 import { toast } from 'sonner'
 import { describe, expect, it, vi } from 'vitest'
+import { buildProjectDTO } from '@/src/__tests__/factories/dto/project.dto'
 import {
   apiError,
   apiSuccess,
@@ -38,28 +39,11 @@ const WORKSPACE_ID = 'ws-1'
 const PROJECT_URL = `/api/workspaces/${WORKSPACE_ID}/projects/alpha`
 
 function buildProject(overrides: Partial<ProjectDTO> = {}): ProjectDTO {
-  return {
-    id: 'project-1',
-    name: 'Alpha',
-    slug: 'alpha',
-    identifier: 'ALP',
-    description: null,
-    emoji: null,
-    coverImage: null,
-    isPublic: false,
-    issueTypesEnabled: true,
-    modulesEnabled: true,
-    cyclesEnabled: true,
-    estimatesEnabled: true,
-    isFavorited: false,
-    leadId: 'user-1',
-    stateId: 'pstate-1',
+  return buildProjectDTO({
     workspaceId: WORKSPACE_ID,
     archivedAt: '2026-02-20T12:00:00.000Z',
-    createdAt: '2026-01-01T00:00:00.000Z',
-    updatedAt: '2026-01-01T00:00:00.000Z',
     ...overrides,
-  }
+  })
 }
 
 function renderCard(overrides: Partial<ProjectDTO> = {}) {
