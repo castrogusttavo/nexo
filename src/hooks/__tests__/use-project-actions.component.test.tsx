@@ -2,6 +2,7 @@ import { act, waitFor } from '@testing-library/react'
 import { toast } from 'sonner'
 import { describe, expect, it, vi } from 'vitest'
 import { copyToClipboard } from '@/lib/clipboard'
+import { buildProjectDTO } from '@/src/__tests__/factories/dto/project.dto'
 import {
   apiError,
   apiSuccess,
@@ -33,28 +34,7 @@ const PROJECT_BASE = '/acme/projects/alpha'
 const PROJECT_URL = `/api/workspaces/${WORKSPACE_ID}/projects/alpha`
 
 function buildProject(overrides: Partial<ProjectDTO> = {}): ProjectDTO {
-  return {
-    id: 'project-1',
-    name: 'Alpha',
-    slug: 'alpha',
-    identifier: 'ALP',
-    description: null,
-    emoji: null,
-    coverImage: null,
-    isPublic: false,
-    issueTypesEnabled: true,
-    modulesEnabled: true,
-    cyclesEnabled: true,
-    estimatesEnabled: true,
-    isFavorited: false,
-    leadId: 'user-1',
-    stateId: 'pstate-1',
-    workspaceId: WORKSPACE_ID,
-    archivedAt: null,
-    createdAt: '2026-01-01T00:00:00.000Z',
-    updatedAt: '2026-01-01T00:00:00.000Z',
-    ...overrides,
-  }
+  return buildProjectDTO({ workspaceId: WORKSPACE_ID, ...overrides })
 }
 
 function renderActions(project = buildProject()) {

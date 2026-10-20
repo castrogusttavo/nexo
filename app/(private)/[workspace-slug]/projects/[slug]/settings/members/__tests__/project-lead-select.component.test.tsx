@@ -1,5 +1,6 @@
 import { screen } from '@testing-library/react'
 import { describe, expect, it } from 'vitest'
+import { buildProjectDTO } from '@/src/__tests__/factories/dto/project.dto'
 import {
   apiSuccess,
   mockFetch,
@@ -14,27 +15,12 @@ const TIMESTAMPS = {
 }
 
 function buildProject(overrides: Partial<ProjectDTO> = {}): ProjectDTO {
-  return {
-    id: 'project-1',
+  return buildProjectDTO({
     name: 'Nexo',
     slug: 'nexo',
     identifier: 'NEX',
-    description: null,
-    emoji: null,
-    coverImage: null,
-    isPublic: false,
-    issueTypesEnabled: true,
-    modulesEnabled: true,
-    cyclesEnabled: true,
-    estimatesEnabled: true,
-    isFavorited: false,
-    leadId: 'user-1',
-    stateId: 'pstate-1',
-    workspaceId: 'ws-1',
-    archivedAt: null,
-    ...TIMESTAMPS,
     ...overrides,
-  }
+  })
 }
 
 const MEMBERS: ProjectMemberDTO[] = [

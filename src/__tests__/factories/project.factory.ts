@@ -3,6 +3,7 @@ import type { Project, ProjectMember } from '@prisma/client'
 import { prisma } from '@/src/lib/prisma'
 import { ProjectRepository } from '@/src/repositories/project.repository'
 import type { ProjectDTO } from '@/types/project'
+import { buildProjectDTO } from './dto/project.dto'
 import { defaultProjectStateId } from './project-state.factory'
 
 export function createFakeProject(overrides?: Partial<Project>): Project {
@@ -35,28 +36,18 @@ export function createFakeProjectDTO(
   overrides?: Partial<ProjectDTO>,
 ): ProjectDTO {
   const now = new Date().toISOString()
-  return {
+  return buildProjectDTO({
     id: createId(),
     name: 'Text Project',
     slug: `proj-${createId().slice(0, 8)}`,
     identifier: createId().slice(0, 6).toUpperCase(),
-    description: null,
-    emoji: null,
-    coverImage: null,
-    isPublic: false,
-    issueTypesEnabled: true,
-    modulesEnabled: true,
-    cyclesEnabled: true,
-    estimatesEnabled: true,
-    isFavorited: false,
     leadId: createId(),
     stateId: createId(),
     workspaceId: createId(),
-    archivedAt: null,
     createdAt: now,
     updatedAt: now,
     ...overrides,
-  }
+  })
 }
 
 export async function seedProject(

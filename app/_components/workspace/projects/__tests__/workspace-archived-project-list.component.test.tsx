@@ -1,5 +1,6 @@
 import { screen, waitFor } from '@testing-library/react'
 import { describe, expect, it, vi } from 'vitest'
+import { buildProjectDTO } from '@/src/__tests__/factories/dto/project.dto'
 import {
   apiSuccess,
   deferredResponse,
@@ -29,28 +30,11 @@ vi.mock('../card/workspace-archived-project-card', () => ({
 }))
 
 function buildProject(overrides: Partial<ProjectDTO> = {}): ProjectDTO {
-  return {
-    id: 'project-1',
-    name: 'Alpha',
-    slug: 'alpha',
-    identifier: 'ALP',
-    description: null,
-    emoji: null,
-    coverImage: null,
-    isPublic: false,
-    issueTypesEnabled: true,
-    modulesEnabled: true,
-    cyclesEnabled: true,
-    estimatesEnabled: true,
-    isFavorited: false,
-    leadId: 'user-1',
-    stateId: 'pstate-1',
+  return buildProjectDTO({
     workspaceId: WORKSPACE_ID,
-    archivedAt: '2026-02-01T00:00:00.000Z',
-    createdAt: '2026-01-01T00:00:00.000Z',
-    updatedAt: '2026-01-01T00:00:00.000Z',
+    archivedAt: '2026-02-20T12:00:00.000Z',
     ...overrides,
-  }
+  })
 }
 
 function renderList(searchParams?: Record<string, string>) {

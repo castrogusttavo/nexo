@@ -8,6 +8,7 @@ import { screen, within } from '@testing-library/react'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { NexoIcon } from '@/components/icon/icon'
 import { Button } from '@/components/ui/button'
+import { buildProjectDTO } from '@/src/__tests__/factories/dto/project.dto'
 import { expectNoA11yViolations } from '@/src/__tests__/helpers/a11y'
 import {
   createTestQueryClient,
@@ -34,28 +35,13 @@ vi.mock('next/navigation', () => ({
 const WORKSPACE_ID = 'ws-1'
 
 function buildProject(overrides: Partial<ProjectDTO>): ProjectDTO {
-  return {
-    id: 'project-1',
+  return buildProjectDTO({
     name: 'Plataforma',
     slug: 'plataforma',
     identifier: 'PLA',
-    description: null,
-    emoji: null,
-    coverImage: null,
-    isPublic: false,
-    issueTypesEnabled: true,
-    modulesEnabled: true,
-    cyclesEnabled: true,
-    estimatesEnabled: true,
-    isFavorited: false,
-    leadId: 'user-1',
-    stateId: 'pstate-1',
     workspaceId: WORKSPACE_ID,
-    archivedAt: null,
-    createdAt: '2026-01-01T00:00:00.000Z',
-    updatedAt: '2026-01-01T00:00:00.000Z',
     ...overrides,
-  }
+  })
 }
 
 /**

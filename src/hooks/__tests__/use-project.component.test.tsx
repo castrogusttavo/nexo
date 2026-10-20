@@ -1,5 +1,6 @@
 import { act, waitFor } from '@testing-library/react'
 import { describe, expect, it } from 'vitest'
+import { buildProjectDTO } from '@/src/__tests__/factories/dto/project.dto'
 import {
   apiError,
   apiSuccess,
@@ -33,28 +34,14 @@ const detailKey = (slug: string, workspaceId = WORKSPACE_ID) =>
   [...projectsKey(workspaceId), slug] as const
 
 function buildProject(overrides: Partial<ProjectDTO> = {}): ProjectDTO {
-  return {
-    id: 'project-1',
-    name: 'Alpha',
-    slug: 'alpha',
-    identifier: 'ALP',
-    description: null,
-    emoji: null,
-    coverImage: null,
-    isPublic: false,
+  return buildProjectDTO({
     issueTypesEnabled: false,
     modulesEnabled: false,
     cyclesEnabled: false,
     estimatesEnabled: false,
-    isFavorited: false,
-    leadId: 'user-1',
-    stateId: 'pstate-1',
     workspaceId: WORKSPACE_ID,
-    archivedAt: null,
-    createdAt: '2026-01-01T00:00:00.000Z',
-    updatedAt: '2026-01-01T00:00:00.000Z',
     ...overrides,
-  }
+  })
 }
 
 /** A fetch response the test settles by hand, to observe in-flight state. */

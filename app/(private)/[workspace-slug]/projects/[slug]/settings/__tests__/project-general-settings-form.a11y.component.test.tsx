@@ -1,5 +1,6 @@
 import { screen } from '@testing-library/react'
 import { describe, it, vi } from 'vitest'
+import { buildProjectDTO } from '@/src/__tests__/factories/dto/project.dto'
 import { expectNoA11yViolations } from '@/src/__tests__/helpers/a11y'
 import { renderWithProviders } from '@/src/__tests__/helpers/component'
 import type { ProjectDTO } from '@/types/project'
@@ -40,28 +41,21 @@ vi.mock(
 const FRAGMENT_RULES = ['region', 'page-has-heading-one', 'landmark-one-main']
 
 function buildProject(overrides: Partial<ProjectDTO> = {}): ProjectDTO {
-  return {
-    id: 'project-1',
+  return buildProjectDTO({
     name: 'Roadmap',
     slug: 'roadmap',
     identifier: 'RM',
     description: 'Planejamento trimestral',
     emoji: '😊',
     coverImage: '/coverImages/image_1.jpg',
-    isPublic: false,
     issueTypesEnabled: false,
     modulesEnabled: false,
     cyclesEnabled: false,
     estimatesEnabled: false,
-    isFavorited: false,
-    leadId: 'user-1',
-    stateId: 'pstate-1',
-    workspaceId: 'ws-1',
-    archivedAt: null,
     createdAt: '2026-03-15T12:00:00.000Z',
     updatedAt: '2026-03-15T12:00:00.000Z',
     ...overrides,
-  }
+  })
 }
 
 function renderForm(project = buildProject()) {
