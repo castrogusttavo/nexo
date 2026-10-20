@@ -359,3 +359,24 @@ export const projectStateInvalid = (
 export const projectStatesDisabled = (
   message = 'Os estados de projeto estão desativados neste workspace',
 ): AppError => appError('PROJECT_STATES_DISABLED', message)
+
+export const projectLabelNotFound = (): AppError =>
+  appError('PROJECT_LABEL_NOT_FOUND', 'Etiqueta de projeto não encontrada')
+
+export const projectLabelForbidden = (
+  message = 'Apenas OWNER ou ADMIN podem configurar as etiquetas de projeto',
+): AppError => appError('PROJECT_LABEL_FORBIDDEN', message)
+
+export const projectLabelAlreadyExists = (
+  message = 'Já existe uma etiqueta de projeto com esse nome',
+): AppError => appError('PROJECT_LABEL_ALREADY_EXISTS', message)
+
+// 422, not 404: on a project update the labels are a field of the body, not
+// the resource the URL asks for.
+export const projectLabelInvalid = (
+  message = 'Etiqueta inválida para este workspace',
+): AppError => appError('PROJECT_LABEL_INVALID', message)
+
+export const projectLabelsDisabled = (
+  message = 'As etiquetas de projeto estão desativadas neste workspace',
+): AppError => appError('PROJECT_LABELS_DISABLED', message)

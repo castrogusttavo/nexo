@@ -152,6 +152,15 @@ describe('UpdateWorkspaceSchema', () => {
         .success,
     ).toBe(false)
   })
+
+  it('should accept the project labels switch alone', () => {
+    const result = UpdateWorkspaceSchema.safeParse({
+      projectLabelsEnabled: false,
+    })
+
+    expect(result.success).toBe(true)
+    expect(result.data).toEqual({ projectLabelsEnabled: false })
+  })
 })
 
 describe('CreateWorkspaceSchema switches', () => {
@@ -165,5 +174,15 @@ describe('CreateWorkspaceSchema switches', () => {
     })
 
     expect(result.success && 'projectStateEnabled' in result.data).toBe(false)
+  })
+
+  it('should drop the labels switch on create', () => {
+    const result = CreateWorkspaceSchema.safeParse({
+      name: 'Acme',
+      slug: 'acm',
+      projectLabelsEnabled: true,
+    })
+
+    expect(result.success && 'projectLabelsEnabled' in result.data).toBe(false)
   })
 })

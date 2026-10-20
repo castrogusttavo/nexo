@@ -234,6 +234,8 @@ model Workspace {
   teamSize             String?   @map("team_size")
   // Settings switch: off hides the state and refuses setting it on a project.
   projectStatesEnabled Boolean   @default(true) @map("project_states_enabled")
+  // Same switch for project labels.
+  projectLabelsEnabled Boolean   @default(true) @map("project_labels_enabled")
   createdAt            DateTime  @default(now()) @map("created_at")
   updatedAt            DateTime  @updatedAt @map("updated_at")
 
@@ -241,6 +243,7 @@ model Workspace {
   subscriptions Subscription[]
   projects      Project[]
   projectStates ProjectState[]
+  projectLabels ProjectLabel[]
   invitations   WorkspaceInvitation[]
   wikiPages     WikiPage[]
 
@@ -478,6 +481,7 @@ model Project {
   invitations      WorkspaceInvitation[]
   states           State[]
   labels           Label[]
+  labelAssignments ProjectLabelAssignment[]
   estimateSettings EstimateSettings?
   modules          Module[]
   cycles           Cycle[]
@@ -549,6 +553,35 @@ enum ProjectStateGroup {
   MONITORING
   COMPLETED
   CANCELLED
+}
+
+model ProjectLabel {
+  id String @id @default(cuid())
+  name String
+  description String?
+  color TagColor @default(ZINC)
+  workspaceId String @map("workspace_id")
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  workspace Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  assignments ProjectLabelAssignment[]
+
+  @@unique([workspaceId, name])
+  @@map("project_labels")
+}
+
+model ProjectLabelAssignment {
+  projectId String @map("project_id")
+  labelId String @map("label_id")
+  createdAt DateTime @default(now()) @map("created_at")
+
+  project Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  label ProjectLabel @relation(fields: [labelId], references: [id], onDelete: Cascade)
+
+  @@id([projectId, labelId])
+  @@index([labelId])
+  @@map("project_label_assignments")
 }
 
 model CareerJob {

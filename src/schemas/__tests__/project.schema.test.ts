@@ -208,3 +208,41 @@ describe('UpdateProjectSchema stateId', () => {
     expect(UpdateProjectSchema.safeParse({ stateId: null }).success).toBe(false)
   })
 })
+
+describe('UpdateProjectSchema labelIds', () => {
+  const id = (n: number) => `clh3am8hi${String(n).padStart(4, '0')}qwer1234abcd`
+
+  it('accepts a set of label ids', () => {
+    expect(
+      UpdateProjectSchema.safeParse({ labelIds: [id(1), id(2)] }).success,
+    ).toBe(true)
+  })
+
+  it('accepts an empty set', () => {
+    expect(UpdateProjectSchema.safeParse({ labelIds: [] }).success).toBe(true)
+  })
+
+  it('rejects a malformed label id', () => {
+    expect(
+      UpdateProjectSchema.safeParse({ labelIds: ['not a cuid'] }).success,
+    ).toBe(false)
+  })
+
+  it('accepts 20 labels and rejects 21', () => {
+    const ids = (n: number) => Array.from({ length: n }, (_, i) => id(i))
+
+    expect(UpdateProjectSchema.safeParse({ labelIds: ids(20) }).success).toBe(
+      true,
+    )
+
+    expect(UpdateProjectSchema.safeParse({ labelIds: ids(21) }).success).toBe(
+      false,
+    )
+  })
+
+  it('rejects null instead of an empty set', () => {
+    expect(UpdateProjectSchema.safeParse({ labelIds: null }).success).toBe(
+      false,
+    )
+  })
+})

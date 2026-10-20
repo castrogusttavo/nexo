@@ -1,5 +1,6 @@
 import { act, waitFor } from '@testing-library/react'
 import { describe, expect, it, vi } from 'vitest'
+import { buildWorkspaceDTO } from '@/src/__tests__/factories/dto/workspace.dto'
 import {
   apiError,
   apiSuccess,
@@ -17,17 +18,7 @@ vi.mock('@/src/lib/auth-client', () => ({ authClient: { useSession } }))
 const WORKSPACE_KEY = ['workspace']
 
 function buildWorkspace(overrides: Partial<WorkspaceDTO> = {}): WorkspaceDTO {
-  return {
-    id: 'ws-1',
-    name: 'Acme',
-    slug: 'acme',
-    activePlan: 'FREE',
-    trialEndsAt: null,
-    projectStatesEnabled: true,
-    createdAt: '2026-01-01T00:00:00.000Z',
-    updatedAt: '2026-01-01T00:00:00.000Z',
-    ...overrides,
-  }
+  return buildWorkspaceDTO(overrides)
 }
 
 describe('useCreateWorkspace', () => {

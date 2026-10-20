@@ -65,6 +65,10 @@ export const UpdateProjectSchema = z.object({
   identifier: projectIdentifier.optional(),
   leadId: z.cuid2('ID de usuário inválido').optional(),
   stateId: z.cuid2('Estado inválido').optional(),
+  labelIds: z
+    .array(z.cuid2('Etiqueta inválida'))
+    .max(20, 'Um projeto pode ter no máximo 20 etiquetas')
+    .optional(),
 })
 
 export type UpdateProjectDTO = z.infer<typeof UpdateProjectSchema>

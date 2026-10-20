@@ -7,6 +7,11 @@ import {
   forbidden,
   invalidCredentials,
   notFound,
+  projectLabelAlreadyExists,
+  projectLabelForbidden,
+  projectLabelInvalid,
+  projectLabelNotFound,
+  projectLabelsDisabled,
   projectStateAlreadyExists,
   projectStateForbidden,
   projectStateInvalid,
@@ -196,6 +201,19 @@ describe('AppError factories', () => {
 
     it('accepts a custom message', () => {
       expect(projectStateForbidden('Sem acesso').message).toBe('Sem acesso')
+    })
+  })
+
+  describe('project label factories', () => {
+    it.each([
+      ['projectLabelNotFound', projectLabelNotFound(), 404],
+      ['projectLabelForbidden', projectLabelForbidden(), 403],
+      ['projectLabelAlreadyExists', projectLabelAlreadyExists(), 409],
+      ['projectLabelInvalid', projectLabelInvalid(), 422],
+      ['projectLabelsDisabled', projectLabelsDisabled(), 409],
+    ] as const)('%s() maps to a registered %i code', (_, error, status) => {
+      expect(ERROR_CODES[error.code].status).toBe(status)
+      expect(error.message).not.toBe('')
     })
   })
 })

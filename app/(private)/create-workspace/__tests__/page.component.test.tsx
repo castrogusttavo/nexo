@@ -1,6 +1,7 @@
 import { fireEvent, screen, waitFor } from '@testing-library/react'
 import { toast } from 'sonner'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
+import { buildWorkspaceDTO } from '@/src/__tests__/factories/dto/workspace.dto'
 import {
   apiError,
   apiSuccess,
@@ -63,17 +64,11 @@ async function lastToastOutcome() {
 }
 
 function buildWorkspace(overrides: Partial<WorkspaceDTO> = {}): WorkspaceDTO {
-  return {
-    id: 'ws-1',
+  return buildWorkspaceDTO({
     name: 'Acme Corp',
     slug: 'acme-corp',
-    activePlan: 'FREE',
-    trialEndsAt: null,
-    projectStatesEnabled: true,
-    createdAt: '2026-01-01T00:00:00.000Z',
-    updatedAt: '2026-01-01T00:00:00.000Z',
     ...overrides,
-  }
+  })
 }
 
 const nameInput = () => screen.getByLabelText('Nome do seu workspace')

@@ -38,6 +38,7 @@ describe('toUserDTO()', () => {
             trialEndsAt: null,
             teamSize: null,
             projectStatesEnabled: true,
+            projectLabelsEnabled: true,
             createdAt: new Date(),
             updatedAt: new Date(),
           },
