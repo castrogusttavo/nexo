@@ -33,20 +33,21 @@ x-public-env: &public-env
 # 12 GB). With five instances the host sat ~50% idle at 1,600 users while every
 # instance was pinned at one core (load-snapshot, 2026-10-25), so two more fit
 # in the spare threads. Sessions live in Postgres and every rate limit in
-# Redis, so any instance can serve any request. Each settled around 1.1 GB of
-# RSS under load, which is why the heap is capped and each container has a
-# memory ceiling: seven of them must not be able to take the host's 12 GB (the
-# database, Redis and nginx live there too). Hitting the ceiling restarts one
-# container instead of waking the kernel's OOM killer on the whole machine.
+# Redis, so any instance can serve any request. Each settles around 1.1 GB of
+# RSS under load, so every container has a memory ceiling: seven of them must
+# not be able to take the host's 12 GB (the database, Redis and nginx live
+# there too). Hitting it restarts one container instead of waking the kernel's
+# OOM killer on the whole machine. The V8 heap is deliberately NOT capped:
+# --max-old-space-size=768 cut RSS to 470 MB but raised the CPU per request by
+# ~70% at the same traffic (GC working against the cap), which cancelled the
+# two extra instances (k6 1,600 users, 2026-10-25).
 x-app: &app
   image: ghcr.io/castrogusttavo/nexo:latest
   restart: unless-stopped
   env_file:
     - .env
-  environment:
-    <<: *public-env
-    NODE_OPTIONS: --max-old-space-size=768
-  mem_limit: 1400m
+  environment: *public-env
+  mem_limit: 1500m
   extra_hosts: *internal-hosts
   volumes:
     - ./redis-tls/ca.crt:/etc/redis-tls/ca.crt:ro
