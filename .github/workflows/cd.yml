@@ -166,8 +166,8 @@ jobs:
           docker compose pull
           docker compose up -d --no-deps nexo-worker nexo-realtime
           # One app instance at a time, each healthy before the next goes
-          # down, so nginx's upstream always has four left to serve from.
-          for svc in nexo-app-1 nexo-app-2 nexo-app-3 nexo-app-4 nexo-app-5; do
+          # down, so nginx's upstream always has six left to serve from.
+          for svc in nexo-app-1 nexo-app-2 nexo-app-3 nexo-app-4 nexo-app-5 nexo-app-6 nexo-app-7; do
             docker compose up -d --no-deps "$svc"
             status=starting
             for _ in $(seq 1 30); do

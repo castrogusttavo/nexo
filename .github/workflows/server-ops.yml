@@ -34,6 +34,9 @@ name: Server Ops
 #                     pg_stat_statements (when the extension is loaded), the
 #                     pgbouncer pools and the host's CPU split. Dispatch it a
 #                     minute into a k6 run.
+#   nginx-upstream  — installs infra/nginx/nexo-upstream.conf as the nginx
+#                     upstream, after `nginx -t`, and reloads. The previous
+#                     file is kept and put back if the test or reload fails.
 #   env-sync        — rewrites the server's .env from sops and restarts the
 #                     application containers, without waiting for a full
 #                     build-and-deploy. Same source of truth, sooner.
@@ -46,7 +49,7 @@ on:
         required: true
         default: compose-diff
         type: choice
-        options: [compose-diff, backup-inspect, backup-run, cleanup-bak, compose-export, infra-apply, app-up, replication-prepare, replication-status, db-pool-status, load-snapshot, env-sync]
+        options: [compose-diff, backup-inspect, backup-run, cleanup-bak, compose-export, infra-apply, app-up, replication-prepare, replication-status, db-pool-status, load-snapshot, nginx-upstream, env-sync]
 
 env:
   SERVER_DIR: /var/www/nexo
@@ -458,6 +461,37 @@ jobs:
           echo '==> connections held by Postgres'
           psql_db -Atc "SELECT count(*) || ' of ' || current_setting('max_connections')
                         FROM pg_stat_activity;" | sed 's/^/    /'
+
+      - name: Install the nginx upstream for the app instances
+        if: ${{ inputs.mode == 'nginx-upstream' }}
+        run: |
+          set -uo pipefail
+          DEST=/etc/nginx/conf.d/nexo-upstream.conf
+          SRC=infra/nginx/nexo-upstream.conf
+
+          echo '==> diff (server -> repository)'
+          diff -u "$DEST" "$SRC" && echo '  (identical)'
+
+          cp -p "$DEST" "$DEST.prev"
+          cp "$SRC" "$DEST"
+          if ! nginx -t; then
+            echo "::error::nginx -t rejected the new upstream, putting the previous one back."
+            mv -f "$DEST.prev" "$DEST"
+            exit 1
+          fi
+          if ! nginx -s reload; then
+            echo "::error::nginx did not reload, putting the previous upstream back."
+            mv -f "$DEST.prev" "$DEST"
+            nginx -s reload
+            exit 1
+          fi
+          rm -f "$DEST.prev"
+
+          echo '==> every instance answers on its loopback port'
+          for port in 3001 3002 3003 3004 3005 3006 3007; do
+            code=$(curl -s -o /dev/null -w '%{http_code}' "http://127.0.0.1:$port/api/health" || true)
+            echo "    $port -> $code"
+          done
 
       # The deploy already writes this file; this does the same two steps
       # without the image build in front of them, for when a secret changed and
