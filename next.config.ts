@@ -99,6 +99,12 @@ const nextConfig: NextConfig = {
   // alone is 1 MB of HTML. Locally, static pages went from 16.6 to 6.2 ms of
   // CPU per request with this off (2026-10-16).
   compress: false,
+  // Next hashes every rendered response in plain JavaScript to build its ETag
+  // (next/dist/server/lib/etag.js), and the marketing pages are ~470 KB of
+  // HTML: 9% of an instance's busy time at 1,600 users, from a CPU profile
+  // (2026-10-25). The cost of dropping it is that a repeat visit re-downloads
+  // a page (~40 KB gzipped) instead of getting a 304.
+  generateEtags: false,
   // Turbopack emits no browser source map unless asked, and the Sentry plugin
   // does not ask for us: without this it created the release and had nothing
   // to upload, so every client stack trace in Sentry was minified (no
