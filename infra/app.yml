@@ -46,7 +46,12 @@ x-app: &app
   restart: unless-stopped
   env_file:
     - .env
-  environment: *public-env
+  environment:
+    <<: *public-env
+    # A bigger young generation means fewer scavenges for a server that
+    # allocates a lot per request: GC was 11% of an instance's busy time at
+    # 2,400 users (CPU profile, 2026-10-25).
+    NODE_OPTIONS: --max-semi-space-size=64
   mem_limit: 1500m
   extra_hosts: *internal-hosts
   volumes:
