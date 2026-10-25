@@ -34,6 +34,12 @@ name: Server Ops
 #                     pg_stat_statements (when the extension is loaded), the
 #                     pgbouncer pools and the host's CPU split. Dispatch it a
 #                     minute into a k6 run.
+#   host-bench      — the whole measurement in one job (the self-hosted runner
+#                     takes one job at a time): k6 on the host against its own
+#                     nginx, so the network and Cloudflare are out of the
+#                     numbers, with a CPU/memory snapshot and a 45 s CPU
+#                     profile of nexo-app-7 taken once the plateau is reached.
+#                     nexo-app-7 is restarted at the end to close its inspector.
 #   nginx-upstream  — installs infra/nginx/nexo-upstream.conf as the nginx
 #                     upstream, after `nginx -t`, and reloads. The previous
 #                     file is kept and put back if the test or reload fails.
@@ -49,7 +55,20 @@ on:
         required: true
         default: compose-diff
         type: choice
-        options: [compose-diff, backup-inspect, backup-run, cleanup-bak, compose-export, infra-apply, app-up, replication-prepare, replication-status, db-pool-status, load-snapshot, nginx-upstream, env-sync]
+        options: [compose-diff, backup-inspect, backup-run, cleanup-bak, compose-export, infra-apply, app-up, replication-prepare, replication-status, db-pool-status, load-snapshot, host-bench, nginx-upstream, env-sync]
+
+      vus:
+        description: 'host-bench: virtual users at the plateau'
+        default: '1600'
+      ramp:
+        description: 'host-bench: ramp-up'
+        default: '4m'
+      hold:
+        description: 'host-bench: plateau length'
+        default: '5m'
+      instances:
+        description: 'nginx-upstream: how many of the 7 instances get traffic (empty = all)'
+        default: ''
 
 env:
   SERVER_DIR: /var/www/nexo
@@ -462,8 +481,81 @@ jobs:
           psql_db -Atc "SELECT count(*) || ' of ' || current_setting('max_connections')
                         FROM pg_stat_activity;" | sed 's/^/    /'
 
+      - name: Benchmark from the host
+        if: ${{ inputs.mode == 'host-bench' }}
+        timeout-minutes: 40
+        env:
+          MANIFEST: ${{ secrets.LOAD_TEST_MANIFEST }}
+          LOAD_TEST_TOKEN: ${{ secrets.LOAD_TEST_TOKEN }}
+          VUS: ${{ inputs.vus }}
+          RAMP: ${{ inputs.ramp }}
+          HOLD: ${{ inputs.hold }}
+        run: |
+          set -uo pipefail
+          TARGET=nexo-app-7
+          mkdir -p k6/results
+          # The manifest carries the seeded users' password; it lives in a secret.
+          printf '%s' "$MANIFEST" > scripts/.load-test-manifest.json
+
+          # k6 runs here, on the host, against its own nginx (the name resolves
+          # to loopback), so Cloudflare and the generator's uplink are out of
+          # the numbers. It is capped at 2 CPUs: it still takes some from the
+          # app, which makes this a slightly pessimistic read.
+          docker rm -f k6-bench >/dev/null 2>&1 || true
+          docker run -d --name k6-bench --user "$(id -u):$(id -g)" \
+            --network host --add-host nexopm.com:127.0.0.1 \
+            --cpus 2 --memory 3g \
+            -v "$PWD":/work -w /work \
+            -e BASE_URL=https://nexopm.com -e ORIGIN=https://nexopm.com \
+            -e PROFILE=hold -e VUS="$VUS" -e RAMP="$RAMP" -e HOLD="$HOLD" \
+            -e LOAD_TEST_TOKEN="$LOAD_TEST_TOKEN" \
+            grafana/k6:1.0.0 run k6/load.js >/dev/null
+          echo "k6 started: $VUS users, ramp $RAMP, hold $HOLD"
+
+          to_seconds() { case "$1" in *m) echo $(( ${1%m} * 60 ));; *s) echo "${1%s}";; *) echo "$1";; esac; }
+          sleep $(( $(to_seconds "$RAMP") + 45 ))
+
+          echo '==> host CPU split at the plateau (us sy id wa st)'
+          vmstat 10 4 | sed 's/^/    /'
+
+          echo '==> per-container CPU and memory at the plateau'
+          for i in 1 2; do
+            docker stats --no-stream --format \
+              '    {{.Name}} | cpu {{.CPUPerc}} | mem {{.MemUsage}}' | sort
+            echo '    --'
+            sleep 5
+          done
+
+          echo "==> CPU profile of $TARGET (45 s)"
+          docker exec "$TARGET" sh -c 'kill -USR1 1'
+          sleep 2
+          docker cp scripts/ops/cpu-profile.mjs "$TARGET":/tmp/cpu-profile.mjs
+          docker exec "$TARGET" node /tmp/cpu-profile.mjs 45 /tmp/app.cpuprofile || echo '    (profile failed)'
+          docker cp "$TARGET":/tmp/app.cpuprofile k6/results/app.cpuprofile 2>/dev/null || true
+
+          echo '==> waiting for k6 to finish'
+          docker wait k6-bench >/dev/null
+          echo '==> k6 summary'
+          docker logs k6-bench 2>&1 | sed -E 's/\x1b\[[0-9;]*m//g; s/\.{3,}:/:/' |
+            grep -E "^ +(http_req_duration|http_req_waiting|http_req_failed|http_reqs|iterations|checks|vus_max)[:{]|kind:(api|page|auth)|✗|ERRO|level=error" | head -30
+
+          docker rm k6-bench >/dev/null 2>&1 || true
+          rm -f scripts/.load-test-manifest.json
+          # Closes the inspector the profile opened.
+          docker restart "$TARGET" >/dev/null && echo "$TARGET restarted"
+
+      - name: Upload the CPU profile
+        if: ${{ inputs.mode == 'host-bench' && always() }}
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: host-bench-${{ github.run_id }}
+          path: k6/results/
+          if-no-files-found: ignore
+
       - name: Install the nginx upstream for the app instances
         if: ${{ inputs.mode == 'nginx-upstream' }}
+        env:
+          INSTANCES: ${{ inputs.instances }}
         run: |
           set -uo pipefail
           DEST=/etc/nginx/conf.d/nexo-upstream.conf
@@ -480,6 +572,12 @@ jobs:
 
           cp -p "$DEST" "$DEST.prev"
           cp "$SRC" "$DEST"
+          # An A/B knob: keep only the first N instances in the rotation. The
+          # containers keep running, they just stop receiving traffic.
+          if [ -n "${INSTANCES:-}" ]; then
+            awk -v n="$INSTANCES" '/server 127.0.0.1:300[0-9]/ { split($2, a, ":"); sub(/;.*/, "", a[2]); if (a[2] - 3000 > n) next } { print }' "$SRC" > "$DEST"
+            echo "==> rotation limited to the first $INSTANCES instances"
+          fi
           if ! "$NGINX" -t; then
             echo "::error::nginx -t rejected the new upstream, putting the previous one back."
             mv -f "$DEST.prev" "$DEST"
