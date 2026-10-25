@@ -468,21 +468,27 @@ jobs:
           set -uo pipefail
           DEST=/etc/nginx/conf.d/nexo-upstream.conf
           SRC=infra/nginx/nexo-upstream.conf
+          # sbin is not on the runner's PATH.
+          NGINX=$(command -v nginx || echo /usr/sbin/nginx)
+          if [ ! -x "$NGINX" ]; then
+            echo "::error::nginx binary not found, nothing was changed."
+            exit 1
+          fi
 
           echo '==> diff (server -> repository)'
           diff -u "$DEST" "$SRC" && echo '  (identical)'
 
           cp -p "$DEST" "$DEST.prev"
           cp "$SRC" "$DEST"
-          if ! nginx -t; then
+          if ! "$NGINX" -t; then
             echo "::error::nginx -t rejected the new upstream, putting the previous one back."
             mv -f "$DEST.prev" "$DEST"
             exit 1
           fi
-          if ! nginx -s reload; then
+          if ! "$NGINX" -s reload; then
             echo "::error::nginx did not reload, putting the previous upstream back."
             mv -f "$DEST.prev" "$DEST"
-            nginx -s reload
+            "$NGINX" -s reload
             exit 1
           fi
           rm -f "$DEST.prev"
