@@ -29,6 +29,11 @@ name: Server Ops
 #                     streaming, and how far behind it is.
 #   db-pool-status  — how many connections Postgres allows, who is holding
 #                     them, and what pgbouncer is doing with them.
+#   load-snapshot   — read-only sampling of the host while a load test runs:
+#                     per-container CPU/memory, the busiest statements in
+#                     pg_stat_statements (when the extension is loaded), the
+#                     pgbouncer pools and the host's CPU split. Dispatch it a
+#                     minute into a k6 run.
 #   env-sync        — rewrites the server's .env from sops and restarts the
 #                     application containers, without waiting for a full
 #                     build-and-deploy. Same source of truth, sooner.
@@ -41,7 +46,7 @@ on:
         required: true
         default: compose-diff
         type: choice
-        options: [compose-diff, backup-inspect, backup-run, cleanup-bak, compose-export, infra-apply, app-up, replication-prepare, replication-status, db-pool-status, env-sync]
+        options: [compose-diff, backup-inspect, backup-run, cleanup-bak, compose-export, infra-apply, app-up, replication-prepare, replication-status, db-pool-status, load-snapshot, env-sync]
 
 env:
   SERVER_DIR: /var/www/nexo
@@ -403,6 +408,56 @@ jobs:
           fi
           echo -n '    DB_POOL_MAX: '
           grep -m1 '^DB_POOL_MAX=' .env | cut -d= -f2- || echo '25 (code default; not in .env)'
+
+      - name: Sample the host under load
+        if: ${{ inputs.mode == 'load-snapshot' }}
+        run: |
+          set -uo pipefail
+          cd '${{ env.SERVER_DIR }}'
+          PGUSER=$(grep -m1 '^POSTGRES_USER=' .env | cut -d= -f2-)
+          PGDB=$(grep -m1 '^POSTGRES_DB=' .env | cut -d= -f2-)
+          PGPASS=$(grep -m1 '^POSTGRES_PASSWORD=' .env | cut -d= -f2-)
+          psql_db() { docker exec nexo-db-1 psql -U "$PGUSER" -d "$PGDB" "$@"; }
+
+          echo '==> host CPU split, 5 samples 10s apart (us sy id wa st)'
+          vmstat 10 5 | sed 's/^/    /'
+
+          echo '==> per-container CPU and memory (3 samples)'
+          for i in 1 2 3; do
+            docker stats --no-stream --format \
+              '    {{.Name}} | cpu {{.CPUPerc}} | mem {{.MemUsage}}' | sort
+            echo '    --'
+            sleep 10
+          done
+
+          echo '==> pg_stat_statements (top 15 by total time)'
+          if psql_db -Atc "SELECT 1 FROM pg_extension WHERE extname='pg_stat_statements'" | grep -q 1; then
+            psql_db -c "SELECT calls, round(total_exec_time::numeric) AS total_ms,
+                               round(mean_exec_time::numeric, 2) AS mean_ms,
+                               left(regexp_replace(query, '\\s+', ' ', 'g'), 110) AS query
+                        FROM pg_stat_statements
+                        ORDER BY total_exec_time DESC LIMIT 15;" | sed 's/^/    /'
+          else
+            echo '    (extension not loaded; sampling pg_stat_activity instead)'
+            for i in 1 2 3 4 5 6; do
+              psql_db -Atc "SELECT state || ' | ' || left(regexp_replace(query, '\\s+', ' ', 'g'), 110)
+                            FROM pg_stat_activity
+                            WHERE backend_type='client backend' AND state <> 'idle'
+                              AND pid <> pg_backend_pid();" | sed 's/^/    /'
+              sleep 5
+            done
+          fi
+
+          echo '==> pgbouncer pools and stats'
+          for cmd in 'SHOW POOLS;' 'SHOW STATS;'; do
+            docker exec -e PGPASSWORD="$PGPASS" nexo-db-1 psql \
+              -h nexo-pgbouncer -p 5432 -U "$PGUSER" -d pgbouncer -c "$cmd" 2>&1 |
+              sed 's/^/    /'
+          done
+
+          echo '==> connections held by Postgres'
+          psql_db -Atc "SELECT count(*) || ' of ' || current_setting('max_connections')
+                        FROM pg_stat_activity;" | sed 's/^/    /'
 
       # The deploy already writes this file; this does the same two steps
       # without the image build in front of them, for when a secret changed and
