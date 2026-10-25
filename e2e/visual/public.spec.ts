@@ -64,6 +64,16 @@ for (const variant of VARIANTS) {
       ).toBeVisible()
       // The seeded degraded day: proof the rows reached the page and the
       // 30s snapshot cache was busted.
+      const found = await page.locator('p', { hasText: '99.97% uptime' }).evaluateAll((els) =>
+        els.map((e) => ({
+          hidden: !!e.closest('[hidden]'),
+          inTemplate: !!e.closest('template'),
+          boundary: e.closest('[id^="S:"]')?.id ?? null,
+          row: e.parentElement?.textContent?.slice(0, 60),
+          rect: JSON.stringify(e.getBoundingClientRect()),
+        })),
+      )
+      console.log('DEBUG-99.97', JSON.stringify(found), 'scripts', await page.locator('script').count(), 'docLen', (await page.content()).length)
       await expect(page.getByText('99.97% uptime')).toBeVisible()
       await stabilise(page)
 
