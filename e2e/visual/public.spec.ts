@@ -63,8 +63,12 @@ for (const variant of VARIANTS) {
         page.getByRole('heading', { name: 'Status do sistema' }),
       ).toBeVisible()
       // The seeded degraded day: proof the rows reached the page and the
-      // 30s snapshot cache was busted.
-      await expect(page.getByText('99.97% uptime')).toBeVisible()
+      // 30s snapshot cache was busted. Only the visible copy counts: while
+      // React reveals the streamed boundary, its source copy sits in a hidden
+      // div (id S:n) for a moment, and a bare getByText sees both.
+      await expect(
+        page.getByText('99.97% uptime').filter({ visible: true }),
+      ).toBeVisible()
       await stabilise(page)
 
       await expect(page).toHaveScreenshot(
