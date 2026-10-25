@@ -8,7 +8,7 @@ import {
   TooltipContent,
   TooltipTrigger,
 } from '@/components/ui/tooltip'
-import { cn, DateFormat } from '@/lib/utils'
+import { DateFormat } from '@/lib/utils'
 import { STATUS_META } from '@/src/services/status/status-map'
 import type { DailyPoint } from '@/types/status'
 
@@ -47,11 +47,7 @@ export function HistoryBars({ history }: HistoryBarsProps) {
             <TooltipTrigger
               render={
                 <div
-                  className={cn(
-                    'w-1 h-4 rounded-xs',
-                    meta.bar,
-                    point.incidentId && 'cursor-pointer',
-                  )}
+                  className={`w-1 h-4 rounded-xs ${meta.bar}${point.incidentId ? ' cursor-pointer' : ''}`}
                 />
               }
             />
