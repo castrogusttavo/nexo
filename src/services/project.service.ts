@@ -18,6 +18,7 @@ import type {
   UpdateProjectDTO,
 } from '../schemas/project.schema'
 import { assertMember } from './_authz'
+import { resolveProject } from './_project-scope'
 
 // A project may only move to a state of its own workspace, and only while the
 // workspace has project states switched on. A missing state and a foreign one
@@ -77,26 +78,14 @@ export const ProjectService = {
     workspaceId: string,
     slug: string,
   ): Promise<Result<ProjectDTO>> {
-    const membership = await assertMember(actorId, workspaceId)
-    if (!membership.ok) return membership
+    const resolved = await resolveProject(actorId, workspaceId, slug)
+    if (!resolved.ok) return err(resolved.error)
 
-    const result = await ProjectRepository.findByWorkspaceAndSlug(
-      workspaceId,
-      slug,
-      actorId,
-    )
-    if (!result.ok) return result
-
-    const project = result.value
+    const { membership, project } = resolved
     const isLead = project.leadId === actorId
     const isMember = project.members.some((m) => m.userId === actorId)
 
-    if (
-      !project.isPublic &&
-      !membership.value.isPrivileged &&
-      !isLead &&
-      !isMember
-    ) {
+    if (!project.isPublic && !membership.isPrivileged && !isLead && !isMember) {
       return err(projectForbidden())
     }
 
@@ -108,25 +97,13 @@ export const ProjectService = {
     workspaceId: string,
     slug: string,
   ): Promise<Result<ProjectMemberDTO[]>> {
-    const membership = await assertMember(actorId, workspaceId)
-    if (!membership.ok) return membership
+    const resolved = await resolveProject(actorId, workspaceId, slug)
+    if (!resolved.ok) return err(resolved.error)
 
-    const projectResult = await ProjectRepository.findByWorkspaceAndSlug(
-      workspaceId,
-      slug,
-      actorId,
-    )
-    if (!projectResult.ok) return projectResult
-    const project = projectResult.value
-
+    const { membership, project } = resolved
     const isLead = project.leadId === actorId
     const isMember = project.members.some((m) => m.userId === actorId)
-    if (
-      !project.isPublic &&
-      !membership.value.isPrivileged &&
-      !isLead &&
-      !isMember
-    ) {
+    if (!project.isPublic && !membership.isPrivileged && !isLead && !isMember) {
       return err(projectForbidden())
     }
 
