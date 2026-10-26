@@ -1091,8 +1091,10 @@ está no vault: `Claude/history/2026-10-25-performance-capacidade.md`.
 | Sem ETag | 68,5 ms | 113 ms | 38,9% |
 | Final (semi-space 64 MB) | 73,6 ms | 129 ms | 39,7% |
 
-Rampa final (7 instâncias): 2.400 usuários p95 412 ms / p99 772 ms (dentro da
-meta), 2.800 p95 1,58 s, 3.200 p95 3,41 s. Teto ≈ 2.400–2.600 usuários, ~185 req/s.
+Rampa final (7 instâncias, k6 no host, 0% de falhas): 400 usuários p95 38 ms,
+1.200 p95 47 ms, 2.400 p95 412 ms / p99 772 ms (dentro da meta), 2.600 p95
+1,05 s / p99 1,65 s, 3.000 p95 2,84 s / p99 3,86 s (201 req/s, loop a 98%).
+Teto dentro da meta ≈ 2.400 usuários, ~185 req/s; acima disso vira fila, sem erro.
 O banco não é gargalo: 25–45% de um core, pgbouncer sem fila, 21 de 100 conexões.
 
 O achado: a página `/status` chamava `toLocaleDateString` para cada uma das 630
