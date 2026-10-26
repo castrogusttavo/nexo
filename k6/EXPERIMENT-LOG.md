@@ -1073,3 +1073,32 @@ residual de 17% só aparece num pico que a Nexo, pré-lançamento, ainda
 não tem motivo pra esperar tão cedo. Fica registrado como decisão de
 produto, revisável se o padrão de tráfego real um dia justificar — não
 como limitação técnica não resolvida.
+
+## Rodada 7 — k6 no host, CPU profile e o `/status` que custava 27% do CPU
+
+Contexto: com 5 instâncias o p95 externo ficava em ~650 ms e nada que se mudava
+o movia. O k6 do GitHub passa pelo Cloudflare e tem um piso de rede de ~240 ms
+na API e ~470 ms nas páginas, mesmo com 100 usuários e o servidor ocioso. Para
+medir o servidor, o `server-ops` ganhou o modo `host-bench`: k6 no próprio host
+(via nginx), snapshot de CPU/memória e um CPU profile de 45 s da `nexo-app-7`
+no plateau. A nota completa, com a tabela de cada etapa e as decisões em aberto,
+está no vault: `Claude/history/2026-10-25-performance-capacidade.md`.
+
+| 1.600 usuários, k6 no host | p95 | p99 | loop ocupado |
+|---|---|---|---|
+| Antes (7 inst., com o bug) | 317 ms | 537 ms | 77,6% |
+| Formatter de data reutilizado | 81 ms | 137 ms | 47,9% |
+| Sem ETag | 68,5 ms | 113 ms | 38,9% |
+| Final (semi-space 64 MB) | 73,6 ms | 129 ms | 39,7% |
+
+Rampa final (7 instâncias): 2.400 usuários p95 412 ms / p99 772 ms (dentro da
+meta), 2.800 p95 1,58 s, 3.200 p95 3,41 s. Teto ≈ 2.400–2.600 usuários, ~185 req/s.
+O banco não é gargalo: 25–45% de um core, pgbouncer sem fila, 21 de 100 conexões.
+
+O achado: a página `/status` chamava `toLocaleDateString` para cada uma das 630
+barras de histórico (7 componentes × 90 dias) em todo request, e isso cria um
+`Intl.DateTimeFormat` novo a cada chamada: 40 ms de CPU contra 1,1 ms com um
+formatter só. Também saíram o ETag do Next (hash em JS de ~470 KB por resposta,
+9% do CPU) e o GC passou a ter um young generation maior. O teto de heap
+(`--max-old-space-size=768`) foi tentado e revertido: a hipótese de que o GC
+comia o CPU estava errada.
