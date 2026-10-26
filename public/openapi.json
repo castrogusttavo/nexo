@@ -10293,6 +10293,10 @@
           "projectStatesEnabled": {
             "type": "boolean",
             "description": "Liga ou desliga os estados de projeto no workspace. Apenas OWNER/ADMIN."
+          },
+          "projectLabelsEnabled": {
+            "type": "boolean",
+            "description": "Liga ou desliga as etiquetas de projeto no workspace."
           }
         }
       },
@@ -11350,6 +11354,14 @@
             "type": "string",
             "description": "cuid2 de um estado de projeto do mesmo workspace. Falha com `PROJECT_STATE_INVALID` (422) para um estado inexistente ou de outro workspace, e com `PROJECT_STATES_DISABLED` (409) se o workspace desligou os estados.",
             "example": "clx0v5k2p0000qwerpstat01"
+          },
+          "labelIds": {
+            "type": "array",
+            "maxItems": 20,
+            "items": {
+              "type": "string"
+            },
+            "description": "cuid2 das etiquetas do projeto, no máximo 20."
           }
         }
       },
