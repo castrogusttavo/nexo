@@ -1,5 +1,6 @@
 import { createId } from '@paralleldrive/cuid2'
 import { describe, expect, it } from 'vitest'
+import { seedProjectLabel } from '@/src/__tests__/factories/project-label.factory'
 import { defaultProjectStateId } from '@/src/__tests__/factories/project-state.factory'
 import {
   addMember,
@@ -273,6 +274,79 @@ describe('PATCH /api/workspaces/[id]/projects/[slug] stateId', () => {
     const res = await patchJson(
       `/api/workspaces/${workspace.id}/projects/${project.slug}`,
       { stateId: 'not a cuid' },
+      user.cookie,
+    )
+
+    expect(res.status).toBe(422)
+    expect((await res.json()).error.code).toBe('VALIDATION_ERROR')
+  })
+})
+
+describe('PATCH /api/workspaces/[id]/projects/[slug] labelIds', () => {
+  it('should let the lead set and then clear the labels', async () => {
+    const { user, workspace } = await authenticatedOwner()
+    const project = await seedProject(workspace.id, user.id)
+    const a = await seedProjectLabel(workspace.id)
+    const b = await seedProjectLabel(workspace.id)
+    const url = `/api/workspaces/${workspace.id}/projects/${project.slug}`
+
+    const set = await patchJson(
+      url,
+      { labelIds: [a.id, b.id, a.id] },
+      user.cookie,
+    )
+    expect(set.status).toBe(200)
+    expect([...(await set.json()).data.labelIds].sort()).toEqual(
+      [a.id, b.id].sort(),
+    )
+
+    const cleared = await patchJson(url, { labelIds: [] }, user.cookie)
+    expect(cleared.status).toBe(200)
+    expect((await cleared.json()).data.labelIds).toEqual([])
+  })
+
+  it('should return 422 PROJECT_LABEL_INVALID for a label of another workspace', async () => {
+    const { user, workspace } = await authenticatedOwner()
+    const { workspace: other } = await authenticatedOwner()
+    const project = await seedProject(workspace.id, user.id)
+    const foreign = await seedProjectLabel(other.id)
+
+    const res = await patchJson(
+      `/api/workspaces/${workspace.id}/projects/${project.slug}`,
+      { labelIds: [foreign.id] },
+      user.cookie,
+    )
+
+    expect(res.status).toBe(422)
+    expect((await res.json()).error.code).toBe('PROJECT_LABEL_INVALID')
+  })
+
+  it('should return 409 PROJECT_LABELS_DISABLED while the workspace switch is off', async () => {
+    const { user, workspace } = await authenticatedOwner()
+    const project = await seedProject(workspace.id, user.id)
+    const label = await seedProjectLabel(workspace.id)
+    await prisma.workspace.update({
+      where: { id: workspace.id },
+      data: { projectLabelsEnabled: false },
+    })
+
+    const res = await patchJson(
+      `/api/workspaces/${workspace.id}/projects/${project.slug}`,
+      { labelIds: [label.id] },
+      user.cookie,
+    )
+
+    expect(res.status).toBe(409)
+    expect((await res.json()).error.code).toBe('PROJECT_LABELS_DISABLED')
+  })
+
+  it('should return 422 VALIDATION_ERROR for more than 20 labels', async () => {
+    const { user, workspace } = await authenticatedOwner()
+    const project = await seedProject(workspace.id, user.id)
+
+    const res = await patchJson(
+      `/api/workspaces/${workspace.id}/projects/${project.slug}`,
+      { labelIds: Array.from({ length: 21 }, () => createId()) },
       user.cookie,
     )
 

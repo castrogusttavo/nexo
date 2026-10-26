@@ -59,6 +59,10 @@ import {
   CreateProjectSchema,
   UpdateProjectSchema,
 } from '@/src/schemas/project.schema'
+import {
+  CreateProjectLabelSchema,
+  UpdateProjectLabelSchema,
+} from '@/src/schemas/project-label.schema'
 import { AddProjectMemberSchema } from '@/src/schemas/project-member.schema'
 import {
   CreateProjectStateSchema,
@@ -133,6 +137,7 @@ const SPEC_BODY_TO_ZOD: Record<string, ZodType> = {
   CreateShortLinkInput: CreateShortLinkSchema,
   CreateStateInput: CreateStateSchema,
   CreateProjectStateInput: CreateProjectStateSchema,
+  CreateProjectLabelInput: CreateProjectLabelSchema,
   CreateStickyNoteInput: CreateStickyNoteSchema,
   CreateSubscriptionInput: CreateSubscriptionSchema,
   CreateWikiCommentInput: CreateWikiCommentSchema,
@@ -160,6 +165,7 @@ const SPEC_BODY_TO_ZOD: Record<string, ZodType> = {
   UpdateShortLinkInput: UpdateShortLinkSchema,
   UpdateStateInput: UpdateStateSchema,
   UpdateProjectStateInput: UpdateProjectStateSchema,
+  UpdateProjectLabelInput: UpdateProjectLabelSchema,
   UpdateStickyNoteInput: UpdateStickyNoteSchema,
   UpdateUserInput: UpdateUserSchema,
   UpdateUserPreferenceInput: UpdateUserPreferenceSchema,

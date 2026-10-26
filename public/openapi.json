@@ -113,6 +113,10 @@
       "description": "Estados do ciclo de vida de um projeto (rascunho, planejamento, execução, monitoramento, concluído, cancelado), configurados no workspace"
     },
     {
+      "name": "Etiquetas de projeto",
+      "description": "Etiquetas que o workspace aplica aos seus projetos (Marketing, Q4…), separadas das etiquetas de issue"
+    },
+    {
       "name": "Wiki",
       "description": "Páginas de wiki de um workspace — árvore hierárquica, mídia embutida e comentários ancorados"
     },
@@ -9830,6 +9834,211 @@
           }
         }
       }
+    },
+    "/workspaces/{id}/project-labels": {
+      "parameters": [
+        {
+          "name": "id",
+          "in": "path",
+          "required": true,
+          "description": "ID do workspace (cuid2).",
+          "schema": {
+            "type": "string"
+          }
+        }
+      ],
+      "get": {
+        "tags": [
+          "Etiquetas de projeto"
+        ],
+        "summary": "Listar etiquetas de projeto",
+        "description": "Retorna as etiquetas de projeto do workspace em ordem alfabética. Disponível para qualquer membro do workspace.",
+        "security": [
+          {
+            "cookieAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Lista de etiquetas retornada com sucesso.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProjectLabelListResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/UnauthorizedError"
+          },
+          "403": {
+            "$ref": "#/components/responses/ForbiddenError"
+          },
+          "429": {
+            "$ref": "#/components/responses/RateLimitError"
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "Etiquetas de projeto"
+        ],
+        "summary": "Criar etiqueta de projeto",
+        "description": "Cria uma etiqueta de projeto no workspace. Requer role OWNER/ADMIN do workspace e consentimento de cookies aceito. Falha com `PROJECT_LABEL_ALREADY_EXISTS` (409) se o nome já existe no workspace.",
+        "security": [
+          {
+            "cookieAuth": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateProjectLabelInput"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Etiqueta criada com sucesso.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProjectLabelResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/UnauthorizedError"
+          },
+          "403": {
+            "$ref": "#/components/responses/ForbiddenError"
+          },
+          "409": {
+            "$ref": "#/components/responses/ConflictError"
+          },
+          "422": {
+            "$ref": "#/components/responses/ValidationError"
+          },
+          "429": {
+            "$ref": "#/components/responses/RateLimitError"
+          }
+        }
+      }
+    },
+    "/workspaces/{id}/project-labels/{labelId}": {
+      "parameters": [
+        {
+          "name": "id",
+          "in": "path",
+          "required": true,
+          "description": "ID do workspace (cuid2).",
+          "schema": {
+            "type": "string"
+          }
+        },
+        {
+          "name": "labelId",
+          "in": "path",
+          "required": true,
+          "description": "ID da etiqueta de projeto (cuid2).",
+          "schema": {
+            "type": "string"
+          }
+        }
+      ],
+      "patch": {
+        "tags": [
+          "Etiquetas de projeto"
+        ],
+        "summary": "Atualizar etiqueta de projeto",
+        "description": "Atualiza nome, descrição ou cor de uma etiqueta de projeto. Requer role OWNER/ADMIN do workspace e consentimento de cookies aceito. Falha com `PROJECT_LABEL_ALREADY_EXISTS` (409) se o novo nome já existe no workspace.",
+        "security": [
+          {
+            "cookieAuth": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateProjectLabelInput"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Etiqueta atualizada com sucesso.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProjectLabelResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/UnauthorizedError"
+          },
+          "403": {
+            "$ref": "#/components/responses/ForbiddenError"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFoundError"
+          },
+          "409": {
+            "$ref": "#/components/responses/ConflictError"
+          },
+          "422": {
+            "$ref": "#/components/responses/ValidationError"
+          },
+          "429": {
+            "$ref": "#/components/responses/RateLimitError"
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "Etiquetas de projeto"
+        ],
+        "summary": "Excluir etiqueta de projeto",
+        "description": "Remove a etiqueta e a retira de todos os projetos que a usavam. Requer role OWNER/ADMIN do workspace e consentimento de cookies aceito.",
+        "security": [
+          {
+            "cookieAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Etiqueta excluída com sucesso.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/EmptySuccessResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/UnauthorizedError"
+          },
+          "403": {
+            "$ref": "#/components/responses/ForbiddenError"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFoundError"
+          },
+          "429": {
+            "$ref": "#/components/responses/RateLimitError"
+          }
+        }
+      }
     }
   },
   "components": {
@@ -10221,6 +10430,11 @@
           "projectStatesEnabled": {
             "type": "boolean",
             "description": "Quando false, os estados de projeto ficam ocultos e não podem ser atribuídos.",
+            "example": true
+          },
+          "projectLabelsEnabled": {
+            "type": "boolean",
+            "description": "Quando false, as etiquetas de projeto ficam ocultas e não podem ser atribuídas.",
             "example": true
           }
         }
@@ -11217,6 +11431,14 @@
             "type": "string",
             "description": "Estado do projeto (cuid2), sempre de um estado do mesmo workspace.",
             "example": "clx0v5k2p0000qwerpstat01"
+          },
+          "labelIds": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "Etiquetas de projeto atribuídas (cuid2), sempre do mesmo workspace.",
+            "example": []
           }
         }
       },
@@ -15099,6 +15321,117 @@
                     "description": "Quantos projetos foram movidos.",
                     "example": 3
                   }
+                }
+              }
+            }
+          }
+        ]
+      },
+      "ProjectLabel": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "example": "clx0v5k2p0000qwerplabl01"
+          },
+          "name": {
+            "type": "string",
+            "example": "Marketing"
+          },
+          "description": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "example": "Projetos do time de marketing"
+          },
+          "color": {
+            "$ref": "#/components/schemas/TagColor"
+          },
+          "workspaceId": {
+            "type": "string",
+            "example": "clx0v5k2p0000qwer1234abcd"
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "updatedAt": {
+            "type": "string",
+            "format": "date-time"
+          }
+        }
+      },
+      "CreateProjectLabelInput": {
+        "type": "object",
+        "required": [
+          "name"
+        ],
+        "properties": {
+          "name": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 50
+          },
+          "description": {
+            "type": "string",
+            "maxLength": 280
+          },
+          "color": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/TagColor"
+              }
+            ],
+            "default": "ZINC"
+          }
+        }
+      },
+      "UpdateProjectLabelInput": {
+        "type": "object",
+        "description": "Todos os campos são opcionais.",
+        "properties": {
+          "name": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 50
+          },
+          "description": {
+            "type": "string",
+            "maxLength": 280
+          },
+          "color": {
+            "$ref": "#/components/schemas/TagColor"
+          }
+        }
+      },
+      "ProjectLabelResponse": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/SuccessResponse"
+          },
+          {
+            "type": "object",
+            "properties": {
+              "data": {
+                "$ref": "#/components/schemas/ProjectLabel"
+              }
+            }
+          }
+        ]
+      },
+      "ProjectLabelListResponse": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/SuccessResponse"
+          },
+          {
+            "type": "object",
+            "properties": {
+              "data": {
+                "type": "array",
+                "items": {
+                  "$ref": "#/components/schemas/ProjectLabel"
                 }
               }
             }
