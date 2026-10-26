@@ -58,7 +58,7 @@ describe('WorkspaceCache', () => {
       const dto = createFakeWorkspaceDTO({ id: 'ws-cache-ttl' })
       await WorkspaceCache.set('ws-cache-ttl', dto)
 
-      const ttl = await redis.ttl('workspace:v2:ws-cache-ttl')
+      const ttl = await redis.ttl('workspace:v3:ws-cache-ttl')
       expect(ttl).toBeGreaterThan(895)
       expect(ttl).toBeLessThanOrEqual(900)
     })
