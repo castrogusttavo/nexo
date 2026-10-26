@@ -349,6 +349,37 @@ describe('WorkspaceService', () => {
       })
       expect(mockedWorkspaceCache.invalidate).toHaveBeenCalledWith('ws1')
     })
+
+    it('should forward the project labels switch to the repository', async () => {
+      mockedMembershipRepo.findByUserAndWorkspace.mockResolvedValue(
+        ok(
+          createFakeMembership({
+            userId: 'owner',
+            workspaceId: 'ws1',
+            role: 'OWNER',
+          }),
+        ),
+      )
+      mockedMembershipRepo.listUserIdsByWorkspace.mockResolvedValue(
+        ok(['owner']),
+      )
+      mockedWorkspaceRepo.update.mockResolvedValue(
+        ok(createFakeWorkspace({ id: 'ws1', projectLabelsEnabled: false })),
+      )
+      mockedWorkspaceCache.invalidate.mockResolvedValue(undefined)
+      mockedUserCache.invalidate.mockResolvedValue(undefined)
+
+      const value = expectOk(
+        await WorkspaceService.update('owner', 'ws1', {
+          projectLabelsEnabled: false,
+        }),
+      )
+
+      expect(value.projectLabelsEnabled).toBe(false)
+      expect(mockedWorkspaceRepo.update).toHaveBeenCalledWith('ws1', {
+        projectLabelsEnabled: false,
+      })
+    })
   })
 
   describe('delete()', () => {

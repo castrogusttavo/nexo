@@ -9,6 +9,7 @@ import { databaseError, projectStateNotFound } from '@/src/errors'
 import { err, ok } from '@/src/lib/result'
 import { MembershipRepository } from '@/src/repositories/membership.repository'
 import { ProjectRepository } from '@/src/repositories/project.repository'
+import { ProjectLabelRepository } from '@/src/repositories/project-label.repository'
 import { ProjectStateRepository } from '@/src/repositories/project-state.repository'
 import { WorkspaceRepository } from '@/src/repositories/workspace.repository'
 import { ProjectService } from '../project.service'
@@ -21,11 +22,13 @@ vi.mock('@/src/repositories/membership.repository')
 vi.mock('@/src/repositories/project.repository')
 vi.mock('@/src/repositories/project-state.repository')
 vi.mock('@/src/repositories/workspace.repository')
+vi.mock('@/src/repositories/project-label.repository')
 
 const mockedMembership = vi.mocked(MembershipRepository)
 const mockedProject = vi.mocked(ProjectRepository)
 const mockedProjectState = vi.mocked(ProjectStateRepository)
 const mockedWorkspace = vi.mocked(WorkspaceRepository)
+const mockedProjectLabel = vi.mocked(ProjectLabelRepository)
 
 const ownerMembership = createFakeMembership({
   userId: 'actor',
@@ -660,6 +663,157 @@ describe('ProjectService', () => {
 
       expect(mockedWorkspace.findById).not.toHaveBeenCalled()
       expect(mockedProjectState.findById).not.toHaveBeenCalled()
+    })
+  })
+
+  describe('update() labelIds', () => {
+    const project = createFakeProject({
+      id: 'proj-1',
+      leadId: 'actor',
+      workspaceId: 'ws1',
+    })
+
+    function asLeadOf(workspace = createFakeWorkspace({ id: 'ws1' })) {
+      mockedMembership.findByUserAndWorkspace.mockResolvedValue(
+        ok(memberMembership),
+      )
+      mockedProject.findByWorkspaceAndSlug.mockResolvedValue(
+        ok({ ...project, members: [], favourites: [] as [] }),
+      )
+      mockedWorkspace.findById.mockResolvedValue(ok(workspace))
+    }
+
+    it('should set the labels of the workspace on the project', async () => {
+      asLeadOf()
+      mockedProjectLabel.countInWorkspace.mockResolvedValue(ok(2))
+      mockedProject.update.mockResolvedValue(
+        ok({
+          ...project,
+          labelAssignments: [{ labelId: 'plabel-1' }, { labelId: 'plabel-2' }],
+        }),
+      )
+
+      const dto = expectOk(
+        await ProjectService.update('actor', 'ws1', project.slug, {
+          labelIds: ['plabel-1', 'plabel-2'],
+        }),
+      )
+
+      expect(dto.labelIds).toEqual(['plabel-1', 'plabel-2'])
+      expect(mockedProjectLabel.countInWorkspace).toHaveBeenCalledWith('ws1', [
+        'plabel-1',
+        'plabel-2',
+      ])
+    })
+
+    it('should drop repeated ids before counting and saving', async () => {
+      asLeadOf()
+      mockedProjectLabel.countInWorkspace.mockResolvedValue(ok(1))
+      mockedProject.update.mockResolvedValue(ok(project))
+
+      expectOk(
+        await ProjectService.update('actor', 'ws1', project.slug, {
+          labelIds: ['plabel-1', 'plabel-1'],
+        }),
+      )
+
+      expect(mockedProjectLabel.countInWorkspace).toHaveBeenCalledWith('ws1', [
+        'plabel-1',
+      ])
+      expect(mockedProject.update).toHaveBeenCalledWith('proj-1', {
+        labelIds: ['plabel-1'],
+      })
+    })
+
+    it('should clear the labels without counting for an empty set', async () => {
+      asLeadOf()
+      mockedProject.update.mockResolvedValue(ok(project))
+
+      expectOk(
+        await ProjectService.update('actor', 'ws1', project.slug, {
+          labelIds: [],
+        }),
+      )
+
+      expect(mockedProjectLabel.countInWorkspace).not.toHaveBeenCalled()
+      expect(mockedProject.update).toHaveBeenCalledWith('proj-1', {
+        labelIds: [],
+      })
+    })
+
+    it('should return PROJECT_LABEL_INVALID when an id is missing or foreign', async () => {
+      asLeadOf()
+      mockedProjectLabel.countInWorkspace.mockResolvedValue(ok(1))
+
+      const result = await ProjectService.update(
+        'actor',
+        'ws1',
+        'project.slug',
+        {
+          labelIds: ['plabel-1', 'plabel-2l'],
+        },
+      )
+
+      expectErr(result, 'PROJECT_LABEL_INVALID')
+      expect(mockedProject.update).not.toHaveBeenCalled()
+    })
+
+    it('should return PROJECT_LABELS_DISABLED while the workspace switch is off, even to clear', async () => {
+      asLeadOf(createFakeWorkspace({ id: 'ws1', projectLabelsEnabled: false }))
+
+      const result = await ProjectService.update('actor', 'ws1', project.slug, {
+        labelIds: [],
+      })
+
+      expectErr(result, 'PROJECT_LABELS_DISABLED')
+      expect(mockedProject.update).not.toHaveBeenCalled()
+    })
+
+    it('should propagate a database error from the count', async () => {
+      asLeadOf()
+      mockedProjectLabel.countInWorkspace.mockResolvedValue(
+        err(databaseError('boom')),
+      )
+
+      const result = await ProjectService.update('actor', 'ws1', project.slug, {
+        labelIds: ['plabel-1'],
+      })
+
+      expectErr(result, 'DATABASE_ERROR')
+    })
+
+    it('should check permission before looking the labels up', async () => {
+      mockedMembership.findByUserAndWorkspace.mockResolvedValue(
+        ok(memberMembership),
+      )
+      mockedProject.findByWorkspaceAndSlug.mockResolvedValue(
+        ok({ ...project, leadId: 'other', members: [], favourites: [] as [] }),
+      )
+
+      const result = await ProjectService.update('actor', 'ws1', project.slug, {
+        labelIds: ['plabel-1'],
+      })
+
+      expectErr(result, 'PROJECT_FORBIDDEN')
+      expect(mockedProjectLabel.countInWorkspace).not.toHaveBeenCalled()
+    })
+
+    it('should read the workspace once for a state and labels together', async () => {
+      asLeadOf()
+      mockedProjectState.findById.mockResolvedValue(
+        ok(createFakeProjectState({ id: 'pstate-2', workspaceId: 'ws1' })),
+      )
+      mockedProjectLabel.countInWorkspace.mockResolvedValue(ok(1))
+      mockedProject.update.mockResolvedValue(ok(project))
+
+      expectOk(
+        await ProjectService.update('actor', 'ws1', project.slug, {
+          stateId: 'pstate-2',
+          labelIds: ['plabel-1'],
+        }),
+      )
+
+      expect(mockedWorkspace.findById).toHaveBeenCalledTimes(1)
     })
   })
 

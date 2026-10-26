@@ -2,6 +2,8 @@ import { auditMutation } from '@/lib/axiom/audit'
 import type { ProjectDTO, ProjectMemberDTO } from '@/types/project'
 import {
   projectForbidden,
+  projectLabelInvalid,
+  projectLabelsDisabled,
   projectMemberNotFound,
   projectMemberNotInWorkspace,
   projectStateInvalid,
@@ -10,6 +12,7 @@ import {
 import { err, ok, type Result } from '../lib/result'
 import { toProjectDTO, toProjectMemberDTO } from '../mappers/project.mapper'
 import { ProjectRepository } from '../repositories/project.repository'
+import { ProjectLabelRepository } from '../repositories/project-label.repository'
 import { ProjectStateRepository } from '../repositories/project-state.repository'
 import { WorkspaceRepository } from '../repositories/workspace.repository'
 import type {
@@ -20,26 +23,49 @@ import type {
 import { assertMember } from './_authz'
 import { resolveProject } from './_project-scope'
 
-// A project may only move to a state of its own workspace, and only while the
-// workspace has project states switched on. A missing state and a foreign one
-// answer alike, so the response reveals nothing about other workspaces.
-async function assertStateAssignable(
+// A project may only take a state or labels of its own workspace, and only
+// while the workspace has that feature switched on. A missing id and a
+// foreign one answer alike, so the response reveals nothing about other
+// workspaces. Both switches live on the workspace, read once for both.
+async function resolveProjectProperties(
   workspaceId: string,
-  stateId: string,
-): Promise<Result<void>> {
+  dto: Pick<UpdateProjectDTO, 'stateId' | 'labelIds'>,
+): Promise<Result<{ labelIds?: string[] }>> {
+  if (!dto.stateId && dto.labelIds === undefined) return ok({})
+
   const workspace = await WorkspaceRepository.findById(workspaceId)
   if (!workspace.ok) return workspace
-  if (!workspace.value.projectStatesEnabled) return err(projectStatesDisabled())
 
-  const state = await ProjectStateRepository.findById(stateId)
-  if (!state.ok) {
-    return state.error.code === 'PROJECT_STATE_NOT_FOUND'
-      ? err(projectStateInvalid())
-      : state
+  if (dto.stateId) {
+    if (!workspace.value.projectStatesEnabled) {
+      return err(projectStatesDisabled())
+    }
+    const state = await ProjectStateRepository.findById(dto.stateId)
+    if (!state.ok) {
+      return state.error.code === 'PROJECT_STATE_NOT_FOUND'
+        ? err(projectStateInvalid())
+        : state
+    }
+    if (state.value.workspaceId !== workspaceId) {
+      return err(projectStateInvalid())
+    }
   }
-  if (state.value.workspaceId !== workspaceId) return err(projectStateInvalid())
 
-  return ok(undefined)
+  if (dto.labelIds === undefined) return ok({})
+  // Clearing labels is still touching them, so the switch applies to [].
+  if (!workspace.value.projectLabelsEnabled) return err(projectLabelsDisabled())
+
+  const labelIds = [...new Set(dto.labelIds)]
+  if (labelIds.length > 0) {
+    const count = await ProjectLabelRepository.countInWorkspace(
+      workspaceId,
+      labelIds,
+    )
+    if (!count.ok) return count
+    if (count.value !== labelIds.length) return err(projectLabelInvalid())
+  }
+
+  return ok({ labelIds })
 }
 
 function baseIdentifierFrom(name: string): string {
@@ -288,12 +314,13 @@ export const ProjectService = {
       return err(projectMemberNotFound())
     }
 
-    if (dto.stateId) {
-      const assignable = await assertStateAssignable(workspaceId, dto.stateId)
-      if (!assignable.ok) return assignable
-    }
+    const properties = await resolveProjectProperties(workspaceId, dto)
+    if (!properties.ok) return properties
 
-    const result = await ProjectRepository.update(project.id, dto)
+    const result = await ProjectRepository.update(project.id, {
+      ...dto,
+      ...properties.value,
+    })
     if (!result.ok) {
       auditMutation({
         entity: 'project',

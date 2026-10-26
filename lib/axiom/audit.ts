@@ -19,6 +19,7 @@ type AuditEntity =
   | 'career_application'
   | 'state'
   | 'project_state'
+  | 'project_label'
   | 'label'
   | 'estimate_settings'
   | 'estimate_value'
