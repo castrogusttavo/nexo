@@ -14,6 +14,7 @@ export interface ProjectDTO {
   isFavorited: boolean
   leadId: string | null
   stateId: string
+  labelIds: string[]
   workspaceId: string
   archivedAt: string | null
   createdAt: string

@@ -20,6 +20,7 @@ describe('toWorkspaceDTO()', () => {
       activePlan: 'PRO',
       trialEndsAt: null,
       projectStatesEnabled: true,
+      projectLabelsEnabled: true,
       createdAt: ws.createdAt.toISOString(),
       updatedAt: ws.updatedAt.toISOString(),
     })
@@ -48,5 +49,13 @@ describe('toWorkspaceDTO()', () => {
     )
 
     expect(dto.projectStatesEnabled).toBe(false)
+  })
+
+  it('should carry the project labels switch', () => {
+    const dto = toWorkspaceDTO(
+      createFakeWorkspace({ projectLabelsEnabled: false }),
+    )
+
+    expect(dto.projectLabelsEnabled).toBe(false)
   })
 })

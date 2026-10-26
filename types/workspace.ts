@@ -7,6 +7,7 @@ export interface WorkspaceDTO {
   activePlan: Plan
   trialEndsAt: string | null
   projectStatesEnabled: boolean
+  projectLabelsEnabled: boolean
   createdAt: string
   updatedAt: string
 }

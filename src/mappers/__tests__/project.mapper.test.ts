@@ -40,6 +40,7 @@ describe('toProjectDTO', () => {
       isFavorited: false,
       leadId: 'user-1',
       stateId: 'pstate-1',
+      labelIds: [],
       workspaceId: 'ws-1',
       archivedAt: null,
       createdAt: '2025-03-01T10:00:00.000Z',
@@ -94,5 +95,13 @@ describe('toProjectDTO', () => {
     expect(dto.description).toBeNull()
     expect(dto.emoji).toBeNull()
     expect(dto.coverImage).toBeNull()
+  })
+
+  it('should expose the assigned labels as ids', () => {
+    const project = createFakeProject({
+      labelAssignments: [{ labelId: 'plabel-1' }, { labelId: 'plabel-2' }],
+    })
+
+    expect(toProjectDTO(project).labelIds).toEqual(['plabel-1', 'plabel-2'])
   })
 })

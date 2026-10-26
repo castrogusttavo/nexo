@@ -11,6 +11,7 @@ export function buildWorkspaceDTO(
     activePlan: 'FREE',
     trialEndsAt: null,
     projectStatesEnabled: true,
+    projectLabelsEnabled: true,
     createdAt: '2025-01-01T00:00:00.000Z',
     updatedAt: '2025-01-01T00:00:00.000Z',
     ...overrides,

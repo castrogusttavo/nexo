@@ -5,6 +5,10 @@ import {
   seedProjectMember,
 } from '@/src/__tests__/factories/project.factory'
 import {
+  assignProjectLabels,
+  seedProjectLabel,
+} from '@/src/__tests__/factories/project-label.factory'
+import {
   defaultProjectStateId,
   seedProjectState,
 } from '@/src/__tests__/factories/project-state.factory'
@@ -330,6 +334,28 @@ describe('ProjectRepository', () => {
 
       expectErr(result, 'DATABASE_ERROR')
     })
+
+    it('should start the project without labels', async () => {
+      const user = await seedUser()
+      const ws = await seedWorkspace()
+      await defaultProjectStateId(ws.id)
+
+      const project = expectOk(
+        await ProjectRepository.create({
+          name: 'Sem etiquetas',
+          slug: 'sem-etiquetas',
+          identifier: 'SETQ',
+          isPublic: false,
+          issueTypesEnabled: true,
+          modulesEnabled: true,
+          cyclesEnabled: true,
+          leadId: user.id,
+          workspaceId: ws.id,
+        }),
+      )
+
+      expect(project.labelAssignments).toEqual([])
+    })
   })
 
   describe('archive() / restore()', () => {
@@ -516,6 +542,99 @@ describe('ProjectRepository', () => {
       })
 
       expectErr(result, 'DATABASE_ERROR')
+    })
+  })
+
+  describe('labels', () => {
+    async function projectWithLabels(count: number) {
+      const user = await seedUser()
+      const ws = await seedWorkspace()
+      const project = await seedProject(ws.id, user.id)
+      const labels = await Promise.all(
+        Array.from({ length: count }, () => seedProjectLabel(ws.id)),
+      )
+
+      return { user, ws, project, labels }
+    }
+
+    const labelIdsOf = (p: { labelAssignments: { labelId: string }[] }) =>
+      p.labelAssignments.map((a) => a.labelId).sort()
+
+    it('should replace the label set on update', async () => {
+      const { project, labels } = await projectWithLabels(3)
+      await assignProjectLabels(project.id, [labels[0].id, labels[1].id])
+
+      const updated = expectOk(
+        await ProjectRepository.update(project.id, {
+          labelIds: [labels[1].id, labels[2].id],
+        }),
+      )
+
+      expect(labelIdsOf(updated)).toEqual([labels[1].id, labels[2].id].sort())
+    })
+
+    it('should clear the labels for an empty set', async () => {
+      const { project, labels } = await projectWithLabels(2)
+      await assignProjectLabels(
+        project.id,
+        labels.map((l) => l.id),
+      )
+
+      const updated = expectOk(
+        await ProjectRepository.update(project.id, { labelIds: [] }),
+      )
+
+      expect(updated.labelAssignments).toEqual([])
+    })
+
+    it('should leave the labels alone when labelIds is absent', async () => {
+      const { project, labels } = await projectWithLabels(1)
+      await assignProjectLabels(project.id, [labels[0].id])
+
+      const updated = expectOk(
+        await ProjectRepository.update(project.id, { name: 'Renomeado' }),
+      )
+
+      expect(labelIdsOf(updated)).toEqual([labels[0].id])
+    })
+
+    it('should carry the labels when found by slug', async () => {
+      const { user, ws, project, labels } = await projectWithLabels(1)
+      await assignProjectLabels(project.id, [labels[0].id])
+
+      const found = expectOk(
+        await ProjectRepository.findByWorkspaceAndSlug(
+          ws.id,
+          project.slug,
+          user.id,
+        ),
+      )
+
+      expect(labelIdsOf(found)).toEqual([labels[0].id])
+    })
+
+    it('should carry the labels when listed', async () => {
+      const { user, ws, project, labels } = await projectWithLabels(1)
+      await assignProjectLabels(project.id, [labels[0].id])
+
+      const [listed] = expectOk(
+        await ProjectRepository.listByWorkspace(ws.id, user.id, true, {
+          archived: false,
+        }),
+      )
+
+      expect(labelIdsOf(listed)).toEqual([labels[0].id])
+    })
+
+    it('should carry the labels through archive and restore', async () => {
+      const { project, labels } = await projectWithLabels(1)
+      await assignProjectLabels(project.id, [labels[0].id])
+
+      const archived = expectOk(await ProjectRepository.archive(project.id))
+      const restored = expectOk(await ProjectRepository.restore(project.id))
+
+      expect(labelIdsOf(archived)).toEqual([labels[0].id])
+      expect(labelIdsOf(restored)).toEqual([labels[0].id])
     })
   })
 })

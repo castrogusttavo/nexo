@@ -1,10 +1,12 @@
-import type { Project } from '@prisma/client'
 import type { ProjectDTO, ProjectMemberDTO } from '@/types/project'
-import type { ProjectMemberWithUser } from '../repositories/project.repository'
+import type {
+  ProjectMemberWithUser,
+  ProjectWithLabels,
+} from '../repositories/project.repository'
 import { withTimestamps } from './_shared'
 
 export function toProjectDTO(
-  project: Project,
+  project: ProjectWithLabels,
   isFavorited = false,
 ): ProjectDTO {
   return {
@@ -23,6 +25,7 @@ export function toProjectDTO(
     isFavorited,
     leadId: project.leadId,
     stateId: project.stateId,
+    labelIds: project.labelAssignments.map((a) => a.labelId),
     workspaceId: project.workspaceId,
     archivedAt: project.archivedAt?.toISOString() ?? null,
     ...withTimestamps(project),

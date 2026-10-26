@@ -1,6 +1,7 @@
 import type {
   Project,
   ProjectFavorite,
+  ProjectLabelAssignment,
   ProjectMember,
   User,
 } from '@prisma/client'
@@ -39,7 +40,13 @@ function uniqueConstraintFields(error: unknown): string[] | undefined {
   return driverAdapterError?.cause?.constraint?.fields
 }
 
-export type ProjectWithDetails = Project & {
+// Every project handed to the mapper carries its label ids; leaving the
+// include out is a type error, not a silent `labelIds: []` in the API.
+export type ProjectWithLabels = Project & {
+  labelAssignments: Pick<ProjectLabelAssignment, 'labelId'>[]
+}
+
+export type ProjectWithDetails = ProjectWithLabels & {
   members: Pick<ProjectMember, 'userId'>[]
   favourites: Pick<ProjectFavorite, 'id'>[]
 }
@@ -47,6 +54,11 @@ export type ProjectWithDetails = Project & {
 export type ProjectMemberWithUser = ProjectMember & {
   user: Pick<User, 'id' | 'name' | 'username' | 'image' | 'email'>
 }
+
+// The label ids every project handed to the mapper carries.
+const withLabelIds = {
+  labelAssignments: { select: { labelId: true } },
+} as const
 
 const memberUserSelect = {
   select: { id: true, name: true, username: true, image: true, email: true },
@@ -74,6 +86,7 @@ export const ProjectRepository = {
         include: {
           members: { select: { userId: true } },
           favourites: { where: { userId: actorId }, select: { id: true } },
+          ...withLabelIds,
         },
       })
       if (!project) return err(projectNotFound())
@@ -107,6 +120,7 @@ export const ProjectRepository = {
         include: {
           members: { select: { userId: true } },
           favourites: { where: { userId: actorId }, select: { id: true } },
+          ...withLabelIds,
         },
         orderBy: { updatedAt: 'desc' },
       })
@@ -175,7 +189,7 @@ export const ProjectRepository = {
     estimatesEnabled?: boolean
     leadId: string
     workspaceId: string
-  }): Promise<Result<Project>> {
+  }): Promise<Result<ProjectWithLabels>> {
     try {
       const project = await prisma.$transaction(async (tx) => {
         // Every project starts in its workspace's default state.
@@ -185,6 +199,7 @@ export const ProjectRepository = {
         })
         const p = await tx.project.create({
           data: { ...data, stateId: defaultState.id },
+          include: withLabelIds,
         })
         const estimateSettings = await tx.estimateSettings.create({
           data: { projectId: p.id },
@@ -250,10 +265,25 @@ export const ProjectRepository = {
       estimatesEnabled?: boolean
       leadId?: string
       stateId?: string
+      /** Replaces the whole label set; [] clears it. */
+      labelIds?: string[]
     },
-  ): Promise<Result<Project>> {
+  ): Promise<Result<ProjectWithLabels>> {
+    const { labelIds, ...fields } = data
     try {
-      const project = await prisma.project.update({ where: { id }, data })
+      const project = await prisma.project.update({
+        where: { id },
+        data: {
+          ...fields,
+          ...(labelIds && {
+            labelAssignments: {
+              deleteMany: {},
+              create: labelIds.map((labelId) => ({ labelId })),
+            },
+          }),
+        },
+        include: withLabelIds,
+      })
       return ok(project)
     } catch (error) {
       if (error instanceof Error && 'code' in error && error.code === 'P2002') {
@@ -267,11 +297,12 @@ export const ProjectRepository = {
     }
   },
 
-  async archive(id: string): Promise<Result<Project>> {
+  async archive(id: string): Promise<Result<ProjectWithLabels>> {
     try {
       const project = await prisma.project.update({
         where: { id },
         data: { archivedAt: new Date() },
+        include: withLabelIds,
       })
       return ok(project)
     } catch (error) {
@@ -279,11 +310,12 @@ export const ProjectRepository = {
     }
   },
 
-  async restore(id: string): Promise<Result<Project>> {
+  async restore(id: string): Promise<Result<ProjectWithLabels>> {
     try {
       const project = await prisma.project.update({
         where: { id },
         data: { archivedAt: null },
+        include: withLabelIds,
       })
       return ok(project)
     } catch (error) {

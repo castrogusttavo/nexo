@@ -1,12 +1,17 @@
 import { createId } from '@paralleldrive/cuid2'
 import type { Project, ProjectMember } from '@prisma/client'
 import { prisma } from '@/src/lib/prisma'
-import { ProjectRepository } from '@/src/repositories/project.repository'
+import {
+  ProjectRepository,
+  type ProjectWithLabels,
+} from '@/src/repositories/project.repository'
 import type { ProjectDTO } from '@/types/project'
 import { buildProjectDTO } from './dto/project.dto'
 import { defaultProjectStateId } from './project-state.factory'
 
-export function createFakeProject(overrides?: Partial<Project>): Project {
+export function createFakeProject(
+  overrides?: Partial<ProjectWithLabels>,
+): ProjectWithLabels {
   const now = new Date()
   return {
     id: createId(),
@@ -28,6 +33,7 @@ export function createFakeProject(overrides?: Partial<Project>): Project {
     archivedAt: null,
     createdAt: now,
     updatedAt: now,
+    labelAssignments: [],
     ...overrides,
   }
 }
