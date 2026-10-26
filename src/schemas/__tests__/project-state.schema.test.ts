@@ -25,7 +25,7 @@ describe('ProjectStateGroupSchema', () => {
 })
 
 describe('CreateProjectStateSchema', () => {
-  it('accepts a minimal valid payload and defaultsa color', () => {
+  it('accepts a minimal valid payload and defaults color', () => {
     const result = CreateProjectStateSchema.safeParse({
       name: 'Em revisão',
       group: 'MONITORING',
@@ -50,7 +50,7 @@ describe('CreateProjectStateSchema', () => {
     ).toBe(false)
   })
 
-  it('reject an empty name', () => {
+  it('rejects an empty name', () => {
     expect(
       CreateProjectStateSchema.safeParse({ name: '', group: 'DRAFT' }).success,
     ).toBe(false)
@@ -75,7 +75,7 @@ describe('CreateProjectStateSchema', () => {
     ).toBe(false)
   })
 
-  it('reject an invalid color', () => {
+  it('rejects an invalid color', () => {
     expect(
       CreateProjectStateSchema.safeParse({
         name: 'Em revisão',

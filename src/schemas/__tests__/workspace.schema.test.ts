@@ -164,7 +164,7 @@ describe('UpdateWorkspaceSchema', () => {
 })
 
 describe('CreateWorkspaceSchema switches', () => {
-  // A new workspace start with the switch on; turning it off is a settings
+  // A new workspace starts with the switch on; turning it off is a settings
   // concern
   it('should drop the switch on create', () => {
     const result = CreateWorkspaceSchema.safeParse({
