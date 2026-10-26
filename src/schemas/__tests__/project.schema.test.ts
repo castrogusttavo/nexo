@@ -246,3 +246,74 @@ describe('UpdateProjectSchema labelIds', () => {
     )
   })
 })
+
+describe('UpdateProjectSchema priority', () => {
+  it('accepts each priority and nothing else', () => {
+    for (const priority of ['NONE', 'LOW', 'MEDIUM', 'HIGH', 'URGENT']) {
+      expect(UpdateProjectSchema.safeParse({ priority }).success).toBe(true)
+    }
+    expect(
+      UpdateProjectSchema.safeParse({ priority: 'CRITICAL' }).success,
+    ).toBe(false)
+  })
+})
+
+describe('UpdateProjectSchema dates', () => {
+  it('accepts ISO dates with an offset', () => {
+    expect(
+      UpdateProjectSchema.safeParse({
+        startDate: '2026-10-01T00:00:00.000Z',
+        dueDate: '2026-12-31T00:00:00-03:00',
+      }).success,
+    ).toBe(true)
+  })
+
+  it('accepts null to clear a date', () => {
+    expect(
+      UpdateProjectSchema.safeParse({ startDate: null, dueDate: null }).success,
+    ).toBe(true)
+  })
+
+  it('rejects a date that is not ISO', () => {
+    expect(
+      UpdateProjectSchema.safeParse({ dueDate: '31/12/2026' }).success,
+    ).toBe(false)
+  })
+
+  it('accepts a start and a due date at the same instant', () => {
+    expect(
+      UpdateProjectSchema.safeParse({
+        startDate: '2026-10-01T00:00:00.000Z',
+        dueDate: '2026-10-01T00:00:00.000Z',
+      }).success,
+    ).toBe(true)
+  })
+
+  it('rejects a due date before the start date, on dueDate', () => {
+    const result = UpdateProjectSchema.safeParse({
+      startDate: '2026-10-02T00:00:00.000Z',
+      dueDate: '2026-10-01T00:00:00.000Z',
+    })
+    expect(result.success).toBe(false)
+    expect(result.error?.issues[0]?.path).toEqual(['dueDate'])
+  })
+
+  // The order compares instants, not strings: -03:00 midnight is 03:00Z.
+  it('compares dates across offsets as instants', () => {
+    expect(
+      UpdateProjectSchema.safeParse({
+        startDate: '2026-10-01T02:00:00.000Z',
+        dueDate: '2026-10-01T00:00:00-03:00',
+      }).success,
+    ).toBe(true)
+  })
+
+  // With one date alone the schema cannot know the stored other one; the
+  // service checks the pair against the project.
+  it('leaves a lone date to the service', () => {
+    expect(
+      UpdateProjectSchema.safeParse({ dueDate: '2020-01-01T00:00:00.000Z' })
+        .success,
+    ).toBe(true)
+  })
+})

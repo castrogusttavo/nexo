@@ -267,6 +267,9 @@ export const ProjectRepository = {
       stateId?: string
       /** Replaces the whole label set; [] clears it. */
       labelIds?: string[]
+      priority?: Project['priority']
+      startDate?: Date | null
+      dueDate?: Date | null
     },
   ): Promise<Result<ProjectWithLabels>> {
     const { labelIds, ...fields } = data

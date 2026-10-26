@@ -1,4 +1,5 @@
 import z from 'zod'
+import { IsoDate } from './_shared'
 
 const slugRegex = /^[a-z0-9-]+$/
 
@@ -51,25 +52,52 @@ export const CreateProjectSchema = z.object({
 
 export type CreateProjectDTO = z.infer<typeof CreateProjectSchema>
 
-export const UpdateProjectSchema = z.object({
-  name: projectName.optional(),
-  slug: projectSlug.optional(),
-  description: projectDescription.optional(),
-  emoji: projectEmoji.optional(),
-  coverImage: projectCoverImage.optional(),
-  isPublic: z.boolean().optional(),
-  issueTypesEnabled: z.boolean().optional(),
-  modulesEnabled: z.boolean().optional(),
-  cyclesEnabled: z.boolean().optional(),
-  estimatesEnabled: z.boolean().optional(),
-  identifier: projectIdentifier.optional(),
-  leadId: z.cuid2('ID de usuário inválido').optional(),
-  stateId: z.cuid2('Estado inválido').optional(),
-  labelIds: z
-    .array(z.cuid2('Etiqueta inválida'))
-    .max(20, 'Um projeto pode ter no máximo 20 etiquetas')
-    .optional(),
-})
+export const ProjectPrioritySchema = z.enum([
+  'NONE',
+  'LOW',
+  'MEDIUM',
+  'HIGH',
+  'URGENT',
+])
+
+export type ProjectPriorityDTO = z.infer<typeof ProjectPrioritySchema>
+
+export const UpdateProjectSchema = z
+  .object({
+    name: projectName.optional(),
+    slug: projectSlug.optional(),
+    description: projectDescription.optional(),
+    emoji: projectEmoji.optional(),
+    coverImage: projectCoverImage.optional(),
+    isPublic: z.boolean().optional(),
+    issueTypesEnabled: z.boolean().optional(),
+    modulesEnabled: z.boolean().optional(),
+    cyclesEnabled: z.boolean().optional(),
+    estimatesEnabled: z.boolean().optional(),
+    identifier: projectIdentifier.optional(),
+    leadId: z.cuid2('ID de usuário inválido').optional(),
+    stateId: z.cuid2('Estado inválido').optional(),
+    labelIds: z
+      .array(z.cuid2('Etiqueta inválida'))
+      .max(20, 'Um projeto pode ter no máximo 20 etiquetas')
+      .optional(),
+    priority: ProjectPrioritySchema.optional(),
+    // null clears a date.
+    startDate: IsoDate.nullable().optional(),
+    dueDate: IsoDate.nullable().optional(),
+  })
+  // Only when both dates arrive: a lone one is checked by the service against
+  // the date already stored on the project.
+  .refine(
+    (dto) =>
+      !dto.startDate ||
+      !dto.dueDate ||
+      new Date(dto.startDate) <= new Date(dto.dueDate),
+    {
+      message: 'A data de conclusão não pode ser anterior à de início',
+      path: ['dueDate'],
+    },
+  )
 
 export type UpdateProjectDTO = z.infer<typeof UpdateProjectSchema>
 

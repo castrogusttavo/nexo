@@ -1,6 +1,7 @@
 import { auditMutation } from '@/lib/axiom/audit'
 import type { ProjectDTO, ProjectMemberDTO } from '@/types/project'
 import {
+  projectDateRangeInvalid,
   projectForbidden,
   projectLabelInvalid,
   projectLabelsDisabled,
@@ -66,6 +67,30 @@ async function resolveProjectProperties(
   }
 
   return ok({ labelIds })
+}
+
+// The schema already refuses a pair sent in the wrong order; a lone date is
+// checked against the one stored on the project. Only the dates being sent
+// are judged, so a project already out of order can still take other edits.
+function resolveDates(
+  stored: { startDate: Date | null; dueDate: Date | null },
+  dto: Pick<UpdateProjectDTO, 'startDate' | 'dueDate'>,
+): Result<{ startDate?: Date | null; dueDate?: Date | null }> {
+  if (dto.startDate === undefined && dto.dueDate === undefined) return ok({})
+
+  const toDate = (value: string | null | undefined) =>
+    value === undefined ? undefined : value === null ? null : new Date(value)
+  const startDate = toDate(dto.startDate)
+  const dueDate = toDate(dto.dueDate)
+
+  const start = startDate === undefined ? stored.startDate : startDate
+  const due = dueDate === undefined ? stored.dueDate : dueDate
+  if (start && due && start > due) return err(projectDateRangeInvalid())
+
+  return ok({
+    ...(startDate !== undefined && { startDate }),
+    ...(dueDate !== undefined && { dueDate }),
+  })
 }
 
 function baseIdentifierFrom(name: string): string {
@@ -314,11 +339,17 @@ export const ProjectService = {
       return err(projectMemberNotFound())
     }
 
+    const dates = resolveDates(project, dto)
+    if (!dates.ok) return dates
+
     const properties = await resolveProjectProperties(workspaceId, dto)
     if (!properties.ok) return properties
 
+    // The dates go to the repository as Date, from resolveDates.
+    const { startDate: _startDate, dueDate: _dueDate, ...fields } = dto
     const result = await ProjectRepository.update(project.id, {
-      ...dto,
+      ...fields,
+      ...dates.value,
       ...properties.value,
     })
     if (!result.ok) {

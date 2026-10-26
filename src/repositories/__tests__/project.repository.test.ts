@@ -545,6 +545,32 @@ describe('ProjectRepository', () => {
     })
   })
 
+  describe('priority and dates', () => {
+    it('should store the priority and both dates, then clear a date', async () => {
+      const user = await seedUser()
+      const ws = await seedWorkspace()
+      const project = await seedProject(ws.id, user.id)
+      expect(project.priority).toBe('NONE')
+
+      const updated = expectOk(
+        await ProjectRepository.update(project.id, {
+          priority: 'URGENT',
+          startDate: new Date('2026-10-01T00:00:00.000Z'),
+          dueDate: new Date('2026-12-31T00:00:00.000Z'),
+        }),
+      )
+      expect(updated.priority).toBe('URGENT')
+      expect(updated.startDate?.toISOString()).toBe('2026-10-01T00:00:00.000Z')
+      expect(updated.dueDate?.toISOString()).toBe('2026-12-31T00:00:00.000Z')
+
+      const cleared = expectOk(
+        await ProjectRepository.update(project.id, { dueDate: null }),
+      )
+      expect(cleared.dueDate).toBeNull()
+      expect(cleared.startDate?.toISOString()).toBe('2026-10-01T00:00:00.000Z')
+    })
+  })
+
   describe('labels', () => {
     async function projectWithLabels(count: number) {
       const user = await seedUser()

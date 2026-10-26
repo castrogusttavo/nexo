@@ -7,6 +7,7 @@ import {
   forbidden,
   invalidCredentials,
   notFound,
+  projectDateRangeInvalid,
   projectLabelAlreadyExists,
   projectLabelForbidden,
   projectLabelInvalid,
@@ -201,6 +202,14 @@ describe('AppError factories', () => {
 
     it('accepts a custom message', () => {
       expect(projectStateForbidden('Sem acesso').message).toBe('Sem acesso')
+    })
+  })
+
+  describe('project date range factory', () => {
+    it('maps to a registered 422 code', () => {
+      const error = projectDateRangeInvalid()
+      expect(ERROR_CODES[error.code].status).toBe(422)
+      expect(error.message).not.toBe('')
     })
   })
 

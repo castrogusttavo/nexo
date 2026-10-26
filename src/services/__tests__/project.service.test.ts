@@ -666,6 +666,115 @@ describe('ProjectService', () => {
     })
   })
 
+  describe('update() priority and dates', () => {
+    function asLeadOf(stored: {
+      startDate?: Date | null
+      dueDate?: Date | null
+    }) {
+      const project = createFakeProject({
+        id: 'proj-1',
+        leadId: 'actor',
+        workspaceId: 'ws1',
+        startDate: stored.startDate ?? null,
+        dueDate: stored.dueDate ?? null,
+      })
+      mockedMembership.findByUserAndWorkspace.mockResolvedValue(
+        ok(memberMembership),
+      )
+      mockedProject.findByWorkspaceAndSlug.mockResolvedValue(
+        ok({ ...project, members: [], favourites: [] as [] }),
+      )
+      mockedProject.update.mockResolvedValue(ok(project))
+      return project
+    }
+
+    it('should pass the priority and the dates as Date to the repository', async () => {
+      const project = asLeadOf({})
+
+      expectOk(
+        await ProjectService.update('actor', 'ws1', project.slug, {
+          priority: 'HIGH',
+          startDate: '2026-10-01T00:00:00.000Z',
+          dueDate: '2026-12-31T00:00:00-03:00',
+        }),
+      )
+
+      expect(mockedProject.update).toHaveBeenCalledWith('proj-1', {
+        priority: 'HIGH',
+        startDate: new Date('2026-10-01T00:00:00.000Z'),
+        dueDate: new Date('2026-12-31T03:00:00.000Z'),
+      })
+    })
+
+    it('should pass null through to clear a date', async () => {
+      const project = asLeadOf({
+        dueDate: new Date('2026-12-31T00:00:00.000Z'),
+      })
+
+      expectOk(
+        await ProjectService.update('actor', 'ws1', project.slug, {
+          dueDate: null,
+        }),
+      )
+
+      expect(mockedProject.update).toHaveBeenCalledWith('proj-1', {
+        dueDate: null,
+      })
+    })
+
+    it('should refuse a lone due date before the stored start date', async () => {
+      const project = asLeadOf({
+        startDate: new Date('2026-10-10T00:00:00.000Z'),
+      })
+
+      const result = await ProjectService.update('actor', 'ws1', project.slug, {
+        dueDate: '2026-10-01T00:00:00.000Z',
+      })
+
+      expectErr(result, 'PROJECT_DATE_RANGE_INVALID')
+      expect(mockedProject.update).not.toHaveBeenCalled()
+    })
+
+    it('should refuse a lone start date after the stored due date', async () => {
+      const project = asLeadOf({
+        dueDate: new Date('2026-10-01T00:00:00.000Z'),
+      })
+
+      const result = await ProjectService.update('actor', 'ws1', project.slug, {
+        startDate: '2026-10-10T00:00:00.000Z',
+      })
+
+      expectErr(result, 'PROJECT_DATE_RANGE_INVALID')
+    })
+
+    it('should accept a lone date once the stored one is being cleared', async () => {
+      const project = asLeadOf({
+        startDate: new Date('2026-10-10T00:00:00.000Z'),
+      })
+
+      expectOk(
+        await ProjectService.update('actor', 'ws1', project.slug, {
+          startDate: null,
+          dueDate: '2026-10-01T00:00:00.000Z',
+        }),
+      )
+    })
+
+    it('should not look at dates for an update without them', async () => {
+      const project = asLeadOf({
+        startDate: new Date('2026-10-10T00:00:00.000Z'),
+        dueDate: new Date('2026-10-01T00:00:00.000Z'),
+      })
+
+      // Stored data that already breaks the rule must not block other edits.
+      expectOk(
+        await ProjectService.update('actor', 'ws1', project.slug, {
+          priority: 'LOW',
+        }),
+      )
+    })
+  })
+
   describe('update() labelIds', () => {
     const project = createFakeProject({
       id: 'proj-1',

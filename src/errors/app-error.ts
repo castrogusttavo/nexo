@@ -380,3 +380,9 @@ export const projectLabelInvalid = (
 export const projectLabelsDisabled = (
   message = 'As etiquetas de projeto estão desativadas neste workspace',
 ): AppError => appError('PROJECT_LABELS_DISABLED', message)
+
+// The schema checks a pair sent together; this is the service catching a
+// lone date that would cross the one already stored on the project.
+export const projectDateRangeInvalid = (
+  message = 'A data de conclusão não pode ser anterior à de início',
+): AppError => appError('PROJECT_DATE_RANGE_INVALID', message)

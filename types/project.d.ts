@@ -15,6 +15,9 @@ export interface ProjectDTO {
   leadId: string | null
   stateId: string
   labelIds: string[]
+  priority: 'NONE' | 'LOW' | 'MEDIUM' | 'HIGH' | 'URGENT'
+  startDate: string | null
+  dueDate: string | null
   workspaceId: string
   archivedAt: string | null
   createdAt: string

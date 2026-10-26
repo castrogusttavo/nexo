@@ -450,32 +450,35 @@ model StickyNote {
 }
 
 model Project {
-  id                String    @id @default(cuid())
+  id                String          @id @default(cuid())
   name              String
   slug              String
-  identifier        String    @map("identifier")
+  identifier        String          @map("identifier")
   description       String?
   emoji             String?
-  coverImage        String?   @map("cover_image")
-  isPublic          Boolean   @default(false) @map("is_public")
-  issueTypesEnabled Boolean   @default(true) @map("issue_types_enabled")
-  modulesEnabled    Boolean   @default(true) @map("modules_enabled")
-  cyclesEnabled     Boolean   @default(true) @map("cycles_enabled")
-  estimatesEnabled  Boolean   @default(true) @map("estimates_enabled")
-  issueSequence     Int       @default(0) @map("issue_sequence")
-  leadId            String?   @map("lead_id")
-  stateId           String    @map("state_id")
-  workspaceId       String    @map("workspace_id")
-  archivedAt        DateTime? @map("archived_at")
-  createdAt         DateTime  @default(now()) @map("created_at")
-  updatedAt         DateTime  @updatedAt @map("updated_at")
+  coverImage        String?         @map("cover_image")
+  isPublic          Boolean         @default(false) @map("is_public")
+  issueTypesEnabled Boolean         @default(true) @map("issue_types_enabled")
+  modulesEnabled    Boolean         @default(true) @map("modules_enabled")
+  cyclesEnabled     Boolean         @default(true) @map("cycles_enabled")
+  estimatesEnabled  Boolean         @default(true) @map("estimates_enabled")
+  issueSequence     Int             @default(0) @map("issue_sequence")
+  leadId            String?         @map("lead_id")
+  stateId           String          @map("state_id")
+  priority          ProjectPriority @default(NONE)
+  startDate         DateTime?       @map("start_date")
+  dueDate           DateTime?       @map("due_date")
+  workspaceId       String          @map("workspace_id")
+  archivedAt        DateTime?       @map("archived_at")
+  createdAt         DateTime        @default(now()) @map("created_at")
+  updatedAt         DateTime        @updatedAt @map("updated_at")
 
-  lead             User?                 @relation("ProjectLead", fields: [leadId], references: [id], onDelete: SetNull)
+  lead             User?                    @relation("ProjectLead", fields: [leadId], references: [id], onDelete: SetNull)
   // NoAction, not Restrict: a workspace delete cascades into both projects
   // and project_states, and Restrict would fire mid-cascade if the states go
   // first. NoAction checks at the end of statement, after both are gone.
-  state            ProjectState          @relation(fields: [stateId], references: [id], onDelete: NoAction)
-  workspace        Workspace             @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  state            ProjectState             @relation(fields: [stateId], references: [id], onDelete: NoAction)
+  workspace        Workspace                @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
   members          ProjectMember[]
   favourites       ProjectFavorite[]
   invitations      WorkspaceInvitation[]
@@ -546,6 +549,14 @@ model ProjectState {
   @@map("project_states")
 }
 
+enum ProjectPriority {
+  NONE
+  LOW
+  MEDIUM
+  HIGH
+  URGENT
+}
+
 enum ProjectStateGroup {
   DRAFT
   PLANNING
@@ -556,15 +567,15 @@ enum ProjectStateGroup {
 }
 
 model ProjectLabel {
-  id String @id @default(cuid())
-  name String
+  id          String   @id @default(cuid())
+  name        String
   description String?
-  color TagColor @default(ZINC)
-  workspaceId String @map("workspace_id")
-  createdAt DateTime @default(now()) @map("created_at")
-  updatedAt DateTime @updatedAt @map("updated_at")
+  color       TagColor @default(ZINC)
+  workspaceId String   @map("workspace_id")
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
 
-  workspace Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  workspace   Workspace                @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
   assignments ProjectLabelAssignment[]
 
   @@unique([workspaceId, name])
@@ -572,12 +583,12 @@ model ProjectLabel {
 }
 
 model ProjectLabelAssignment {
-  projectId String @map("project_id")
-  labelId String @map("label_id")
+  projectId String   @map("project_id")
+  labelId   String   @map("label_id")
   createdAt DateTime @default(now()) @map("created_at")
 
-  project Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
-  label ProjectLabel @relation(fields: [labelId], references: [id], onDelete: Cascade)
+  project Project      @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  label   ProjectLabel @relation(fields: [labelId], references: [id], onDelete: Cascade)
 
   @@id([projectId, labelId])
   @@index([labelId])

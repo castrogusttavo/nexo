@@ -41,6 +41,9 @@ describe('toProjectDTO', () => {
       leadId: 'user-1',
       stateId: 'pstate-1',
       labelIds: [],
+      priority: 'NONE',
+      startDate: null,
+      dueDate: null,
       workspaceId: 'ws-1',
       archivedAt: null,
       createdAt: '2025-03-01T10:00:00.000Z',
@@ -103,5 +106,19 @@ describe('toProjectDTO', () => {
     })
 
     expect(toProjectDTO(project).labelIds).toEqual(['plabel-1', 'plabel-2'])
+  })
+
+  it('should expose the priority and the dates as ISO strings', () => {
+    const project = createFakeProject({
+      priority: 'HIGH',
+      startDate: new Date('2026-10-01T00:00:00.000Z'),
+      dueDate: new Date('2026-12-31T00:00:00.000Z'),
+    })
+
+    expect(toProjectDTO(project)).toMatchObject({
+      priority: 'HIGH',
+      startDate: '2026-10-01T00:00:00.000Z',
+      dueDate: '2026-12-31T00:00:00.000Z',
+    })
   })
 })
