@@ -7,6 +7,8 @@
 const seconds = Number(process.argv[2] || 45)
 const out = process.argv[3] || '/tmp/app.cpuprofile'
 
+// Loopback-only CDP inspector inside the container, never leaves the host.
+// nosemgrep: typescript.react.security.react-insecure-request.react-insecure-request
 const targets = await (await fetch('http://127.0.0.1:9229/json')).json()
 const ws = new WebSocket(targets[0].webSocketDebuggerUrl)
 let nextId = 0

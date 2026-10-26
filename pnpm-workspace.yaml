@@ -18,14 +18,22 @@ overrides:
   '@react-email/ui>next': '>=16.3.3'
   'brace-expansion@1': '2.1.1'
   'brace-expansion@2': '>=2.1.4'
-  'brace-expansion@5': '>=5.0.9'
   browserslist: '>=4.28.8'
   effect: '^3.21.0'
   esbuild: '>=0.28.1'
+  dompurify: '>=3.4.17'
+  devalue: '>=5.9.3'
+  engine.io: '>=6.6.10'
+  ip-address: '>=10.7.4'
+  katex: '>=0.18.2'
+  source-map-js: '>=1.2.2'
+  zod: '>=4.6.6'
+  '@modelcontextprotocol/sdk': '>=1.32.0'
+  'brace-expansion@5': '>=5.0.12'
   # ajv 8.20.0 (commitlint, stryker, conf, @modelcontextprotocol/sdk,
   # @prisma/streams-local) still resolves fast-uri 4.1.2; 4.1.4 closes the five
   # Snyk URI-parsing advisories (SNYK-JS-FASTURI-19256867/69/71/73, -19502739).
-  fast-uri: '>=4.1.4'
+  fast-uri: '>=4.1.5'
   'gray-matter>js-yaml': '>=4.3.2 <5'
   # @platejs/excalidraw 53.0.0 (still the latest) pins @excalidraw/excalidraw
   # 0.18.0 exactly, which drags in mermaid-to-excalidraw 1.1.2 -> mermaid 10.9.3
@@ -38,7 +46,7 @@ overrides:
   '@platejs/excalidraw>@excalidraw/excalidraw': '0.18.1'
   # 4.13.5 fixes SNYK-JS-HONO-19499068/-19499091. Pulled in only by tooling
   # (@getworkbench/core, @modelcontextprotocol/sdk via shadcn, @prisma/dev).
-  hono: '>=4.13.5'
+  hono: '>=4.13.11'
   ioredis: '5.10.1'
   # 4.3.2 fixes SNYK-JS-JSYAML-19496768 (merge-key CPU DoS). Still capped <5:
   # js-yaml 5 broke blog/[slug] via gray-matter (see 7245999).
@@ -60,7 +68,7 @@ overrides:
   # breaking changes are Map merging and renamed custom-merger types). Scoped
   # to @prisma/config; drop once prisma ships deepmerge-ts 8.
   '@prisma/config>deepmerge-ts': '^8.0.2'
-  'minimatch@3>brace-expansion': '>=5.0.9'
+  'minimatch@3>brace-expansion': '>=5.0.12'
   nanoid: '>=3.3.18'
   postcss: '>=8.5.23'
   # prisma 7.8.0 pins @prisma/dev 0.24.3, which pins valibot 1.2.0 exactly
@@ -76,7 +84,7 @@ overrides:
   'react-email>esbuild': '0.28.0'
   # next 16.3.5 already asks for ^0.35.4; the floor keeps the lockfile off
   # 0.35.3 (SNYK-JS-SHARP-19653587, libheif heap overflow).
-  sharp: '>=0.35.4'
+  sharp: '>=0.35.5'
   socket.io-parser: '>=4.2.7'
   # @stryker-mutator/core 10.0.0 (latest) asks typed-rest-client ~2.3.0, and
   # 2.3.1 pins qs 6.15.1 exactly (GHSA-q8mj-m7cp-5q26, -x5fp-wj9c-mxmx,
@@ -88,7 +96,7 @@ overrides:
   # undici ^7.25.0 — a 8.x moveu/removeu internals que o jsdom importa
   # direto, ex. lib/handler/wrap-handler.js). Mesmo padrão do js-yaml acima.
   # 7.29.1 fixes SNYK-JS-UNDICI-19635206/08/10/16/18/22/26.
-  undici: '>=7.29.1 <8.0.0'
+  undici: '>=7.30.1 <8.0.0'
   ws: '>=8.21.0'
 patchedDependencies:
   gray-matter@4.0.3: patches/gray-matter@4.0.3.patch
