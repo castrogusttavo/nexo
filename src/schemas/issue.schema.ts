@@ -1,4 +1,5 @@
 import z from 'zod'
+import { IsoDate } from './_shared'
 
 const issueTitle = z
   .string()
@@ -11,8 +12,6 @@ const IssueContentSchema = z
     (value) => JSON.stringify(value).length <= 100_000,
     'Descrição excede o tamanho permitido',
   )
-
-const IsoDate = z.iso.datetime({ offset: true })
 
 export const IssuePrioritySchema = z.enum([
   'NONE',

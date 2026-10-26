@@ -1,4 +1,5 @@
 import z from 'zod'
+import { IsoDate } from './_shared'
 
 const cycleName = z
   .string()
@@ -14,8 +15,6 @@ export const CycleStatusSchema = z.enum([
   'IN_PROGRESS',
   'COMPLETED',
 ])
-
-const IsoDate = z.iso.datetime({ offset: true })
 
 export const CreateCycleSchema = z.object({
   name: cycleName,
