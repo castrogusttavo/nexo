@@ -354,3 +354,73 @@ describe('PATCH /api/workspaces/[id]/projects/[slug] labelIds', () => {
     expect((await res.json()).error.code).toBe('VALIDATION_ERROR')
   })
 })
+
+describe('PATCH /api/workspaces/[id]/projects/[slug] priority and dates', () => {
+  it('should let the lead set the priority and both dates', async () => {
+    const { user, workspace } = await authenticatedOwner()
+    const project = await seedProject(workspace.id, user.id)
+
+    const res = await patchJson(
+      `/api/workspaces/${workspace.id}/projects/${project.slug}`,
+      {
+        priority: 'URGENT',
+        startDate: '2026-10-01T00:00:00.000Z',
+        dueDate: '2026-12-31T00:00:00.000Z',
+      },
+      user.cookie,
+    )
+
+    expect(res.status).toBe(200)
+    expect((await res.json()).data).toMatchObject({
+      priority: 'URGENT',
+      startDate: '2026-10-01T00:00:00.000Z',
+      dueDate: '2026-12-31T00:00:00.000Z',
+    })
+  })
+
+  it('should return 422 VALIDATION_ERROR for a pair in the wrong order', async () => {
+    const { user, workspace } = await authenticatedOwner()
+    const project = await seedProject(workspace.id, user.id)
+
+    const res = await patchJson(
+      `/api/workspaces/${workspace.id}/projects/${project.slug}`,
+      {
+        startDate: '2026-12-31T00:00:00.000Z',
+        dueDate: '2026-10-01T00:00:00.000Z',
+      },
+      user.cookie,
+    )
+
+    expect(res.status).toBe(422)
+    expect((await res.json()).error.code).toBe('VALIDATION_ERROR')
+  })
+
+  it('should return 422 PROJECT_DATE_RANGE_INVALID for a lone date crossing the stored one', async () => {
+    const { user, workspace } = await authenticatedOwner()
+    const project = await seedProject(workspace.id, user.id)
+    const url = `/api/workspaces/${workspace.id}/projects/${project.slug}`
+    await patchJson(url, { startDate: '2026-12-01T00:00:00.000Z' }, user.cookie)
+
+    const res = await patchJson(
+      url,
+      { dueDate: '2026-10-01T00:00:00.000Z' },
+      user.cookie,
+    )
+
+    expect(res.status).toBe(422)
+    expect((await res.json()).error.code).toBe('PROJECT_DATE_RANGE_INVALID')
+  })
+
+  it('should return 422 VALIDATION_ERROR for an unknown priority', async () => {
+    const { user, workspace } = await authenticatedOwner()
+    const project = await seedProject(workspace.id, user.id)
+
+    const res = await patchJson(
+      `/api/workspaces/${workspace.id}/projects/${project.slug}`,
+      { priority: 'CRITICAL' },
+      user.cookie,
+    )
+
+    expect(res.status).toBe(422)
+  })
+})

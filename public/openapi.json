@@ -11439,6 +11439,25 @@
             },
             "description": "Etiquetas de projeto atribuídas (cuid2), sempre do mesmo workspace.",
             "example": []
+          },
+          "priority": {
+            "$ref": "#/components/schemas/ProjectPriority"
+          },
+          "startDate": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "format": "date-time",
+            "description": "Data de início, ou null."
+          },
+          "dueDate": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "format": "date-time",
+            "description": "Data de conclusão, ou null."
           }
         }
       },
@@ -11584,6 +11603,25 @@
               "type": "string"
             },
             "description": "cuid2 das etiquetas do projeto, no máximo 20."
+          },
+          "priority": {
+            "$ref": "#/components/schemas/ProjectPriority"
+          },
+          "startDate": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "format": "date-time",
+            "description": "Data de início (ISO 8601 com fuso). null limpa a data."
+          },
+          "dueDate": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "format": "date-time",
+            "description": "Data de conclusão (ISO 8601 com fuso). null limpa a data. Não pode ser anterior à data de início: enviadas juntas na ordem errada, a resposta é `VALIDATION_ERROR` (422); enviada sozinha e cruzando a data já salva no projeto, é `PROJECT_DATE_RANGE_INVALID` (422)."
           }
         }
       },
@@ -15437,6 +15475,17 @@
             }
           }
         ]
+      },
+      "ProjectPriority": {
+        "type": "string",
+        "enum": [
+          "NONE",
+          "LOW",
+          "MEDIUM",
+          "HIGH",
+          "URGENT"
+        ],
+        "description": "Prioridade do projeto."
       }
     },
     "responses": {
