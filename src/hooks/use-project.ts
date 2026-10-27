@@ -4,7 +4,7 @@ import { apiFetch, apiFetchJson, apiSend } from './_fetch'
 
 const PROJECTS_KEY = ['projects']
 
-function projectsKey(workspaceId: string) {
+export function projectsKey(workspaceId: string) {
   return [PROJECTS_KEY, workspaceId] as const
 }
 
