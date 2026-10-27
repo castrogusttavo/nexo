@@ -289,6 +289,30 @@ describe('useUpdateProject', () => {
       ).rejects.toThrow('Erro ao atualizar projeto')
     })
   })
+
+  it('PATCHes the properties panel fields as given, null clearing a date', async () => {
+    const fetchSpy = mockFetch().mockResolvedValueOnce(
+      apiSuccess(buildProject({ priority: 'HIGH' })),
+    )
+    const { result } = renderHookWithProviders(() =>
+      useUpdateProject(WORKSPACE_ID, 'alpha'),
+    )
+    const body = {
+      stateId: 'pstate-2',
+      labelIds: ['plabel-1', 'plabel-2'],
+      priority: 'HIGH' as const,
+      startDate: '2026-10-01T00:00:00.000Z',
+      dueDate: null,
+    }
+
+    await act(() => result.current.mutateAsync(body))
+
+    expect(getFetchCall(fetchSpy)).toEqual({
+      url: '/api/workspaces/ws-1/projects/alpha',
+      method: 'PATCH',
+      body,
+    })
+  })
 })
 
 describe.each([

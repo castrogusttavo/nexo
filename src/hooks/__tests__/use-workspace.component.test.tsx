@@ -10,7 +10,7 @@ import {
 } from '@/src/__tests__/helpers/component'
 import type { WorkspaceDTO } from '@/types/workspace'
 import { useUser } from '../use-user'
-import { useCreateWorkspace } from '../use-workspace'
+import { useCreateWorkspace, useUpdateWorkspace } from '../use-workspace'
 
 const { useSession } = vi.hoisted(() => ({ useSession: vi.fn() }))
 vi.mock('@/src/lib/auth-client', () => ({ authClient: { useSession } }))
@@ -109,6 +109,76 @@ describe('useCreateWorkspace', () => {
       await expect(
         result.current.mutateAsync({ name: 'Acme', slug: 'acme' }),
       ).rejects.toThrow('Erro ao criar workspace')
+    })
+  })
+})
+
+describe('useUpdateWorkspace', () => {
+  const USER_KEY = ['user', 'user-1']
+
+  it('PATCHes the switches to the workspace url', async () => {
+    const fetchSpy = mockFetch().mockResolvedValueOnce(
+      apiSuccess(buildWorkspace({ projectStatesEnabled: false })),
+    )
+    const { result } = renderHookWithProviders(() => useUpdateWorkspace('ws-1'))
+
+    let updated: WorkspaceDTO | undefined
+    await act(async () => {
+      updated = await result.current.mutateAsync({
+        projectStatesEnabled: false,
+      })
+    })
+
+    expect(updated?.projectStatesEnabled).toBe(false)
+    expect(getFetchCall(fetchSpy)).toEqual({
+      url: '/api/workspaces/ws-1',
+      method: 'PATCH',
+      body: { projectStatesEnabled: false },
+    })
+  })
+
+  it('invalidates the workspace and the user queries on success', async () => {
+    mockFetch().mockResolvedValueOnce(apiSuccess(buildWorkspace()))
+    const { result, queryClient } = renderHookWithProviders(() =>
+      useUpdateWorkspace('ws-1'),
+    )
+    queryClient.setQueryData(WORKSPACE_KEY, [])
+    queryClient.setQueryData(USER_KEY, { id: 'user-1', memberships: [] })
+
+    await act(() => result.current.mutateAsync({ projectLabelsEnabled: true }))
+
+    expect(queryClient.getQueryState(WORKSPACE_KEY)?.isInvalidated).toBe(true)
+    expect(queryClient.getQueryState(USER_KEY)?.isInvalidated).toBe(true)
+  })
+
+  it('leaves the cache untouched when the request fails', async () => {
+    mockFetch().mockResolvedValueOnce(
+      apiError(403, 'Apenas OWNER ou ADMIN podem editar o workspace'),
+    )
+    const { result, queryClient } = renderHookWithProviders(() =>
+      useUpdateWorkspace('ws-1'),
+    )
+    queryClient.setQueryData(WORKSPACE_KEY, [])
+    queryClient.setQueryData(USER_KEY, { id: 'user-1', memberships: [] })
+
+    await act(async () => {
+      await expect(
+        result.current.mutateAsync({ projectStatesEnabled: false }),
+      ).rejects.toThrow('Apenas OWNER ou ADMIN podem editar o workspace')
+    })
+
+    expect(queryClient.getQueryState(WORKSPACE_KEY)?.isInvalidated).toBe(false)
+    expect(queryClient.getQueryState(USER_KEY)?.isInvalidated).toBe(false)
+  })
+
+  it('fails back to the hook message when the error body has none', async () => {
+    mockFetch().mockResolvedValueOnce(apiError(500))
+    const { result } = renderHookWithProviders(() => useUpdateWorkspace('ws-1'))
+
+    await act(async () => {
+      await expect(
+        result.current.mutateAsync({ name: 'Acme' }),
+      ).rejects.toThrow('Erro ao atualizar workspace')
     })
   })
 })

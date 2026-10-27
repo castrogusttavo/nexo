@@ -1,5 +1,8 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query'
-import type { CreateWorkspaceDTO } from '@/src/schemas/workspace.schema'
+import type {
+  CreateWorkspaceDTO,
+  UpdateWorkspaceDTO,
+} from '@/src/schemas/workspace.schema'
 import type { WorkspaceDTO } from '@/types/workspace'
 import { apiFetchJson } from './_fetch'
 
@@ -17,6 +20,24 @@ export function useCreateWorkspace() {
         'POST',
         data,
         'Erro ao criar workspace',
+      ),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: WORKSPACE_KEY })
+      queryClient.invalidateQueries({ queryKey: USER_KEY })
+    },
+  })
+}
+
+export function useUpdateWorkspace(workspaceId: string) {
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationFn: (data: UpdateWorkspaceDTO) =>
+      apiFetchJson<WorkspaceDTO>(
+        `${BASE_API_ROUTE}/${workspaceId}`,
+        'PATCH',
+        data,
+        'Erro ao atualizar workspace',
       ),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: WORKSPACE_KEY })

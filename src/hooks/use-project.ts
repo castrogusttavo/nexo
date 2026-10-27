@@ -96,6 +96,13 @@ export function useUpdateProject(workspaceId: string, slug: string) {
       cyclesEnabled?: boolean
       estimatesEnabled?: boolean
       leadId?: string
+      stateId?: string
+      // Replaces the whole set; [] clears it.
+      labelIds?: string[]
+      priority?: ProjectDTO['priority']
+      // null clears the date.
+      startDate?: string | null
+      dueDate?: string | null
     }) =>
       apiFetchJson<ProjectDTO>(
         `/api/workspaces/${workspaceId}/projects/${slug}`,
