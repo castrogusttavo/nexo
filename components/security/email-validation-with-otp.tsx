@@ -42,11 +42,14 @@ export function EmailValidationWithOtp({
 
   if (error !== prevError) {
     setPrevError(error)
-    if (error) {
-      setOtp('')
-      lastSubmittedRef.current = null
-    }
+    if (error) setOtp('')
   }
+
+  // A rejected code may be typed again on purpose; forget it once the
+  // error is committed (refs are not touched during render).
+  useEffect(() => {
+    if (error) lastSubmittedRef.current = null
+  }, [error])
 
   useEffect(() => {
     if (cooldown <= 0) return

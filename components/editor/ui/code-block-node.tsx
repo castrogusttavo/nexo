@@ -284,10 +284,12 @@ function CopyButton({
 >) {
   const [hasCopied, setHasCopied] = React.useState(false);
 
+  // Resets the "copied" check after 2s; the cleanup drops a pending reset
+  // when the button unmounts or is clicked again.
   React.useEffect(() => {
-    setTimeout(() => {
-      setHasCopied(false);
-    }, 2000);
+    if (!hasCopied) return;
+    const timer = setTimeout(() => setHasCopied(false), 2000);
+    return () => clearTimeout(timer);
   }, [hasCopied]);
 
   return (

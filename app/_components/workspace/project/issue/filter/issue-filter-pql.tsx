@@ -33,10 +33,14 @@ export function IssueFilterPql() {
   }, [draft, setFilters])
 
   // Closing the panel mid-pause must not lose the last edit.
+  // Refreshed after every commit, not during render: React may discard a
+  // render, and the unmount cleanup must flush the draft that was shown.
   const flush = useRef(() => {})
-  flush.current = () => {
-    if (draft !== lastWritten.current) setFilters({ pql: draft })
-  }
+  useEffect(() => {
+    flush.current = () => {
+      if (draft !== lastWritten.current) setFilters({ pql: draft })
+    }
+  })
   useEffect(() => () => flush.current(), [])
 
   const error = useMemo(() => {

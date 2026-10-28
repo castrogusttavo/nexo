@@ -31,24 +31,29 @@ const items = [
 ]
 
 export function NexoAiShowcase() {
-  const [activeIndex, setActiveIndex] = useState(0)
-  const [progress, setProgress] = useState(0)
+  // One state, so a slide's progress and the move to the next one change
+  // in a single pure update (React may run an updater twice).
+  const [{ activeIndex, progress }, setSlide] = useState({
+    activeIndex: 0,
+    progress: 0,
+  })
 
   useEffect(() => {
     const interval = setInterval(() => {
-      setProgress((prev) => {
-        const next = prev + PROGRESS_STEP
-        if (next < 100) return next
-        setActiveIndex((current) => (current + 1) % items.length)
-        return 0
+      setSlide((slide) => {
+        const next = slide.progress + PROGRESS_STEP
+        if (next < 100) return { ...slide, progress: next }
+        return {
+          activeIndex: (slide.activeIndex + 1) % items.length,
+          progress: 0,
+        }
       })
     }, TICK_MS)
     return () => clearInterval(interval)
   }, [])
 
   function handleSelect(index: number) {
-    setActiveIndex(index)
-    setProgress(0)
+    setSlide({ activeIndex: index, progress: 0 })
   }
 
   return (

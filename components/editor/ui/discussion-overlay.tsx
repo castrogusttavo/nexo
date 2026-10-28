@@ -17,8 +17,6 @@ export function DiscussionOverlay() {
   const queryClient = useQueryClient()
   const activeId = usePluginOption(discussionPlugin, 'activeId')
   const [anchor, setAnchor] = React.useState<HTMLElement | null>(null)
-  const anchorRef = React.useRef<HTMLElement | null>(null)
-  anchorRef.current = anchor
 
   React.useLayoutEffect(() => {
     if (!activeId) {
@@ -78,7 +76,7 @@ export function DiscussionOverlay() {
     >
       <PopoverPrimitive.Portal>
         <PopoverPrimitive.Positioner
-          anchor={anchorRef}
+          anchor={anchor}
           align='start'
           side='bottom'
           sideOffset={8}
