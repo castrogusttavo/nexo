@@ -41,7 +41,7 @@ export function WorkspaceSettingsMemberHeader({
             <NexoIcon icon={Search01Icon} />
           </InputGroupAddon>
           <InputGroupAddon align='inline-end' className='p-0'>
-            {resultCount} result{resultCount === 1 ? '' : 's'}
+            {resultCount} resultado{resultCount === 1 ? '' : 's'}
           </InputGroupAddon>
         </InputGroup>
         <WorkspaceSettingsMemberFilterRole
