@@ -23,6 +23,7 @@ export function BlogContent({ html }: BlogContentProps) {
         onClick={handleClick}
         className='blog-content prose prose-neutral dark:prose-invert max-w-none w-full prose-headings:scroll-mt-24 prose-headings:font-medium prose-a:text-branding-500 prose-a:no-underline hover:prose-a:underline prose-img:rounded-2xl prose-img:cursor-zoom-in prose-pre:rounded-xl prose-pre:bg-muted prose-blockquote:border-branding-500 prose-blockquote:not-italic'
         // html is sanitized via rehype-sanitize in src/lib/blog/post.ts before reaching this component
+        // react-doctor-disable-next-line react-doctor/dangerous-html-sink
         dangerouslySetInnerHTML={{ __html: html }}
       />
 

@@ -3,6 +3,8 @@ import { POSTHOG_DEFAULT_HOST } from '@/lib/posthog/constants'
 
 const publicEnv = {
   NODE_ENV: process.env.NODE_ENV,
+  // An ingest-only Axiom token, public by design (see lib/axiom/axiom.ts).
+  // react-doctor-disable-next-line react-doctor/public-env-secret-name
   NEXT_PUBLIC_AXIOM_TOKEN: process.env.NEXT_PUBLIC_AXIOM_TOKEN,
   NEXT_PUBLIC_AXIOM_DATASET: process.env.NEXT_PUBLIC_AXIOM_DATASET,
   NEXT_PUBLIC_URL: process.env.NEXT_PUBLIC_URL,

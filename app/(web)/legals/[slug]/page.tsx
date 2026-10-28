@@ -72,6 +72,7 @@ export default async function LegalDocPage({ params }: Props) {
         // applies the GitHub schema. Semgrep cannot see that pipeline, hence
         // the suppression (same analysis as the dismissed blog alerts #135/#136).
         // nosemgrep: typescript.react.security.audit.react-dangerouslysetinnerhtml.react-dangerouslysetinnerhtml, typescript.react.react-dangerouslysetinnerhtml-prop.react-dangerouslysetinnerhtml-prop
+        // react-doctor-disable-next-line react-doctor/dangerous-html-sink
         dangerouslySetInnerHTML={{ __html: doc.contentHtml }}
       />
     </main>
