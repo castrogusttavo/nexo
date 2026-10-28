@@ -72,7 +72,18 @@ test.describe('stickies and wiki', () => {
     ])
     expect(patch.status()).toBe(200)
 
-    await page.reload()
+    // The sidebar tree loads the list on its own request. Waiting for it
+    // and checking its status names the cause if it ever fails, instead of
+    // timing out on a missing title (seen once in CI, 2026-10-28).
+    const [list] = await Promise.all([
+      page.waitForResponse(
+        (r) =>
+          /\/api\/workspaces\/[^/]+\/wiki$/.test(new URL(r.url()).pathname) &&
+          r.request().method() === 'GET',
+      ),
+      page.reload(),
+    ])
+    expect(list.status(), `wiki list answered ${list.status()}`).toBe(200)
     await expect(page.getByPlaceholder('Sem título')).toHaveValue(title)
     // And the sidebar tree lists it.
     await expect(page.getByRole('complementary').getByText(title)).toBeVisible()

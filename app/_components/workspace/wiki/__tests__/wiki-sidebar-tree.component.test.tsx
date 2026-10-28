@@ -1,6 +1,7 @@
 import { screen, waitFor, within } from '@testing-library/react'
 import { describe, expect, it, vi } from 'vitest'
 import {
+  apiError,
   apiSuccess,
   deferredResponse,
   getFetchCall,
@@ -80,6 +81,36 @@ describe('<WikiSidebarTree /> states', () => {
     renderTree([])
 
     expect(await screen.findByText('Nenhuma página ainda.')).toBeInTheDocument()
+  })
+
+  it('says the pages failed to load instead of showing an empty wiki', async () => {
+    mockFetch().mockResolvedValueOnce(apiError(500, 'Erro no servidor'))
+    renderWithProviders(
+      <WikiSidebarTree workspaceId={WORKSPACE_ID} workspaceSlug='acme' />,
+    )
+
+    expect(await screen.findByRole('alert')).toHaveTextContent(
+      'Não foi possível carregar as páginas.',
+    )
+    expect(screen.queryByText('Nenhuma página ainda.')).toBeNull()
+  })
+
+  it('loads the pages again on "Tentar de novo"', async () => {
+    const fetchSpy = mockFetch()
+      .mockResolvedValueOnce(apiError(500, 'Erro no servidor'))
+      .mockResolvedValueOnce(apiSuccess([buildPage({ title: 'Manual' })]))
+    const { user } = renderWithProviders(
+      <WikiSidebarTree workspaceId={WORKSPACE_ID} workspaceSlug='acme' />,
+    )
+
+    await user.click(
+      await screen.findByRole('button', { name: 'Tentar de novo' }),
+    )
+
+    expect(
+      await screen.findByRole('link', { name: 'Manual' }),
+    ).toBeInTheDocument()
+    expect(fetchSpy).toHaveBeenCalledTimes(2)
   })
 
   it('falls back to "Sem título" for an untitled page', async () => {

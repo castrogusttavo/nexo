@@ -46,10 +46,28 @@ export function WikiSidebarTree({
   workspaceId: string
   workspaceSlug: string
 }) {
-  const { data: pages, isLoading } = useWikiPages(workspaceId)
+  const { data: pages, isLoading, isError, refetch } = useWikiPages(workspaceId)
   const tree = useMemo(() => buildTree(pages ?? []), [pages])
 
   if (isLoading) return null
+
+  // A failed load is not an empty wiki: saying "Nenhuma página ainda." here
+  // told the user their pages were gone.
+  if (isError) {
+    return (
+      <div className='flex flex-col items-start gap-1 px-2.5' role='alert'>
+        <Muted>Não foi possível carregar as páginas.</Muted>
+        <Button
+          variant='link'
+          size='sm'
+          className='h-auto p-0'
+          onClick={() => refetch()}
+        >
+          Tentar de novo
+        </Button>
+      </div>
+    )
+  }
 
   if (!tree.length) {
     return <Muted className='px-2.5'>Nenhuma página ainda.</Muted>
