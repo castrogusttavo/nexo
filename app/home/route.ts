@@ -24,6 +24,11 @@ function redirectTo(path: string) {
   return new NextResponse(null, { status: 307, headers: { Location: path } })
 }
 
+// The only side effect is clearing a session cookie the server just found
+// invalid: a forged or prefetched GET can at most drop a cookie that no
+// longer signs anyone in. Moving it to a POST would need a page to submit
+// it, and the redirect chain proxy.ts relies on cannot carry one.
+// react-doctor-disable-next-line react-doctor/nextjs-no-side-effect-in-get-handler
 export const GET = withAxiom(async (request: NextRequest) => {
   const session = await auth.api.getSession({ headers: request.headers })
 
