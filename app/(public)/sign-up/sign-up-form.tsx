@@ -1,47 +1,34 @@
 'use client'
 
-import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { useReducer, useState } from 'react'
 import { EmailValidationWithOtp } from '@/components/security/email-validation-with-otp'
-import { Muted } from '@/components/typography/text/muted'
-import { Button } from '@/components/ui/button'
-import { Checkbox } from '@/components/ui/checkbox'
-import { Field, FieldError, FieldLabel } from '@/components/ui/field'
-import { Input } from '@/components/ui/input'
 import { captureEvent } from '@/lib/posthog/client'
 import { authClient } from '@/src/lib/auth-client'
 import { authErrorMessage } from '@/src/lib/auth-errors'
 import { settleAuthRequest } from '@/src/lib/auth-request'
 import { SIGNED_IN_HOME } from '@/src/lib/safe-redirect'
+import { AuthLayout } from '../_components/auth-layout'
 import {
-  AuthLayout,
-  AuthLayoutHeading,
-  AuthLayoutSocial,
-} from '../_components/auth-layout'
+  SignUpDetailsStep,
+  type SignUpFieldErrors,
+} from './sign-up-details-step'
 
 type Step = 'form' | 'otp'
-
-type FieldErrors = {
-  name?: string
-  email?: string
-  password?: string
-  consent?: string
-}
 
 interface SignUpState {
   step: Step
   email: string
   error: string | null
   otpError: string | null
-  fieldErrors: FieldErrors
+  fieldErrors: SignUpFieldErrors
   isPending: boolean
   isVerifying: boolean
 }
 
 type SignUpAction =
   | { type: 'submitStart' }
-  | { type: 'submitValidationError'; errors: FieldErrors }
+  | { type: 'submitValidationError'; errors: SignUpFieldErrors }
   | { type: 'submitError'; message: string }
   | { type: 'submitSuccess'; email: string }
   | { type: 'verifyStart' }
@@ -116,7 +103,7 @@ export function SignUpForm({
     const submittedEmail = formData.get('email') as string
     const password = formData.get('password') as string
 
-    const errors: FieldErrors = {}
+    const errors: SignUpFieldErrors = {}
     if (!name || name.length < 2)
       errors.name = 'Nome deve ter ao menos 2 caracteres'
     if (!submittedEmail) errors.email = 'E-mail é obrigatório'
@@ -213,141 +200,26 @@ export function SignUpForm({
       switchPrompt='Já tem conta?'
     >
       {step === 'form' ? (
-        <>
-          <AuthLayoutHeading
-            title='Trabalhe em todas as dimensões.'
-            subtitle='Crie sua conta do Nexo.'
-          />
-
-          <AuthLayoutSocial isPending={isPending} callbackURL={redirectTo} />
-
-          <form onSubmit={handleSubmit} className='w-full space-y-4'>
-            {error && (
-              <div className='rounded-md bg-destructive/10 p-3 text-sm text-destructive'>
-                {error}
-              </div>
-            )}
-            <Field data-invalid={!!fieldErrors.name || undefined}>
-              <FieldLabel htmlFor='sign-up-name'>Nome</FieldLabel>
-              <Input
-                id='sign-up-name'
-                name='name'
-                type='text'
-                placeholder='Seu nome'
-                disabled={isPending}
-              />
-              {fieldErrors.name && <FieldError>{fieldErrors.name}</FieldError>}
-            </Field>
-            <Field data-invalid={!!fieldErrors.email || undefined}>
-              <FieldLabel htmlFor='sign-up-email'>E-mail</FieldLabel>
-              <Input
-                id='sign-up-email'
-                name='email'
-                type='email'
-                placeholder='nome@empresa.com'
-                disabled={isPending}
-              />
-              {fieldErrors.email && (
-                <FieldError>{fieldErrors.email}</FieldError>
-              )}
-            </Field>
-            <Field data-invalid={!!fieldErrors.password || undefined}>
-              <FieldLabel htmlFor='sign-up-password'>Senha</FieldLabel>
-              <Input
-                id='sign-up-password'
-                name='password'
-                type='password'
-                placeholder='••••••'
-                disabled={isPending}
-              />
-              {fieldErrors.password && (
-                <FieldError>{fieldErrors.password}</FieldError>
-              )}
-            </Field>
-
-            <div className='flex flex-col gap-2'>
-              <div className='flex items-start gap-2'>
-                <Checkbox
-                  id='accept-terms'
-                  checked={acceptedTerms}
-                  onCheckedChange={(checked) => {
-                    setAcceptedTerms(checked === true)
-                    if (checked === true && fieldErrors.consent) {
-                      dispatch({ type: 'consentErrorCleared' })
-                    }
-                  }}
-                  disabled={isPending}
-                  aria-invalid={!!fieldErrors.consent || undefined}
-                  className='mt-0.5'
-                />
-                <label
-                  htmlFor='accept-terms'
-                  className='text-sm leading-5 text-muted-foreground'
-                >
-                  Li e aceito os{' '}
-                  <Link
-                    href='/legals/terms-and-conditions'
-                    className='text-primary hover:underline'
-                    target='_blank'
-                    rel='noopener noreferrer'
-                  >
-                    Termos de Serviço
-                  </Link>
-                </label>
-              </div>
-              <div className='flex items-start gap-2'>
-                <Checkbox
-                  id='accept-privacy'
-                  checked={acceptedPrivacy}
-                  onCheckedChange={(checked) => {
-                    setAcceptedPrivacy(checked === true)
-                    if (checked === true && fieldErrors.consent) {
-                      dispatch({ type: 'consentErrorCleared' })
-                    }
-                  }}
-                  disabled={isPending}
-                  aria-invalid={!!fieldErrors.consent || undefined}
-                  className='mt-0.5'
-                />
-                <label
-                  htmlFor='accept-privacy'
-                  className='text-sm leading-5 text-muted-foreground'
-                >
-                  Li e aceito a{' '}
-                  <Link
-                    href='/legals/privacy-policy'
-                    className='text-primary hover:underline'
-                    target='_blank'
-                    rel='noopener noreferrer'
-                  >
-                    Política de Privacidade
-                  </Link>
-                </label>
-              </div>
-              {fieldErrors.consent && (
-                <p className='text-sm text-destructive'>
-                  {fieldErrors.consent}
-                </p>
-              )}
-            </div>
-
-            <Button type='submit' className='w-full' disabled={isPending}>
-              {isPending ? 'Criando conta...' : 'Criar conta'}
-            </Button>
-
-            <div className='text-center text-sm'>
-              <Muted>
-                Já tem conta?{' '}
-                <Link
-                  href={signInHref}
-                  className='text-primary hover:underline'
-                >
-                  Entre
-                </Link>
-              </Muted>
-            </div>
-          </form>
-        </>
+        <SignUpDetailsStep
+          redirectTo={redirectTo}
+          signInHref={signInHref}
+          error={error}
+          fieldErrors={fieldErrors}
+          isPending={isPending}
+          acceptedTerms={acceptedTerms}
+          acceptedPrivacy={acceptedPrivacy}
+          onTermsChange={(accepted) => {
+            setAcceptedTerms(accepted)
+            if (accepted && fieldErrors.consent)
+              dispatch({ type: 'consentErrorCleared' })
+          }}
+          onPrivacyChange={(accepted) => {
+            setAcceptedPrivacy(accepted)
+            if (accepted && fieldErrors.consent)
+              dispatch({ type: 'consentErrorCleared' })
+          }}
+          handleSubmit={handleSubmit}
+        />
       ) : (
         <EmailValidationWithOtp
           email={email}
