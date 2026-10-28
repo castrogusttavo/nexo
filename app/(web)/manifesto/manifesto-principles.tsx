@@ -214,6 +214,8 @@ function PrincipleItem({ principle }: { principle: Principle }) {
           <h2 className='font-normal text-5xl md:whitespace-pre-line'>
             {[...principle.title].map((char, index, chars) => (
               <PrincipleTitleChar
+                // Letters of a fixed title repeat, so their position is the identity.
+                // react-doctor-disable-next-line react-doctor/no-array-index-as-key
                 key={index}
                 char={char}
                 index={index}

@@ -2,7 +2,7 @@
 
 import { Search01Icon } from '@hugeicons-pro/core-stroke-rounded'
 import type { SortingState } from '@tanstack/react-table'
-import { useMemo, useState } from 'react'
+import { useCallback, useMemo, useState } from 'react'
 import { SettingsPage } from '@/app/(private)/_components/settings-page'
 import { NexoIcon } from '@/components/icon/icon'
 import { DataTable } from '@/components/ui/data-table/data-table'
@@ -47,13 +47,16 @@ export function ProjectMembersManager({
   const [roles, setRoles] = useState<string[]>([])
   const [sorting, setSorting] = useState<SortingState>([])
 
-  function handleRemove(userId: string) {
-    notify.run(removeMember.mutateAsync(userId), {
-      loading: 'Removendo membro...',
-      success: 'Membro removido',
-      error: 'Erro ao remover membro',
-    })
-  }
+  const { mutateAsync: removeMemberAsync } = removeMember
+  const handleRemove = useCallback(
+    (userId: string) =>
+      notify.run(removeMemberAsync(userId), {
+        loading: 'Removendo membro...',
+        success: 'Membro removido',
+        error: 'Erro ao remover membro',
+      }),
+    [removeMemberAsync],
+  )
 
   const columns = useMemo(
     () =>
@@ -62,7 +65,7 @@ export function ProjectMembersManager({
         onRemove: handleRemove,
         removePending: removeMember.isPending,
       }),
-    [canManage, removeMember.isPending],
+    [canManage, handleRemove, removeMember.isPending],
   )
 
   const filteredMembers = useMemo(() => {

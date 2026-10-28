@@ -96,6 +96,8 @@ function BulletListField({
       <FieldLabel id={labelId}>{label}</FieldLabel>
       <div className='flex flex-col gap-2'>
         {items.map((item, index) => (
+          // Keyed by its stable id; the index only covers the render before ids catch up.
+          // react-doctor-disable-next-line react-doctor/no-array-index-as-key
           <div key={ids[index] ?? index} className='flex gap-2'>
             <Input
               aria-label={`${label} ${index + 1}`}

@@ -34,7 +34,7 @@ export function MediaToolbar({ children, plugin }: { children: React.ReactNode; 
     if (!open && isEditing) {
       FloatingMediaStore.set('isEditing', false)
     }
-  }, [open])
+  }, [open, isEditing])
 
   const element = useElement()
   const { props: buttonProps } = useRemoveNodeButton({ element })

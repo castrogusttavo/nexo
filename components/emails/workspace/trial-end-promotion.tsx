@@ -124,6 +124,7 @@ export const TrialEndPromotion = ({
               </Text>
               {variant.paragraphs.map((paragraph, index) => (
                 // biome-ignore lint/suspicious/noArrayIndexKey: static email content, never reordered
+                // react-doctor-disable-next-line react-doctor/no-array-index-as-key
                 <Text key={index} className='text-[14px] leading-6.5 font-light'>
                   {paragraph}
                 </Text>

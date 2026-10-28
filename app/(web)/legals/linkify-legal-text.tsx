@@ -32,6 +32,8 @@ export function linkifyLegalText(text: string): ReactNode {
 
     if (external) {
       return (
+        // Pieces of a fixed legal sentence: the order never changes.
+        // react-doctor-disable-next-line react-doctor/no-array-index-as-key
         <a key={key} href={href} className={LINK_CLASSNAME}>
           {part}
         </a>
@@ -39,6 +41,8 @@ export function linkifyLegalText(text: string): ReactNode {
     }
 
     return (
+      // Pieces of a fixed legal sentence: the order never changes.
+      // react-doctor-disable-next-line react-doctor/no-array-index-as-key
       <Link key={key} href={href} className={LINK_CLASSNAME}>
         {part}
       </Link>

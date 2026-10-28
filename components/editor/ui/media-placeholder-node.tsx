@@ -76,6 +76,8 @@ export const PlaceholderElement = withHOC(
       })
 
       api.placeholder.removeUploadingFile(element.id as string)
+    // Runs once per finished upload: with `element` in the deps it would remove and insert the node again on every re-render of the placeholder.
+    // react-doctor-disable-next-line react-doctor/exhaustive-deps
     }, [uploadedFile, element.id])
 
     const isReplaced = useRef(false)
@@ -87,6 +89,8 @@ export const PlaceholderElement = withHOC(
       if (!currentFiles) return
 
       replaceCurrentPlaceholder(currentFiles)
+    // Mount-only on purpose: picks up the file that was uploading when this placeholder mounted; re-running could insert it twice.
+    // react-doctor-disable-next-line react-doctor/exhaustive-deps
     }, [isReplaced])
 
     return (
