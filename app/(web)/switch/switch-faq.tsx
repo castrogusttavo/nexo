@@ -20,7 +20,7 @@ const SWITCH_FAQ_ITEMS: WebFaqItem[] = [
   {
     question: 'Podemos manter o Nexo na nossa própria infraestrutura?',
     answer:
-      'Hoje o Nexo roda 100% na nuvem. Self-hosted e air-gapped estão no nosso roadmap — fale com a gente se isso for um requisito pro seu time.',
+      'Hoje o Nexo roda 100% na nuvem. Self-hosted e air-gapped estão no nosso roadmap. Fale com a gente se isso for um requisito pro seu time.',
   },
   {
     question: 'O Nexo ajuda com uma migração mais complexa?',
@@ -30,12 +30,12 @@ const SWITCH_FAQ_ITEMS: WebFaqItem[] = [
   {
     question: 'E se ainda estamos pagando pela nossa ferramenta atual?',
     answer:
-      'Fale com o nosso time de vendas sobre o seu contrato atual — a gente vê juntos o que faz sentido pra sua migração. Dá pra avaliar o Nexo enquanto essa conversa acontece.',
+      'Fale com o nosso time de vendas sobre o seu contrato atual, e a gente vê juntos o que faz sentido pra sua migração. Dá pra avaliar o Nexo enquanto essa conversa acontece.',
   },
   {
     question: 'Podemos levar nossos dados se sairmos do Nexo?',
     answer:
-      'Sim. Exporte seus itens de trabalho e páginas quando quiser — você não fica preso à gente.',
+      'Sim. Exporte seus itens de trabalho e páginas quando quiser. Você não fica preso à gente.',
   },
 ]
 
