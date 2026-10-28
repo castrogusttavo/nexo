@@ -19,6 +19,9 @@ export function BlogContent({ html }: BlogContentProps) {
 
   return (
     <>
+      {/* Clicks on the article's images open the lightbox; the images stay
+          readable inline, so zooming is an enhancement, not the content. */}
+      {/* react-doctor-disable-next-line react-doctor/click-events-have-key-events, react-doctor/no-static-element-interactions */}
       <div
         onClick={handleClick}
         className='blog-content prose prose-neutral dark:prose-invert max-w-none w-full prose-headings:scroll-mt-24 prose-headings:font-medium prose-a:text-branding-500 prose-a:no-underline hover:prose-a:underline prose-img:rounded-2xl prose-img:cursor-zoom-in prose-pre:rounded-xl prose-pre:bg-muted prose-blockquote:border-branding-500 prose-blockquote:not-italic'

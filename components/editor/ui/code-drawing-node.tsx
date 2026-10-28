@@ -430,6 +430,7 @@ function CodeDrawingTextarea({
               className='m-0 h-full w-full resize-none overflow-auto border-0 bg-transparent p-0 font-mono text-sm outline-none'
               style={{ minHeight: `${DEFAULT_MIN_HEIGHT}px` }}
               placeholder='Digite seu código aqui...'
+              aria-label='Código'
               spellCheck={false}
             />
           </code>

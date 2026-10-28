@@ -98,6 +98,7 @@ export function MediaPreviewDialog() {
               className={cn(buttonVariants({ variant: downloadDisabled ? 'disabled' : 'default' }))}
               disabled={downloadDisabled}
               onClick={handleDownload}
+              aria-label='Baixar'
               type='button'
             >
               <Download className='size-4' />

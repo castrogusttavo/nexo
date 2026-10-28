@@ -96,9 +96,19 @@ export const PlaceholderElement = withHOC(
     return (
       <PlateElement className='my-1' {...props}>
         {(!loading || !isImage) && (
+          // Not a <button>: it holds block content (the upload progress)
+          // that a button may not contain.
+          // react-doctor-disable-next-line react-doctor/prefer-tag-over-role
           <div
+            role='button'
+            tabIndex={0}
             className='flex cursor-pointer select-none items-center rounded-sm bg-muted p-3 pr-9 hover:bg-primary/10'
             onClick={() => !loading && openFilePicker()}
+            onKeyDown={(e) => {
+              if (loading || (e.key !== 'Enter' && e.key !== ' ')) return
+              e.preventDefault()
+              openFilePicker()
+            }}
             contentEditable={false}
           >
             <div className='relative mr-3 flex text-muted-foreground/80 [&_svg]:size-6'>{currentContent.icon}</div>

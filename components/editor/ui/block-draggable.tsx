@@ -204,8 +204,12 @@ const DragHandle = React.memo(function DragHandle({
     <Tooltip>
       <TooltipTrigger
         render={
+          // A div, not a <button>: one tab stop per block would flood the
+          // editor's tab order. Focusable for assistive tech, not tabbable.
           <div
             className='flex size-full items-center justify-center'
+            tabIndex={-1}
+            aria-label='Arrastar para mover'
             onClick={(e) => {
               e.preventDefault()
               editor.getApi(BlockSelectionPlugin).blockSelection.focus()
@@ -267,6 +271,7 @@ const DragHandle = React.memo(function DragHandle({
               resetPreview()
             }}
             data-plate-prevent-deselect
+            // react-doctor-disable-next-line react-doctor/prefer-tag-over-role
             role='button'
           >
             <GripVertical className='text-muted-foreground' />

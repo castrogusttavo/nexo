@@ -125,6 +125,9 @@ function LinkOpenButton() {
       onMouseOver={(e) => {
         e.stopPropagation()
       }}
+      onFocus={(e) => {
+        e.stopPropagation()
+      }}
       aria-label='Abrir link em uma nova aba'
       target='_blank'
     >

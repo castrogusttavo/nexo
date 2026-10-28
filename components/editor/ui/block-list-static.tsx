@@ -61,6 +61,7 @@ function TodoMarkerStatic(props: SlateRenderElementProps) {
           props.className
         )}
         data-state={checked ? 'checked' : 'unchecked'}
+        aria-label={checked ? 'Concluída' : 'Pendente'}
         type="button"
       >
         <div className={cn('flex items-center justify-center text-current')}>

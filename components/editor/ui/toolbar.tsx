@@ -240,6 +240,9 @@ export function ToolbarSplitButtonSecondary({
         className
       )}
       onClick={(e) => e.stopPropagation()}
+      // A dropdown trigger rendered inside the split button: a nested
+      // <button> would be invalid, so it keeps the role on a span.
+      // react-doctor-disable-next-line react-doctor/prefer-tag-over-role
       role="button"
       {...props}
     >

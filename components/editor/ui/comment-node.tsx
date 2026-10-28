@@ -36,8 +36,10 @@ export function CommentLeaf(props: PlateLeafProps<TCommentText>) {
     >
       {children}
       {count > 0 && (
-        <span
+        <button
+          type='button'
           contentEditable={false}
+          aria-label={`${count} ${count === 1 ? 'comentário' : 'comentários'}`}
           className='ml-0.5 inline-flex h-4 cursor-pointer select-none items-center gap-0.5 align-middle text-muted-foreground/80'
           onClick={(event) => {
             event.stopPropagation()
@@ -46,7 +48,7 @@ export function CommentLeaf(props: PlateLeafProps<TCommentText>) {
         >
           <MessageSquareTextIcon className='size-3 shrink-0' />
           <span className='font-semibold text-[10px]'>{count}</span>
-        </span>
+        </button>
       )}
     </PlateLeaf>
   )

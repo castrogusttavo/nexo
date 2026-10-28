@@ -203,13 +203,22 @@ function TablePicker() {
   }
 
   return (
+    // react-doctor-disable-next-line react-doctor/prefer-tag-over-role
     <div
       className='flex! m-0 flex-col p-0'
       onClick={() => {
         tf.insert.table(tablePicker.size, { select: true })
         editor.tf.focus()
       }}
+      onKeyDown={(e) => {
+        if (e.key !== 'Enter' && e.key !== ' ') return
+        e.preventDefault()
+        tf.insert.table(tablePicker.size, { select: true })
+        editor.tf.focus()
+      }}
       role='button'
+      tabIndex={0}
+      aria-label='Inserir tabela'
     >
       <div className='grid size-[130px] grid-cols-8 gap-0.5 p-1'>
         {tablePicker.grid.map((rows, rowIndex) =>
