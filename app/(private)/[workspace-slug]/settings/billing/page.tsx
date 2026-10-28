@@ -1,6 +1,7 @@
 import { Diamond02Icon } from '@hugeicons-pro/core-bulk-rounded'
 import { CreditCardIcon } from '@hugeicons-pro/core-stroke-rounded'
 import type { Metadata } from 'next'
+import { io } from 'next/cache'
 import { Suspense } from 'react'
 import {
   HeaderBreadcrumbCrumb,
@@ -78,6 +79,9 @@ async function Billing({ params }: { params: Params }) {
   const { membership } = await requireMembership(slug)
   const workspace = membership.workspace
 
+  // Below the DAL's private cache: the queries open pooled connections and
+  // the trial math reads the clock, both refused while prerendering.
+  await io()
   const [subResult, membersResult] = await Promise.all([
     SubscriptionService.getActiveByWorkspace(workspace.id),
     MembershipService.countByWorkspace(workspace.id),

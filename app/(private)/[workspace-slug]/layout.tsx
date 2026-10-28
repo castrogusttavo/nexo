@@ -1,4 +1,5 @@
 import type { Metadata } from 'next'
+import { io } from 'next/cache'
 import { type ReactNode, Suspense } from 'react'
 import { HeaderLayoutUser } from '@/app/_components/header/header-layout-user'
 import { HeaderTrialBanner } from '@/app/_components/header/header-trial-banner'
@@ -69,6 +70,10 @@ async function TrialBanner({ params }: { params: Params }) {
   const workspace = membership.workspace
   if (!workspace.trialEndsAt) return null
 
+  // The subscription query is the first read outside the DAL's private cache:
+  // opening a pooled connection draws random bytes, which a prerender refuses.
+  // io() keeps it at request time; the banner shows after hydration anyway.
+  await io()
   const activeSub = await SubscriptionService.getActiveByWorkspace(workspace.id)
   if (activeSub.ok && activeSub.value !== null) return null
 
