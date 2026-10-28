@@ -123,7 +123,7 @@ describe('<MembersManager /> listing', () => {
       ),
     ).toBeInTheDocument()
     // The avatar falls back to the initials when there is no image.
-    expect(within(row).getByText('AN')).toBeInTheDocument()
+    expect(within(row).getByText('AS')).toBeInTheDocument()
   })
 
   it('renders the second member with its own labels', async () => {

@@ -54,16 +54,13 @@ export function StateForm({
           ? createState.mutateAsync({ name, description, group, color })
           : null
     if (!promise) return
-    try {
-      await notify.mutate(promise, {
-        loading: isEditing ? 'Salvando state...' : 'Criando state...',
-        success: isEditing ? 'State atualizado' : 'State criado',
-        error: 'Erro ao salvar state',
-      })
-      onClose()
-    } catch {
-      //
-    }
+    const ok = await notify.run(promise, {
+      loading: isEditing ? 'Salvando state...' : 'Criando state...',
+      success: isEditing ? 'State atualizado' : 'State criado',
+      error: 'Erro ao salvar state',
+    })
+    if (!ok) return
+    onClose()
   }
 
   return (

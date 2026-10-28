@@ -3,20 +3,9 @@
 import Image from 'next/image'
 import { useRouter } from 'next/navigation'
 import { useId, useRef, useState } from 'react'
+import { ConfirmDialog } from '@/components/confirm-dialog'
 import { H4 } from '@/components/typography/heading/h4'
 import { Muted } from '@/components/typography/text/muted'
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-  AlertDialogTrigger,
-} from '@/components/ui/alert-dialog'
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Button } from '@/components/ui/button'
 import {
   Field,
@@ -26,8 +15,8 @@ import {
 } from '@/components/ui/field'
 import { Input } from '@/components/ui/input'
 import { TabsContent } from '@/components/ui/tabs'
+import { UserAvatar } from '@/components/user-avatar'
 import { notify } from '@/lib/notify'
-import { getInitials } from '@/lib/user-name-initials'
 import { useCacheUser } from '@/src/hooks/cache/use-user'
 import {
   useCancelAccountDeletion,
@@ -46,17 +35,14 @@ export function UserModalProfileTab({ tab }: { tab: string }) {
   const router = useRouter()
 
   async function handleDeleteAccount() {
-    try {
-      await notify.mutate(deleteAccount.mutateAsync(), {
-        loading: 'Desativando a conta...',
-        success: 'Conta desativada. Você será desconectado',
-        error: 'Erro ao desativar a conta',
-      })
-      await authClient.signOut()
-      router.push('/sign-in')
-    } catch {
-      //
-    }
+    const ok = await notify.run(deleteAccount.mutateAsync(), {
+      loading: 'Desativando a conta...',
+      success: 'Conta desativada. Você será desconectado',
+      error: 'Erro ao desativar a conta',
+    })
+    if (!ok) return
+    await authClient.signOut()
+    router.push('/sign-in')
   }
 
   return (
@@ -85,15 +71,11 @@ function UserModalProfileScheduledDeletion({
   const cancelDeletion = useCancelAccountDeletion()
 
   async function handleCancel() {
-    try {
-      await notify.mutate(cancelDeletion.mutateAsync(), {
-        loading: 'Cancelando a exclusão...',
-        success: 'Exclusão cancelada',
-        error: 'Erro ao cancelar a exclusão',
-      })
-    } catch {
-      //
-    }
+    await notify.run(cancelDeletion.mutateAsync(), {
+      loading: 'Cancelando a exclusão...',
+      success: 'Exclusão cancelada',
+      error: 'Erro ao cancelar a exclusão',
+    })
   }
 
   return (
@@ -134,35 +116,19 @@ function UserModalProfileDeleteAccount({
           removidos permanentemente e não poderão ser recuperados.
         </Muted>
       </div>
-      <AlertDialog>
-        <AlertDialogTrigger
-          render={
-            <Button variant='destructive' className='w-fit'>
-              Desativar conta
-            </Button>
-          }
-        />
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>Desativar conta</AlertDialogTitle>
-            <AlertDialogDescription>
-              Todos os dados e recursos dessa conta serão removidos
-              permanentemente e não poderão ser recuperados. Você será
-              desconectado em seguida.
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel disabled={pending}>Cancelar</AlertDialogCancel>
-            <AlertDialogAction
-              variant='destructive'
-              onClick={onConfirm}
-              disabled={pending}
-            >
-              Desativar conta
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
+      <ConfirmDialog
+        trigger={
+          <Button variant='destructive' className='w-fit'>
+            Desativar conta
+          </Button>
+        }
+        title='Desativar conta'
+        description='Todos os dados e recursos dessa conta serão removidos permanentemente e não poderão ser recuperados. Você será desconectado em seguida.'
+        confirmLabel='Desativar conta'
+        destructive
+        pending={pending}
+        onConfirm={onConfirm}
+      />
     </div>
   )
 }
@@ -192,15 +158,11 @@ function UserModalProfileForm({ user }: { user: UserDTO | undefined }) {
       })
       await refetchSession?.()
     }
-    try {
-      await notify.mutate(run(), {
-        loading: 'Salvando perfil...',
-        success: 'Perfil atualizado',
-        error: 'Erro ao salvar',
-      })
-    } catch {
-      //
-    }
+    await notify.run(run(), {
+      loading: 'Salvando perfil...',
+      success: 'Perfil atualizado',
+      error: 'Erro ao salvar',
+    })
   }
 
   async function handleAvatarChange(e: React.ChangeEvent<HTMLInputElement>) {
@@ -212,15 +174,11 @@ function UserModalProfileForm({ user }: { user: UserDTO | undefined }) {
       await uploadAvatar.mutateAsync(avatarFile)
       await refetchSession?.()
     }
-    try {
-      await notify.mutate(run(), {
-        loading: 'Enviando avatar...',
-        success: 'Avatar atualizado',
-        error: 'Erro ao enviar avatar',
-      })
-    } catch {
-      //
-    }
+    await notify.run(run(), {
+      loading: 'Enviando avatar...',
+      success: 'Avatar atualizado',
+      error: 'Erro ao enviar avatar',
+    })
   }
 
   return (
@@ -248,12 +206,12 @@ function UserModalProfileForm({ user }: { user: UserDTO | undefined }) {
             className='absolute -bottom-6 left-6 rounded-full'
             aria-label='Alterar avatar'
           >
-            <Avatar className='flex items-end justify-between size-16'>
-              <AvatarImage src={user?.image || ''} alt={user?.name} />
-              <AvatarFallback className='text-lg'>
-                {getInitials(user?.name)}
-              </AvatarFallback>
-            </Avatar>
+            <UserAvatar
+              name={user?.name}
+              image={user?.image}
+              className='flex items-end justify-between size-16'
+              fallbackClassName='text-lg'
+            />
           </button>
           <div className='absolute bottom-3 right-3 flex'>
             <UserCoverImagePicker currentImage={user?.coverImage} />

@@ -7,6 +7,7 @@ import {
 } from '@hugeicons-pro/core-stroke-rounded'
 import { useMemo, useState } from 'react'
 import { issueStatesIcon } from '@/app/_components/issue/issue-icons'
+import { ConfirmDialog } from '@/components/confirm-dialog'
 import { NexoIcon } from '@/components/icon/icon'
 import { H3 } from '@/components/typography/heading/h3'
 import { Muted } from '@/components/typography/text/muted'
@@ -16,17 +17,6 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from '@/components/ui/accordion'
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-  AlertDialogTrigger,
-} from '@/components/ui/alert-dialog'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
 import { Skeleton } from '@/components/ui/skeleton'
@@ -220,46 +210,26 @@ export function ProjectStatesSettings({
                                   strokeWidth={2}
                                 />
                               </Button>
-                              <AlertDialog>
-                                <AlertDialogTrigger
-                                  render={
-                                    <Button
-                                      variant='ghost'
-                                      size='icon-sm'
-                                      aria-label={`Excluir estado ${state.name}`}
-                                    >
-                                      <NexoIcon
-                                        icon={Delete02Icon}
-                                        strokeWidth={2}
-                                      />
-                                    </Button>
-                                  }
-                                />
-                                <AlertDialogContent>
-                                  <AlertDialogHeader>
-                                    <AlertDialogTitle>
-                                      Excluir state
-                                    </AlertDialogTitle>
-                                    <AlertDialogDescription>
-                                      Itens de trabalho neste state precisarão
-                                      ser movidos manualmente. Essa ação não
-                                      pode ser desfeita.
-                                    </AlertDialogDescription>
-                                  </AlertDialogHeader>
-                                  <AlertDialogFooter>
-                                    <AlertDialogCancel>
-                                      Cancelar
-                                    </AlertDialogCancel>
-                                    <AlertDialogAction
-                                      variant='destructive'
-                                      onClick={() => handleDelete(state.id)}
-                                      disabled={deleteState.isPending}
-                                    >
-                                      Excluir
-                                    </AlertDialogAction>
-                                  </AlertDialogFooter>
-                                </AlertDialogContent>
-                              </AlertDialog>
+                              <ConfirmDialog
+                                trigger={
+                                  <Button
+                                    variant='ghost'
+                                    size='icon-sm'
+                                    aria-label={`Excluir estado ${state.name}`}
+                                  >
+                                    <NexoIcon
+                                      icon={Delete02Icon}
+                                      strokeWidth={2}
+                                    />
+                                  </Button>
+                                }
+                                title='Excluir state'
+                                description='Itens de trabalho neste state precisarão ser movidos manualmente. Essa ação não pode ser desfeita.'
+                                confirmLabel='Excluir'
+                                destructive
+                                pending={deleteState.isPending}
+                                onConfirm={() => handleDelete(state.id)}
+                              />
                             </div>
                           </div>
                         ))}

@@ -191,16 +191,13 @@ export function CareerJobForm({ mode, jobId, initial }: CareerJobFormProps) {
         ? createJob.mutateAsync(payload)
         : updateJob.mutateAsync(payload)
 
-    try {
-      await notify.mutate(promise, {
-        loading: mode === 'create' ? 'Criando vaga...' : 'Salvando vaga...',
-        success: mode === 'create' ? 'Vaga criada' : 'Vaga atualizada',
-        error: 'Não foi possível salvar a vaga',
-      })
-      router.push('/admin/careers')
-    } catch {
-      //
-    }
+    const ok = await notify.run(promise, {
+      loading: mode === 'create' ? 'Criando vaga...' : 'Salvando vaga...',
+      success: mode === 'create' ? 'Vaga criada' : 'Vaga atualizada',
+      error: 'Não foi possível salvar a vaga',
+    })
+    if (!ok) return
+    router.push('/admin/careers')
   }
 
   return (

@@ -9,19 +9,9 @@ import { useRouter } from 'next/navigation'
 import { useId, useState } from 'react'
 import { WorkspaceProjectEmojiIconPicker } from '@/app/_components/workspace/projects/modal/workspace-project-emoji-icon-picker'
 import { CoverImagePicker } from '@/app/_components/workspace/projects/modal/workspace-project-modal-coverimage-dialog'
+import { ConfirmDialog } from '@/components/confirm-dialog'
 import { NexoIcon } from '@/components/icon/icon'
 import { Muted } from '@/components/typography/text/muted'
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-  AlertDialogTrigger,
-} from '@/components/ui/alert-dialog'
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
 import { Field, FieldGroup, FieldLabel, FieldSet } from '@/components/ui/field'
@@ -83,53 +73,44 @@ export function ProjectGeneralSettingsForm({
   async function handleSave(e: React.SyntheticEvent<HTMLFormElement>) {
     e.preventDefault()
 
-    try {
-      await notify.mutate(
-        updateProject.mutateAsync({
-          name,
-          description,
-          identifier: identifier || undefined,
-          emoji,
-          coverImage,
-          isPublic,
-        }),
-        {
-          loading: 'Salvando projeto...',
-          success: 'Projeto atualizado',
-          error: 'Erro ao atualizar projeto',
-        },
-      )
-      router.refresh()
-    } catch {
-      //
-    }
+    const ok = await notify.run(
+      updateProject.mutateAsync({
+        name,
+        description,
+        identifier: identifier || undefined,
+        emoji,
+        coverImage,
+        isPublic,
+      }),
+      {
+        loading: 'Salvando projeto...',
+        success: 'Projeto atualizado',
+        error: 'Erro ao atualizar projeto',
+      },
+    )
+    if (!ok) return
+    router.refresh()
   }
 
   async function handleArchive() {
-    try {
-      await notify.mutate(archiveProject.mutateAsync(), {
-        loading: 'Arquivando projeto...',
-        success: 'Projeto arquivado',
-        error: 'Erro ao arquivar projeto',
-      })
-      router.push(`/${workspaceSlug}/projects`)
-    } catch {
-      //
-    }
+    const ok = await notify.run(archiveProject.mutateAsync(), {
+      loading: 'Arquivando projeto...',
+      success: 'Projeto arquivado',
+      error: 'Erro ao arquivar projeto',
+    })
+    if (!ok) return
+    router.push(`/${workspaceSlug}/projects`)
   }
 
   async function handleDelete() {
-    try {
-      await notify.mutate(deleteProject.mutateAsync(), {
-        loading: 'Excluindo projeto...',
-        success: 'Projeto excluído',
-        error: 'Erro ao excluir projeto',
-      })
-      // Replace so going back doesn't land on the deleted project's settings.
-      router.replace(`/${workspaceSlug}/projects`)
-    } catch {
-      //
-    }
+    const ok = await notify.run(deleteProject.mutateAsync(), {
+      loading: 'Excluindo projeto...',
+      success: 'Projeto excluído',
+      error: 'Erro ao excluir projeto',
+    })
+    if (!ok) return
+    // Replace so going back doesn't land on the deleted project's settings.
+    router.replace(`/${workspaceSlug}/projects`)
   }
 
   return (
@@ -305,35 +286,19 @@ export function ProjectGeneralSettingsForm({
               Você pode restaurar o projeto ou excluí-lo sempre que quiser.
             </p>
           </div>
-          <AlertDialog>
-            <AlertDialogTrigger
-              render={
-                <Button variant='outline' size='xs'>
-                  Arquivar
-                </Button>
-              }
-            />
-            <AlertDialogContent>
-              <AlertDialogHeader>
-                <AlertDialogTitle>Arquivar o projeto</AlertDialogTitle>
-                <AlertDialogDescription>
-                  O projeto sai da navegação lateral, mas continua acessível
-                  pela página de projetos. Pode ser restaurado depois.
-                </AlertDialogDescription>
-              </AlertDialogHeader>
-              <AlertDialogFooter>
-                <AlertDialogCancel disabled={archiveProject.isPending}>
-                  Cancelar
-                </AlertDialogCancel>
-                <AlertDialogAction
-                  onClick={handleArchive}
-                  disabled={archiveProject.isPending}
-                >
-                  {archiveProject.isPending ? 'Arquivando...' : 'Arquivar'}
-                </AlertDialogAction>
-              </AlertDialogFooter>
-            </AlertDialogContent>
-          </AlertDialog>
+          <ConfirmDialog
+            trigger={
+              <Button variant='outline' size='xs'>
+                Arquivar
+              </Button>
+            }
+            title='Arquivar o projeto'
+            description='O projeto sai da navegação lateral, mas continua acessível pela página de projetos. Pode ser restaurado depois.'
+            confirmLabel='Arquivar'
+            pendingLabel='Arquivando...'
+            pending={archiveProject.isPending}
+            onConfirm={handleArchive}
+          />
         </div>
         <div className='flex items-center justify-between'>
           <div>
@@ -343,36 +308,20 @@ export function ProjectGeneralSettingsForm({
               serão removidos permanentemente e não poderão ser recuperados.
             </p>
           </div>
-          <AlertDialog>
-            <AlertDialogTrigger
-              render={
-                <Button variant='destructive' size='xs'>
-                  Excluir
-                </Button>
-              }
-            />
-            <AlertDialogContent>
-              <AlertDialogHeader>
-                <AlertDialogTitle>Excluir projeto</AlertDialogTitle>
-                <AlertDialogDescription>
-                  Todos os dados e recursos desse projeto serão removidos
-                  permanentemente e não poderão ser recuperados.
-                </AlertDialogDescription>
-              </AlertDialogHeader>
-              <AlertDialogFooter>
-                <AlertDialogCancel disabled={deleteProject.isPending}>
-                  Cancelar
-                </AlertDialogCancel>
-                <AlertDialogAction
-                  variant='destructive'
-                  onClick={handleDelete}
-                  disabled={deleteProject.isPending}
-                >
-                  {deleteProject.isPending ? 'Excluindo...' : 'Excluir'}
-                </AlertDialogAction>
-              </AlertDialogFooter>
-            </AlertDialogContent>
-          </AlertDialog>
+          <ConfirmDialog
+            trigger={
+              <Button variant='destructive' size='xs'>
+                Excluir
+              </Button>
+            }
+            title='Excluir projeto'
+            description='Todos os dados e recursos desse projeto serão removidos permanentemente e não poderão ser recuperados.'
+            confirmLabel='Excluir'
+            pendingLabel='Excluindo...'
+            destructive
+            pending={deleteProject.isPending}
+            onConfirm={handleDelete}
+          />
         </div>
       </Card>
     </div>

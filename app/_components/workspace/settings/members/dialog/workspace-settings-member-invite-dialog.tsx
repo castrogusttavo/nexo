@@ -41,17 +41,14 @@ export function WorkspaceSettingsMemberInviteDialog({
   async function handleInvite(event: SyntheticEvent) {
     event.preventDefault()
 
-    try {
-      await notify.mutate(createInvitation.mutateAsync({ email, role }), {
-        loading: 'Enviando convite...',
-        success: 'Convite enviado',
-        error: 'Não foi possível enviar o convite',
-      })
-      setEmail('')
-      setOpen(false)
-    } catch {
-      //
-    }
+    const ok = await notify.run(createInvitation.mutateAsync({ email, role }), {
+      loading: 'Enviando convite...',
+      success: 'Convite enviado',
+      error: 'Não foi possível enviar o convite',
+    })
+    if (!ok) return
+    setEmail('')
+    setOpen(false)
   }
 
   return (

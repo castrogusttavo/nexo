@@ -61,19 +61,17 @@ export function ResetPasswordForm({
       })
 
     setIsPending(true)
-    try {
-      await notify.mutate(promise, {
-        loading: 'Redefinindo a senha...',
-        success: 'Senha redefinida',
-        error: 'Não foi possível redefinir a senha. O link pode ter expirado',
-      })
-      await authClient.signOut()
+    const ok = await notify.run(promise, {
+      loading: 'Redefinindo a senha...',
+      success: 'Senha redefinida',
+      error: 'Não foi possível redefinir a senha. O link pode ter expirado',
+    })
+    if (ok) {
+      // A failed sign-out still leaves the user on the sign-in page.
+      await authClient.signOut().catch(() => {})
       push('/sign-in')
-    } catch {
-      //
-    } finally {
-      setIsPending(false)
     }
+    setIsPending(false)
   }
 
   return (

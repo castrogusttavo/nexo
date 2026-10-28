@@ -4,11 +4,10 @@ import { CheckIcon } from '@hugeicons-pro/core-stroke-rounded'
 import { Combobox } from '@/app/_components/ui/combobox'
 import { NexoIcon } from '@/components/icon/icon'
 import { Muted } from '@/components/typography/text/muted'
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Button } from '@/components/ui/button'
+import { UserAvatar } from '@/components/user-avatar'
 import { notify } from '@/lib/notify'
 import { NO_LEAD_NAME } from '@/lib/removed-user'
-import { getInitials } from '@/lib/user-name-initials'
 import { useProject, useUpdateProject } from '@/src/hooks/use-project'
 import type { ProjectMemberDTO } from '@/types/project'
 
@@ -67,15 +66,11 @@ export function ProjectLeadSelect({
           >
             {currentLead ? (
               <span className='flex items-center gap-2'>
-                <Avatar size='sm'>
-                  <AvatarImage
-                    src={currentLead.image || ''}
-                    alt={currentLead.name}
-                  />
-                  <AvatarFallback>
-                    {getInitials(currentLead.name)}
-                  </AvatarFallback>
-                </Avatar>
+                <UserAvatar
+                  size='sm'
+                  name={currentLead.name}
+                  image={currentLead.image}
+                />
                 @{currentLead.username}
               </span>
             ) : (
@@ -85,10 +80,7 @@ export function ProjectLeadSelect({
         }
         renderItem={(member, selected) => (
           <>
-            <Avatar size='sm'>
-              <AvatarImage src={member.image || ''} alt={member.name} />
-              <AvatarFallback>{getInitials(member.name)}</AvatarFallback>
-            </Avatar>
+            <UserAvatar size='sm' name={member.name} image={member.image} />
             <span className='flex-1'>@{member.username}</span>
             {selected && <NexoIcon icon={CheckIcon} strokeWidth={2} />}
           </>

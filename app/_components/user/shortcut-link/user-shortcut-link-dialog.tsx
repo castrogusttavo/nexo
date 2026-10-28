@@ -72,19 +72,16 @@ export function UserShortcutLinkDialog() {
       return
     }
 
-    try {
-      await notify.mutate(
-        createShortLink.mutateAsync({ title: trimmedTitle, url }),
-        {
-          loading: 'Criando link rápido...',
-          success: 'Link rápido criado',
-          error: 'Erro ao criar link rápido',
-        },
-      )
-      handleOpenChange(false)
-    } catch {
-      //
-    }
+    const ok = await notify.run(
+      createShortLink.mutateAsync({ title: trimmedTitle, url }),
+      {
+        loading: 'Criando link rápido...',
+        success: 'Link rápido criado',
+        error: 'Erro ao criar link rápido',
+      },
+    )
+    if (!ok) return
+    handleOpenChange(false)
   }
 
   return (

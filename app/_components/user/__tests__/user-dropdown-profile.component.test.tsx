@@ -73,7 +73,7 @@ describe('<UserDropdownProfile />', () => {
   it('keeps the menu and the profile modal closed until asked', async () => {
     renderDropdown()
 
-    await screen.findByText('A')
+    await screen.findByText('AS')
     expect(screen.queryByRole('menu')).not.toBeInTheDocument()
     expect(screen.queryByRole('dialog')).not.toBeInTheDocument()
   })
@@ -81,7 +81,7 @@ describe('<UserDropdownProfile />', () => {
   it('shows who is signed in and the actions available', async () => {
     const { user } = renderDropdown()
 
-    await screen.findByText('A')
+    await screen.findByText('AS')
     await openMenu(user)
 
     expect(await screen.findByText('Ana Souza')).toBeInTheDocument()
@@ -94,7 +94,7 @@ describe('<UserDropdownProfile />', () => {
   it('falls back to the default cover when the user has none', async () => {
     const { user } = renderDropdown()
 
-    await screen.findByText('A')
+    await screen.findByText('AS')
     await openMenu(user)
 
     expect(await screen.findByAltText('background')).toHaveAttribute(
@@ -106,7 +106,7 @@ describe('<UserDropdownProfile />', () => {
   it('opens the profile modal on the settings tab', async () => {
     const { user } = renderDropdown()
 
-    await screen.findByText('A')
+    await screen.findByText('AS')
     await openMenu(user)
     await user.click(
       await screen.findByRole('menuitem', { name: 'Configurações' }),
@@ -120,7 +120,7 @@ describe('<UserDropdownProfile />', () => {
   it('opens the profile modal on the preferences tab', async () => {
     const { user } = renderDropdown()
 
-    await screen.findByText('A')
+    await screen.findByText('AS')
     await openMenu(user)
     await user.click(
       await screen.findByRole('menuitem', { name: 'Preferências' }),
@@ -135,7 +135,7 @@ describe('<UserDropdownProfile />', () => {
   it('signs the user out and sends them to the sign-in page', async () => {
     const { user } = renderDropdown()
 
-    await screen.findByText('A')
+    await screen.findByText('AS')
     await openMenu(user)
     await user.click(await screen.findByRole('menuitem', { name: 'Sair' }))
 

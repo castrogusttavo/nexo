@@ -7,18 +7,8 @@ import {
 } from '@hugeicons-pro/core-stroke-rounded'
 import { GripVerticalIcon } from 'lucide-react'
 import { useState } from 'react'
+import { ConfirmDialog } from '@/components/confirm-dialog'
 import { NexoIcon } from '@/components/icon/icon'
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-  AlertDialogTrigger,
-} from '@/components/ui/alert-dialog'
 import { Button } from '@/components/ui/button'
 import { DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import { Input } from '@/components/ui/input'
@@ -68,36 +58,33 @@ export function EstimateValuesForm({
 
   async function handleAdd() {
     if (!newValue.trim()) return
-    try {
-      await notify.mutate(createValue.mutateAsync({ value: newValue.trim() }), {
+    const ok = await notify.run(
+      createValue.mutateAsync({ value: newValue.trim() }),
+      {
         loading: 'Adicionando valor...',
         success: 'Valor adicionado',
         error: 'Erro ao adicionar valor',
-      })
-      setNewValue('')
-    } catch {
-      //
-    }
+      },
+    )
+    if (!ok) return
+    setNewValue('')
   }
 
   async function handleSaveEdit(valueId: string) {
     if (!editingValue.trim()) return
-    try {
-      await notify.mutate(
-        updateValue.mutateAsync({
-          valueId,
-          data: { value: editingValue.trim() },
-        }),
-        {
-          loading: 'Salvando valor...',
-          success: 'Valor atualizado',
-          error: 'Erro ao atualizar valor',
-        },
-      )
-      setEditingId(null)
-    } catch {
-      //
-    }
+    const ok = await notify.run(
+      updateValue.mutateAsync({
+        valueId,
+        data: { value: editingValue.trim() },
+      }),
+      {
+        loading: 'Salvando valor...',
+        success: 'Valor atualizado',
+        error: 'Erro ao atualizar valor',
+      },
+    )
+    if (!ok) return
+    setEditingId(null)
   }
 
   function handleDelete(valueId: string) {
@@ -162,38 +149,23 @@ export function EstimateValuesForm({
                 >
                   <NexoIcon icon={PencilEdit01Icon} strokeWidth={2} />
                 </Button>
-                <AlertDialog>
-                  <AlertDialogTrigger
-                    render={
-                      <Button
-                        size='icon-sm'
-                        variant='ghost'
-                        aria-label={`Excluir valor ${value.value}`}
-                      >
-                        <NexoIcon icon={Delete02Icon} strokeWidth={2} />
-                      </Button>
-                    }
-                  />
-                  <AlertDialogContent>
-                    <AlertDialogHeader>
-                      <AlertDialogTitle>Excluir valor</AlertDialogTitle>
-                      <AlertDialogDescription>
-                        Esse valor deixará de estar disponível para novas
-                        estimativas. Essa ação não pode ser desfeita.
-                      </AlertDialogDescription>
-                    </AlertDialogHeader>
-                    <AlertDialogFooter>
-                      <AlertDialogCancel>Cancelar</AlertDialogCancel>
-                      <AlertDialogAction
-                        variant='destructive'
-                        onClick={() => handleDelete(value.id)}
-                        disabled={deleteValue.isPending}
-                      >
-                        Excluir
-                      </AlertDialogAction>
-                    </AlertDialogFooter>
-                  </AlertDialogContent>
-                </AlertDialog>
+                <ConfirmDialog
+                  trigger={
+                    <Button
+                      size='icon-sm'
+                      variant='ghost'
+                      aria-label={`Excluir valor ${value.value}`}
+                    >
+                      <NexoIcon icon={Delete02Icon} strokeWidth={2} />
+                    </Button>
+                  }
+                  title='Excluir valor'
+                  description='Esse valor deixará de estar disponível para novas estimativas. Essa ação não pode ser desfeita.'
+                  confirmLabel='Excluir'
+                  destructive
+                  pending={deleteValue.isPending}
+                  onConfirm={() => handleDelete(value.id)}
+                />
               </div>
             </div>
           </SortableItem>

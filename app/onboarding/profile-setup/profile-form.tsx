@@ -4,13 +4,13 @@ import { Image } from '@hugeicons-pro/core-stroke-rounded'
 import { useRouter } from 'next/navigation'
 import { useActionState, useRef, useState } from 'react'
 import { NexoIcon } from '@/components/icon/icon'
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Button } from '@/components/ui/button'
 import { Checkbox } from '@/components/ui/checkbox'
 import { Field, FieldLabel } from '@/components/ui/field'
 import { Input } from '@/components/ui/input'
+import { UserAvatar } from '@/components/user-avatar'
 import { notify } from '@/lib/notify'
-import { ApiError } from '@/src/hooks/_fetch'
+import { useUploadAvatar } from '@/src/hooks/use-user'
 import { type ProfileSetupState, saveProfileSetup } from './actions'
 import { ProfileTwoFactorSection } from './profile-two-factor-section'
 
@@ -29,7 +29,7 @@ export function ProfileForm({
 }) {
   const [nameValue, setNameValue] = useState(name)
   const [imageUrl, setImageUrl] = useState<string | null>(image)
-  const [uploading, setUploading] = useState(false)
+  const uploadAvatar = useUploadAvatar()
   const fileInputRef = useRef<HTMLInputElement>(null)
   const { refresh } = useRouter()
 
@@ -38,46 +38,21 @@ export function ProfileForm({
     INITIAL_STATE,
   )
 
-  const initials = nameValue
-    .split(' ')
-    .filter(Boolean)
-    .map((n: string) => n[0])
-    .join('')
-    .toUpperCase()
-    .slice(0, 2)
-
   async function handleImageChange(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0]
     if (!file) return
-    setUploading(true)
-    const fd = new FormData()
-    fd.append('avatars', file)
-
-    async function run() {
-      const res = await fetch('/api/users/me/avatar', {
-        method: 'POST',
-        body: fd,
-      })
-      const json = await res.json()
-      if (!res.ok) {
-        throw new ApiError(json?.message ?? 'Erro ao enviar imagem')
-      }
-      setImageUrl(`${json.data.url}?t=${Date.now()}`)
-      refresh()
-    }
-
-    try {
-      await notify.mutate(run(), {
-        loading: 'Enviando imagem...',
-        success: 'Imagem enviada',
-        error: 'Erro ao enviar imagem',
-      })
-    } catch {
-      //
-    } finally {
-      setUploading(false)
-      if (fileInputRef.current) fileInputRef.current.value = ''
-    }
+    const upload = uploadAvatar.mutateAsync(file)
+    const ok = await notify.run(upload, {
+      loading: 'Enviando imagem...',
+      success: 'Imagem enviada',
+      error: 'Erro ao enviar imagem',
+    })
+    if (fileInputRef.current) fileInputRef.current.value = ''
+    if (!ok) return
+    setImageUrl(`${await upload}?t=${Date.now()}`)
+    // The header lives in the layout; re-render it so it picks up the new
+    // avatar. Client state (the typed name) survives a refresh.
+    refresh()
   }
 
   const isValid = nameValue.trim().length >= 2
@@ -88,16 +63,16 @@ export function ProfileForm({
         <button
           type='button'
           onClick={() => fileInputRef.current?.click()}
-          disabled={uploading}
+          disabled={uploadAvatar.isPending}
           aria-label='Mudar imagem'
           className='flex items-center gap-4'
         >
-          <Avatar className='size-12'>
-            <AvatarImage src={imageUrl ?? undefined} />
-            <AvatarFallback className='text-lg'>
-              {initials || '??'}
-            </AvatarFallback>
-          </Avatar>
+          <UserAvatar
+            name={nameValue}
+            image={imageUrl}
+            className='size-12'
+            fallbackClassName='text-lg'
+          />
           {/* A span, not a label: the button already opens the picker, and
               label/input are invalid inside a button. */}
           <span className='flex items-center gap-2 text-sm leading-none font-medium text-muted-foreground hover:text-primary/75'>

@@ -4,7 +4,6 @@ import Image from 'next/image'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { ButtonLink } from '@/components/button-link'
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Button } from '@/components/ui/button'
 import {
   DropdownMenu,
@@ -13,7 +12,7 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
 import { Skeleton } from '@/components/ui/skeleton'
-import { getInitials } from '@/lib/user-name-initials'
+import { UserAvatar } from '@/components/user-avatar'
 import { useCacheUser } from '@/src/hooks/cache/use-user'
 import { authClient } from '@/src/lib/auth-client'
 
@@ -24,7 +23,6 @@ export function WebHeaderUpgrade() {
   if (isPending || !session) return <Skeleton className='min-h-12 w-full' />
 
   const { name, email, image } = session.user
-  const initials = getInitials(name)
 
   async function handleWrongEmail() {
     await authClient.signOut()
@@ -55,10 +53,7 @@ export function WebHeaderUpgrade() {
           <DropdownMenuTrigger
             render={
               <Button variant='ghost'>
-                <Avatar size='sm'>
-                  <AvatarImage src={image ?? ''} alt={name ?? email} />
-                  <AvatarFallback>{initials}</AvatarFallback>
-                </Avatar>
+                <UserAvatar size='sm' name={name ?? email} image={image} />
                 {name ?? email}
               </Button>
             }

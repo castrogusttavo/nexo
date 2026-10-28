@@ -144,26 +144,23 @@ export function WorkspaceProjectCreateDialog({
 
   async function handleSubmit(e: React.SubmitEvent<HTMLFormElement>) {
     e.preventDefault()
-    try {
-      await notify.mutate(
-        createProject.mutateAsync({
-          name,
-          slug,
-          description: description || undefined,
-          emoji,
-          coverImage: coverImage ?? undefined,
-          isPublic,
-        }),
-        {
-          loading: 'Criando projeto...',
-          success: 'Projeto criado',
-          error: 'Erro ao criar projeto',
-        },
-      )
-      handleClose()
-    } catch {
-      //
-    }
+    const ok = await notify.run(
+      createProject.mutateAsync({
+        name,
+        slug,
+        description: description || undefined,
+        emoji,
+        coverImage: coverImage ?? undefined,
+        isPublic,
+      }),
+      {
+        loading: 'Criando projeto...',
+        success: 'Projeto criado',
+        error: 'Erro ao criar projeto',
+      },
+    )
+    if (!ok) return
+    handleClose()
   }
 
   return (

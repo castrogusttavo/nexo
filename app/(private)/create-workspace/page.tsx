@@ -116,8 +116,9 @@ export default function CreateWorkspacePage() {
       return
     }
 
-    try {
-      const workspace = await notify.mutate(
+    // The toast reports a failure; only a created workspace navigates.
+    const workspace = await notify
+      .mutate(
         createWorkspace.mutateAsync({
           name: trimmedName,
           slug: submittedSlug,
@@ -129,10 +130,8 @@ export default function CreateWorkspacePage() {
           error: 'Erro ao criar workspace',
         },
       )
-      push(`/${workspace.slug}`)
-    } catch {
-      //
-    }
+      .catch(() => null)
+    if (workspace) push(`/${workspace.slug}`)
   }
 
   return (

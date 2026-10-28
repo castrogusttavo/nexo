@@ -335,7 +335,7 @@ describe('<IssueKanbanView /> cards', () => {
 
     const card = await findCard('Revisar contrato')
     expect(within(card).getByText('NEX-42')).toBeInTheDocument()
-    await within(card).findByText('AN')
+    await within(card).findByText('AS')
     // The unknown assignee id is filtered out rather than rendered blank.
     expect(card.querySelectorAll('[data-slot="avatar-fallback"]')).toHaveLength(
       1,

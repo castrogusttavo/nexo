@@ -78,7 +78,7 @@ describe('<ProfileForm />', () => {
     const { user } = renderWithProviders(<ProfileForm {...DEFAULT_PROPS} />)
 
     await user.clear(nameInput())
-    expect(screen.getByText('??')).toBeInTheDocument()
+    expect(screen.queryByText('AS')).not.toBeInTheDocument()
     await user.type(nameInput(), 'beatriz lima costa')
 
     expect(screen.getByText('BL')).toBeInTheDocument()
@@ -189,7 +189,9 @@ describe('<ProfileForm />', () => {
           success: 'Imagem enviada',
         }),
       )
-      await expect(toastPromise.mock.calls[0]?.[0]).resolves.toBeUndefined()
+      await expect(toastPromise.mock.calls[0]?.[0]).resolves.toBe(
+        'https://cdn.nexo.dev/a.png',
+      )
       expect(refresh).toHaveBeenCalledTimes(1)
     })
 
@@ -225,7 +227,8 @@ describe('<ProfileForm />', () => {
       await waitFor(() => expect(toastPromise).toHaveBeenCalled())
       const upload = toastPromise.mock.calls[0]?.[0] as Promise<unknown>
       const failure = await upload.catch((err: unknown) => err)
-      expect(toastErrorMessage(failure)).toBe('Erro ao enviar imagem')
+      // The hook's fallback names what failed to upload.
+      expect(toastErrorMessage(failure)).toBe('Erro ao enviar avatar')
     })
   })
 })

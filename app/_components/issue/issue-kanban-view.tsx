@@ -4,7 +4,6 @@ import { useQueryClient } from '@tanstack/react-query'
 import { useMemo, useState } from 'react'
 import { useFilteredIssues } from '@/components/filters/use-filtered-issues'
 import { NexoIcon } from '@/components/icon/icon'
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Badge } from '@/components/ui/badge'
 import {
   Kanban,
@@ -21,6 +20,7 @@ import {
   TooltipContent,
   TooltipTrigger,
 } from '@/components/ui/tooltip'
+import { UserAvatar } from '@/components/user-avatar'
 import { colorToText } from '@/lib/state-colors'
 import { issuesKey, useUpdateIssue } from '@/src/hooks/use-issue'
 import { useProjectMembers } from '@/src/hooks/use-project-member'
@@ -85,15 +85,12 @@ function IssueKanbanCard({
             <Tooltip key={assignee.userId}>
               <TooltipTrigger
                 render={
-                  <Avatar size='sm' className='border-2 border-card'>
-                    <AvatarImage
-                      src={assignee.image ?? undefined}
-                      alt={assignee.name}
-                    />
-                    <AvatarFallback>
-                      {assignee.name.slice(0, 2).toUpperCase()}
-                    </AvatarFallback>
-                  </Avatar>
+                  <UserAvatar
+                    size='sm'
+                    name={assignee.name}
+                    image={assignee.image}
+                    className='border-2 border-card'
+                  />
                 }
               />
               <TooltipContent>{assignee.name}</TooltipContent>

@@ -10,10 +10,9 @@ import {
 import { NexoIcon } from '@/components/icon/icon'
 import { H4 } from '@/components/typography/heading/h4'
 import { Muted } from '@/components/typography/text/muted'
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Dialog, DialogContent, DialogTitle } from '@/components/ui/dialog'
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs'
-import { getInitials } from '@/lib/user-name-initials'
+import { UserAvatar } from '@/components/user-avatar'
 import { useUser } from '@/src/hooks/use-user'
 import { UserModalNotificationsTab } from './tabs/user-modal-notifications-tab'
 import { UserModalPreferencesTab } from './tabs/user-modal-preferences-tab'
@@ -60,10 +59,7 @@ export function UserModalCustomProfile({
           >
             <div className='flex flex-col gap-4 w-62 py-4 px-3 border-r border-border bg-card'>
               <div className='flex items-center gap-2'>
-                <Avatar>
-                  <AvatarImage src={user?.image || ''} alt={user?.name} />
-                  <AvatarFallback>{getInitials(user?.name)}</AvatarFallback>
-                </Avatar>
+                <UserAvatar name={user?.name} image={user?.image} />
                 <div>
                   <H4 className='text-md'>{user?.name}</H4>
                   <Muted className='text-xs text-primary'>{user?.email}</Muted>

@@ -6,20 +6,10 @@ import {
   PencilEdit01Icon,
 } from '@hugeicons-pro/core-stroke-rounded'
 import { useState } from 'react'
+import { ConfirmDialog } from '@/components/confirm-dialog'
 import { NexoIcon } from '@/components/icon/icon'
 import { H3 } from '@/components/typography/heading/h3'
 import { Muted } from '@/components/typography/text/muted'
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-  AlertDialogTrigger,
-} from '@/components/ui/alert-dialog'
 import { Button } from '@/components/ui/button'
 import { Skeleton } from '@/components/ui/skeleton'
 import { notify } from '@/lib/notify'
@@ -111,34 +101,19 @@ export function ProjectLabelsSettings({
               >
                 <NexoIcon icon={PencilEdit01Icon} strokeWidth={2} />
               </Button>
-              <AlertDialog>
-                <AlertDialogTrigger
-                  render={
-                    <Button size='icon-sm' variant='ghost'>
-                      <NexoIcon icon={Delete02Icon} strokeWidth={2} />
-                    </Button>
-                  }
-                />
-                <AlertDialogContent>
-                  <AlertDialogHeader>
-                    <AlertDialogTitle>Excluir etiqueta</AlertDialogTitle>
-                    <AlertDialogDescription>
-                      Essa etiqueta será removida de todas as issues que a
-                      utilizam. Essa ação não pode ser desfeita.
-                    </AlertDialogDescription>
-                  </AlertDialogHeader>
-                  <AlertDialogFooter>
-                    <AlertDialogCancel>Cancelar</AlertDialogCancel>
-                    <AlertDialogAction
-                      variant='destructive'
-                      onClick={() => handleDelete(label.id)}
-                      disabled={deleteLabel.isPending}
-                    >
-                      Excluir
-                    </AlertDialogAction>
-                  </AlertDialogFooter>
-                </AlertDialogContent>
-              </AlertDialog>
+              <ConfirmDialog
+                trigger={
+                  <Button size='icon-sm' variant='ghost'>
+                    <NexoIcon icon={Delete02Icon} strokeWidth={2} />
+                  </Button>
+                }
+                title='Excluir etiqueta'
+                description='Essa etiqueta será removida de todas as issues que a utilizam. Essa ação não pode ser desfeita.'
+                confirmLabel='Excluir'
+                destructive
+                pending={deleteLabel.isPending}
+                onConfirm={() => handleDelete(label.id)}
+              />
             </div>
           </div>
         ))

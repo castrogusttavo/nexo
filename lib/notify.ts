@@ -7,6 +7,24 @@ function messageFrom(input: unknown, fallback: string): string {
   return fallback
 }
 
+type MutateMessages<T> = {
+  loading: string
+  success: string | ((data: T) => string)
+  error?: string
+}
+
+// Single toast that animates loading -> success/error, tracking `promise`.
+// Returns the same promise so callers can still await it for follow-up
+// control flow (closing a dialog, router.refresh(), etc).
+function mutate<T>(promise: Promise<T>, messages: MutateMessages<T>): Promise<T> {
+  toast.promise(promise, {
+    loading: messages.loading,
+    success: messages.success,
+    error: (err: unknown) => messageFrom(err, messages.error ?? 'Algo deu errado'),
+  })
+  return promise
+}
+
 export const notify = {
   success: (message: string) => toast.success(message),
   // `fallback` is typed `unknown` so `onError: notify.error` is assignable to
@@ -23,19 +41,13 @@ export const notify = {
   warning: (message: string) => toast.warning(message),
   loading: (message: string) => toast.loading(message),
   promise: toast.promise,
-  // Single toast that animates loading -> success/error, tracking `promise`
-  // Returns the same promise so callers can still await `/`try-catck` it for
-  // follow-up control flow (closing a dialog, router.refresh(), etc).
-  mutate: <T>(
-    promise: Promise<T>,
-    messages: { loading: string; success: string | ((data: T) => string); error?: string }
-  ): Promise<T> => {
-    toast.promise(promise, {
-      loading: messages.loading,
-      success: messages.success,
-      error: (err: unknown) =>
-      messageFrom(err, messages.error ?? 'Algo deu errado')
-    })
-    return promise
-  }
+  mutate,
+  // For handlers with nothing left to do when the promise fails: the toast
+  // already told the user. Resolves to whether it succeeded and never
+  // rejects, so callers need no empty try/catch.
+  run: <T>(promise: Promise<T>, messages: MutateMessages<T>): Promise<boolean> =>
+    mutate(promise, messages).then(
+      () => true,
+      () => false,
+    ),
 }

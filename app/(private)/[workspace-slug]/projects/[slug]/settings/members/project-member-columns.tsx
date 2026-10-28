@@ -1,11 +1,10 @@
 'use client'
 
 import type { ColumnDef } from '@tanstack/react-table'
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { DataTableColumnHeader } from '@/components/ui/data-table/data-table-column-header'
-import { getInitials } from '@/lib/user-name-initials'
+import { UserAvatar } from '@/components/user-avatar'
 import type { ProjectMemberDTO } from '@/types/project'
 
 const dateFmt = new Intl.DateTimeFormat('pt-BR', {
@@ -38,13 +37,11 @@ export function getProjectMemberColumns({
       ),
       cell: ({ row }) => (
         <div className='flex items-center gap-2'>
-          <Avatar size='sm'>
-            <AvatarImage
-              src={row.original.image || ''}
-              alt={row.original.name}
-            />
-            <AvatarFallback>{getInitials(row.original.name)}</AvatarFallback>
-          </Avatar>
+          <UserAvatar
+            size='sm'
+            name={row.original.name}
+            image={row.original.image}
+          />
           <span className='font-medium'>{row.original.name}</span>
         </div>
       ),

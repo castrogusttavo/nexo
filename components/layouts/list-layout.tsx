@@ -7,7 +7,7 @@ import { IssueCardList } from "@/app/_components/issue/issue-card";
 import { Checkbox } from "../ui/checkbox";
 import { IssueDTO, IssuePriorityDTO } from "@/types/issue";
 import { StateDTO } from "@/types/state";
-import { Avatar, AvatarFallback, AvatarImage } from "../ui/avatar";
+import { AvatarImage } from "../ui/avatar";
 import { Tooltip, TooltipContent, TooltipTrigger } from "../ui/tooltip";
 import { issuesKey, useCreateIssue } from "@/src/hooks/use-issue";
 import { apiFetchJson } from "@/src/hooks/_fetch";
@@ -15,6 +15,7 @@ import { useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
 import { Input } from "../ui/input";
 import { EMPTY_ISSUE_DESCRIPTION } from "@/lib/editor-value";
+import { UserAvatar } from '@/components/user-avatar'
 
 export type IconType = Parameters<typeof NexoIcon>[0]['icon']
 
@@ -129,10 +130,7 @@ export function ListLayout({ workspaceId, projectSlug, createDefaults, sectionId
                   <Tooltip>
                     <TooltipTrigger
                       render={
-                        <Avatar size='sm'>
-                          <AvatarImage src={sectionAvatar.image ?? undefined} alt={sectionAvatar.name} />
-                          <AvatarFallback>{sectionAvatar.name.slice(0, 2).toUpperCase()}</AvatarFallback>
-                        </Avatar>
+                        <UserAvatar size='sm' name={sectionAvatar.name} image={sectionAvatar.image} />
                       }
                     />
                     <TooltipContent>@{sectionAvatar.username}</TooltipContent>

@@ -1,30 +1,17 @@
 'use client'
 
-import {
-  Avatar,
-  AvatarFallback,
-  AvatarGroup,
-  AvatarImage,
-} from '@/components/ui/avatar'
+import { AvatarGroup } from '@/components/ui/avatar'
 import {
   Tooltip,
   TooltipContent,
   TooltipTrigger,
 } from '@/components/ui/tooltip'
+import { UserAvatar } from '@/components/user-avatar'
 import { NO_LEAD_NAME } from '@/lib/removed-user'
 import { useCacheUser } from '@/src/hooks/cache/use-user'
 
 interface WorkspaceProjectCardMembersProps {
   leadId: string | null
-}
-
-function nameInitials(name: string) {
-  return name
-    .split(' ')
-    .filter(Boolean)
-    .slice(0, 2)
-    .map((w) => w[0].toUpperCase())
-    .join('')
 }
 
 export function WorkspaceProjectCardMembers({
@@ -42,15 +29,16 @@ export function WorkspaceProjectCardMembers({
     <AvatarGroup className='grayscale-75'>
       <Tooltip>
         <TooltipTrigger
-          render={<Avatar size='sm' className='cursor-default' />}
-        >
-          {isCurrentUser && session?.user.image ? (
-            <AvatarImage src={session.user.image} alt={name} />
-          ) : null}
-          <AvatarFallback>
-            {name ? nameInitials(name) : hasLead ? '??' : '—'}
-          </AvatarFallback>
-        </TooltipTrigger>
+          render={
+            <UserAvatar
+              size='sm'
+              name={name}
+              image={isCurrentUser ? session?.user.image : null}
+              fallback={name ? undefined : hasLead ? '??' : '—'}
+              className='cursor-default'
+            />
+          }
+        />
         <TooltipContent side='bottom'>{label}</TooltipContent>
       </Tooltip>
     </AvatarGroup>

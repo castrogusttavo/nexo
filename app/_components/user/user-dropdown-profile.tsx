@@ -4,7 +4,6 @@ import { Logout05Icon } from '@hugeicons-pro/core-stroke-rounded'
 import Image from 'next/image'
 import { useRouter } from 'next/navigation'
 import { useState } from 'react'
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Button } from '@/components/ui/button'
 import {
   DropdownMenu,
@@ -13,6 +12,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
+import { UserAvatar } from '@/components/user-avatar'
 import { useUser } from '@/src/hooks/use-user'
 import { authClient } from '@/src/lib/auth-client'
 import { NexoIcon } from '../../../components/icon/icon'
@@ -44,10 +44,11 @@ export function UserDropdownProfile() {
               size='icon'
               className='data-popup-open:bg-muted dark:data-popup-open:bg-muted p-1 rounded-md'
             >
-              <Avatar className='rounded-full size-6'>
-                <AvatarImage src={user?.image || ''} alt={user?.name} />
-                <AvatarFallback>{user?.name[0]}</AvatarFallback>
-              </Avatar>
+              <UserAvatar
+                name={user?.name}
+                image={user?.image}
+                className='size-6'
+              />
             </Button>
           }
         />
@@ -62,10 +63,11 @@ export function UserDropdownProfile() {
               className='object-center object-cover rounded-lg brightness-55'
             />
             <div className='flex flex-col gap-y-1 items-center absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2'>
-              <Avatar className='rounded-full size-12'>
-                <AvatarImage src={user?.image || ''} alt={user?.name} />
-                <AvatarFallback>{user?.name[0]}</AvatarFallback>
-              </Avatar>
+              <UserAvatar
+                name={user?.name}
+                image={user?.image}
+                className='size-12'
+              />
               <H4 className='text-sm'>{user?.name}</H4>
               <Muted className='text-xs text-primary'>{user?.email}</Muted>
             </div>

@@ -1,7 +1,6 @@
 'use client'
 
 import { useRouter } from 'next/navigation'
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Button } from '@/components/ui/button'
 import {
   DropdownMenu,
@@ -9,20 +8,19 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
+import { UserAvatar } from '@/components/user-avatar'
 import { authClient } from '@/src/lib/auth-client'
 
 interface HeaderOnboardingUserButtonProps {
   name: string | null
   email: string
   image: string | null
-  initials: string
 }
 
 export function HeaderOnboardingUserButton({
   name,
   email,
   image,
-  initials,
 }: HeaderOnboardingUserButtonProps) {
   const { push } = useRouter()
 
@@ -36,10 +34,7 @@ export function HeaderOnboardingUserButton({
       <DropdownMenuTrigger
         render={
           <Button variant='ghost'>
-            <Avatar size='sm'>
-              <AvatarImage src={image ?? ''} alt={name ?? email} />
-              <AvatarFallback>{initials}</AvatarFallback>
-            </Avatar>
+            <UserAvatar size='sm' name={name ?? email} image={image} />
             {name ?? email}
           </Button>
         }

@@ -3,7 +3,6 @@
 import { ArrowDown01Icon } from '@hugeicons-pro/core-stroke-rounded'
 import { NexoIcon } from '@/components/icon/icon'
 import { Muted } from '@/components/typography/text/muted'
-import { Avatar, AvatarFallback } from '@/components/ui/avatar'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import {
@@ -13,8 +12,8 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
 import { Skeleton } from '@/components/ui/skeleton'
+import { UserAvatar } from '@/components/user-avatar'
 import { notify } from '@/lib/notify'
-import { getInitials } from '@/lib/user-name-initials'
 import {
   useInvitations,
   useRevokeInvitation,
@@ -87,9 +86,7 @@ export function PendingInvitationsList({
             className='flex items-center justify-between gap-2 px-3 py-4 hover:bg-accent/30 rounded-sm'
           >
             <div className='flex items-center gap-4'>
-              <Avatar size='lg'>
-                <AvatarFallback>{getInitials(invitation.email)}</AvatarFallback>
-              </Avatar>
+              <UserAvatar size='lg' name={invitation.email} />
               <Muted className='text-primary'>{invitation.email}</Muted>
             </div>
             <div className='flex items-center gap-2'>

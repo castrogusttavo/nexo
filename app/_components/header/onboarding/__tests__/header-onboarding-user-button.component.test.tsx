@@ -18,7 +18,6 @@ function renderButton(
       name='Ana Souza'
       email='ana@nexo.dev'
       image={null}
-      initials='AS'
       {...props}
     />,
   )

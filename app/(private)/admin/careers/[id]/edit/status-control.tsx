@@ -29,16 +29,13 @@ export function StatusControl({ jobId, status }: Props) {
 
   async function handleClick() {
     if (!next) return
-    try {
-      await notify.mutate(changeStatus.mutateAsync({ status: next }), {
-        loading: 'Atualizando status...',
-        success: 'Status atualizado',
-        error: 'Não foi possível mudar o status',
-      })
-      router.refresh()
-    } catch {
-      //
-    }
+    const ok = await notify.run(changeStatus.mutateAsync({ status: next }), {
+      loading: 'Atualizando status...',
+      success: 'Status atualizado',
+      error: 'Não foi possível mudar o status',
+    })
+    if (!ok) return
+    router.refresh()
   }
 
   return (

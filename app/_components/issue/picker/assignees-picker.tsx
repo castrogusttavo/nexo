@@ -2,15 +2,9 @@
 
 import { CheckIcon } from '@hugeicons-pro/core-stroke-rounded'
 import { NexoIcon } from '@/components/icon/icon'
-import {
-  Avatar,
-  AvatarFallback,
-  AvatarGroup,
-  AvatarGroupCount,
-  AvatarImage,
-} from '@/components/ui/avatar'
+import { AvatarGroup, AvatarGroupCount } from '@/components/ui/avatar'
 import { Button } from '@/components/ui/button'
-import { getInitials } from '@/lib/user-name-initials'
+import { UserAvatar } from '@/components/user-avatar'
 import { useProjectMembers } from '@/src/hooks/use-project-member'
 import { Combobox } from '../../ui/combobox'
 
@@ -56,13 +50,12 @@ export function AssigneesPicker({
           ) : (
             <AvatarGroup>
               {selected.slice(0, MAX_VISIBLE_ASSIGNEES).map((member) => (
-                <Avatar key={member.userId} size='sm'>
-                  <AvatarImage
-                    src={member.image ?? undefined}
-                    alt={member.name}
-                  />
-                  <AvatarFallback>{getInitials(member.name)}</AvatarFallback>
-                </Avatar>
+                <UserAvatar
+                  key={member.userId}
+                  size='sm'
+                  name={member.name}
+                  image={member.image}
+                />
               ))}
               {selected.length > MAX_VISIBLE_ASSIGNEES && (
                 <AvatarGroupCount>
@@ -76,10 +69,7 @@ export function AssigneesPicker({
       renderItem={(member, checked) => (
         <div className='w-full flex items-center justify-between'>
           <div className='flex items-center gap-1.5'>
-            <Avatar size='sm'>
-              <AvatarImage src={member.image ?? undefined} alt={member.name} />
-              <AvatarFallback>{getInitials(member.name)}</AvatarFallback>
-            </Avatar>
+            <UserAvatar size='sm' name={member.name} image={member.image} />
             {member.name}
           </div>
           {checked && <NexoIcon icon={CheckIcon} strokeWidth={2} />}

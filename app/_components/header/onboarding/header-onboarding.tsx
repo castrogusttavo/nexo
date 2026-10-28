@@ -42,20 +42,11 @@ async function HeaderOnboardingUser() {
 
   const profile = await UserService.getProfile(session.value.user.id)
   const { name, email, image } = profile.ok ? profile.value : session.value.user
-  const initials = name
-    .split(' ')
-    .filter(Boolean)
-    .map((n: string) => n[0])
-    .join('')
-    .toUpperCase()
-    .slice(0, 2)
-
   return (
     <HeaderOnboardingUserButton
       name={name ?? null}
       email={email}
       image={image ?? null}
-      initials={initials}
     />
   )
 }

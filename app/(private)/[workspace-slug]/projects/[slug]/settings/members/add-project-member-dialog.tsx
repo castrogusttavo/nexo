@@ -3,13 +3,7 @@
 import { useState } from 'react'
 import { Combobox } from '@/app/_components/ui/combobox'
 import { Muted } from '@/components/typography/text/muted'
-import {
-  Avatar,
-  AvatarFallback,
-  AvatarGroup,
-  AvatarGroupCount,
-  AvatarImage,
-} from '@/components/ui/avatar'
+import { AvatarGroup, AvatarGroupCount } from '@/components/ui/avatar'
 import { Button } from '@/components/ui/button'
 import { Checkbox } from '@/components/ui/checkbox'
 import {
@@ -20,8 +14,8 @@ import {
   DialogTitle,
   DialogTrigger,
 } from '@/components/ui/dialog'
+import { UserAvatar } from '@/components/user-avatar'
 import { notify } from '@/lib/notify'
-import { getInitials } from '@/lib/user-name-initials'
 import { useMembers } from '@/src/hooks/use-member'
 import { useAddProjectMember } from '@/src/hooks/use-project-member'
 
@@ -68,16 +62,13 @@ export function AddProjectMemberDialog({
         await addMember.mutateAsync(userId)
       }
     }
-    try {
-      await notify.mutate(run(), {
-        loading: 'Adicionando membros...',
-        success: 'Membros adicionados',
-        error: 'Erro ao adicionar membros',
-      })
-      handleOpenChange(false)
-    } catch {
-      // toast already showed the error
-    }
+    const ok = await notify.run(run(), {
+      loading: 'Adicionando membros...',
+      success: 'Membros adicionados',
+      error: 'Erro ao adicionar membros',
+    })
+    if (!ok) return
+    handleOpenChange(false)
   }
 
   return (
@@ -108,10 +99,7 @@ export function AddProjectMemberDialog({
             renderItem={(member, isSelected) => (
               <>
                 <Checkbox checked={isSelected} className='mr-1' />
-                <Avatar size='sm'>
-                  <AvatarImage src={member.image || ''} alt={member.name} />
-                  <AvatarFallback>{getInitials(member.name)}</AvatarFallback>
-                </Avatar>
+                <UserAvatar size='sm' name={member.name} image={member.image} />
                 <span className='flex-1'>@{member.username}</span>
               </>
             )}
@@ -119,10 +107,12 @@ export function AddProjectMemberDialog({
           {selectedMembers.length > 0 && (
             <AvatarGroup>
               {selectedMembers.slice(0, MAX_VISIBLE_AVATARS).map((m) => (
-                <Avatar key={m.userId} size='sm'>
-                  <AvatarImage src={m.image || ''} alt={m.name} />
-                  <AvatarFallback>{getInitials(m.name)}</AvatarFallback>
-                </Avatar>
+                <UserAvatar
+                  key={m.userId}
+                  size='sm'
+                  name={m.name}
+                  image={m.image}
+                />
               ))}
               {selectedMembers.length > MAX_VISIBLE_AVATARS && (
                 <AvatarGroupCount>

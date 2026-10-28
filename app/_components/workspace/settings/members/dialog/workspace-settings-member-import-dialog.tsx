@@ -31,25 +31,22 @@ export function WorkspaceSettingsMemberImportDialog({
 
   async function handleImport() {
     if (!file) return
-    try {
-      await notify.mutate(importMembers.mutateAsync(file), {
-        loading: 'Importando CSV...',
-        success: (result) => {
-          const parts = [
-            `${result.invited} convite${result.invited === 1 ? '' : 's'} enviado${result.invited === 1 ? '' : 's'}`,
-          ]
-          if (result.skipped) parts.push(`${result.skipped} ignorado(s)`)
-          if (result.errors) parts.push(`${result.errors} com erro`)
-          return parts.join(', ')
-        },
-        error: 'Não foi possível importar o CSV',
-      })
-      setFile(null)
-      if (inputRef.current) inputRef.current.value = ''
-      setOpen(false)
-    } catch {
-      // toast already showed the error
-    }
+    const ok = await notify.run(importMembers.mutateAsync(file), {
+      loading: 'Importando CSV...',
+      success: (result) => {
+        const parts = [
+          `${result.invited} convite${result.invited === 1 ? '' : 's'} enviado${result.invited === 1 ? '' : 's'}`,
+        ]
+        if (result.skipped) parts.push(`${result.skipped} ignorado(s)`)
+        if (result.errors) parts.push(`${result.errors} com erro`)
+        return parts.join(', ')
+      },
+      error: 'Não foi possível importar o CSV',
+    })
+    if (!ok) return
+    setFile(null)
+    if (inputRef.current) inputRef.current.value = ''
+    setOpen(false)
   }
 
   return (

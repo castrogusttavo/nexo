@@ -24,15 +24,11 @@ function ImagesTab({ current }: { current?: string | null }) {
   async function handleSelect(src: string) {
     // `onClick` drops the returned promise, so a rejected PATCH would escape
     // as an unhandled rejection; the toast already tells the user.
-    try {
-      await notify.mutate(updateUser.mutateAsync({ coverImage: src }), {
-        loading: 'Atualizando capa...',
-        success: 'Capa atualizada',
-        error: 'Erro ao atualizar capa',
-      })
-    } catch {
-      //
-    }
+    await notify.run(updateUser.mutateAsync({ coverImage: src }), {
+      loading: 'Atualizando capa...',
+      success: 'Capa atualizada',
+      error: 'Erro ao atualizar capa',
+    })
   }
 
   return (

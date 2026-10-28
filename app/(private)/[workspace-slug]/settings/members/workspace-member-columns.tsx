@@ -1,9 +1,9 @@
 'use client'
 
 import type { ColumnDef } from '@tanstack/react-table'
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Badge } from '@/components/ui/badge'
 import { DataTableColumnHeader } from '@/components/ui/data-table/data-table-column-header'
+import { UserAvatar } from '@/components/user-avatar'
 import type { MemberDTO } from '@/types/member'
 
 const ROLE_LABEL: Record<MemberDTO['role'], string> = {
@@ -53,12 +53,11 @@ export const workspaceMemberColumns: ColumnDef<MemberDTO>[] = [
     ),
     cell: ({ row }) => (
       <div className='flex items-center gap-2'>
-        <Avatar size='sm'>
-          <AvatarImage src={row.original.image || ''} alt={row.original.name} />
-          <AvatarFallback>
-            {row.original.name.slice(0, 2).toUpperCase()}
-          </AvatarFallback>
-        </Avatar>
+        <UserAvatar
+          size='sm'
+          name={row.original.name}
+          image={row.original.image}
+        />
         <span className='font-medium'>{row.original.name}</span>
       </div>
     ),

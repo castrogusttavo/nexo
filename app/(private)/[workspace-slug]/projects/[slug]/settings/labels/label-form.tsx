@@ -40,16 +40,13 @@ export function LabelForm({
         ? updateLabel.mutateAsync({ labelId: label.id, data: { name, color } })
         : createLabel.mutateAsync({ name, color })
 
-    try {
-      await notify.mutate(promise, {
-        loading: isEditing ? 'Salvando etiqueta...' : 'Criando etiqueta...',
-        success: isEditing ? 'Etiqueta atualizada' : 'Etiqueta criada',
-        error: 'Erro ao salvar etiqueta',
-      })
-      onClose()
-    } catch {
-      //
-    }
+    const ok = await notify.run(promise, {
+      loading: isEditing ? 'Salvando etiqueta...' : 'Criando etiqueta...',
+      success: isEditing ? 'Etiqueta atualizada' : 'Etiqueta criada',
+      error: 'Erro ao salvar etiqueta',
+    })
+    if (!ok) return
+    onClose()
   }
 
   return (
