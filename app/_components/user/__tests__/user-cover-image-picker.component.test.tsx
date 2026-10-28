@@ -9,7 +9,7 @@ import {
   mockFetch,
   renderWithProviders,
 } from '@/src/__tests__/helpers/component'
-import { CoverImagePicker } from '../workspace-project-modal-coverimage-dialog'
+import { UserCoverImagePicker } from '../user-cover-image-picker'
 
 vi.mock('sonner', () => ({
   toast: {
@@ -46,11 +46,9 @@ async function lastToastOutcome() {
   }
 }
 
-async function openPicker(
-  props: { currentImage?: string; onSelect?: (url: string) => void } = {},
-) {
+async function openPicker(currentImage?: string | null) {
   const utils = renderWithProviders(
-    <CoverImagePicker workspaceId='ws-1' {...props} />,
+    <UserCoverImagePicker currentImage={currentImage} />,
   )
   await utils.user.click(screen.getByRole('button', { name: 'Alterar capa' }))
   await screen.findByRole('tab', { name: 'Imagens' })
@@ -74,8 +72,8 @@ function fileInput() {
 const dropzone = () =>
   screen.getByRole('button', { name: 'Arraste ou clique para enviar' })
 
-async function openUploadTab(onSelect?: (url: string) => void) {
-  const utils = await openPicker({ onSelect })
+async function openUploadTab() {
+  const utils = await openPicker()
   await utils.user.click(screen.getByRole('tab', { name: 'Upload' }))
   await screen.findByText('Arraste ou clique para enviar')
   return utils
@@ -87,7 +85,7 @@ beforeEach(() => {
   vi.mocked(toast.promise).mockClear()
 })
 
-describe('<CoverImagePicker /> gallery', () => {
+describe('<UserCoverImagePicker /> gallery', () => {
   it('lists every bundled cover image', async () => {
     await openPicker()
 
@@ -97,62 +95,89 @@ describe('<CoverImagePicker /> gallery', () => {
   })
 
   it('highlights the cover already in use', async () => {
-    await openPicker({ currentImage: COVER_IMAGES[3] })
+    await openPicker(COVER_IMAGES[1])
 
     // jsdom drops `hsl(var(--primary))` as an unparsable value, so the check
     // is "the selected one is not the transparent default".
     expect(coverButton(COVER_IMAGES[0]).style.borderColor).toBe('transparent')
-    expect(coverButton(COVER_IMAGES[3]).style.borderColor).not.toBe(
+    expect(coverButton(COVER_IMAGES[1]).style.borderColor).not.toBe(
       'transparent',
     )
   })
 
-  it('reports the chosen cover to the parent without any request', async () => {
-    const onSelect = vi.fn()
-    const fetchSpy = mockFetch()
-    const { user } = await openPicker({ onSelect })
+  it('patches the profile with the chosen cover', async () => {
+    const fetchSpy = mockFetch().mockResolvedValue(
+      apiSuccess({ coverImage: COVER_IMAGES[2] }),
+    )
+    const { user } = await openPicker()
 
     await user.click(coverButton(COVER_IMAGES[2]))
 
-    expect(onSelect).toHaveBeenCalledWith(COVER_IMAGES[2])
-    expect(fetchSpy).not.toHaveBeenCalled()
+    await waitFor(() => expect(fetchSpy).toHaveBeenCalledTimes(1))
+    expect(getFetchCall(fetchSpy)).toEqual({
+      url: '/api/users/me',
+      method: 'PATCH',
+      body: { coverImage: COVER_IMAGES[2] },
+    })
+    await expect(lastToastOutcome()).resolves.toEqual({
+      type: 'success',
+      message: 'Capa atualizada',
+    })
   })
 
-  it('tolerates a selection with no handler attached', async () => {
+  it('locks the gallery while the update is in flight', async () => {
+    mockFetch().mockReturnValueOnce(new Promise<Response>(() => {}))
     const { user } = await openPicker()
 
     await user.click(coverButton(COVER_IMAGES[0]))
 
-    expect(coverButton(COVER_IMAGES[0])).toBeInTheDocument()
+    await waitFor(() => expect(coverButton(COVER_IMAGES[0])).toBeDisabled())
+    expect(coverButton(COVER_IMAGES[1])).toBeDisabled()
+  })
+
+  it('reports a failed pick through the toast and stays usable', async () => {
+    const unhandled = vi.fn()
+    process.on('unhandledRejection', unhandled)
+    mockFetch().mockResolvedValueOnce(apiError(403, 'Capa não permitida'))
+    const { user } = await openPicker()
+
+    await user.click(coverButton(COVER_IMAGES[0]))
+
+    await waitFor(() => expect(toast.promise).toHaveBeenCalled())
+    await expect(lastToastOutcome()).resolves.toEqual({
+      type: 'error',
+      message: 'Capa não permitida',
+    })
+    // The click handler discards the promise, so the rejection has to be
+    // swallowed inside the component instead of reaching the process.
+    await new Promise((resolve) => setTimeout(resolve, 0))
+    expect(unhandled).not.toHaveBeenCalled()
+    process.off('unhandledRejection', unhandled)
+
+    await waitFor(() => expect(coverButton(COVER_IMAGES[0])).toBeEnabled())
   })
 })
 
-describe('<CoverImagePicker /> upload', () => {
-  it('uploads the picked file and hands the stored url to the parent', async () => {
-    const onSelect = vi.fn()
+describe('<UserCoverImagePicker /> upload', () => {
+  it('uploads the picked file as multipart form data and previews it', async () => {
     const fetchSpy = mockFetch().mockResolvedValue(
       apiSuccess({ url: 'https://cdn.example.com/cover.png' }),
     )
-    const { user } = await openUploadTab(onSelect)
+    const { user } = await openUploadTab()
 
     const file = PNG()
     await user.upload(fileInput(), file)
 
     await waitFor(() => expect(fetchSpy).toHaveBeenCalledTimes(1))
     const { url, method, body } = getFetchCall(fetchSpy)
-    expect(url).toBe('/api/workspaces/ws-1/projects/cover-image')
+    expect(url).toBe('/api/users/me/cover')
     expect(method).toBe('POST')
     expect(body).toBeInstanceOf(FormData)
-    expect((body as FormData).get('file')).toBe(file)
+    expect((body as FormData).get('cover')).toBe(file)
     expect(document.querySelector('img[src="blob:preview"]')).toBeTruthy()
-    await waitFor(() =>
-      expect(onSelect).toHaveBeenCalledWith(
-        'https://cdn.example.com/cover.png',
-      ),
-    )
     await expect(lastToastOutcome()).resolves.toEqual({
       type: 'success',
-      message: 'Imagem enviada',
+      message: 'Capa atualizada',
     })
   })
 
@@ -170,15 +195,13 @@ describe('<CoverImagePicker /> upload', () => {
   })
 
   it('drops the preview and shows the reason when the upload fails', async () => {
-    const onSelect = vi.fn()
     mockFetch().mockResolvedValueOnce(apiError(413, 'Arquivo muito grande'))
-    const { user } = await openUploadTab(onSelect)
+    const { user } = await openUploadTab()
 
     await user.upload(fileInput(), PNG())
 
     expect(await screen.findByText('Arquivo muito grande')).toBeInTheDocument()
     expect(document.querySelector('img[src="blob:preview"]')).toBeNull()
-    expect(onSelect).not.toHaveBeenCalled()
     await expect(lastToastOutcome()).resolves.toEqual({
       type: 'error',
       message: 'Arquivo muito grande',
@@ -196,7 +219,7 @@ describe('<CoverImagePicker /> upload', () => {
     fireEvent.drop(dropzone(), { dataTransfer: { files: [file] } })
 
     await waitFor(() => expect(fetchSpy).toHaveBeenCalledTimes(1))
-    expect((getFetchCall(fetchSpy).body as FormData).get('file')).toBe(file)
+    expect((getFetchCall(fetchSpy).body as FormData).get('cover')).toBe(file)
   })
 
   it('ignores a drop that carries no file', async () => {

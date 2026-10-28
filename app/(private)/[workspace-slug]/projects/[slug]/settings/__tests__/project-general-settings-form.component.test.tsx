@@ -49,9 +49,13 @@ vi.mock(
   }),
 )
 vi.mock(
-  '@/app/_components/workspace/projects/modal/workspace-project-modal-coverimage-dialog',
+  '@/app/_components/workspace/projects/modal/workspace-project-cover-image-picker',
   () => ({
-    CoverImagePicker: ({ onSelect }: { onSelect?: (url: string) => void }) => (
+    WorkspaceProjectCoverImagePicker: ({
+      onSelect,
+    }: {
+      onSelect?: (url: string) => void
+    }) => (
       <button
         type='button'
         onClick={() => onSelect?.('/coverImages/custom.jpg')}

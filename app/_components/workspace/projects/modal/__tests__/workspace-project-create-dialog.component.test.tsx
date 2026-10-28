@@ -46,8 +46,12 @@ vi.mock('../workspace-project-emoji-icon-picker', () => ({
     </button>
   ),
 }))
-vi.mock('../workspace-project-modal-coverimage-dialog', () => ({
-  CoverImagePicker: ({ onSelect }: { onSelect?: (url: string) => void }) => (
+vi.mock('../workspace-project-cover-image-picker', () => ({
+  WorkspaceProjectCoverImagePicker: ({
+    onSelect,
+  }: {
+    onSelect?: (url: string) => void
+  }) => (
     <button type='button' onClick={() => onSelect?.('/coverImages/custom.jpg')}>
       Alterar capa
     </button>

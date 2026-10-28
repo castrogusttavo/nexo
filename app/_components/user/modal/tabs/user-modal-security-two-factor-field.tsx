@@ -2,20 +2,19 @@
 
 import { useId, useState } from 'react'
 import { TwoFactorEnrollment } from '@/components/security/two-factor-enrollment'
+import { TwoFactorPasswordForm } from '@/components/security/two-factor-password-form'
+import { useTwoFactorPassword } from '@/components/security/use-two-factor-password'
 import { Muted } from '@/components/typography/text/muted'
 import { Button } from '@/components/ui/button'
 import {
   Field,
   FieldContent,
   FieldDescription,
-  FieldError,
   FieldLabel,
 } from '@/components/ui/field'
-import { Input } from '@/components/ui/input'
 import { Switch } from '@/components/ui/switch'
 import { notify } from '@/lib/notify'
 import { authClient } from '@/src/lib/auth-client'
-import { authErrorMessage } from '@/src/lib/auth-errors'
 
 interface UserModalSecurityTwoFactorFieldProps {
   twoFactorEnabled: boolean
@@ -29,68 +28,25 @@ export function UserModalSecurityTwoFactorField({
   hasPassword,
 }: UserModalSecurityTwoFactorFieldProps) {
   const fieldId = useId()
-  const [twoFactorPassword, setTwoFactorPassword] = useState('')
-  const [twoFactorMode, setTwoFactorMode] = useState<
-    'idle' | 'enabling' | 'disabling' | 'regenerating'
-  >('idle')
-  const [twoFactorError, setTwoFactorError] = useState<string | null>(null)
-  const [twoFactorBusy, setTwoFactorBusy] = useState(false)
+  const [enrolling, setEnrolling] = useState(false)
   const [backupCodes, setBackupCodes] = useState<string[] | null>(null)
+  const prompt = useTwoFactorPassword((action, data) => {
+    // The old codes have been invalidated; show the new set once.
+    if (action === 'regenerate')
+      setBackupCodes((data as { backupCodes?: string[] })?.backupCodes ?? [])
+    if (action === 'disable')
+      authClient.getSession({ query: { disableCookieCache: true } })
+  })
 
   function toggleTwoFactor(next: boolean) {
-    setTwoFactorError(null)
     setBackupCodes(null)
-    setTwoFactorPassword('')
-    setTwoFactorMode(next ? 'enabling' : 'disabling')
+    if (next) setEnrolling(true)
+    else prompt.start('disable')
   }
 
   function startRegenerateBackupCodes() {
-    setTwoFactorError(null)
     setBackupCodes(null)
-    setTwoFactorPassword('')
-    setTwoFactorMode('regenerating')
-  }
-
-  async function confirmTwoFactor(e: React.FormEvent<HTMLFormElement>) {
-    e.preventDefault()
-    if (!twoFactorPassword) {
-      setTwoFactorError('Informe sua senha para continuar')
-      return
-    }
-    setTwoFactorError(null)
-    setTwoFactorBusy(true)
-
-    if (twoFactorMode === 'regenerating') {
-      const { data, error } = await authClient.twoFactor.generateBackupCodes({
-        password: twoFactorPassword,
-      })
-      setTwoFactorBusy(false)
-      if (error) {
-        setTwoFactorError(
-          authErrorMessage(error, 'Não foi possível gerar novos códigos'),
-        )
-        return
-      }
-      // The old codes have been invalidated; show the new set once.
-      setBackupCodes(data?.backupCodes ?? [])
-      setTwoFactorMode('idle')
-      setTwoFactorPassword('')
-      return
-    }
-
-    const { error } = await authClient.twoFactor.disable({
-      password: twoFactorPassword,
-    })
-    setTwoFactorBusy(false)
-    if (error) {
-      setTwoFactorError(
-        authErrorMessage(error, 'Não foi possível desativar a 2FA'),
-      )
-      return
-    }
-    setTwoFactorMode('idle')
-    setTwoFactorPassword('')
-    await authClient.getSession({ query: { disableCookieCache: true } })
+    prompt.start('regenerate')
   }
 
   async function copyBackupCodes() {
@@ -102,6 +58,8 @@ export function UserModalSecurityTwoFactorField({
       // ignore
     }
   }
+
+  const idle = !enrolling && prompt.action === null
 
   return (
     <div className='flex flex-col gap-y-1'>
@@ -119,17 +77,12 @@ export function UserModalSecurityTwoFactorField({
         <Switch
           id={`${fieldId}-switch`}
           checked={twoFactorEnabled}
-          disabled={
-            isPending ||
-            twoFactorBusy ||
-            twoFactorMode !== 'idle' ||
-            hasPassword !== true
-          }
+          disabled={isPending || prompt.busy || !idle || hasPassword !== true}
           onCheckedChange={toggleTwoFactor}
         />
       </Field>
 
-      {twoFactorEnabled && twoFactorMode === 'idle' && (
+      {twoFactorEnabled && idle && (
         <div className='flex justify-end'>
           <Button
             type='button'
@@ -142,54 +95,14 @@ export function UserModalSecurityTwoFactorField({
         </div>
       )}
 
-      {twoFactorMode === 'enabling' && (
+      {enrolling && (
         <TwoFactorEnrollment
-          onEnabled={() => setTwoFactorMode('idle')}
-          onCancel={() => setTwoFactorMode('idle')}
+          onEnabled={() => setEnrolling(false)}
+          onCancel={() => setEnrolling(false)}
         />
       )}
 
-      {(twoFactorMode === 'disabling' || twoFactorMode === 'regenerating') && (
-        <form
-          onSubmit={confirmTwoFactor}
-          className='flex flex-col gap-3 border-t border-border pt-4'
-        >
-          <Field data-invalid={!!twoFactorError || undefined}>
-            <FieldLabel htmlFor={`${fieldId}-password`}>
-              {twoFactorMode === 'regenerating'
-                ? 'Senha para gerar novos códigos de backup'
-                : 'Senha para desativar a 2FA'}
-            </FieldLabel>
-            <Input
-              id={`${fieldId}-password`}
-              type='password'
-              value={twoFactorPassword}
-              onChange={(e) => setTwoFactorPassword(e.target.value)}
-              placeholder='••••••'
-              disabled={twoFactorBusy}
-              autoFocus
-            />
-            {twoFactorError && <FieldError>{twoFactorError}</FieldError>}
-          </Field>
-          <div className='flex gap-2 justify-end'>
-            <Button
-              type='button'
-              variant='ghost'
-              onClick={() => setTwoFactorMode('idle')}
-              disabled={twoFactorBusy}
-            >
-              Cancelar
-            </Button>
-            <Button type='submit' disabled={twoFactorBusy}>
-              {twoFactorBusy
-                ? 'Processando...'
-                : twoFactorMode === 'regenerating'
-                  ? 'Gerar códigos'
-                  : 'Desativar 2FA'}
-            </Button>
-          </div>
-        </form>
-      )}
+      <TwoFactorPasswordForm state={prompt} />
 
       {backupCodes && backupCodes.length > 0 && (
         <div className='flex flex-col gap-3 border-t border-border pt-4'>

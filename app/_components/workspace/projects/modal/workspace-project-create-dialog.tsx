@@ -42,8 +42,8 @@ import { Textarea } from '@/components/ui/textarea'
 import { notify } from '@/lib/notify'
 import { useCreateProject } from '@/src/hooks/use-project'
 import { WorkspaceProjectCreateButton } from '../workspace-project-create-button'
+import { WorkspaceProjectCoverImagePicker } from './workspace-project-cover-image-picker'
 import { WorkspaceProjectEmojiIconPicker } from './workspace-project-emoji-icon-picker'
-import { CoverImagePicker } from './workspace-project-modal-coverimage-dialog'
 
 function randomCoverImage() {
   return COVER_IMAGES[Math.floor(Math.random() * COVER_IMAGES.length)]
@@ -196,7 +196,7 @@ export function WorkspaceProjectCreateDialog({
             />
             <DialogClose className='absolute right-2 top-2 p-2' />
             <div className='absolute right-2 bottom-2'>
-              <CoverImagePicker
+              <WorkspaceProjectCoverImagePicker
                 workspaceId={workspaceId}
                 currentImage={coverImage ?? undefined}
                 onSelect={(image) =>

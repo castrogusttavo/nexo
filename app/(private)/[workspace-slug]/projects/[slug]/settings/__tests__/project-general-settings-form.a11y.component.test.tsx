@@ -32,9 +32,11 @@ vi.mock(
   }),
 )
 vi.mock(
-  '@/app/_components/workspace/projects/modal/workspace-project-modal-coverimage-dialog',
+  '@/app/_components/workspace/projects/modal/workspace-project-cover-image-picker',
   () => ({
-    CoverImagePicker: () => <button type='button'>Alterar capa</button>,
+    WorkspaceProjectCoverImagePicker: () => (
+      <button type='button'>Alterar capa</button>
+    ),
   }),
 )
 

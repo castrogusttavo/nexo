@@ -10,11 +10,10 @@ import {
   DialogClose,
   DialogContent,
   DialogFooter,
-  DialogHeader,
-  DialogTitle,
   DialogTrigger,
 } from '@/components/ui/dialog'
 import type { EstimateModelDTO, EstimateSystemDTO } from '@/types/estimate'
+import { EstimateDialogHeader } from './estimate-dialog-header'
 import { EstimateSystemForm } from './estimate-system-form'
 import { EstimateValuesForm } from './estimate-values-form'
 
@@ -56,9 +55,7 @@ export function EstimateEditDialog({
       >
         {view === 'menu' && (
           <>
-            <DialogHeader>
-              <DialogTitle>Editar sistema de estimativas</DialogTitle>
-            </DialogHeader>
+            <EstimateDialogHeader />
             <div className='space-y-3'>
               <button
                 type='button'

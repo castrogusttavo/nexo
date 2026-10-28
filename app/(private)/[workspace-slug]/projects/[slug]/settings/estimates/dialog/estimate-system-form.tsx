@@ -1,11 +1,9 @@
 'use client'
 
-import { ArrowLeft01Icon } from '@hugeicons-pro/core-stroke-rounded'
 import { useState } from 'react'
-import { NexoIcon } from '@/components/icon/icon'
 import { Muted } from '@/components/typography/text/muted'
 import { Button } from '@/components/ui/button'
-import { DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog'
+import { DialogFooter } from '@/components/ui/dialog'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { notify } from '@/lib/notify'
 import {
@@ -15,6 +13,7 @@ import {
   useUpdateEstimateSettings,
 } from '@/src/hooks/use-estimate'
 import type { EstimateModelDTO, EstimateSystemDTO } from '@/types/estimate'
+import { EstimateDialogHeader } from './estimate-dialog-header'
 
 const MODELS_BY_SYSTEM: Record<
   EstimateSystemDTO,
@@ -147,18 +146,7 @@ export function EstimateSystemForm({
 
   return (
     <div className='space-y-6'>
-      <DialogHeader className='flex-row items-center'>
-        <Button
-          type='button'
-          variant='ghost'
-          size='icon-sm'
-          aria-label='Voltar'
-          onClick={onBack}
-        >
-          <NexoIcon icon={ArrowLeft01Icon} strokeWidth={2} />
-        </Button>
-        <DialogTitle>Editar sistema de estimativas</DialogTitle>
-      </DialogHeader>
+      <EstimateDialogHeader onBack={onBack} />
       <div className='space-y-1.5'>
         <Muted>Escolher um sistema de estimativa</Muted>
         <Tabs

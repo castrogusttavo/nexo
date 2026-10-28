@@ -7,8 +7,8 @@ import {
 } from '@hugeicons-pro/core-stroke-rounded'
 import { useRouter } from 'next/navigation'
 import { useId, useState } from 'react'
+import { WorkspaceProjectCoverImagePicker } from '@/app/_components/workspace/projects/modal/workspace-project-cover-image-picker'
 import { WorkspaceProjectEmojiIconPicker } from '@/app/_components/workspace/projects/modal/workspace-project-emoji-icon-picker'
-import { CoverImagePicker } from '@/app/_components/workspace/projects/modal/workspace-project-modal-coverimage-dialog'
 import { ConfirmDialog } from '@/components/confirm-dialog'
 import { NexoIcon } from '@/components/icon/icon'
 import { Muted } from '@/components/typography/text/muted'
@@ -126,7 +126,7 @@ export function ProjectGeneralSettingsForm({
           )}
           <div className='absolute inset-0 bg-linear-to-t from-black/50 to-transparent' />
           <div className='absolute right-2 bottom-2'>
-            <CoverImagePicker
+            <WorkspaceProjectCoverImagePicker
               workspaceId={workspaceId}
               currentImage={coverImage}
               onSelect={setCoverImage}

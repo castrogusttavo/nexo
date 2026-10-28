@@ -10,21 +10,31 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
-import { notify } from '@/lib/notify'
-import { useUploadProjectCover } from '@/src/hooks/use-project'
-import { COVER_IMAGES } from '../../../media/cover-images'
+import { COVER_IMAGES } from './cover-images'
 
-interface CoverImagePickerProps {
-  workspaceId: string
-  currentImage?: string
-  onSelect?: (url: string) => void
+interface MediaCoverImagePickerProps {
+  current?: string | null
+  /** Picks one of the gallery covers. */
+  onSelect: (url: string) => void
+  /** Locks the gallery while a pick is being saved. */
+  selecting?: boolean
+  /** Sends the file; a rejection drops the preview. */
+  onUpload: (file: File) => Promise<unknown>
+  uploading: boolean
+  uploadError?: string | null
 }
 
-export function CoverImagePicker({
-  workspaceId,
-  currentImage,
+// "Alterar capa": the gallery of stock covers and an upload drop zone. The
+// caller decides what a pick or an upload saves (the user's cover, a
+// project being created).
+export function MediaCoverImagePicker({
+  current,
   onSelect,
-}: CoverImagePickerProps) {
+  selecting = false,
+  onUpload,
+  uploading,
+  uploadError,
+}: MediaCoverImagePickerProps) {
   return (
     <DropdownMenu>
       <DropdownMenuTrigger
@@ -41,10 +51,18 @@ export function CoverImagePicker({
             <TabsTrigger value='upload'>Upload</TabsTrigger>
           </TabsList>
           <TabsContent value='images'>
-            <ImagesTab current={currentImage} onSelect={onSelect} />
+            <MediaCoverImageGallery
+              current={current}
+              disabled={selecting}
+              onSelect={onSelect}
+            />
           </TabsContent>
           <TabsContent value='upload'>
-            <UploadTab workspaceId={workspaceId} onSelect={onSelect} />
+            <MediaCoverImageUpload
+              onUpload={onUpload}
+              uploading={uploading}
+              error={uploadError}
+            />
           </TabsContent>
         </Tabs>
       </DropdownMenuContent>
@@ -52,12 +70,14 @@ export function CoverImagePicker({
   )
 }
 
-function ImagesTab({
+function MediaCoverImageGallery({
   current,
+  disabled,
   onSelect,
 }: {
-  current?: string
-  onSelect?: (url: string) => void
+  current?: string | null
+  disabled: boolean
+  onSelect: (url: string) => void
 }) {
   return (
     <div className='grid grid-cols-4 gap-4 max-h-130 overflow-y-auto scrollbar-hidden py-1'>
@@ -66,7 +86,9 @@ function ImagesTab({
           key={src}
           type='button'
           aria-label={`Usar a capa ${index + 1}`}
-          onClick={() => onSelect?.(src)}
+          aria-pressed={current === src}
+          disabled={disabled}
+          onClick={() => onSelect(src)}
           className='relative h-16 w-full overflow-hidden rounded-md border-2 transition-colors hover:border-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring'
           style={{
             borderColor:
@@ -80,28 +102,24 @@ function ImagesTab({
   )
 }
 
-function UploadTab({
-  workspaceId,
-  onSelect,
+function MediaCoverImageUpload({
+  onUpload,
+  uploading,
+  error,
 }: {
-  workspaceId: string
-  onSelect?: (url: string) => void
+  onUpload: (file: File) => Promise<unknown>
+  uploading: boolean
+  error?: string | null
 }) {
   const inputRef = useRef<HTMLInputElement>(null)
   const [preview, setPreview] = useState<string | null>(null)
   const [dragging, setDragging] = useState(false)
-  const upload = useUploadProjectCover(workspaceId)
 
   async function handleFile(file: File) {
     if (!file.type.startsWith('image/')) return
     setPreview(URL.createObjectURL(file))
     try {
-      const url = await notify.mutate(upload.mutateAsync(file), {
-        loading: 'Enviando imagem...',
-        success: 'Imagem enviada',
-        error: 'Não foi possível enviar a imagem',
-      })
-      onSelect?.(url)
+      await onUpload(file)
     } catch {
       setPreview(null)
     }
@@ -123,7 +141,7 @@ function UploadTab({
     <div className='py-1 space-y-1.5'>
       <button
         type='button'
-        disabled={upload.isPending}
+        disabled={uploading}
         onClick={() => inputRef.current?.click()}
         onDragOver={(e) => {
           e.preventDefault()
@@ -147,9 +165,7 @@ function UploadTab({
           </>
         )}
       </button>
-      {upload.isError && (
-        <p className='text-xs text-destructive'>{upload.error?.message}</p>
-      )}
+      {error && <p className='text-xs text-destructive'>{error}</p>}
       <input
         ref={inputRef}
         type='file'

@@ -27,7 +27,7 @@ import {
 } from '@/src/hooks/use-user'
 import { authClient } from '@/src/lib/auth-client'
 import type { UserDTO } from '@/types/user'
-import { UserCoverImagePicker } from '../user-modal-coverimage-dialog'
+import { UserCoverImagePicker } from '../../user-cover-image-picker'
 
 export function UserModalProfileTab({ tab }: { tab: string }) {
   const { data: user } = useUser()

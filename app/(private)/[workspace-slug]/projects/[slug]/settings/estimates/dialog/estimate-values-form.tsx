@@ -1,7 +1,6 @@
 'use client'
 
 import {
-  ArrowLeft01Icon,
   Delete02Icon,
   PencilEdit01Icon,
 } from '@hugeicons-pro/core-stroke-rounded'
@@ -10,7 +9,6 @@ import { useState } from 'react'
 import { ConfirmDialog } from '@/components/confirm-dialog'
 import { NexoIcon } from '@/components/icon/icon'
 import { Button } from '@/components/ui/button'
-import { DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import { Input } from '@/components/ui/input'
 import {
   Sortable,
@@ -26,6 +24,7 @@ import {
   useUpdateEstimateValue,
 } from '@/src/hooks/use-estimate'
 import type { EstimateValueDTO } from '@/types/estimate'
+import { EstimateDialogHeader } from './estimate-dialog-header'
 
 interface EstimateValuesFormProps {
   workspaceId: string
@@ -97,18 +96,7 @@ export function EstimateValuesForm({
 
   return (
     <div className='space-y-6'>
-      <DialogHeader className='flex-row items-center'>
-        <Button
-          type='button'
-          variant='ghost'
-          size='icon-sm'
-          aria-label='Voltar'
-          onClick={onBack}
-        >
-          <NexoIcon icon={ArrowLeft01Icon} strokeWidth={2} />
-        </Button>
-        <DialogTitle>Editar sistema de estimativas</DialogTitle>
-      </DialogHeader>
+      <EstimateDialogHeader onBack={onBack} />
       <Sortable
         value={settings?.values ?? []}
         onValueChange={handleReorder}

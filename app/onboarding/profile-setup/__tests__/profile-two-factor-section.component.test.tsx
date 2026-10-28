@@ -146,7 +146,9 @@ describe('<ProfileTwoFactorSection />', () => {
     await user.type(passwordInput(), 'my-password')
     await user.click(screen.getByRole('button', { name: 'Ativar 2FA' }))
 
-    expect(screen.getByRole('button', { name: 'Processando…' })).toBeDisabled()
+    expect(
+      screen.getByRole('button', { name: 'Processando...' }),
+    ).toBeDisabled()
     expect(screen.getByRole('button', { name: 'Cancelar' })).toBeDisabled()
     expect(passwordInput()).toBeDisabled()
 
