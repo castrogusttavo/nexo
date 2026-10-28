@@ -4,9 +4,6 @@ import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { useReducer, useState } from 'react'
 import { EmailValidationWithOtp } from '@/components/form/email-validation-with-otp'
-import { HeaderLogin } from '@/components/header-login'
-import { SocialLoginButtonProps } from '@/components/social-login-button'
-import { H4 } from '@/components/typography/heading/h4'
 import { Muted } from '@/components/typography/text/muted'
 import { Button } from '@/components/ui/button'
 import { Checkbox } from '@/components/ui/checkbox'
@@ -17,6 +14,11 @@ import { authClient } from '@/src/lib/auth-client'
 import { authErrorMessage } from '@/src/lib/auth-errors'
 import { settleAuthRequest } from '@/src/lib/auth-request'
 import { SIGNED_IN_HOME } from '@/src/lib/safe-redirect'
+import {
+  AuthLayout,
+  AuthLayoutHeading,
+  AuthLayoutSocial,
+} from '../_components/auth-layout'
 
 type Step = 'form' | 'otp'
 
@@ -205,183 +207,157 @@ export function SignUpForm({
   }
 
   return (
-    <div className='min-h-screen flex flex-col items-center justify-center p-4 pb-12'>
-      <HeaderLogin path={signInHref} pathname='Entre' prompt='Já tem conta?' />
-      <div className='flex-1 w-full flex flex-col justify-center gap-y-6 max-w-90'>
-        {step === 'form' ? (
-          <>
-            <div>
-              <H4>Trabalhe em todas as dimensões.</H4>
-              <H4 className='text-muted-foreground'>Crie sua conta do Nexo.</H4>
-            </div>
-
-            <div className='flex flex-col gap-3'>
-              <SocialLoginButtonProps
-                provider='google'
-                isPending={isPending}
-                callbackURL={redirectTo}
-              />
-              <SocialLoginButtonProps
-                provider='github'
-                isPending={isPending}
-                callbackURL={redirectTo}
-              />
-            </div>
-
-            <div className='relative'>
-              <div className='absolute inset-0 flex items-center'>
-                <span className='w-full border-t' />
-              </div>
-              <div className='relative flex justify-center text-xs uppercase'>
-                <span className='bg-background px-2 text-muted-foreground'>
-                  ou
-                </span>
-              </div>
-            </div>
-
-            <form onSubmit={handleSubmit} className='w-full space-y-4'>
-              {error && (
-                <div className='rounded-md bg-destructive/10 p-3 text-sm text-destructive'>
-                  {error}
-                </div>
-              )}
-              <Field data-invalid={!!fieldErrors.name || undefined}>
-                <FieldLabel htmlFor='sign-up-name'>Nome</FieldLabel>
-                <Input
-                  id='sign-up-name'
-                  name='name'
-                  type='text'
-                  placeholder='Seu nome'
-                  disabled={isPending}
-                />
-                {fieldErrors.name && (
-                  <FieldError>{fieldErrors.name}</FieldError>
-                )}
-              </Field>
-              <Field data-invalid={!!fieldErrors.email || undefined}>
-                <FieldLabel htmlFor='sign-up-email'>E-mail</FieldLabel>
-                <Input
-                  id='sign-up-email'
-                  name='email'
-                  type='email'
-                  placeholder='nome@empresa.com'
-                  disabled={isPending}
-                />
-                {fieldErrors.email && (
-                  <FieldError>{fieldErrors.email}</FieldError>
-                )}
-              </Field>
-              <Field data-invalid={!!fieldErrors.password || undefined}>
-                <FieldLabel htmlFor='sign-up-password'>Senha</FieldLabel>
-                <Input
-                  id='sign-up-password'
-                  name='password'
-                  type='password'
-                  placeholder='••••••'
-                  disabled={isPending}
-                />
-                {fieldErrors.password && (
-                  <FieldError>{fieldErrors.password}</FieldError>
-                )}
-              </Field>
-
-              <div className='flex flex-col gap-2'>
-                <div className='flex items-start gap-2'>
-                  <Checkbox
-                    id='accept-terms'
-                    checked={acceptedTerms}
-                    onCheckedChange={(checked) => {
-                      setAcceptedTerms(checked === true)
-                      if (checked === true && fieldErrors.consent) {
-                        dispatch({ type: 'consentErrorCleared' })
-                      }
-                    }}
-                    disabled={isPending}
-                    aria-invalid={!!fieldErrors.consent || undefined}
-                    className='mt-0.5'
-                  />
-                  <label
-                    htmlFor='accept-terms'
-                    className='text-sm leading-5 text-muted-foreground'
-                  >
-                    Li e aceito os{' '}
-                    <Link
-                      href='/legals/terms-and-conditions'
-                      className='text-primary hover:underline'
-                      target='_blank'
-                      rel='noopener noreferrer'
-                    >
-                      Termos de Serviço
-                    </Link>
-                  </label>
-                </div>
-                <div className='flex items-start gap-2'>
-                  <Checkbox
-                    id='accept-privacy'
-                    checked={acceptedPrivacy}
-                    onCheckedChange={(checked) => {
-                      setAcceptedPrivacy(checked === true)
-                      if (checked === true && fieldErrors.consent) {
-                        dispatch({ type: 'consentErrorCleared' })
-                      }
-                    }}
-                    disabled={isPending}
-                    aria-invalid={!!fieldErrors.consent || undefined}
-                    className='mt-0.5'
-                  />
-                  <label
-                    htmlFor='accept-privacy'
-                    className='text-sm leading-5 text-muted-foreground'
-                  >
-                    Li e aceito a{' '}
-                    <Link
-                      href='/legals/privacy-policy'
-                      className='text-primary hover:underline'
-                      target='_blank'
-                      rel='noopener noreferrer'
-                    >
-                      Política de Privacidade
-                    </Link>
-                  </label>
-                </div>
-                {fieldErrors.consent && (
-                  <p className='text-sm text-destructive'>
-                    {fieldErrors.consent}
-                  </p>
-                )}
-              </div>
-
-              <Button type='submit' className='w-full' disabled={isPending}>
-                {isPending ? 'Criando conta...' : 'Criar conta'}
-              </Button>
-
-              <div className='text-center text-sm'>
-                <Muted>
-                  Já tem conta?{' '}
-                  <Link
-                    href={signInHref}
-                    className='text-primary hover:underline'
-                  >
-                    Entre
-                  </Link>
-                </Muted>
-              </div>
-            </form>
-          </>
-        ) : (
-          <EmailValidationWithOtp
-            email={email}
-            onBack={handleBack}
-            onVerify={handleVerify}
-            onResend={handleResend}
-            isPending={isVerifying}
-            error={otpError}
+    <AuthLayout
+      switchHref={signInHref}
+      switchLabel='Entre'
+      switchPrompt='Já tem conta?'
+    >
+      {step === 'form' ? (
+        <>
+          <AuthLayoutHeading
+            title='Trabalhe em todas as dimensões.'
+            subtitle='Crie sua conta do Nexo.'
           />
-        )}
-      </div>
-      <div>
-        <Muted>Junte-se a mais de 1.000 times no Nexo</Muted>
-      </div>
-    </div>
+
+          <AuthLayoutSocial isPending={isPending} callbackURL={redirectTo} />
+
+          <form onSubmit={handleSubmit} className='w-full space-y-4'>
+            {error && (
+              <div className='rounded-md bg-destructive/10 p-3 text-sm text-destructive'>
+                {error}
+              </div>
+            )}
+            <Field data-invalid={!!fieldErrors.name || undefined}>
+              <FieldLabel htmlFor='sign-up-name'>Nome</FieldLabel>
+              <Input
+                id='sign-up-name'
+                name='name'
+                type='text'
+                placeholder='Seu nome'
+                disabled={isPending}
+              />
+              {fieldErrors.name && <FieldError>{fieldErrors.name}</FieldError>}
+            </Field>
+            <Field data-invalid={!!fieldErrors.email || undefined}>
+              <FieldLabel htmlFor='sign-up-email'>E-mail</FieldLabel>
+              <Input
+                id='sign-up-email'
+                name='email'
+                type='email'
+                placeholder='nome@empresa.com'
+                disabled={isPending}
+              />
+              {fieldErrors.email && (
+                <FieldError>{fieldErrors.email}</FieldError>
+              )}
+            </Field>
+            <Field data-invalid={!!fieldErrors.password || undefined}>
+              <FieldLabel htmlFor='sign-up-password'>Senha</FieldLabel>
+              <Input
+                id='sign-up-password'
+                name='password'
+                type='password'
+                placeholder='••••••'
+                disabled={isPending}
+              />
+              {fieldErrors.password && (
+                <FieldError>{fieldErrors.password}</FieldError>
+              )}
+            </Field>
+
+            <div className='flex flex-col gap-2'>
+              <div className='flex items-start gap-2'>
+                <Checkbox
+                  id='accept-terms'
+                  checked={acceptedTerms}
+                  onCheckedChange={(checked) => {
+                    setAcceptedTerms(checked === true)
+                    if (checked === true && fieldErrors.consent) {
+                      dispatch({ type: 'consentErrorCleared' })
+                    }
+                  }}
+                  disabled={isPending}
+                  aria-invalid={!!fieldErrors.consent || undefined}
+                  className='mt-0.5'
+                />
+                <label
+                  htmlFor='accept-terms'
+                  className='text-sm leading-5 text-muted-foreground'
+                >
+                  Li e aceito os{' '}
+                  <Link
+                    href='/legals/terms-and-conditions'
+                    className='text-primary hover:underline'
+                    target='_blank'
+                    rel='noopener noreferrer'
+                  >
+                    Termos de Serviço
+                  </Link>
+                </label>
+              </div>
+              <div className='flex items-start gap-2'>
+                <Checkbox
+                  id='accept-privacy'
+                  checked={acceptedPrivacy}
+                  onCheckedChange={(checked) => {
+                    setAcceptedPrivacy(checked === true)
+                    if (checked === true && fieldErrors.consent) {
+                      dispatch({ type: 'consentErrorCleared' })
+                    }
+                  }}
+                  disabled={isPending}
+                  aria-invalid={!!fieldErrors.consent || undefined}
+                  className='mt-0.5'
+                />
+                <label
+                  htmlFor='accept-privacy'
+                  className='text-sm leading-5 text-muted-foreground'
+                >
+                  Li e aceito a{' '}
+                  <Link
+                    href='/legals/privacy-policy'
+                    className='text-primary hover:underline'
+                    target='_blank'
+                    rel='noopener noreferrer'
+                  >
+                    Política de Privacidade
+                  </Link>
+                </label>
+              </div>
+              {fieldErrors.consent && (
+                <p className='text-sm text-destructive'>
+                  {fieldErrors.consent}
+                </p>
+              )}
+            </div>
+
+            <Button type='submit' className='w-full' disabled={isPending}>
+              {isPending ? 'Criando conta...' : 'Criar conta'}
+            </Button>
+
+            <div className='text-center text-sm'>
+              <Muted>
+                Já tem conta?{' '}
+                <Link
+                  href={signInHref}
+                  className='text-primary hover:underline'
+                >
+                  Entre
+                </Link>
+              </Muted>
+            </div>
+          </form>
+        </>
+      ) : (
+        <EmailValidationWithOtp
+          email={email}
+          onBack={handleBack}
+          onVerify={handleVerify}
+          onResend={handleResend}
+          isPending={isVerifying}
+          error={otpError}
+        />
+      )}
+    </AuthLayout>
   )
 }

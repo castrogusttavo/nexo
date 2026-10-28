@@ -4,9 +4,6 @@ import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { useState } from 'react'
 import { EmailValidationWithOtp } from '@/components/form/email-validation-with-otp'
-import { HeaderLogin } from '@/components/header-login'
-import { SocialLoginButtonProps } from '@/components/social-login-button'
-import { H4 } from '@/components/typography/heading/h4'
 import { Muted } from '@/components/typography/text/muted'
 import { Button } from '@/components/ui/button'
 import { Checkbox } from '@/components/ui/checkbox'
@@ -20,6 +17,12 @@ import {
   lastTwoFactorMethod,
   rememberTwoFactorMethod,
 } from '@/src/lib/two-factor-method-hint'
+import {
+  AuthLayout,
+  AuthLayoutHeading,
+  AuthLayoutSocial,
+} from '../_components/auth-layout'
+import { SignInCodeStep } from './sign-in-code-step'
 
 type Step = 'form' | 'otp' | 'totp' | 'backup'
 
@@ -248,226 +251,145 @@ export function SignInForm({
   )
 
   return (
-    <div className='min-h-screen flex flex-col items-center justify-center p-4 pb-12'>
-      <HeaderLogin path={signUpHref} pathname='Cadastre-se' />
-      <div className='flex-1 w-full flex flex-col justify-center gap-y-6 max-w-90'>
-        {step === 'form' && (
-          <>
-            <div>
-              <H4>Trabalhe em todas as dimensões.</H4>
-              <H4 className='text-muted-foreground'>
-                Bem-vindo de volta ao Nexo.
-              </H4>
-            </div>
+    <AuthLayout switchHref={signUpHref} switchLabel='Cadastre-se'>
+      {step === 'form' && (
+        <>
+          <AuthLayoutHeading
+            title='Trabalhe em todas as dimensões.'
+            subtitle='Bem-vindo de volta ao Nexo.'
+          />
 
-            <div className='flex flex-col gap-3'>
-              <SocialLoginButtonProps
-                provider='google'
-                isPending={isPending}
-                callbackURL={redirectTo}
-              />
-              <SocialLoginButtonProps
-                provider='github'
-                isPending={isPending}
-                callbackURL={redirectTo}
-              />
-            </div>
+          <AuthLayoutSocial isPending={isPending} callbackURL={redirectTo} />
 
-            <div className='relative'>
-              <div className='absolute inset-0 flex items-center'>
-                <span className='w-full border-t' />
+          <form onSubmit={handleSubmit} className='w-full space-y-4'>
+            {error && (
+              <div className='rounded-md bg-destructive/10 p-3 text-sm text-destructive'>
+                {error}
               </div>
-              <div className='relative flex justify-center text-xs uppercase'>
-                <span className='bg-background px-2 text-muted-foreground'>
-                  ou
-                </span>
-              </div>
-            </div>
-
-            <form onSubmit={handleSubmit} className='w-full space-y-4'>
-              {error && (
-                <div className='rounded-md bg-destructive/10 p-3 text-sm text-destructive'>
-                  {error}
-                </div>
+            )}
+            <Field data-invalid={!!fieldErrors.email || undefined}>
+              <FieldLabel htmlFor='sign-in-email'>E-mail</FieldLabel>
+              <Input
+                id='sign-in-email'
+                name='email'
+                type='email'
+                placeholder='nome@empresa.com'
+                disabled={isPending}
+              />
+              {fieldErrors.email && (
+                <FieldError>{fieldErrors.email}</FieldError>
               )}
-              <Field data-invalid={!!fieldErrors.email || undefined}>
-                <FieldLabel htmlFor='sign-in-email'>E-mail</FieldLabel>
-                <Input
-                  id='sign-in-email'
-                  name='email'
-                  type='email'
-                  placeholder='nome@empresa.com'
-                  disabled={isPending}
-                />
-                {fieldErrors.email && (
-                  <FieldError>{fieldErrors.email}</FieldError>
-                )}
-              </Field>
-              <Field data-invalid={!!fieldErrors.password || undefined}>
-                <FieldLabel htmlFor='sign-in-password'>Senha</FieldLabel>
-                <Input
-                  id='sign-in-password'
-                  name='password'
-                  type='password'
-                  placeholder='••••••'
-                  disabled={isPending}
-                />
-                {fieldErrors.password && (
-                  <FieldError>{fieldErrors.password}</FieldError>
-                )}
-              </Field>
+            </Field>
+            <Field data-invalid={!!fieldErrors.password || undefined}>
+              <FieldLabel htmlFor='sign-in-password'>Senha</FieldLabel>
+              <Input
+                id='sign-in-password'
+                name='password'
+                type='password'
+                placeholder='••••••'
+                disabled={isPending}
+              />
+              {fieldErrors.password && (
+                <FieldError>{fieldErrors.password}</FieldError>
+              )}
+            </Field>
 
-              <Button type='submit' className='w-full' disabled={isPending}>
-                {isRetrying
-                  ? 'Muitos acessos agora, tentando de novo...'
-                  : isPending
-                    ? 'Entrando...'
-                    : 'Continuar'}
-              </Button>
+            <Button type='submit' className='w-full' disabled={isPending}>
+              {isRetrying
+                ? 'Muitos acessos agora, tentando de novo...'
+                : isPending
+                  ? 'Entrando...'
+                  : 'Continuar'}
+            </Button>
 
-              <div className='flex items-center justify-center'>
-                <Muted className='text-center text-sm p-4'>
-                  Esqueceu sua senha?{' '}
-                  <Link
-                    href='/forget-password'
-                    className='text-primary hover:underline'
-                  >
-                    Redefinir senha
-                  </Link>
-                  .
-                </Muted>
-              </div>
-            </form>
-          </>
-        )}
+            <div className='flex items-center justify-center'>
+              <Muted className='text-center text-sm p-4'>
+                Esqueceu sua senha?{' '}
+                <Link
+                  href='/forget-password'
+                  className='text-primary hover:underline'
+                >
+                  Redefinir senha
+                </Link>
+                .
+              </Muted>
+            </div>
+          </form>
+        </>
+      )}
 
-        {step === 'otp' && (
-          <>
-            <EmailValidationWithOtp
-              email={email}
-              onBack={handleBack}
-              onVerify={handleVerify}
-              onResend={handleResend}
-              isPending={isVerifying}
-              error={otpError}
-              onUseBackupCode={() => {
-                setStep('backup')
+      {step === 'otp' && (
+        <>
+          <EmailValidationWithOtp
+            email={email}
+            onBack={handleBack}
+            onVerify={handleVerify}
+            onResend={handleResend}
+            isPending={isVerifying}
+            error={otpError}
+            onUseBackupCode={() => {
+              setStep('backup')
+              setOtpError(null)
+            }}
+          />
+          {trustDeviceField}
+          <div className='text-center text-sm'>
+            <button
+              type='button'
+              onClick={() => {
+                setStep('totp')
                 setOtpError(null)
               }}
-            />
-            {trustDeviceField}
-            <div className='text-center text-sm'>
-              <button
-                type='button'
-                onClick={() => {
-                  setStep('totp')
-                  setOtpError(null)
-                }}
-                className='text-primary hover:underline'
-              >
-                Tenho um aplicativo autenticador
-              </button>
-            </div>
-          </>
-        )}
-
-        {step === 'totp' && (
-          <>
-            <div>
-              <H4>Abra seu aplicativo autenticador.</H4>
-              <H4 className='text-muted-foreground'>
-                Digite o código de 6 dígitos que ele está mostrando agora.
-              </H4>
-            </div>
-            <form onSubmit={handleVerifyTotp} className='w-full space-y-4'>
-              <Field data-invalid={!!otpError || undefined}>
-                <FieldLabel htmlFor='sign-in-totp-code'>
-                  Código do aplicativo
-                </FieldLabel>
-                <Input
-                  id='sign-in-totp-code'
-                  value={totpCode}
-                  onChange={(e) => setTotpCode(e.target.value)}
-                  placeholder='000000'
-                  inputMode='numeric'
-                  autoComplete='one-time-code'
-                  autoFocus
-                  disabled={isVerifying}
-                />
-                {otpError && <FieldError>{otpError}</FieldError>}
-              </Field>
-              {trustDeviceField}
-              <Button type='submit' className='w-full' disabled={isVerifying}>
-                {isVerifying ? 'Verificando...' : 'Verificar código'}
-              </Button>
-              <div className='text-center text-sm'>
-                <button
-                  type='button'
-                  onClick={() => {
-                    setStep('otp')
-                    setOtpError(null)
-                    setTotpCode('')
-                  }}
-                  className='text-primary hover:underline'
-                >
-                  Usar o código enviado por e-mail
-                </button>
-              </div>
-            </form>
-          </>
-        )}
-
-        {step === 'backup' && (
-          <>
-            <div>
-              <H4>Use um código de backup.</H4>
-              <H4 className='text-muted-foreground'>
-                Digite um dos códigos que você guardou ao ativar a verificação
-                em duas etapas.
-              </H4>
-            </div>
-            <form
-              onSubmit={handleVerifyBackupCode}
-              className='w-full space-y-4'
+              className='text-primary hover:underline'
             >
-              <Field data-invalid={!!otpError || undefined}>
-                <FieldLabel htmlFor='sign-in-backup-code'>
-                  Código de backup
-                </FieldLabel>
-                <Input
-                  id='sign-in-backup-code'
-                  value={backupCode}
-                  onChange={(e) => setBackupCode(e.target.value)}
-                  placeholder='xxxxxxxx'
-                  autoFocus
-                  disabled={isVerifying}
-                />
-                {otpError && <FieldError>{otpError}</FieldError>}
-              </Field>
-              {trustDeviceField}
-              <Button type='submit' className='w-full' disabled={isVerifying}>
-                {isVerifying ? 'Verificando...' : 'Verificar código'}
-              </Button>
-              <div className='text-center text-sm'>
-                <button
-                  type='button'
-                  onClick={() => {
-                    setStep('otp')
-                    setOtpError(null)
-                    setBackupCode('')
-                  }}
-                  className='text-primary hover:underline'
-                >
-                  Usar o código enviado por e-mail
-                </button>
-              </div>
-            </form>
-          </>
-        )}
-      </div>
-      <div>
-        <Muted>Junte-se a mais de 1.000 times no Nexo</Muted>
-      </div>
-    </div>
+              Tenho um aplicativo autenticador
+            </button>
+          </div>
+        </>
+      )}
+
+      {step === 'totp' && (
+        <SignInCodeStep
+          id='sign-in-totp-code'
+          title='Abra seu aplicativo autenticador.'
+          subtitle='Digite o código de 6 dígitos que ele está mostrando agora.'
+          label='Código do aplicativo'
+          placeholder='000000'
+          numeric
+          value={totpCode}
+          onChange={setTotpCode}
+          error={otpError}
+          pending={isVerifying}
+          trustDevice={trustDeviceField}
+          onSubmit={handleVerifyTotp}
+          onUseEmail={() => {
+            setStep('otp')
+            setOtpError(null)
+            setTotpCode('')
+          }}
+        />
+      )}
+
+      {step === 'backup' && (
+        <SignInCodeStep
+          id='sign-in-backup-code'
+          title='Use um código de backup.'
+          subtitle='Digite um dos códigos que você guardou ao ativar a verificação em duas etapas.'
+          label='Código de backup'
+          placeholder='xxxxxxxx'
+          value={backupCode}
+          onChange={setBackupCode}
+          error={otpError}
+          pending={isVerifying}
+          trustDevice={trustDeviceField}
+          onSubmit={handleVerifyBackupCode}
+          onUseEmail={() => {
+            setStep('otp')
+            setOtpError(null)
+            setBackupCode('')
+          }}
+        />
+      )}
+    </AuthLayout>
   )
 }
