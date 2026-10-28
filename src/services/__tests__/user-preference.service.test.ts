@@ -99,3 +99,17 @@ describe('UserPreferenceService', () => {
     })
   })
 })
+
+describe('UserPreferenceService.get() cache miss', () => {
+  it('reads an existing row, caches the DTO and skips the lazy upsert', async () => {
+    repo.findByUserId.mockResolvedValue(
+      ok(createFakeUserPreference({ theme: 'DARK' })),
+    )
+
+    const dto = expectOk(await UserPreferenceService.get('user_123'))
+
+    expect(dto.theme).toBe('DARK')
+    expect(repo.upsert).not.toHaveBeenCalled()
+    expect(cache.set).toHaveBeenCalledWith('user_123', dto)
+  })
+})

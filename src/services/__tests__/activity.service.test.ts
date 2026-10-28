@@ -213,3 +213,62 @@ describeProjectAccessGate('ActivityService', [
     sideEffects: () => [mockedIssue.findById, mockedActivity.listByEntity],
   },
 ])
+
+describe('ActivityService error propagation', () => {
+  const boom = err(databaseError('boom'))
+
+  function list(entityType: 'ISSUE' | 'CYCLE' | 'MODULE') {
+    return ActivityService.list('actor', 'ws1', 'proj-slug', entityType, 'e1')
+  }
+
+  it('stops when the actor is not a workspace member', async () => {
+    mockedMembership.findByUserAndWorkspace.mockResolvedValue(ok(null))
+    mockedProject.findByWorkspaceAndSlug.mockResolvedValue(ok(projectWith()))
+
+    expectErr(await list('ISSUE'), 'FORBIDDEN')
+    expect(mockedIssue.findById).not.toHaveBeenCalled()
+    expect(mockedActivity.listByEntity).not.toHaveBeenCalled()
+  })
+
+  it.each([
+    ['ISSUE', () => mockedIssue.findById],
+    ['CYCLE', () => mockedCycle.findById],
+    ['MODULE', () => mockedModule.findById],
+  ] as const)('propagates a failing %s lookup and stops', async (entityType, lookup) => {
+    inProject()
+    lookup().mockResolvedValue(boom)
+
+    expectErr(await list(entityType), 'DATABASE_ERROR')
+    expect(mockedActivity.listByEntity).not.toHaveBeenCalled()
+  })
+
+  it('returns CYCLE_NOT_FOUND for a cycle of another project', async () => {
+    inProject()
+    mockedCycle.findById.mockResolvedValue(
+      ok(createFakeCycle({ projectId: 'other-proj' })),
+    )
+
+    expectErr(await list('CYCLE'), 'CYCLE_NOT_FOUND')
+    expect(mockedActivity.listByEntity).not.toHaveBeenCalled()
+  })
+
+  it('returns MODULE_NOT_FOUND for a module of another project', async () => {
+    inProject()
+    mockedModule.findById.mockResolvedValue(
+      ok(createFakeModule({ projectId: 'other-proj' })),
+    )
+
+    expectErr(await list('MODULE'), 'MODULE_NOT_FOUND')
+    expect(mockedActivity.listByEntity).not.toHaveBeenCalled()
+  })
+
+  it('propagates a failing activity list', async () => {
+    inProject()
+    mockedIssue.findById.mockResolvedValue(
+      ok(createFakeIssue({ projectId: 'proj-1' })),
+    )
+    mockedActivity.listByEntity.mockResolvedValue(boom)
+
+    expectErr(await list('ISSUE'), 'DATABASE_ERROR')
+  })
+})

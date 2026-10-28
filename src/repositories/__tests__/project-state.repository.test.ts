@@ -353,4 +353,55 @@ describe('ProjectStateRepository', () => {
       ).toBe(0)
     })
   })
+
+  describe('database failures', () => {
+    it('findById() should return DATABASE_ERROR when the query throws', async () => {
+      vi.spyOn(prisma.projectState, 'findUnique').mockRejectedValueOnce(
+        new Error('boom'),
+      )
+      expectErr(await ProjectStateRepository.findById('x'), 'DATABASE_ERROR')
+    })
+
+    it('listByWorkspace() should return DATABASE_ERROR when the query throws', async () => {
+      vi.spyOn(prisma.projectState, 'findMany').mockRejectedValueOnce(
+        new Error('boom'),
+      )
+      expectErr(
+        await ProjectStateRepository.listByWorkspace('x'),
+        'DATABASE_ERROR',
+      )
+    })
+
+    it('countByGroup() should return DATABASE_ERROR when the query throws', async () => {
+      vi.spyOn(prisma.projectState, 'count').mockRejectedValueOnce(
+        new Error('boom'),
+      )
+      expectErr(
+        await ProjectStateRepository.countByGroup('x', 'DRAFT'),
+        'DATABASE_ERROR',
+      )
+    })
+
+    it('create() should return DATABASE_ERROR for a non-unique failure', async () => {
+      vi.spyOn(prisma.projectState, 'create').mockRejectedValueOnce(
+        new Error('boom'),
+      )
+      expectErr(
+        await ProjectStateRepository.create({
+          workspaceId: 'x',
+          name: 'X',
+          group: 'DRAFT',
+        }),
+        'DATABASE_ERROR',
+      )
+    })
+
+    it('deleteMovingProjects() should return DATABASE_ERROR when the transaction throws', async () => {
+      vi.spyOn(prisma, '$transaction').mockRejectedValueOnce(new Error('boom'))
+      expectErr(
+        await ProjectStateRepository.deleteMovingProjects('x'),
+        'DATABASE_ERROR',
+      )
+    })
+  })
 })

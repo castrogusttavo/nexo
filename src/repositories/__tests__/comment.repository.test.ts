@@ -8,6 +8,7 @@ import { seedState } from '@/src/__tests__/factories/state.factory'
 import { seedUser } from '@/src/__tests__/factories/user.factory'
 import { seedWorkspace } from '@/src/__tests__/factories/workspace.factory'
 import { expectErr, expectOk } from '@/src/__tests__/helpers/result.helpers'
+import { prisma } from '@/src/lib/prisma'
 import { CommentRepository } from '../comment.repository'
 
 afterEach(() => {
@@ -138,6 +139,47 @@ describe('CommentRepository', () => {
     it('should return COMMENT_NOT_FOUND for a missing id', async () => {
       const result = await CommentRepository.delete('nonexistent')
       expectErr(result, 'COMMENT_NOT_FOUND')
+    })
+  })
+
+  describe('findById() found', () => {
+    it('should return the comment when it exists', async () => {
+      const { issue, author } = await setupIssue()
+      const seeded = await seedComment(issue.id, author.id)
+
+      expect(expectOk(await CommentRepository.findById(seeded.id)).id).toBe(
+        seeded.id,
+      )
+    })
+  })
+
+  describe('database failures', () => {
+    it('findById() should return DATABASE_ERROR when the query throws', async () => {
+      vi.spyOn(prisma.comment, 'findUnique').mockRejectedValueOnce(
+        new Error('boom'),
+      )
+      expectErr(await CommentRepository.findById('x'), 'DATABASE_ERROR')
+    })
+
+    it('listByIssue() should return DATABASE_ERROR when the query throws', async () => {
+      vi.spyOn(prisma.comment, 'findMany').mockRejectedValueOnce(
+        new Error('boom'),
+      )
+      expectErr(await CommentRepository.listByIssue('x'), 'DATABASE_ERROR')
+    })
+
+    it('update() should return DATABASE_ERROR for a non-P2025 failure', async () => {
+      vi.spyOn(prisma.comment, 'update').mockRejectedValueOnce(
+        new Error('boom'),
+      )
+      expectErr(await CommentRepository.update('x', []), 'DATABASE_ERROR')
+    })
+
+    it('delete() should return DATABASE_ERROR for a non-P2025 failure', async () => {
+      vi.spyOn(prisma.comment, 'delete').mockRejectedValueOnce(
+        new Error('boom'),
+      )
+      expectErr(await CommentRepository.delete('x'), 'DATABASE_ERROR')
     })
   })
 })

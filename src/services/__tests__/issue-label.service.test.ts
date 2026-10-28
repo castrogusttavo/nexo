@@ -270,3 +270,92 @@ function arrangeIssueLabelRoundTrip() {
   mockedIssueLabel.add.mockResolvedValue(ok(fakeIssueLabel))
   mockedIssueLabel.remove.mockResolvedValue(ok(undefined))
 }
+
+describe('IssueLabelService error propagation', () => {
+  const boom = err(databaseError('boom'))
+
+  function inProject() {
+    arrangeIssueLabelRoundTrip()
+    mockedMembership.findByUserAndWorkspace.mockResolvedValue(
+      ok(memberMembership),
+    )
+    mockedProject.findByWorkspaceAndSlug.mockResolvedValue(ok(projectWith()))
+  }
+
+  const methods = {
+    list: () => IssueLabelService.list('actor', 'ws1', 'proj-slug', 'issue-1'),
+    add: () =>
+      IssueLabelService.add('actor', 'ws1', 'proj-slug', 'issue-1', 'label-1'),
+    remove: () =>
+      IssueLabelService.remove(
+        'actor',
+        'ws1',
+        'proj-slug',
+        'issue-1',
+        'label-1',
+      ),
+  }
+  const names = Object.keys(methods) as (keyof typeof methods)[]
+
+  function expectNoLabelWrites() {
+    expect(mockedIssueLabel.list).not.toHaveBeenCalled()
+    expect(mockedIssueLabel.add).not.toHaveBeenCalled()
+    expect(mockedIssueLabel.remove).not.toHaveBeenCalled()
+  }
+
+  it.each(
+    names,
+  )('%s() stops when the actor is not a workspace member', async (name) => {
+    inProject()
+    mockedMembership.findByUserAndWorkspace.mockResolvedValue(ok(null))
+
+    expectErr(await methods[name](), 'FORBIDDEN')
+    expect(mockedIssue.findById).not.toHaveBeenCalled()
+    expectNoLabelWrites()
+  })
+
+  it.each(
+    names,
+  )('%s() propagates a failing issue lookup and stops', async (name) => {
+    inProject()
+    mockedIssue.findById.mockResolvedValue(boom)
+
+    expectErr(await methods[name](), 'DATABASE_ERROR')
+    expectNoLabelWrites()
+  })
+
+  it.each([
+    'list',
+    'remove',
+  ] as const)('%s() returns ISSUE_NOT_FOUND for an issue of another project', async (name) => {
+    inProject()
+    mockedIssue.findById.mockResolvedValue(
+      ok(createFakeIssue({ projectId: 'other-proj' })),
+    )
+
+    expectErr(await methods[name](), 'ISSUE_NOT_FOUND')
+    expectNoLabelWrites()
+  })
+
+  it('list() propagates a failing label list', async () => {
+    inProject()
+    mockedIssueLabel.list.mockResolvedValue(boom)
+
+    expectErr(await methods.list(), 'DATABASE_ERROR')
+  })
+
+  it('add() propagates a failing label lookup and does not attach', async () => {
+    inProject()
+    mockedLabel.findById.mockResolvedValue(boom)
+
+    expectErr(await methods.add(), 'DATABASE_ERROR')
+    expect(mockedIssueLabel.add).not.toHaveBeenCalled()
+  })
+
+  it('add() propagates a failing attach', async () => {
+    inProject()
+    mockedIssueLabel.add.mockResolvedValue(boom)
+
+    expectErr(await methods.add(), 'DATABASE_ERROR')
+  })
+})

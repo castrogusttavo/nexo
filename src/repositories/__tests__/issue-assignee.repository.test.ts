@@ -7,6 +7,7 @@ import { seedState } from '@/src/__tests__/factories/state.factory'
 import { seedUser } from '@/src/__tests__/factories/user.factory'
 import { seedWorkspace } from '@/src/__tests__/factories/workspace.factory'
 import { expectErr, expectOk } from '@/src/__tests__/helpers/result.helpers'
+import { prisma } from '@/src/lib/prisma'
 import {
   IssueAssigneeRepository,
   IssueSubscriberRepository,
@@ -150,6 +151,62 @@ describe('IssueSubscriberRepository', () => {
       const result = await IssueSubscriberRepository.list(issue.id)
 
       expect(expectOk(result)).toHaveLength(1)
+    })
+  })
+
+  describe('database failures', () => {
+    it('IssueAssigneeRepository.list() should return DATABASE_ERROR when the query throws', async () => {
+      vi.spyOn(prisma.issueAssignee, 'findMany').mockRejectedValueOnce(
+        new Error('boom'),
+      )
+      expectErr(await IssueAssigneeRepository.list('x'), 'DATABASE_ERROR')
+    })
+
+    it('IssueAssigneeRepository.assign() should return DATABASE_ERROR for a non-P2002 failure', async () => {
+      vi.spyOn(prisma.issueAssignee, 'create').mockRejectedValueOnce(
+        new Error('boom'),
+      )
+      expectErr(
+        await IssueAssigneeRepository.assign('x', 'y'),
+        'DATABASE_ERROR',
+      )
+    })
+
+    it('IssueAssigneeRepository.unassign() should return DATABASE_ERROR when the query throws', async () => {
+      vi.spyOn(prisma.issueAssignee, 'deleteMany').mockRejectedValueOnce(
+        new Error('boom'),
+      )
+      expectErr(
+        await IssueAssigneeRepository.unassign('x', 'y'),
+        'DATABASE_ERROR',
+      )
+    })
+
+    it('IssueSubscriberRepository.list() should return DATABASE_ERROR when the query throws', async () => {
+      vi.spyOn(prisma.issueSubscriber, 'findMany').mockRejectedValueOnce(
+        new Error('boom'),
+      )
+      expectErr(await IssueSubscriberRepository.list('x'), 'DATABASE_ERROR')
+    })
+
+    it('IssueSubscriberRepository.subscribe() should return DATABASE_ERROR when the query throws', async () => {
+      vi.spyOn(prisma.issueSubscriber, 'upsert').mockRejectedValueOnce(
+        new Error('boom'),
+      )
+      expectErr(
+        await IssueSubscriberRepository.subscribe('x', 'y'),
+        'DATABASE_ERROR',
+      )
+    })
+
+    it('IssueSubscriberRepository.unsubscribe() should return DATABASE_ERROR when the query throws', async () => {
+      vi.spyOn(prisma.issueSubscriber, 'deleteMany').mockRejectedValueOnce(
+        new Error('boom'),
+      )
+      expectErr(
+        await IssueSubscriberRepository.unsubscribe('x', 'y'),
+        'DATABASE_ERROR',
+      )
     })
   })
 })

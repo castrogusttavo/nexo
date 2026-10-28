@@ -794,3 +794,118 @@ describeProjectAccessGate('CycleService', [
     sideEffects: () => [mockedCycle.removeMember],
   },
 ])
+
+describe('CycleService error propagation', () => {
+  const boom = err(databaseError('boom'))
+
+  function arrangeOwnerWithCycle() {
+    mockedMembership.findByUserAndWorkspace.mockResolvedValue(
+      ok(ownerMembership),
+    )
+    mockedProject.findByWorkspaceAndSlug.mockResolvedValue(ok(projectWith()))
+    arrangeCycleInProject()
+  }
+
+  const calls = {
+    list: () => CycleService.list('actor', 'ws1', 'proj-slug'),
+    create: () =>
+      CycleService.create('actor', 'ws1', 'proj-slug', {
+        name: 'Sprint 1',
+        status: 'IN_PROGRESS',
+      }),
+    update: () =>
+      CycleService.update('actor', 'ws1', 'proj-slug', 'cyc-1', {
+        status: 'IN_PROGRESS',
+      }),
+    delete: () => CycleService.delete('actor', 'ws1', 'proj-slug', 'cyc-1'),
+    listMembers: () =>
+      CycleService.listMembers('actor', 'ws1', 'proj-slug', 'cyc-1'),
+    addMember: () =>
+      CycleService.addMember('actor', 'ws1', 'proj-slug', 'cyc-1', 'other'),
+    removeMember: () =>
+      CycleService.removeMember('actor', 'ws1', 'proj-slug', 'cyc-1', 'other'),
+  }
+
+  it.each(
+    Object.entries(calls),
+  )('%s() propagates a failing project lookup and stops', async (_, call) => {
+    arrangeOwnerWithCycle()
+    mockedProject.findByWorkspaceAndSlug.mockResolvedValue(boom)
+
+    expectErr(await call(), 'DATABASE_ERROR')
+    expect(mockedCycle.findById).not.toHaveBeenCalled()
+    expect(mockedCycle.listByProject).not.toHaveBeenCalled()
+    expect(mockedCycle.create).not.toHaveBeenCalled()
+  })
+
+  it.each([
+    ['list', 'listByProject', undefined],
+    ['create', 'findActiveByProject', 'create'],
+    ['update', 'findById', 'findActiveByProject'],
+    ['update', 'findActiveByProject', 'update'],
+    ['delete', 'findById', 'delete'],
+    ['delete', 'delete', undefined],
+    ['listMembers', 'findById', 'listmembers'],
+    ['listMembers', 'listmembers', undefined],
+    ['addMember', 'findById', 'addMember'],
+    ['removeMember', 'findById', 'removeMember'],
+  ] as const)('%s() propagates a failing %s and stops', async (method, failing, next) => {
+    arrangeOwnerWithCycle()
+    mockedCycle[failing].mockResolvedValue(boom as never)
+
+    const error = expectErr(await calls[method](), 'DATABASE_ERROR')
+
+    expect(error.message).toBe('boom')
+    if (next) expect(mockedCycle[next]).not.toHaveBeenCalled()
+    expect(mockedActivityService.record).not.toHaveBeenCalled()
+  })
+
+  it('create() starts an IN_PROGRESS cycle when none is active', async () => {
+    arrangeOwnerWithCycle()
+
+    expectOk(await calls.create())
+
+    expect(mockedCycle.findActiveByProject).toHaveBeenCalledWith('proj-1')
+    expect(mockedCycle.create).toHaveBeenCalledWith(
+      expect.objectContaining({ status: 'IN_PROGRESS' }),
+    )
+  })
+
+  it('create() parses the start and end dates it receives', async () => {
+    arrangeOwnerWithCycle()
+
+    await CycleService.create('actor', 'ws1', 'proj-slug', {
+      name: 'Sprint 1',
+      status: 'NOT_STARTED',
+      startDate: '2026-01-01T00:00:00.000Z',
+      endDate: '2026-01-15T00:00:00.000Z',
+    })
+
+    expect(mockedCycle.create).toHaveBeenCalledWith(
+      expect.objectContaining({
+        startDate: new Date('2026-01-01T00:00:00.000Z'),
+        endDate: new Date('2026-01-15T00:00:00.000Z'),
+      }),
+    )
+  })
+
+  it('update() parses new dates and keeps the stored status when none is sent', async () => {
+    arrangeOwnerWithCycle()
+
+    expectOk(
+      await CycleService.update('actor', 'ws1', 'proj-slug', 'cyc-1', {
+        startDate: '2026-02-01T00:00:00.000Z',
+        endDate: '2026-02-15T00:00:00.000Z',
+      }),
+    )
+
+    expect(mockedCycle.findActiveByProject).not.toHaveBeenCalled()
+    expect(mockedCycle.update).toHaveBeenCalledWith(
+      'cyc-1',
+      expect.objectContaining({
+        startDate: new Date('2026-02-01T00:00:00.000Z'),
+        endDate: new Date('2026-02-15T00:00:00.000Z'),
+      }),
+    )
+  })
+})

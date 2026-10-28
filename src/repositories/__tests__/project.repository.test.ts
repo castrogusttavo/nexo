@@ -1,3 +1,4 @@
+import { Prisma } from '@prisma/client'
 import { afterEach, describe, expect, it, vi } from 'vitest'
 import { seedMembership } from '@/src/__tests__/factories/membership.factory'
 import {
@@ -661,6 +662,86 @@ describe('ProjectRepository', () => {
 
       expect(labelIdsOf(archived)).toEqual([labels[0].id])
       expect(labelIdsOf(restored)).toEqual([labels[0].id])
+    })
+  })
+
+  describe('unique-constraint mapping', () => {
+    function p2002(meta?: Record<string, unknown>) {
+      return new Prisma.PrismaClientKnownRequestError('Unique constraint', {
+        code: 'P2002',
+        clientVersion: 'test',
+        meta,
+      })
+    }
+
+    const createInput = {
+      name: 'X',
+      slug: 'x',
+      identifier: 'X',
+      isPublic: false,
+      issueTypesEnabled: true,
+      modulesEnabled: true,
+      cyclesEnabled: true,
+      leadId: 'u',
+      workspaceId: 'ws',
+    }
+
+    it('create() should return PROJECT_IDENTIFIER_CONFLICT on a duplicate identifier', async () => {
+      const user = await seedUser()
+      const ws = await seedWorkspace()
+      await defaultProjectStateId(ws.id)
+      await seedProject(ws.id, user.id, { identifier: 'DUPID' })
+
+      const result = await ProjectRepository.create({
+        ...createInput,
+        slug: 'other-slug',
+        identifier: 'DUPID',
+        leadId: user.id,
+        workspaceId: ws.id,
+      })
+
+      expectErr(result, 'PROJECT_IDENTIFIER_CONFLICT')
+    })
+
+    it('update() should return PROJECT_IDENTIFIER_CONFLICT on a duplicate identifier', async () => {
+      const user = await seedUser()
+      const ws = await seedWorkspace()
+      await seedProject(ws.id, user.id, { identifier: 'TAKEN' })
+      const other = await seedProject(ws.id, user.id, { identifier: 'FREE' })
+
+      const result = await ProjectRepository.update(other.id, {
+        identifier: 'TAKEN',
+      })
+
+      expectErr(result, 'PROJECT_IDENTIFIER_CONFLICT')
+    })
+
+    it('should read the classic meta.target column list', async () => {
+      vi.spyOn(prisma, '$transaction').mockRejectedValueOnce(
+        p2002({ target: ['workspace_id', 'identifier'] }),
+      )
+      expectErr(
+        await ProjectRepository.create(createInput),
+        'PROJECT_IDENTIFIER_CONFLICT',
+      )
+    })
+
+    it('should fall back to PROJECT_SLUG_CONFLICT when the error has no meta', async () => {
+      vi.spyOn(prisma.project, 'update').mockRejectedValueOnce(p2002())
+      expectErr(
+        await ProjectRepository.update('any', { slug: 'x' }),
+        'PROJECT_SLUG_CONFLICT',
+      )
+    })
+
+    it('should fall back to PROJECT_SLUG_CONFLICT when the driver error has no fields', async () => {
+      vi.spyOn(prisma.project, 'update').mockRejectedValueOnce(
+        p2002({ driverAdapterError: {} }),
+      )
+      expectErr(
+        await ProjectRepository.update('any', { slug: 'x' }),
+        'PROJECT_SLUG_CONFLICT',
+      )
     })
   })
 })

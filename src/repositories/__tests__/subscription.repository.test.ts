@@ -1,9 +1,13 @@
-import { describe, expect, it } from 'vitest'
+import { afterEach, describe, expect, it, vi } from 'vitest'
 import { seedSubscription } from '@/src/__tests__/factories/subscription.factory'
 import { seedWorkspace } from '@/src/__tests__/factories/workspace.factory'
 import { expectErr, expectOk } from '@/src/__tests__/helpers/result.helpers'
 import { prisma } from '@/src/lib/prisma'
 import { SubscriptionRepository } from '@/src/repositories/subscription.repository'
+
+afterEach(() => {
+  vi.restoreAllMocks()
+})
 
 describe('SubscriptionRepository', () => {
   describe('create()', () => {
@@ -217,6 +221,28 @@ describe('SubscriptionRepository', () => {
         where: { id: ws.id },
       })
       expect(refreshedWs?.activePlan).toBe('PRO')
+    })
+  })
+
+  describe('database failures', () => {
+    it('findByBillId() should return DATABASE_ERROR when the query throws', async () => {
+      vi.spyOn(prisma.subscription, 'findUnique').mockRejectedValueOnce(
+        new Error('boom'),
+      )
+      expectErr(
+        await SubscriptionRepository.findByBillId('x'),
+        'DATABASE_ERROR',
+      )
+    })
+
+    it('findActiveByWorkspaceId() should return DATABASE_ERROR when the query throws', async () => {
+      vi.spyOn(prisma.subscription, 'findFirst').mockRejectedValueOnce(
+        new Error('boom'),
+      )
+      expectErr(
+        await SubscriptionRepository.findActiveByWorkspaceId('x'),
+        'DATABASE_ERROR',
+      )
     })
   })
 })

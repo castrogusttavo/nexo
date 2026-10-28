@@ -1,7 +1,11 @@
-import { describe, expect, it } from 'vitest'
-import { expectOk } from '@/src/__tests__/helpers/result.helpers'
+import { afterEach, describe, expect, it, vi } from 'vitest'
+import { expectErr, expectOk } from '@/src/__tests__/helpers/result.helpers'
 import { prisma } from '@/src/lib/prisma'
 import { StatusRepository } from '@/src/repositories/status.repository'
+
+afterEach(() => {
+  vi.restoreAllMocks()
+})
 
 describe('StatusRepository', () => {
   describe('recordChecks()', () => {
@@ -580,6 +584,117 @@ describe('StatusRepository', () => {
       const byKey = Object.fromEntries(rows.map((r) => [r.componentKey, r]))
       expect(byKey.app?.status).toBe('DEGRADED')
       expect(byKey.cache?.status).toBe('OPERATIONAL')
+    })
+  })
+
+  describe('database failures', () => {
+    it('recordChecks() should return DATABASE_ERROR when the query throws', async () => {
+      vi.spyOn(prisma.healthCheck, 'createMany').mockRejectedValueOnce(
+        new Error('boom'),
+      )
+      expectErr(
+        await StatusRepository.recordChecks([
+          {
+            componentKey: 'app',
+            status: 'OPERATIONAL',
+            latencyMs: 1,
+            error: null,
+          },
+        ]),
+        'DATABASE_ERROR',
+      )
+    })
+
+    it('pruneOldChecks() should return DATABASE_ERROR when the query throws', async () => {
+      vi.spyOn(prisma.healthCheck, 'deleteMany').mockRejectedValueOnce(
+        new Error('boom'),
+      )
+      expectErr(
+        await StatusRepository.pruneOldChecks(new Date('2026-01-01')),
+        'DATABASE_ERROR',
+      )
+    })
+
+    it('aggregateForDayByKeys() should return DATABASE_ERROR when the query throws', async () => {
+      vi.spyOn(prisma.healthCheck, 'findMany').mockRejectedValueOnce(
+        new Error('boom'),
+      )
+      expectErr(
+        await StatusRepository.aggregateForDayByKeys(
+          ['app'],
+          new Date('2026-01-01'),
+          new Date('2026-01-01'),
+        ),
+        'DATABASE_ERROR',
+      )
+    })
+
+    it('upsertDailies() should return DATABASE_ERROR when the query throws', async () => {
+      vi.spyOn(prisma, '$executeRaw').mockRejectedValueOnce(new Error('boom'))
+      expectErr(
+        await StatusRepository.upsertDailies(new Date('2026-01-01'), [
+          {
+            componentKey: 'app',
+            aggregate: {
+              worstStatus: 'OPERATIONAL',
+              totalChecks: 1,
+              upChecks: 1,
+              uptimePct: 100,
+              avgLatencyMs: 1,
+            },
+          },
+        ]),
+        'DATABASE_ERROR',
+      )
+    })
+
+    it('findDailies() should return DATABASE_ERROR when the query throws', async () => {
+      vi.spyOn(prisma.componentDaily, 'findMany').mockRejectedValueOnce(
+        new Error('boom'),
+      )
+      expectErr(
+        await StatusRepository.findDailies(
+          'app',
+          new Date('2026-01-01'),
+          new Date('2026-01-01'),
+        ),
+        'DATABASE_ERROR',
+      )
+    })
+
+    it('findDailiesForKeys() should return DATABASE_ERROR when the query throws', async () => {
+      vi.spyOn(prisma.componentDaily, 'findMany').mockRejectedValueOnce(
+        new Error('boom'),
+      )
+      expectErr(
+        await StatusRepository.findDailiesForKeys(
+          ['app'],
+          new Date('2026-01-01'),
+          new Date('2026-01-01'),
+        ),
+        'DATABASE_ERROR',
+      )
+    })
+
+    it('findRecentChecks() should return DATABASE_ERROR when the query throws', async () => {
+      vi.spyOn(prisma.healthCheck, 'findMany').mockRejectedValueOnce(
+        new Error('boom'),
+      )
+      expectErr(
+        await StatusRepository.findRecentChecks(
+          ['app'],
+          new Date('2026-01-01'),
+        ),
+        'DATABASE_ERROR',
+      )
+    })
+
+    it('findLatestPerComponent() should return DATABASE_ERROR when the query throws', async () => {
+      vi.spyOn(prisma, '$queryRaw').mockRejectedValueOnce(new Error('boom'))
+      expectErr(
+        await StatusRepository.findLatestPerComponent(),
+        'DATABASE_ERROR',
+      )
     })
   })
 })

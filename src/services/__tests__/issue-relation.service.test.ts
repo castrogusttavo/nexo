@@ -309,3 +309,101 @@ function arrangeRelationRoundTrip() {
   mockedRelation.findById.mockResolvedValue(ok(relation))
   mockedRelation.remove.mockResolvedValue(ok(undefined))
 }
+
+describe('IssueRelationService error propagation', () => {
+  const boom = err(databaseError('boom'))
+
+  function arrange() {
+    arrangeRelationRoundTrip()
+    inProject()
+  }
+
+  const methods = {
+    list: () =>
+      IssueRelationService.list('actor', 'ws1', 'proj-slug', 'issue-1'),
+    create: () =>
+      IssueRelationService.create('actor', 'ws1', 'proj-slug', 'issue-1', {
+        targetId: 'issue-2',
+        type: 'RELATES_TO',
+      }),
+    remove: () =>
+      IssueRelationService.remove(
+        'actor',
+        'ws1',
+        'proj-slug',
+        'issue-1',
+        'rel-1',
+      ),
+  }
+  const names = Object.keys(methods) as (keyof typeof methods)[]
+
+  function expectNoRelationWork() {
+    expect(mockedRelation.listByIssue).not.toHaveBeenCalled()
+    expect(mockedRelation.create).not.toHaveBeenCalled()
+    expect(mockedRelation.remove).not.toHaveBeenCalled()
+  }
+
+  it.each(
+    names,
+  )('%s() stops when the actor is not a workspace member', async (name) => {
+    arrange()
+    mockedMembership.findByUserAndWorkspace.mockResolvedValue(ok(null))
+
+    expectErr(await methods[name](), 'FORBIDDEN')
+    expect(mockedIssue.findById).not.toHaveBeenCalled()
+    expectNoRelationWork()
+  })
+
+  it.each(
+    names,
+  )('%s() propagates a failing (source) issue lookup and stops', async (name) => {
+    arrange()
+    mockedIssue.findById.mockResolvedValueOnce(boom)
+
+    expectErr(await methods[name](), 'DATABASE_ERROR')
+    expect(mockedIssue.findById).toHaveBeenCalledTimes(1)
+    expectNoRelationWork()
+  })
+
+  it('list() returns ISSUE_NOT_FOUND for an issue of another project', async () => {
+    arrange()
+    mockedIssue.findById.mockResolvedValue(
+      ok(createFakeIssue({ projectId: 'other-proj' })),
+    )
+
+    expectErr(await methods.list(), 'ISSUE_NOT_FOUND')
+    expect(mockedRelation.listByIssue).not.toHaveBeenCalled()
+  })
+
+  it.each([
+    ['findBetween', () => mockedRelation.findBetween, [mockedRelation.create]],
+    ['create', () => mockedRelation.create, []],
+  ] as const)('create() propagates a failing %s and stops', async (_, dep, untouched) => {
+    arrange()
+    dep().mockResolvedValue(boom)
+
+    expectErr(await methods.create(), 'DATABASE_ERROR')
+    for (const fn of untouched) expect(fn).not.toHaveBeenCalled()
+  })
+
+  it('remove() returns ISSUE_NOT_FOUND for an issue of another project', async () => {
+    arrange()
+    mockedIssue.findById.mockResolvedValue(
+      ok(createFakeIssue({ projectId: 'other-proj' })),
+    )
+
+    expectErr(await methods.remove(), 'ISSUE_NOT_FOUND')
+    expect(mockedRelation.findById).not.toHaveBeenCalled()
+  })
+
+  it.each([
+    ['findById', () => mockedRelation.findById, [mockedRelation.remove]],
+    ['remove', () => mockedRelation.remove, []],
+  ] as const)('remove() propagates a failing %s and stops', async (_, dep, untouched) => {
+    arrange()
+    dep().mockResolvedValue(boom)
+
+    expectErr(await methods.remove(), 'DATABASE_ERROR')
+    for (const fn of untouched) expect(fn).not.toHaveBeenCalled()
+  })
+})

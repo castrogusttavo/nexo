@@ -7,6 +7,7 @@ import { seedState } from '@/src/__tests__/factories/state.factory'
 import { seedUser } from '@/src/__tests__/factories/user.factory'
 import { seedWorkspace } from '@/src/__tests__/factories/workspace.factory'
 import { expectErr, expectOk } from '@/src/__tests__/helpers/result.helpers'
+import { prisma } from '@/src/lib/prisma'
 import { IssueVoteRepository } from '../issue-vote.repository'
 
 afterEach(() => {
@@ -125,6 +126,42 @@ describe('IssueVoteRepository', () => {
       const result = await IssueVoteRepository.delete(issue.id, author.id)
 
       expectErr(result, 'ISSUE_VOTE_NOT_FOUND')
+    })
+  })
+
+  describe('database failures', () => {
+    it('findByIssueAndUser() should return DATABASE_ERROR when the query throws', async () => {
+      vi.spyOn(prisma.issueVote, 'findUnique').mockRejectedValueOnce(
+        new Error('boom'),
+      )
+      expectErr(
+        await IssueVoteRepository.findByIssueAndUser('x', 'y'),
+        'DATABASE_ERROR',
+      )
+    })
+
+    it('tallyByIssue() should return DATABASE_ERROR when the query throws', async () => {
+      vi.spyOn(prisma.issueVote, 'groupBy').mockRejectedValueOnce(
+        new Error('boom'),
+      )
+      expectErr(await IssueVoteRepository.tallyByIssue('x'), 'DATABASE_ERROR')
+    })
+
+    it('upsert() should return DATABASE_ERROR when the query throws', async () => {
+      vi.spyOn(prisma.issueVote, 'upsert').mockRejectedValueOnce(
+        new Error('boom'),
+      )
+      expectErr(
+        await IssueVoteRepository.upsert('x', 'y', 'UP'),
+        'DATABASE_ERROR',
+      )
+    })
+
+    it('delete() should return DATABASE_ERROR when the query throws', async () => {
+      vi.spyOn(prisma.issueVote, 'deleteMany').mockRejectedValueOnce(
+        new Error('boom'),
+      )
+      expectErr(await IssueVoteRepository.delete('x', 'y'), 'DATABASE_ERROR')
     })
   })
 })

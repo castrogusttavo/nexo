@@ -7,6 +7,7 @@ import { seedState } from '@/src/__tests__/factories/state.factory'
 import { seedUser } from '@/src/__tests__/factories/user.factory'
 import { seedWorkspace } from '@/src/__tests__/factories/workspace.factory'
 import { expectErr, expectOk } from '@/src/__tests__/helpers/result.helpers'
+import { prisma } from '@/src/lib/prisma'
 import { AttachmentRepository } from '../attachment.repository'
 
 afterEach(() => {
@@ -110,6 +111,42 @@ describe('AttachmentRepository', () => {
     it('should return ATTACHMENT_NOT_FOUND for a missing id', async () => {
       const found = await AttachmentRepository.findById('nonexistent')
       expectErr(found, 'ATTACHMENT_NOT_FOUND')
+    })
+  })
+
+  describe('findById() found', () => {
+    it('should return the attachment when it exists', async () => {
+      const { issue, author } = await setupIssue()
+      const created = expectOk(
+        await AttachmentRepository.create(attachmentInput(issue.id, author.id)),
+      )
+
+      expect(expectOk(await AttachmentRepository.findById(created.id)).id).toBe(
+        created.id,
+      )
+    })
+  })
+
+  describe('database failures', () => {
+    it('findById() should return DATABASE_ERROR when the query throws', async () => {
+      vi.spyOn(prisma.attachment, 'findUnique').mockRejectedValueOnce(
+        new Error('boom'),
+      )
+      expectErr(await AttachmentRepository.findById('x'), 'DATABASE_ERROR')
+    })
+
+    it('listByIssue() should return DATABASE_ERROR when the query throws', async () => {
+      vi.spyOn(prisma.attachment, 'findMany').mockRejectedValueOnce(
+        new Error('boom'),
+      )
+      expectErr(await AttachmentRepository.listByIssue('x'), 'DATABASE_ERROR')
+    })
+
+    it('delete() should return DATABASE_ERROR for a non-P2025 failure', async () => {
+      vi.spyOn(prisma.attachment, 'delete').mockRejectedValueOnce(
+        new Error('boom'),
+      )
+      expectErr(await AttachmentRepository.delete('x'), 'DATABASE_ERROR')
     })
   })
 })

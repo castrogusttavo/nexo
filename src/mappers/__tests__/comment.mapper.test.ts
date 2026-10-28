@@ -53,4 +53,10 @@ describe('toCommentDTO', () => {
 
     expect(toCommentDTO(comment).parentId).toBeNull()
   })
+
+  it('falls back to an empty doc when the stored content is null', () => {
+    const comment = withAuthor({ content: null })
+
+    expect(toCommentDTO(comment).content).toEqual({ type: 'doc', content: [] })
+  })
 })

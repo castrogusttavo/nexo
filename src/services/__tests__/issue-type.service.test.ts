@@ -469,3 +469,75 @@ describeProjectAccessGate('IssueTypeService', [
     sideEffects: () => [mockedIssueType.reorder],
   },
 ])
+
+describe('IssueTypeService error propagation', () => {
+  const boom = err(databaseError('boom'))
+
+  function arrange() {
+    arrangeCustomTypeInProject()
+    mockedMembership.findByUserAndWorkspace.mockResolvedValue(
+      ok(ownerMembership),
+    )
+    mockedProject.findByWorkspaceAndSlug.mockResolvedValue(
+      ok(projectWith({ id: GATE_PROJECT_ID })),
+    )
+  }
+
+  const methods = {
+    list: () => IssueTypeService.list('actor', 'ws1', 'proj-slug'),
+    create: () =>
+      IssueTypeService.create('actor', 'ws1', 'proj-slug', {
+        name: 'Bug',
+        color: 'RED',
+        icon: 'bug-icon',
+      }),
+    update: () =>
+      IssueTypeService.update('actor', 'ws1', 'proj-slug', 'type-1', {
+        name: 'Defect',
+      }),
+    delete: () =>
+      IssueTypeService.delete('actor', 'ws1', 'proj-slug', 'type-1'),
+    reorder: () =>
+      IssueTypeService.reorder('actor', 'ws1', 'proj-slug', {
+        typeIds: ['type-1'],
+      }),
+  }
+  const names = Object.keys(methods) as (keyof typeof methods)[]
+
+  it.each(
+    names,
+  )('%s() stops when the actor is not a workspace member', async (name) => {
+    arrange()
+    mockedMembership.findByUserAndWorkspace.mockResolvedValue(ok(null))
+
+    expectErr(await methods[name](), 'FORBIDDEN')
+    expect(mockedIssueType.listByProject).not.toHaveBeenCalled()
+    expect(mockedIssueType.findById).not.toHaveBeenCalled()
+    expect(mockedIssueType.create).not.toHaveBeenCalled()
+    expect(mockedIssueType.update).not.toHaveBeenCalled()
+    expect(mockedIssueType.delete).not.toHaveBeenCalled()
+    expect(mockedIssueType.reorder).not.toHaveBeenCalled()
+  })
+
+  it.each([
+    ['list', () => mockedIssueType.listByProject],
+    ['reorder', () => mockedIssueType.reorder],
+  ] as const)('%s() propagates a failing repository call', async (name, dep) => {
+    arrange()
+    dep().mockResolvedValue(boom)
+
+    expectErr(await methods[name](), 'DATABASE_ERROR')
+  })
+
+  it.each([
+    'update',
+    'delete',
+  ] as const)('%s() propagates a failing type lookup and does not write', async (name) => {
+    arrange()
+    mockedIssueType.findById.mockResolvedValue(boom)
+
+    expectErr(await methods[name](), 'DATABASE_ERROR')
+    expect(mockedIssueType.update).not.toHaveBeenCalled()
+    expect(mockedIssueType.delete).not.toHaveBeenCalled()
+  })
+})

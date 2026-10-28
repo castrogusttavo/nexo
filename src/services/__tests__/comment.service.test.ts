@@ -412,3 +412,130 @@ function arrangeCommentRoundTrip() {
   mockedComment.update.mockResolvedValue(ok(withAuthor()))
   mockedComment.delete.mockResolvedValue(ok(undefined))
 }
+
+describe('CommentService error propagation', () => {
+  const boom = err(databaseError('boom'))
+
+  function arrange() {
+    arrangeCommentRoundTrip()
+    inProject()
+  }
+
+  const methods = {
+    list: () => CommentService.list('actor', 'ws1', 'proj-slug', 'issue-1'),
+    create: () =>
+      CommentService.create('actor', 'ws1', 'proj-slug', 'issue-1', {
+        content,
+      }),
+    update: () =>
+      CommentService.update(
+        'actor',
+        'ws1',
+        'proj-slug',
+        'issue-1',
+        'comment-1',
+        { content },
+      ),
+    delete: () =>
+      CommentService.delete(
+        'actor',
+        'ws1',
+        'proj-slug',
+        'issue-1',
+        'comment-1',
+      ),
+  }
+  const names = Object.keys(methods) as (keyof typeof methods)[]
+
+  function expectNoCommentWork() {
+    expect(mockedComment.listByIssue).not.toHaveBeenCalled()
+    expect(mockedComment.findById).not.toHaveBeenCalled()
+    expect(mockedComment.create).not.toHaveBeenCalled()
+    expect(mockedComment.update).not.toHaveBeenCalled()
+    expect(mockedComment.delete).not.toHaveBeenCalled()
+  }
+
+  it.each(
+    names,
+  )('%s() stops when the actor is not a workspace member', async (name) => {
+    arrange()
+    mockedMembership.findByUserAndWorkspace.mockResolvedValue(ok(null))
+
+    expectErr(await methods[name](), 'FORBIDDEN')
+    expect(mockedIssue.findById).not.toHaveBeenCalled()
+    expectNoCommentWork()
+  })
+
+  it.each(
+    names,
+  )('%s() propagates a failing issue lookup and stops', async (name) => {
+    arrange()
+    mockedIssue.findById.mockResolvedValue(boom)
+
+    expectErr(await methods[name](), 'DATABASE_ERROR')
+    expectNoCommentWork()
+  })
+
+  it.each(
+    names,
+  )('%s() returns ISSUE_NOT_FOUND for an issue of another project', async (name) => {
+    arrange()
+    mockedIssue.findById.mockResolvedValue(
+      ok(createFakeIssue({ projectId: 'other-proj' })),
+    )
+
+    expectErr(await methods[name](), 'ISSUE_NOT_FOUND')
+    expectNoCommentWork()
+  })
+
+  it.each([
+    ['create', () => mockedComment.create],
+    ['update', () => mockedComment.update],
+    ['delete', () => mockedComment.delete],
+  ] as const)('%s() propagates a failing repository write', async (name, write) => {
+    arrange()
+    write().mockResolvedValue(boom)
+
+    expectErr(await methods[name](), 'DATABASE_ERROR')
+    expect(write()).toHaveBeenCalledTimes(1)
+  })
+
+  it.each([
+    'update',
+    'delete',
+  ] as const)('%s() propagates a failing comment lookup and does not write', async (name) => {
+    arrange()
+    mockedComment.findById.mockResolvedValue(boom)
+
+    expectErr(await methods[name](), 'DATABASE_ERROR')
+    expect(mockedComment.update).not.toHaveBeenCalled()
+    expect(mockedComment.delete).not.toHaveBeenCalled()
+  })
+
+  it('create() propagates a failing parent lookup and does not create', async () => {
+    arrange()
+    mockedComment.findById.mockResolvedValue(boom)
+
+    const result = await CommentService.create(
+      'actor',
+      'ws1',
+      'proj-slug',
+      'issue-1',
+      { content, parentId: 'parent-1' },
+    )
+
+    expectErr(result, 'DATABASE_ERROR')
+    expect(mockedComment.findById).toHaveBeenCalledWith('parent-1')
+    expect(mockedComment.create).not.toHaveBeenCalled()
+  })
+
+  it('delete() returns COMMENT_NOT_FOUND for a comment of another issue', async () => {
+    arrange()
+    mockedComment.findById.mockResolvedValue(
+      ok(createFakeComment({ issueId: 'issue-2', authorId: 'actor' })),
+    )
+
+    expectErr(await methods.delete(), 'COMMENT_NOT_FOUND')
+    expect(mockedComment.delete).not.toHaveBeenCalled()
+  })
+})

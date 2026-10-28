@@ -199,4 +199,43 @@ describe('ProjectLabelRepository', () => {
       expectErr(result, 'DATABASE_ERROR')
     })
   })
+
+  describe('database failures', () => {
+    it('findById() should return DATABASE_ERROR when the query throws', async () => {
+      vi.spyOn(prisma.projectLabel, 'findUnique').mockRejectedValueOnce(
+        new Error('boom'),
+      )
+      expectErr(await ProjectLabelRepository.findById('x'), 'DATABASE_ERROR')
+    })
+
+    it('listByWorkspace() should return DATABASE_ERROR when the query throws', async () => {
+      vi.spyOn(prisma.projectLabel, 'findMany').mockRejectedValueOnce(
+        new Error('boom'),
+      )
+      expectErr(
+        await ProjectLabelRepository.listByWorkspace('x'),
+        'DATABASE_ERROR',
+      )
+    })
+
+    it('countInWorkspace() should return DATABASE_ERROR when the query throws', async () => {
+      vi.spyOn(prisma.projectLabel, 'count').mockRejectedValueOnce(
+        new Error('boom'),
+      )
+      expectErr(
+        await ProjectLabelRepository.countInWorkspace('x', ['a']),
+        'DATABASE_ERROR',
+      )
+    })
+
+    it('create() should return DATABASE_ERROR for a non-unique failure', async () => {
+      vi.spyOn(prisma.projectLabel, 'create').mockRejectedValueOnce(
+        new Error('boom'),
+      )
+      expectErr(
+        await ProjectLabelRepository.create({ workspaceId: 'x', name: 'X' }),
+        'DATABASE_ERROR',
+      )
+    })
+  })
 })

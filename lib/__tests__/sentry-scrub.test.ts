@@ -211,6 +211,43 @@ describe('scrubEvent', () => {
     const event = { exception: { values: [{ value: 'boom' }] } }
     expect(scrubEvent(event)).toBe(event)
   })
+
+  it('leaves a query string it cannot read as it came', () => {
+    const event = scrubEvent({ request: { query_string: null } } as never) as {
+      request: { query_string: unknown }
+    }
+    expect(event.request.query_string).toBeNull()
+  })
+
+  it('keeps an empty query string empty', () => {
+    expect(maskQueryString('')).toBe('')
+  })
+
+  it('handles a request with neither headers nor url', () => {
+    const event = scrubEvent({ request: { data: 'secret' } })
+    expect(event.request).toEqual({
+      data: undefined,
+      cookies: undefined,
+      env: undefined,
+    })
+  })
+
+  it('leaves a structured message without text alone', () => {
+    const event = scrubEvent({ message: {} })
+    expect(event.message).toEqual({})
+  })
+
+  it('skips breadcrumbs and exceptions that carry nothing to mask', () => {
+    const event = scrubEvent({
+      exception: { values: [{ type: 'Error' }] },
+      breadcrumbs: [{ category: 'ui.click' }, { data: { status: 200 } }],
+    })
+    expect(event.exception.values[0]).toEqual({ type: 'Error' })
+    expect(event.breadcrumbs).toEqual([
+      { category: 'ui.click' },
+      { data: { status: 200 } },
+    ])
+  })
 })
 
 describe('scrubBreadcrumb', () => {
@@ -222,5 +259,10 @@ describe('scrubBreadcrumb', () => {
     })
     expect(crumb?.message).toBe('[email]')
     expect(crumb?.data?.url).toBe('https://nexopm.com/x?secret=[redacted]')
+  })
+
+  it('keeps a breadcrumb that has no url or message untouched', () => {
+    const crumb = { category: 'navigation', data: { from: '/a', to: '/b' } }
+    expect(scrubBreadcrumb(crumb)).toEqual(crumb)
   })
 })

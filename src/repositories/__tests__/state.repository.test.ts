@@ -5,6 +5,7 @@ import { seedState } from '@/src/__tests__/factories/state.factory'
 import { seedUser } from '@/src/__tests__/factories/user.factory'
 import { seedWorkspace } from '@/src/__tests__/factories/workspace.factory'
 import { expectErr, expectOk } from '@/src/__tests__/helpers/result.helpers'
+import { prisma } from '@/src/lib/prisma'
 import { StateRepository } from '../state.repository'
 
 afterEach(() => {
@@ -164,6 +165,30 @@ describe('StateRepository', () => {
       const result = await StateRepository.setDefault('nonexistent', project.id)
 
       expectErr(result, 'DATABASE_ERROR')
+    })
+  })
+
+  describe('database failures', () => {
+    it('findById() should return DATABASE_ERROR when the query throws', async () => {
+      vi.spyOn(prisma.state, 'findUnique').mockRejectedValueOnce(
+        new Error('boom'),
+      )
+      expectErr(await StateRepository.findById('x'), 'DATABASE_ERROR')
+    })
+
+    it('listByProject() should return DATABASE_ERROR when the query throws', async () => {
+      vi.spyOn(prisma.state, 'findMany').mockRejectedValueOnce(
+        new Error('boom'),
+      )
+      expectErr(await StateRepository.listByProject('x'), 'DATABASE_ERROR')
+    })
+
+    it('countByGroup() should return DATABASE_ERROR when the query throws', async () => {
+      vi.spyOn(prisma.state, 'count').mockRejectedValueOnce(new Error('boom'))
+      expectErr(
+        await StateRepository.countByGroup('x', 'BACKLOG'),
+        'DATABASE_ERROR',
+      )
     })
   })
 })

@@ -308,3 +308,102 @@ function arrangeAttachmentRoundTrip() {
   )
   mockedAttachment.delete.mockResolvedValue(ok(undefined))
 }
+
+describe('AttachmentService error propagation', () => {
+  const boom = err(databaseError('boom'))
+
+  function arrange() {
+    arrangeAttachmentRoundTrip()
+    inProject()
+  }
+
+  const methods = {
+    list: () => AttachmentService.list('actor', 'ws1', 'proj-slug', 'issue-1'),
+    upload: () =>
+      AttachmentService.upload(
+        'actor',
+        'ws1',
+        'proj-slug',
+        'issue-1',
+        pngFile(),
+      ),
+    remove: () =>
+      AttachmentService.remove(
+        'actor',
+        'ws1',
+        'proj-slug',
+        'issue-1',
+        'attachment-1',
+      ),
+  }
+  const names = Object.keys(methods) as (keyof typeof methods)[]
+
+  function expectNoAttachmentWork() {
+    expect(mockedAttachment.listByIssue).not.toHaveBeenCalled()
+    expect(mockedAttachment.findById).not.toHaveBeenCalled()
+    expect(attachmentStorage.persistAttachment).not.toHaveBeenCalled()
+    expect(mockedAttachment.create).not.toHaveBeenCalled()
+    expect(mockedAttachment.delete).not.toHaveBeenCalled()
+    expect(attachmentStorage.removeAttachmentObject).not.toHaveBeenCalled()
+  }
+
+  it.each(
+    names,
+  )('%s() stops when the actor is not a workspace member', async (name) => {
+    arrange()
+    mockedMembership.findByUserAndWorkspace.mockResolvedValue(ok(null))
+
+    expectErr(await methods[name](), 'FORBIDDEN')
+    expect(mockedIssue.findById).not.toHaveBeenCalled()
+    expectNoAttachmentWork()
+  })
+
+  it.each(
+    names,
+  )('%s() propagates a failing issue lookup and stops', async (name) => {
+    arrange()
+    mockedIssue.findById.mockResolvedValue(boom)
+
+    expectErr(await methods[name](), 'DATABASE_ERROR')
+    expectNoAttachmentWork()
+  })
+
+  it.each([
+    'list',
+    'remove',
+  ] as const)('%s() returns ISSUE_NOT_FOUND for an issue of another project', async (name) => {
+    arrange()
+    mockedIssue.findById.mockResolvedValue(
+      ok(createFakeIssue({ projectId: 'other-proj' })),
+    )
+
+    expectErr(await methods[name](), 'ISSUE_NOT_FOUND')
+    expectNoAttachmentWork()
+  })
+
+  it('upload() propagates a failing object upload and creates no record', async () => {
+    arrange()
+    vi.mocked(attachmentStorage.persistAttachment).mockResolvedValue(boom)
+
+    expectErr(await methods.upload(), 'DATABASE_ERROR')
+    expect(mockedAttachment.create).not.toHaveBeenCalled()
+    expect(attachmentStorage.removeAttachmentObject).not.toHaveBeenCalled()
+  })
+
+  it('remove() propagates a failing attachment lookup and deletes nothing', async () => {
+    arrange()
+    mockedAttachment.findById.mockResolvedValue(boom)
+
+    expectErr(await methods.remove(), 'DATABASE_ERROR')
+    expect(mockedAttachment.delete).not.toHaveBeenCalled()
+    expect(attachmentStorage.removeAttachmentObject).not.toHaveBeenCalled()
+  })
+
+  it('remove() keeps the stored object when the record delete fails', async () => {
+    arrange()
+    mockedAttachment.delete.mockResolvedValue(boom)
+
+    expectErr(await methods.remove(), 'DATABASE_ERROR')
+    expect(attachmentStorage.removeAttachmentObject).not.toHaveBeenCalled()
+  })
+})

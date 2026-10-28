@@ -230,3 +230,73 @@ function arrangeVoteRoundTrip() {
   mockedVote.tallyByIssue.mockResolvedValue(ok({ up: 1, down: 0 }))
   mockedVote.findByIssueAndUser.mockResolvedValue(ok(null))
 }
+
+describe('IssueVoteService error propagation', () => {
+  const boom = err(databaseError('boom'))
+
+  const methods = {
+    summary: () => IssueVoteService.summary('actor', 'ws1', 'proj-slug', 'i1'),
+    cast: () =>
+      IssueVoteService.cast('actor', 'ws1', 'proj-slug', 'i1', { type: 'UP' }),
+    retract: () => IssueVoteService.retract('actor', 'ws1', 'proj-slug', 'i1'),
+  }
+
+  it.each(
+    Object.keys(methods) as (keyof typeof methods)[],
+  )('%s() stops when the actor is not a workspace member', async (name) => {
+    arrangeVoteRoundTrip()
+    mockedMembership.findByUserAndWorkspace.mockResolvedValue(ok(null))
+    mockedProject.findByWorkspaceAndSlug.mockResolvedValue(ok(projectWith()))
+
+    expectErr(await methods[name](), 'FORBIDDEN')
+    expect(mockedIssue.findById).not.toHaveBeenCalled()
+    expect(mockedVote.upsert).not.toHaveBeenCalled()
+    expect(mockedVote.delete).not.toHaveBeenCalled()
+  })
+
+  it.each(
+    Object.keys(methods) as (keyof typeof methods)[],
+  )('%s() propagates a failing issue lookup and stops', async (name) => {
+    arrangeVoteRoundTrip()
+    inProject()
+    mockedIssue.findById.mockResolvedValue(boom)
+
+    expectErr(await methods[name](), 'DATABASE_ERROR')
+    expect(mockedVote.upsert).not.toHaveBeenCalled()
+    expect(mockedVote.delete).not.toHaveBeenCalled()
+    expect(mockedVote.tallyByIssue).not.toHaveBeenCalled()
+  })
+
+  it.each([
+    'summary',
+    'retract',
+  ] as const)('%s() returns ISSUE_NOT_FOUND for an issue of another project', async (name) => {
+    arrangeVoteRoundTrip()
+    inProject()
+    mockedIssue.findById.mockResolvedValue(
+      ok(createFakeIssue({ projectId: 'other-proj' })),
+    )
+
+    expectErr(await methods[name](), 'ISSUE_NOT_FOUND')
+    expect(mockedVote.delete).not.toHaveBeenCalled()
+    expect(mockedVote.tallyByIssue).not.toHaveBeenCalled()
+  })
+
+  it('cast() propagates a failing upsert and does not build the summary', async () => {
+    arrangeVoteRoundTrip()
+    inProject()
+    mockedVote.upsert.mockResolvedValue(boom)
+
+    expectErr(await methods.cast(), 'DATABASE_ERROR')
+    expect(mockedVote.tallyByIssue).not.toHaveBeenCalled()
+  })
+
+  it('propagates a failing own-vote lookup after the tally', async () => {
+    arrangeVoteRoundTrip()
+    inProject()
+    mockedVote.findByIssueAndUser.mockResolvedValue(boom)
+
+    expectErr(await methods.summary(), 'DATABASE_ERROR')
+    expect(mockedVote.tallyByIssue).toHaveBeenCalled()
+  })
+})

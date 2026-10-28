@@ -367,3 +367,66 @@ describeProjectAccessGate('LabelService', [
     sideEffects: () => [mockedLabel.delete],
   },
 ])
+
+describe('LabelService error propagation', () => {
+  const dbError = err(databaseError('boom'))
+
+  function arrangeLead() {
+    mockedMembership.findByUserAndWorkspace.mockResolvedValue(
+      ok(memberMembership),
+    )
+    mockedProject.findByWorkspaceAndSlug.mockResolvedValue(
+      ok(projectWith({ leadId: 'actor' })),
+    )
+  }
+
+  const calls = {
+    list: () => LabelService.list('actor', 'ws1', 'proj-slug'),
+    create: () =>
+      LabelService.create('actor', 'ws1', 'proj-slug', {
+        name: 'Bug',
+        color: 'RED',
+      }),
+    update: () =>
+      LabelService.update('actor', 'ws1', 'proj-slug', 'label-1', {
+        name: 'Renamed',
+      }),
+    delete: () => LabelService.delete('actor', 'ws1', 'proj-slug', 'label-1'),
+  }
+
+  it.each(
+    Object.keys(calls) as (keyof typeof calls)[],
+  )('%s() propagates a failing project lookup and stops', async (method) => {
+    mockedMembership.findByUserAndWorkspace.mockResolvedValue(
+      ok(ownerMembership),
+    )
+    mockedProject.findByWorkspaceAndSlug.mockResolvedValue(dbError)
+
+    const result = await calls[method]()
+
+    expectErr(result, 'DATABASE_ERROR')
+    expect(mockedLabel.listByProject).not.toHaveBeenCalled()
+    expect(mockedLabel.create).not.toHaveBeenCalled()
+    expect(mockedLabel.findById).not.toHaveBeenCalled()
+  })
+
+  it('list() propagates a failing listByProject', async () => {
+    arrangeLead()
+    mockedLabel.listByProject.mockResolvedValue(dbError)
+
+    expectErr(await calls.list(), 'DATABASE_ERROR')
+  })
+
+  it.each([
+    ['update', () => mockedLabel.update],
+    ['delete', () => mockedLabel.delete],
+  ] as const)('%s() propagates a failing findById and stops', async (method, write) => {
+    arrangeLead()
+    mockedLabel.findById.mockResolvedValue(dbError)
+
+    const result = await calls[method]()
+
+    expectErr(result, 'DATABASE_ERROR')
+    expect(write()).not.toHaveBeenCalled()
+  })
+})

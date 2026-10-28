@@ -332,4 +332,19 @@ describe('CareerJobService', () => {
       expectErr(result, 'DATABASE_ERROR')
     })
   })
+
+  describe('list guard propagation', () => {
+    it('listPublic() propagates a failing repository', async () => {
+      mockedRepo.listPublic.mockResolvedValue(err(databaseError('boom')))
+
+      expectErr(await CareerJobService.listPublic(), 'DATABASE_ERROR')
+    })
+
+    it('listAll() propagates a failing repository for an admin', async () => {
+      mockedRepo.listAll.mockResolvedValue(err(databaseError('boom')))
+
+      expectErr(await CareerJobService.listAll(admin), 'DATABASE_ERROR')
+      expect(mockedRepo.listAll).toHaveBeenCalledOnce()
+    })
+  })
 })

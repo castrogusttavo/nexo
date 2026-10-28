@@ -570,4 +570,50 @@ describe('InvitationRepository', () => {
       expectErr(result, 'DATABASE_ERROR')
     })
   })
+
+  describe('updateRole()', () => {
+    it('should change the role of the invitation', async () => {
+      const { inviter, ws } = await seedInviterAndWorkspace()
+      const invite = await seedInvitation({
+        invitedById: inviter.id,
+        workspaceId: ws.id,
+        email: 'role@example.com',
+      })
+
+      const result = await InvitationRepository.updateRole(invite.id, 'ADMIN')
+
+      expect(expectOk(result).role).toBe('ADMIN')
+    })
+
+    it('should return DATABASE_ERROR for a missing id', async () => {
+      expectErr(
+        await InvitationRepository.updateRole('nonexistent', 'ADMIN'),
+        'DATABASE_ERROR',
+      )
+    })
+  })
+
+  describe('accept() under the seat limit', () => {
+    it('should create the membership when the cap still has room', async () => {
+      const { inviter, ws } = await seedInviterAndWorkspace()
+      const invitee = await seedUser({
+        email: `room-${Date.now()}@example.com`,
+      })
+      const invite = await seedInvitation({
+        invitedById: inviter.id,
+        workspaceId: ws.id,
+        email: invitee.email,
+      })
+
+      const result = await InvitationRepository.accept({
+        invitationId: invite.id,
+        userId: invitee.id,
+        workspaceId: ws.id,
+        role: 'MEMBER',
+        seatLimit: 5,
+      })
+
+      expect(expectOk(result).userId).toBe(invitee.id)
+    })
+  })
 })

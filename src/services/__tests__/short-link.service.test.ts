@@ -178,3 +178,23 @@ describe('ShortLinkService', () => {
     })
   })
 })
+
+describe('ShortLinkService error propagation', () => {
+  it.each([
+    [
+      'update',
+      () => ShortLinkService.update('user-1', 'sl-1', { title: 'X' }),
+      () => mockedRepo.update,
+    ],
+    [
+      'delete',
+      () => ShortLinkService.delete('user-1', 'sl-1'),
+      () => mockedRepo.delete,
+    ],
+  ] as const)('%s() propagates a failing findById and stops', async (_name, call, write) => {
+    mockedRepo.findById.mockResolvedValue(err(databaseError('boom')))
+
+    expectErr(await call(), 'DATABASE_ERROR')
+    expect(write()).not.toHaveBeenCalled()
+  })
+})

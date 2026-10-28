@@ -184,4 +184,62 @@ describe('WikiCommentRepository', () => {
       expectErr(result, 'WIKI_COMMENT_NOT_FOUND')
     })
   })
+
+  describe('database failures', () => {
+    it('listByWikiPage() should return DATABASE_ERROR when the query throws', async () => {
+      vi.spyOn(prisma.wikiComment, 'findMany').mockRejectedValueOnce(
+        new Error('boom'),
+      )
+      expectErr(
+        await WikiCommentRepository.listByWikiPage('x'),
+        'DATABASE_ERROR',
+      )
+    })
+
+    it('create() should return DATABASE_ERROR when the query throws', async () => {
+      vi.spyOn(prisma.wikiComment, 'create').mockRejectedValueOnce(
+        new Error('boom'),
+      )
+      const result = await WikiCommentRepository.create({
+        wikiPageId: 'x',
+        authorId: 'x',
+        markId: 'm',
+        content: [],
+      })
+      expectErr(result, 'DATABASE_ERROR')
+    })
+
+    it('update() should return DATABASE_ERROR for a non-P2025 failure', async () => {
+      vi.spyOn(prisma.wikiComment, 'update').mockRejectedValueOnce(
+        new Error('boom'),
+      )
+      expectErr(await WikiCommentRepository.update('x', []), 'DATABASE_ERROR')
+    })
+
+    it('resolve() should return WIKI_COMMENT_NOT_FOUND for a missing id', async () => {
+      const result = await WikiCommentRepository.resolve('nonexistent', {
+        resolved: true,
+        resolvedById: null,
+      })
+      expectErr(result, 'WIKI_COMMENT_NOT_FOUND')
+    })
+
+    it('resolve() should return DATABASE_ERROR for a non-P2025 failure', async () => {
+      vi.spyOn(prisma.wikiComment, 'update').mockRejectedValueOnce(
+        new Error('boom'),
+      )
+      const result = await WikiCommentRepository.resolve('x', {
+        resolved: false,
+        resolvedById: null,
+      })
+      expectErr(result, 'DATABASE_ERROR')
+    })
+
+    it('delete() should return DATABASE_ERROR for a non-P2025 failure', async () => {
+      vi.spyOn(prisma.wikiComment, 'delete').mockRejectedValueOnce(
+        new Error('boom'),
+      )
+      expectErr(await WikiCommentRepository.delete('x'), 'DATABASE_ERROR')
+    })
+  })
 })

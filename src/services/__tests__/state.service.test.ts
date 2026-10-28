@@ -539,3 +539,71 @@ describeProjectAccessGate('StateService', [
     sideEffects: () => [mockedState.setDefault],
   },
 ])
+
+describe('StateService error propagation', () => {
+  const dbError = err(databaseError('boom'))
+
+  function arrangeLead() {
+    mockedMembership.findByUserAndWorkspace.mockResolvedValue(
+      ok(memberMembership),
+    )
+    mockedProject.findByWorkspaceAndSlug.mockResolvedValue(
+      ok(projectWith({ leadId: 'actor' })),
+    )
+  }
+
+  const calls = {
+    list: () => StateService.list('actor', 'ws1', 'proj-slug'),
+    create: () =>
+      StateService.create('actor', 'ws1', 'proj-slug', {
+        name: 'Custom',
+        group: 'STARTED',
+        color: 'ZINC',
+      }),
+    update: () =>
+      StateService.update('actor', 'ws1', 'proj-slug', 'state-1', {
+        name: 'Renamed',
+      }),
+    delete: () => StateService.delete('actor', 'ws1', 'proj-slug', 'state-1'),
+    setDefault: () =>
+      StateService.setDefault('actor', 'ws1', 'proj-slug', 'state-1'),
+  }
+
+  it.each(
+    Object.keys(calls) as (keyof typeof calls)[],
+  )('%s() propagates a failing project lookup and stops', async (method) => {
+    mockedMembership.findByUserAndWorkspace.mockResolvedValue(
+      ok(ownerMembership),
+    )
+    mockedProject.findByWorkspaceAndSlug.mockResolvedValue(dbError)
+
+    const result = await calls[method]()
+
+    expectErr(result, 'DATABASE_ERROR')
+    expect(mockedState.findById).not.toHaveBeenCalled()
+    expect(mockedState.listByProject).not.toHaveBeenCalled()
+    expect(mockedState.create).not.toHaveBeenCalled()
+  })
+
+  it('list() propagates a failing listByProject', async () => {
+    arrangeLead()
+    mockedState.listByProject.mockResolvedValue(dbError)
+
+    expectErr(await calls.list(), 'DATABASE_ERROR')
+  })
+
+  it.each([
+    ['update', () => mockedState.update],
+    ['delete', () => mockedState.delete],
+    ['setDefault', () => mockedState.setDefault],
+  ] as const)('%s() propagates a failing findById and stops', async (method, write) => {
+    arrangeLead()
+    mockedState.findById.mockResolvedValue(dbError)
+
+    const result = await calls[method]()
+
+    expectErr(result, 'DATABASE_ERROR')
+    expect(write()).not.toHaveBeenCalled()
+    expect(mockedState.countByGroup).not.toHaveBeenCalled()
+  })
+})

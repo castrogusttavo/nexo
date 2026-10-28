@@ -163,4 +163,98 @@ describe('WikiPageRepository', () => {
       )
     })
   })
+
+  describe('update()', () => {
+    it('should update the fields and updatedById', async () => {
+      const workspace = await seedWorkspace()
+      const user = await seedUser()
+      const seeded = await seedWikiPage(workspace.id, user.id)
+
+      const result = await WikiPageRepository.update(seeded.id, {
+        title: 'Renomeada',
+        icon: '📄',
+        updatedById: user.id,
+      })
+
+      const page = expectOk(result)
+      expect(page.title).toBe('Renomeada')
+      expect(page.icon).toBe('📄')
+      expect(page.updatedById).toBe(user.id)
+    })
+
+    it('should return DATABASE_ERROR for a missing id', async () => {
+      const user = await seedUser()
+      const result = await WikiPageRepository.update('nonexistent', {
+        title: 'X',
+        updatedById: user.id,
+      })
+      expectErr(result, 'DATABASE_ERROR')
+    })
+  })
+
+  describe('move()', () => {
+    it('should change the parent and the position', async () => {
+      const workspace = await seedWorkspace()
+      const user = await seedUser()
+      const parent = await seedWikiPage(workspace.id, user.id)
+      const seeded = await seedWikiPage(workspace.id, user.id)
+
+      const result = await WikiPageRepository.move(seeded.id, {
+        parentId: parent.id,
+        position: 3,
+        updatedById: user.id,
+      })
+
+      const page = expectOk(result)
+      expect(page.parentId).toBe(parent.id)
+      expect(page.position).toBe(3)
+    })
+
+    it('should return DATABASE_ERROR for a missing id', async () => {
+      const user = await seedUser()
+      const result = await WikiPageRepository.move('nonexistent', {
+        parentId: null,
+        position: 0,
+        updatedById: user.id,
+      })
+      expectErr(result, 'DATABASE_ERROR')
+    })
+  })
+
+  describe('database failures', () => {
+    it('listByWorkspace() should return DATABASE_ERROR when the query throws', async () => {
+      vi.spyOn(prisma.wikiPage, 'findMany').mockRejectedValueOnce(
+        new Error('boom'),
+      )
+      expectErr(await WikiPageRepository.listByWorkspace('x'), 'DATABASE_ERROR')
+    })
+
+    it('create() should return DATABASE_ERROR when the query throws', async () => {
+      vi.spyOn(prisma.wikiPage, 'count').mockRejectedValueOnce(
+        new Error('boom'),
+      )
+      const result = await WikiPageRepository.create({
+        workspaceId: 'x',
+        parentId: null,
+        title: 'T',
+        createdById: 'x',
+      })
+      expectErr(result, 'DATABASE_ERROR')
+    })
+
+    it('archive() should return DATABASE_ERROR for a missing id', async () => {
+      expectErr(
+        await WikiPageRepository.archive('nonexistent', 'x'),
+        'DATABASE_ERROR',
+      )
+    })
+
+    it('updateYjsState() should return DATABASE_ERROR for a missing id', async () => {
+      const result = await WikiPageRepository.updateYjsState('nonexistent', {
+        yjsState: new Uint8Array([1]),
+        updatedById: 'x',
+      })
+      expectErr(result, 'DATABASE_ERROR')
+    })
+  })
 })

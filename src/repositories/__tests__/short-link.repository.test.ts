@@ -1,9 +1,13 @@
-import { describe, expect, it } from 'vitest'
+import { afterEach, describe, expect, it, vi } from 'vitest'
 import { seedShortLink } from '@/src/__tests__/factories/short-link.factory'
 import { seedUser } from '@/src/__tests__/factories/user.factory'
 import { expectErr, expectOk } from '@/src/__tests__/helpers/result.helpers'
 import { prisma } from '@/src/lib/prisma'
 import { ShortLinkRepository } from '../short-link.repository'
+
+afterEach(() => {
+  vi.restoreAllMocks()
+})
 
 describe('ShortLinkRepository', () => {
   describe('findById()', () => {
@@ -140,6 +144,22 @@ describe('ShortLinkRepository', () => {
       const result = await ShortLinkRepository.delete('nonexistent')
 
       expectErr(result, 'DATABASE_ERROR')
+    })
+  })
+
+  describe('database failures', () => {
+    it('findById() should return DATABASE_ERROR when the query throws', async () => {
+      vi.spyOn(prisma.shortLink, 'findUnique').mockRejectedValueOnce(
+        new Error('boom'),
+      )
+      expectErr(await ShortLinkRepository.findById('x'), 'DATABASE_ERROR')
+    })
+
+    it('listByUserId() should return DATABASE_ERROR when the query throws', async () => {
+      vi.spyOn(prisma.shortLink, 'findMany').mockRejectedValueOnce(
+        new Error('boom'),
+      )
+      expectErr(await ShortLinkRepository.listByUserId('x'), 'DATABASE_ERROR')
     })
   })
 })

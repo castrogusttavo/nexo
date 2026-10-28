@@ -58,4 +58,27 @@ describe('formatCollectReport', () => {
     )
     expect(formatCollectReport([core], { color: true })).toContain('\u001b[')
   })
+
+  it('truncates a long error to one 120-character line', () => {
+    const long = `${'x'.repeat(200)}\n  at somewhere`
+    const out = formatCollectReport([{ tier: 'core', error: long }], {
+      color: false,
+    })
+    const row = out.split('\n')[1] ?? ''
+    const error = row.slice(row.indexOf('x'))
+
+    expect(error).toHaveLength(120)
+    expect(error.endsWith('…')).toBe(true)
+    expect(error).not.toContain('somewhere')
+  })
+
+  it('colours a failed tier as an outage and leaves the header plain', () => {
+    const out = formatCollectReport([{ tier: 'peripheral', error: 'boom' }], {
+      color: true,
+    })
+    const [header, row] = out.split('\n')
+
+    expect(header).not.toContain('\u001b[')
+    expect(row).toContain('\u001b[31mCOLLECT_FAILED\u001b[0m')
+  })
 })

@@ -8,6 +8,7 @@ import { seedState } from '@/src/__tests__/factories/state.factory'
 import { seedUser } from '@/src/__tests__/factories/user.factory'
 import { seedWorkspace } from '@/src/__tests__/factories/workspace.factory'
 import { expectErr, expectOk } from '@/src/__tests__/helpers/result.helpers'
+import { prisma } from '@/src/lib/prisma'
 import { IssueLabelRepository } from '../issue-label.repository'
 
 afterEach(() => {
@@ -88,6 +89,22 @@ describe('IssueLabelRepository', () => {
 
       expect(expectOk(result)).toHaveLength(1)
       expect(expectOk(result)[0].label.id).toBe(label.id)
+    })
+  })
+
+  describe('database failures', () => {
+    it('list() should return DATABASE_ERROR when the query throws', async () => {
+      vi.spyOn(prisma.issueLabel, 'findMany').mockRejectedValueOnce(
+        new Error('boom'),
+      )
+      expectErr(await IssueLabelRepository.list('x'), 'DATABASE_ERROR')
+    })
+
+    it('remove() should return DATABASE_ERROR when the query throws', async () => {
+      vi.spyOn(prisma.issueLabel, 'deleteMany').mockRejectedValueOnce(
+        new Error('boom'),
+      )
+      expectErr(await IssueLabelRepository.remove('x', 'y'), 'DATABASE_ERROR')
     })
   })
 })

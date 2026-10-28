@@ -1480,3 +1480,132 @@ function arrangeProjectRoundTrip() {
     ok(createFakeProject({ id: GATE_PROJECT_ID, name: 'Renamed' })),
   )
 }
+
+describe('ProjectService error propagation', () => {
+  const boom = err(databaseError('boom'))
+
+  function arrangeOwnerOfProject(members: { userId: string }[] = []) {
+    mockedMembership.findByUserAndWorkspace.mockResolvedValue(
+      ok(ownerMembership),
+    )
+    mockedProject.findByWorkspaceAndSlug.mockResolvedValue(
+      ok({
+        ...createFakeProject({
+          id: GATE_PROJECT_ID,
+          leadId: 'lead-1',
+          workspaceId: 'ws1',
+        }),
+        members,
+        favourites: [] as [],
+      }),
+    )
+    arrangeProjectRoundTrip()
+  }
+
+  const calls = {
+    getBySlug: () => ProjectService.getBySlug('actor', 'ws1', 'proj-slug'),
+    listMembers: () => ProjectService.listMembers('actor', 'ws1', 'proj-slug'),
+    addMember: () =>
+      ProjectService.addMember('actor', 'ws1', 'proj-slug', 'target-user'),
+    removeMember: () =>
+      ProjectService.removeMember('actor', 'ws1', 'proj-slug', 'target-user'),
+  }
+
+  it.each(
+    Object.entries(calls),
+  )('%s() propagates a failing project lookup and stops', async (_, call) => {
+    arrangeOwnerOfProject()
+    mockedProject.findByWorkspaceAndSlug.mockResolvedValue(boom)
+
+    expect(expectErr(await call(), 'DATABASE_ERROR').message).toBe('boom')
+    expect(mockedProject.listMembers).not.toHaveBeenCalled()
+    expect(mockedProject.addMember).not.toHaveBeenCalled()
+    expect(mockedProject.removeMember).not.toHaveBeenCalled()
+  })
+
+  it.each([
+    'addMember',
+    'removeMember',
+  ] as const)('%s() propagates a failing membership lookup and stops', async (method) => {
+    arrangeOwnerOfProject()
+    mockedMembership.findByUserAndWorkspace.mockResolvedValue(boom)
+
+    expectErr(await calls[method](), 'DATABASE_ERROR')
+    expect(mockedProject.findByWorkspaceAndSlug).not.toHaveBeenCalled()
+  })
+
+  it.each([
+    ['listMembers', 'listMembers'],
+    ['addMember', 'addMember'],
+    ['removeMember', 'removeMember'],
+  ] as const)('%s() propagates a failing %s write', async (method, failing) => {
+    arrangeOwnerOfProject()
+    mockedProject[failing].mockResolvedValue(boom as never)
+
+    expect(expectErr(await calls[method](), 'DATABASE_ERROR').message).toBe(
+      'boom',
+    )
+  })
+
+  it('addMember() refuses a target outside the workspace without writing', async () => {
+    arrangeOwnerOfProject()
+    mockedMembership.findByUserAndWorkspace.mockImplementation(
+      async (userId) => (userId === 'actor' ? ok(ownerMembership) : ok(null)),
+    )
+
+    expectErr(await calls.addMember(), 'PROJECT_MEMBER_NOT_IN_WORKSPACE')
+    expect(mockedProject.addMember).not.toHaveBeenCalled()
+  })
+
+  it('removeMember() refuses to remove the project lead', async () => {
+    arrangeOwnerOfProject()
+
+    const error = expectErr(
+      await ProjectService.removeMember('actor', 'ws1', 'proj-slug', 'lead-1'),
+      'PROJECT_FORBIDDEN',
+    )
+
+    expect(error.message).toBe('Não é possível remover o lead do projeto')
+    expect(mockedProject.removeMember).not.toHaveBeenCalled()
+  })
+
+  it('update() refuses a new lead who is not a project member', async () => {
+    arrangeOwnerOfProject([{ userId: 'member-1' }])
+
+    expectErr(
+      await ProjectService.update('actor', 'ws1', 'proj-slug', {
+        leadId: 'stranger',
+      }),
+      'PROJECT_MEMBER_NOT_FOUND',
+    )
+    expect(mockedProject.update).not.toHaveBeenCalled()
+  })
+
+  it('update() hands the lead to a project member', async () => {
+    arrangeOwnerOfProject([{ userId: 'member-1' }])
+
+    expectOk(
+      await ProjectService.update('actor', 'ws1', 'proj-slug', {
+        leadId: 'member-1',
+      }),
+    )
+    expect(mockedProject.update).toHaveBeenCalledWith(
+      GATE_PROJECT_ID,
+      expect.objectContaining({ leadId: 'member-1' }),
+    )
+  })
+
+  it('update() propagates a failing workspace lookup before touching the state', async () => {
+    arrangeOwnerOfProject()
+    mockedWorkspace.findById.mockResolvedValue(boom)
+
+    expectErr(
+      await ProjectService.update('actor', 'ws1', 'proj-slug', {
+        stateId: 'pstate-1',
+      }),
+      'DATABASE_ERROR',
+    )
+    expect(mockedProjectState.findById).not.toHaveBeenCalled()
+    expect(mockedProject.update).not.toHaveBeenCalled()
+  })
+})

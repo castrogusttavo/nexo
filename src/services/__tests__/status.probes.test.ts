@@ -235,6 +235,39 @@ describe('one retry before declaring an outage', () => {
     expect(fetchSpy).toHaveBeenCalledTimes(2)
   })
 
+  it("falls back to the retry's error when the first rejection carried none", async () => {
+    const ping = vi
+      .fn()
+      .mockRejectedValueOnce(undefined)
+      .mockRejectedValue(new Error('ECONNREFUSED'))
+    vi.mocked(ensureRedisConnected).mockResolvedValue({ ping } as never)
+
+    const result = await probeCache()
+
+    expect(result.status).toBe('MAJOR_OUTAGE')
+    expect(result.error).toContain('ECONNREFUSED')
+    expect(ping).toHaveBeenCalledTimes(2)
+  })
+
+  it('declares the outage when a hung probe hits its timeout twice', async () => {
+    vi.useFakeTimers()
+    try {
+      const ping = vi.fn(() => new Promise<string>(() => {}))
+      vi.mocked(ensureRedisConnected).mockResolvedValue({ ping } as never)
+
+      const pending = probeCache()
+      // 5s timeout, 250ms pause, 5s timeout on the retry.
+      await vi.advanceTimersByTimeAsync(10_250)
+      const result = await pending
+
+      expect(result.status).toBe('MAJOR_OUTAGE')
+      expect(result.error).toBe('Timed out after 5000ms')
+      expect(ping).toHaveBeenCalledTimes(2)
+    } finally {
+      vi.useRealTimers()
+    }
+  })
+
   it('does not retry a successful-but-slow sample', async () => {
     measure(4_000)
     fetchSpy.mockResolvedValue(new Response('ok', { status: 200 }))

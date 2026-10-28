@@ -1,6 +1,7 @@
 import { afterEach, describe, expect, it, vi } from 'vitest'
 import { seedUser } from '@/src/__tests__/factories/user.factory'
 import { expectErr, expectOk } from '@/src/__tests__/helpers/result.helpers'
+import { prisma } from '@/src/lib/prisma'
 import { ActivityRepository } from '../activity.repository'
 
 afterEach(() => {
@@ -122,6 +123,18 @@ describe('ActivityRepository', () => {
 
       const result = await ActivityRepository.listByEntity('ISSUE', 'issue-1')
       expect(expectOk(result)[0].actor?.id).toBe(actor.id)
+    })
+  })
+
+  describe('database failures', () => {
+    it('listByEntity() should return DATABASE_ERROR when the query throws', async () => {
+      vi.spyOn(prisma.activity, 'findMany').mockRejectedValueOnce(
+        new Error('boom'),
+      )
+      expectErr(
+        await ActivityRepository.listByEntity('ISSUE', 'x'),
+        'DATABASE_ERROR',
+      )
     })
   })
 })

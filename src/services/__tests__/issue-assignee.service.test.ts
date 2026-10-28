@@ -368,3 +368,92 @@ function arrangeAssigneeRoundTrip() {
   )
   mockedSubscriber.unsubscribe.mockResolvedValue(ok(undefined))
 }
+
+describe('IssueAssigneeService error propagation', () => {
+  const boom = err(databaseError('boom'))
+
+  function arrange() {
+    arrangeAssigneeRoundTrip()
+    mockedMembership.findByUserAndWorkspace.mockResolvedValue(
+      ok(memberMembership),
+    )
+    mockedProject.findByWorkspaceAndSlug.mockResolvedValue(ok(projectWith()))
+  }
+
+  const methods = {
+    list: () =>
+      IssueAssigneeService.list('actor', 'ws1', 'proj-slug', 'issue-1'),
+    assign: () =>
+      IssueAssigneeService.assign(
+        'actor',
+        'ws1',
+        'proj-slug',
+        'issue-1',
+        'target',
+      ),
+    unassign: () =>
+      IssueAssigneeService.unassign(
+        'actor',
+        'ws1',
+        'proj-slug',
+        'issue-1',
+        'target',
+      ),
+    subscribe: () =>
+      IssueAssigneeService.subscribe('actor', 'ws1', 'proj-slug', 'issue-1'),
+    unsubscribe: () =>
+      IssueAssigneeService.unsubscribe('actor', 'ws1', 'proj-slug', 'issue-1'),
+  }
+  const names = Object.keys(methods) as (keyof typeof methods)[]
+
+  function expectNoAssigneeWork() {
+    expect(mockedAssignee.list).not.toHaveBeenCalled()
+    expect(mockedAssignee.assign).not.toHaveBeenCalled()
+    expect(mockedAssignee.unassign).not.toHaveBeenCalled()
+    expect(mockedSubscriber.subscribe).not.toHaveBeenCalled()
+    expect(mockedSubscriber.unsubscribe).not.toHaveBeenCalled()
+  }
+
+  it.each(
+    names,
+  )('%s() stops when the actor is not a workspace member', async (name) => {
+    arrange()
+    mockedMembership.findByUserAndWorkspace.mockResolvedValue(ok(null))
+
+    expectErr(await methods[name](), 'FORBIDDEN')
+    expect(mockedIssue.findById).not.toHaveBeenCalled()
+    expectNoAssigneeWork()
+  })
+
+  it.each(
+    names,
+  )('%s() propagates a failing issue lookup and stops', async (name) => {
+    arrange()
+    mockedIssue.findById.mockResolvedValue(boom)
+
+    expectErr(await methods[name](), 'DATABASE_ERROR')
+    expectNoAssigneeWork()
+  })
+
+  it('list() propagates a failing assignee list', async () => {
+    arrange()
+    mockedAssignee.list.mockResolvedValue(boom)
+
+    expectErr(await methods.list(), 'DATABASE_ERROR')
+  })
+
+  it('assign() propagates a failing assign and does not auto-subscribe', async () => {
+    arrange()
+    mockedAssignee.assign.mockResolvedValue(boom)
+
+    expectErr(await methods.assign(), 'DATABASE_ERROR')
+    expect(mockedSubscriber.subscribe).not.toHaveBeenCalled()
+  })
+
+  it('subscribe() propagates a failing subscribe', async () => {
+    arrange()
+    mockedSubscriber.subscribe.mockResolvedValue(boom)
+
+    expectErr(await methods.subscribe(), 'DATABASE_ERROR')
+  })
+})

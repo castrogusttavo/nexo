@@ -361,3 +361,68 @@ describe('StatusService.collect() -- alert when the collection itself cannot be 
     expect(sentTexts()[1]).toContain('coleta de status voltou')
   })
 })
+
+describe('StatusService.collect() -- lifecycle edges that still alert', () => {
+  it('reminds while the incident stays open across a reminder interval', async () => {
+    await collectAt('OPERATIONAL')
+    await collectAt('MAJOR_OUTAGE', 'down')
+    // The incident has been open for just under six hours: the next check
+    // crosses the interval.
+    const incident = incidents[0]
+    if (incident) incident.startedAt = new Date(now - 6 * 60 * MINUTE + 30_000)
+    fetchMock.mockClear()
+
+    expectOk(await collectAt('MAJOR_OUTAGE', 'down'))
+
+    expect(sentTexts()).toHaveLength(1)
+    expect(sentTexts()[0]).toContain('continua fora do ar há')
+    expect(sentTexts()[0]).toContain('Erro: `down`')
+  })
+
+  it('still posts the recovery and logs when closing the incident fails', async () => {
+    await collectAt('OPERATIONAL')
+    await collectAt('MAJOR_OUTAGE', 'down')
+    mockedIncidentRepo.close.mockResolvedValue(
+      err(databaseError('close failed')),
+    )
+    fetchMock.mockClear()
+
+    expectOk(await collectAt('OPERATIONAL'))
+
+    expect(sentTexts()).toHaveLength(1)
+    expect(sentTexts()[0]).toContain('voltou ao normal')
+    expect(mockedLogger.error).toHaveBeenCalledWith(
+      'status.incident_eval_failed',
+      expect.objectContaining({
+        componentKey: 'database',
+        errorCode: 'DATABASE_ERROR',
+        message: 'close failed',
+      }),
+    )
+  })
+
+  it('logs a failed history read and falls back to the open incident as the previous state', async () => {
+    await collectAt('OPERATIONAL')
+    await collectAt('MAJOR_OUTAGE', 'down')
+    mockedStatusRepo.findRecentChecks.mockResolvedValue(
+      err(databaseError('history failed')),
+    )
+    fetchMock.mockClear()
+
+    const result = await collectAt('OPERATIONAL')
+
+    expectOk(result)
+    expect(mockedLogger.error).toHaveBeenCalledWith(
+      'status.alert_history_failed',
+      expect.objectContaining({
+        errorCode: 'DATABASE_ERROR',
+        message: 'history failed',
+      }),
+    )
+    // No history: the open MAJOR_OUTAGE incident stands in for the previous
+    // check, so the recovery is still reported.
+    expect(sentTexts()).toHaveLength(1)
+    expect(sentTexts()[0]).toContain('voltou ao normal')
+    expect(incidents[0]?.resolvedAt).not.toBeNull()
+  })
+})

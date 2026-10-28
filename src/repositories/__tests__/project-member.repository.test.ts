@@ -7,6 +7,7 @@ import {
 import { seedUser } from '@/src/__tests__/factories/user.factory'
 import { seedWorkspace } from '@/src/__tests__/factories/workspace.factory'
 import { expectErr, expectOk } from '@/src/__tests__/helpers/result.helpers'
+import { prisma } from '@/src/lib/prisma'
 import { ProjectRepository } from '@/src/repositories/project.repository'
 
 afterEach(() => {
@@ -78,6 +79,32 @@ describe('ProjectRepository - members', () => {
       const result = await ProjectRepository.removeMember('ghost', project.id)
 
       expectErr(result, 'PROJECT_MEMBER_NOT_FOUND')
+    })
+  })
+
+  describe('database failures', () => {
+    it('listMembers() should return DATABASE_ERROR when the query throws', async () => {
+      vi.spyOn(prisma.projectMember, 'findMany').mockRejectedValueOnce(
+        new Error('boom'),
+      )
+      expectErr(await ProjectRepository.listMembers('x'), 'DATABASE_ERROR')
+    })
+
+    it('addMember() should return DATABASE_ERROR for a non-unique failure', async () => {
+      vi.spyOn(prisma.projectMember, 'create').mockRejectedValueOnce(
+        new Error('boom'),
+      )
+      expectErr(await ProjectRepository.addMember('u', 'p'), 'DATABASE_ERROR')
+    })
+
+    it('removeMember() should return DATABASE_ERROR when the query throws', async () => {
+      vi.spyOn(prisma.projectMember, 'deleteMany').mockRejectedValueOnce(
+        new Error('boom'),
+      )
+      expectErr(
+        await ProjectRepository.removeMember('u', 'p'),
+        'DATABASE_ERROR',
+      )
     })
   })
 })

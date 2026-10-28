@@ -5,6 +5,7 @@ import { seedProject } from '@/src/__tests__/factories/project.factory'
 import { seedUser } from '@/src/__tests__/factories/user.factory'
 import { seedWorkspace } from '@/src/__tests__/factories/workspace.factory'
 import { expectErr, expectOk } from '@/src/__tests__/helpers/result.helpers'
+import { prisma } from '@/src/lib/prisma'
 import { EstimateValueRepository } from '@/src/repositories/estimate-value.repository'
 
 afterEach(() => {
@@ -154,6 +155,52 @@ describe('EstimateValueRepository', () => {
       ])
 
       expectErr(result, 'DATABASE_ERROR')
+    })
+  })
+
+  describe('database failures', () => {
+    it('findById() should return DATABASE_ERROR when the query throws', async () => {
+      vi.spyOn(prisma.estimateValue, 'findUnique').mockRejectedValueOnce(
+        new Error('boom'),
+      )
+      expectErr(await EstimateValueRepository.findById('x'), 'DATABASE_ERROR')
+    })
+
+    it('listByEstimateSettingsId() should return DATABASE_ERROR when the query throws', async () => {
+      vi.spyOn(prisma.estimateValue, 'findMany').mockRejectedValueOnce(
+        new Error('boom'),
+      )
+      expectErr(
+        await EstimateValueRepository.listByEstimateSettingsId('x'),
+        'DATABASE_ERROR',
+      )
+    })
+
+    it('countByEstimateSettingsId() should return DATABASE_ERROR when the query throws', async () => {
+      vi.spyOn(prisma.estimateValue, 'count').mockRejectedValueOnce(
+        new Error('boom'),
+      )
+      expectErr(
+        await EstimateValueRepository.countByEstimateSettingsId('x'),
+        'DATABASE_ERROR',
+      )
+    })
+
+    it('update() should return DATABASE_ERROR for a non-P2025 failure', async () => {
+      vi.spyOn(prisma.estimateValue, 'update').mockRejectedValueOnce(
+        new Error('boom'),
+      )
+      expectErr(
+        await EstimateValueRepository.update('x', '1'),
+        'DATABASE_ERROR',
+      )
+    })
+
+    it('delete() should return DATABASE_ERROR for a non-P2025 failure', async () => {
+      vi.spyOn(prisma.estimateValue, 'delete').mockRejectedValueOnce(
+        new Error('boom'),
+      )
+      expectErr(await EstimateValueRepository.delete('x'), 'DATABASE_ERROR')
     })
   })
 })

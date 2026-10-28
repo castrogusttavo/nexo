@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest'
+import * as factories from '@/src/errors/app-error'
 import {
   appError,
   badRequest,
@@ -224,5 +225,52 @@ describe('AppError factories', () => {
       expect(ERROR_CODES[error.code].status).toBe(status)
       expect(error.message).not.toBe('')
     })
+  })
+})
+
+// Every factory without a required argument: the code follows the name
+// (careerJobNotFound -> CAREER_JOB_NOT_FOUND), is registered, carries a
+// default message and, where the factory takes one, lets a caller override it.
+const REQUIRED_ARG_FACTORIES = new Set([
+  'appError',
+  'notFound',
+  'conflict',
+  'validationError',
+  'badRequest',
+  'rateLimited',
+])
+
+const NO_ARG_FACTORIES = Object.entries(factories).filter(
+  (entry): entry is [string, (message?: string) => factories.AppError] =>
+    typeof entry[1] === 'function' && !REQUIRED_ARG_FACTORIES.has(entry[0]),
+)
+
+const toCode = (name: string) =>
+  name.replace(/([a-z0-9])([A-Z])/g, '$1_$2').toUpperCase()
+
+describe('every factory without required arguments', () => {
+  it('covers the whole module', () => {
+    expect(NO_ARG_FACTORIES.length).toBeGreaterThan(80)
+  })
+
+  it.each(
+    NO_ARG_FACTORIES,
+  )('%s() maps to its registered code with a default message', (name, factory) => {
+    const error = factory()
+
+    expect(error.code).toBe(toCode(name))
+    expect(ERROR_CODES).toHaveProperty(error.code)
+    expect(error.message).toEqual(expect.any(String))
+    expect(error.message.length).toBeGreaterThan(0)
+    expect(error).not.toHaveProperty('details')
+  })
+
+  it.each(
+    NO_ARG_FACTORIES,
+  )('%s(message) keeps the code and either honours or ignores the override', (name, factory) => {
+    const error = factory('Mensagem customizada')
+
+    expect(error.code).toBe(toCode(name))
+    expect(['Mensagem customizada', factory().message]).toContain(error.message)
   })
 })

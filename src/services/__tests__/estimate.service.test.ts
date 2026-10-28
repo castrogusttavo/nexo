@@ -632,3 +632,137 @@ describeProjectAccessGate('EstimateService', [
     sideEffects: () => [mockedEstimateValue.reorder],
   },
 ])
+
+describe('EstimateService error propagation', () => {
+  const ownerMembership = createFakeMembership({
+    userId: 'actor',
+    workspaceId: 'ws1',
+    role: 'OWNER',
+  })
+
+  function arrange() {
+    arrangeEstimateInProject()
+    mockedMembership.findByUserAndWorkspace.mockResolvedValue(
+      ok(ownerMembership),
+    )
+    mockedProject.findByWorkspaceAndSlug.mockResolvedValue(
+      ok(projectWith({ id: GATE_PROJECT_ID })),
+    )
+  }
+
+  const methods = {
+    get: () => EstimateService.get('actor', 'ws1', 'proj-slug'),
+    update: () =>
+      EstimateService.update('actor', 'ws1', 'proj-slug', {
+        system: 'TIME',
+        model: 'HOURS',
+      }),
+    createValue: () =>
+      EstimateService.createValue('actor', 'ws1', 'proj-slug', { value: '3' }),
+    updateValue: () =>
+      EstimateService.updateValue('actor', 'ws1', 'proj-slug', 'value-1', {
+        value: '5',
+      }),
+    deleteValue: () =>
+      EstimateService.deleteValue('actor', 'ws1', 'proj-slug', 'value-1'),
+    reorderValues: () =>
+      EstimateService.reorderValues('actor', 'ws1', 'proj-slug', {
+        valueIds: ['value-1'],
+      }),
+  }
+  const names = Object.keys(methods) as (keyof typeof methods)[]
+
+  const writes = () => [
+    mockedEstimate.update,
+    mockedEstimateValue.create,
+    mockedEstimateValue.update,
+    mockedEstimateValue.delete,
+    mockedEstimateValue.reorder,
+  ]
+
+  it.each(
+    names,
+  )('%s() stops when the actor is not a workspace member', async (name) => {
+    arrange()
+    mockedMembership.findByUserAndWorkspace.mockResolvedValue(ok(null))
+
+    expectErr(await methods[name](), 'FORBIDDEN')
+    expect(mockedEstimate.findByProjectId).not.toHaveBeenCalled()
+    expect(mockedEstimateValue.findById).not.toHaveBeenCalled()
+    for (const fn of writes()) expect(fn).not.toHaveBeenCalled()
+  })
+
+  // Each row fails one dependency (the ones before it succeed through
+  // arrange()) and lists the calls that must not happen afterwards.
+  it.each([
+    [
+      'get',
+      'findByProjectId',
+      () => mockedEstimate.findByProjectId,
+      () => [mockedEstimateValue.listByEstimateSettingsId],
+    ],
+    [
+      'get',
+      'listByEstimateSettingsId',
+      () => mockedEstimateValue.listByEstimateSettingsId,
+      () => [],
+    ],
+    [
+      'update',
+      'listByEstimateSettingsId',
+      () => mockedEstimateValue.listByEstimateSettingsId,
+      () => [],
+    ],
+    [
+      'createValue',
+      'findByProjectId',
+      () => mockedEstimate.findByProjectId,
+      () => [mockedEstimateValue.create],
+    ],
+    [
+      'updateValue',
+      'findById',
+      () => mockedEstimateValue.findById,
+      () => [mockedEstimate.findByProjectId, mockedEstimateValue.update],
+    ],
+    [
+      'updateValue',
+      'findByProjectId',
+      () => mockedEstimate.findByProjectId,
+      () => [mockedEstimateValue.update],
+    ],
+    [
+      'deleteValue',
+      'findById',
+      () => mockedEstimateValue.findById,
+      () => [mockedEstimate.findByProjectId, mockedEstimateValue.delete],
+    ],
+    [
+      'deleteValue',
+      'findByProjectId',
+      () => mockedEstimate.findByProjectId,
+      () => [
+        mockedEstimateValue.countByEstimateSettingsId,
+        mockedEstimateValue.delete,
+      ],
+    ],
+    [
+      'deleteValue',
+      'countByEstimateSettingsId',
+      () => mockedEstimateValue.countByEstimateSettingsId,
+      () => [mockedEstimateValue.delete],
+    ],
+    [
+      'reorderValues',
+      'findByProjectId',
+      () => mockedEstimate.findByProjectId,
+      () => [mockedEstimateValue.reorder],
+    ],
+  ] as const)('%s() propagates a failing %s and stops', async (name, _, dep, untouched) => {
+    arrange()
+    dep().mockResolvedValue(err(databaseError('boom')))
+
+    expectErr(await methods[name](), 'DATABASE_ERROR')
+    for (const fn of untouched()) expect(fn).not.toHaveBeenCalled()
+  })
+})

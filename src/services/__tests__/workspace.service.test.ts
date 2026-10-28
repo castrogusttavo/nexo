@@ -463,3 +463,39 @@ describe('WorkspaceService', () => {
     })
   })
 })
+
+describe('WorkspaceService member list fallback', () => {
+  function arrangeOwner() {
+    mockedMembershipRepo.findByUserAndWorkspace.mockResolvedValue(
+      ok(
+        createFakeMembership({
+          userId: 'owner',
+          workspaceId: 'ws1',
+          role: 'OWNER',
+        }),
+      ),
+    )
+    mockedMembershipRepo.listUserIdsByWorkspace.mockResolvedValue(
+      err(databaseError('boom')),
+    )
+    mockedWorkspaceRepo.update.mockResolvedValue(
+      ok(createFakeWorkspace({ id: 'ws1' })),
+    )
+    mockedWorkspaceRepo.delete.mockResolvedValue(ok(undefined))
+    mockedWorkspaceCache.invalidate.mockResolvedValue(undefined)
+    mockedUserCache.invalidate.mockResolvedValue(undefined)
+  }
+
+  it.each([
+    ['update', () => WorkspaceService.update('owner', 'ws1', { name: 'X' })],
+    ['delete', () => WorkspaceService.delete('owner', 'ws1')],
+  ] as const)('%s() still succeeds and invalidates only the actor when the member list fails', async (_name, call) => {
+    arrangeOwner()
+
+    expectOk<unknown>(await call())
+
+    expect(mockedWorkspaceCache.invalidate).toHaveBeenCalledWith('ws1')
+    expect(mockedUserCache.invalidate).toHaveBeenCalledTimes(1)
+    expect(mockedUserCache.invalidate).toHaveBeenCalledWith('owner')
+  })
+})

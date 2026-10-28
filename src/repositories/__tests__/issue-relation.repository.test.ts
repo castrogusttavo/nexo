@@ -7,6 +7,7 @@ import { seedState } from '@/src/__tests__/factories/state.factory'
 import { seedUser } from '@/src/__tests__/factories/user.factory'
 import { seedWorkspace } from '@/src/__tests__/factories/workspace.factory'
 import { expectErr, expectOk } from '@/src/__tests__/helpers/result.helpers'
+import { prisma } from '@/src/lib/prisma'
 import { IssueRelationRepository } from '../issue-relation.repository'
 
 afterEach(() => {
@@ -150,6 +151,69 @@ describe('IssueRelationRepository', () => {
     it('should return ISSUE_RELATION_NOT_FOUND for a missing id', async () => {
       const result = await IssueRelationRepository.findById('nonexistent')
       expectErr(result, 'ISSUE_RELATION_NOT_FOUND')
+    })
+  })
+
+  describe('findById() found', () => {
+    it('should return the record when it exists', async () => {
+      const { source, target } = await setupIssues()
+      const created = expectOk(
+        await IssueRelationRepository.create(
+          source.id,
+          target.id,
+          'RELATES_TO',
+        ),
+      )
+
+      expect(
+        expectOk(await IssueRelationRepository.findById(created.id)).id,
+      ).toBe(created.id)
+    })
+  })
+
+  describe('database failures', () => {
+    it('findById() should return DATABASE_ERROR when the query throws', async () => {
+      vi.spyOn(prisma.issueRelation, 'findUnique').mockRejectedValueOnce(
+        new Error('boom'),
+      )
+      expectErr(await IssueRelationRepository.findById('x'), 'DATABASE_ERROR')
+    })
+
+    it('listByIssue() should return DATABASE_ERROR when the query throws', async () => {
+      vi.spyOn(prisma.issueRelation, 'findMany').mockRejectedValueOnce(
+        new Error('boom'),
+      )
+      expectErr(
+        await IssueRelationRepository.listByIssue('x'),
+        'DATABASE_ERROR',
+      )
+    })
+
+    it('findBetween() should return DATABASE_ERROR when the query throws', async () => {
+      vi.spyOn(prisma.issueRelation, 'findFirst').mockRejectedValueOnce(
+        new Error('boom'),
+      )
+      expectErr(
+        await IssueRelationRepository.findBetween('a', 'b', 'RELATES_TO'),
+        'DATABASE_ERROR',
+      )
+    })
+
+    it('create() should return DATABASE_ERROR for a non-P2002 failure', async () => {
+      vi.spyOn(prisma.issueRelation, 'create').mockRejectedValueOnce(
+        new Error('boom'),
+      )
+      expectErr(
+        await IssueRelationRepository.create('a', 'b', 'RELATES_TO'),
+        'DATABASE_ERROR',
+      )
+    })
+
+    it('remove() should return DATABASE_ERROR for a non-P2025 failure', async () => {
+      vi.spyOn(prisma.issueRelation, 'delete').mockRejectedValueOnce(
+        new Error('boom'),
+      )
+      expectErr(await IssueRelationRepository.remove('x'), 'DATABASE_ERROR')
     })
   })
 })

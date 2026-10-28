@@ -886,3 +886,121 @@ describeProjectAccessGate('ModuleService', [
     sideEffects: () => [mockedModule.removeFavorite],
   },
 ])
+
+describe('ModuleService error propagation', () => {
+  const boom = err(databaseError('boom'))
+
+  function arrangeOwnerWithModule() {
+    mockedMembership.findByUserAndWorkspace.mockResolvedValue(
+      ok(ownerMembership),
+    )
+    mockedProject.findByWorkspaceAndSlug.mockResolvedValue(ok(projectWith()))
+    arrangeModuleInProject()
+  }
+
+  const calls = {
+    list: () => ModuleService.list('actor', 'ws1', 'proj-slug'),
+    create: () =>
+      ModuleService.create('actor', 'ws1', 'proj-slug', {
+        name: 'Module 1',
+        status: 'BACKLOG',
+      }),
+    update: () =>
+      ModuleService.update('actor', 'ws1', 'proj-slug', 'mod-1', {
+        status: 'PLANNED',
+      }),
+    delete: () => ModuleService.delete('actor', 'ws1', 'proj-slug', 'mod-1'),
+    listMembers: () =>
+      ModuleService.listMembers('actor', 'ws1', 'proj-slug', 'mod-1'),
+    addMember: () =>
+      ModuleService.addMember('actor', 'ws1', 'proj-slug', 'mod-1', 'other'),
+    removeMember: () =>
+      ModuleService.removeMember('actor', 'ws1', 'proj-slug', 'mod-1', 'other'),
+    favorite: () =>
+      ModuleService.favorite('actor', 'ws1', 'proj-slug', 'mod-1'),
+    unfavorite: () =>
+      ModuleService.unfavorite('actor', 'ws1', 'proj-slug', 'mod-1'),
+  }
+
+  it.each(
+    Object.entries(calls),
+  )('%s() propagates a failing project lookup and stops', async (_, call) => {
+    arrangeOwnerWithModule()
+    mockedProject.findByWorkspaceAndSlug.mockResolvedValue(boom)
+
+    expectErr(await call(), 'DATABASE_ERROR')
+    expect(mockedModule.findById).not.toHaveBeenCalled()
+    expect(mockedModule.listByProject).not.toHaveBeenCalled()
+    expect(mockedModule.create).not.toHaveBeenCalled()
+  })
+
+  it.each([
+    ['list', 'listByProject', undefined],
+    ['update', 'findById', 'update'],
+    ['delete', 'findById', 'delete'],
+    ['delete', 'delete', undefined],
+    ['listMembers', 'findById', 'listMembers'],
+    ['listMembers', 'listMembers', undefined],
+    ['addMember', 'findById', 'addMember'],
+    ['removeMember', 'findById', 'removeMember'],
+    ['favorite', 'findById', 'addFavorite'],
+    ['favorite', 'addFavorite', undefined],
+    ['unfavorite', 'findById', 'removeFavorite'],
+    ['unfavorite', 'removeFavorite', undefined],
+  ] as const)('%s() propagates a failing %s and stops', async (method, failing, next) => {
+    arrangeOwnerWithModule()
+    mockedModule[failing].mockResolvedValue(boom as never)
+
+    const error = expectErr(await calls[method](), 'DATABASE_ERROR')
+
+    expect(error.message).toBe('boom')
+    if (next) expect(mockedModule[next]).not.toHaveBeenCalled()
+    expect(mockedActivityService.record).not.toHaveBeenCalled()
+  })
+
+  it('create() parses the start and end dates it receives', async () => {
+    arrangeOwnerWithModule()
+
+    await ModuleService.create('actor', 'ws1', 'proj-slug', {
+      name: 'Module 1',
+      status: 'BACKLOG',
+      startDate: '2026-01-01T00:00:00.000Z',
+      endDate: '2026-01-15T00:00:00.000Z',
+    })
+
+    expect(mockedModule.create).toHaveBeenCalledWith(
+      expect.objectContaining({
+        startDate: new Date('2026-01-01T00:00:00.000Z'),
+        endDate: new Date('2026-01-15T00:00:00.000Z'),
+      }),
+    )
+  })
+
+  it('update() parses new dates and records a progress change against the stored status', async () => {
+    arrangeOwnerWithModule()
+
+    expectOk(
+      await ModuleService.update('actor', 'ws1', 'proj-slug', 'mod-1', {
+        startDate: '2026-02-01T00:00:00.000Z',
+        endDate: '2026-02-15T00:00:00.000Z',
+        progress: 40,
+      }),
+    )
+
+    expect(mockedModule.update).toHaveBeenCalledWith(
+      'mod-1',
+      expect.objectContaining({
+        startDate: new Date('2026-02-01T00:00:00.000Z'),
+        endDate: new Date('2026-02-15T00:00:00.000Z'),
+        progress: 40,
+      }),
+    )
+    const recorded = mockedActivityService.record.mock.calls.map(
+      ([input]) => input.field,
+    )
+    expect(recorded).toEqual(
+      expect.arrayContaining(['progress', 'startDate', 'endDate']),
+    )
+    expect(recorded).not.toContain('status')
+  })
+})

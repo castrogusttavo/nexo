@@ -1,4 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
+import { logger } from '@/lib/axiom/logger'
 import { expectErr, expectOk } from '@/src/__tests__/helpers/result.helpers'
 import { databaseError } from '@/src/errors'
 import { err, ok } from '@/src/lib/result'
@@ -248,6 +249,64 @@ describe('StatusService.getCurrentSnapshot()', () => {
     const [, fromDay, toDay] = mockedStatusRepo.findDailiesForKeys.mock.calls[0]
     expect(toDay.toISOString()).toBe(`${isoDay(new Date())}T00:00:00.000Z`)
     expect(daysBetween(fromDay, toDay)).toBe(89)
+  })
+
+  it('stops a resolved incident at its resolution day and leaves other days bare', async () => {
+    const today = new Date()
+    today.setUTCHours(0, 0, 0, 0)
+    const yesterday = new Date(today.getTime() - 86_400_000)
+    const twoDaysAgo = new Date(today.getTime() - 2 * 86_400_000)
+
+    mockedCache.get.mockResolvedValue(null)
+    mockedCache.set.mockResolvedValue(undefined)
+    mockedStatusRepo.findDailiesForKeys.mockResolvedValue(
+      ok([
+        daily('database', twoDaysAgo, '50'),
+        daily('database', yesterday, '50'),
+        daily('database', today, '100'),
+      ]),
+    )
+    mockedStatusRepo.findLatestPerComponent.mockResolvedValue(ok([]))
+    mockedPrismaIncident.mockResolvedValue([
+      {
+        id: 'inc-db',
+        componentKey: 'database',
+        startedAt: twoDaysAgo,
+        resolvedAt: new Date(yesterday.getTime() + 3_600_000),
+      },
+    ] as never)
+
+    const value = expectOk(await StatusService.getCurrentSnapshot())
+
+    const db = value.components.find((c) => c.key === 'database')
+    expect(db?.history.map((p) => p.incidentId ?? null)).toEqual([
+      'inc-db',
+      'inc-db',
+      null,
+    ])
+    expect(db?.history[2]).not.toHaveProperty('incidentId')
+  })
+
+  it.each([
+    ['read', 'status.cache_read_failed'],
+    ['write', 'status.cache_write_failed'],
+  ])('logs a non-Error thrown by the cache %s as a string', async (step, event) => {
+    if (step === 'read') {
+      mockedCache.get.mockRejectedValue('redis gone')
+      mockedCache.set.mockResolvedValue(undefined)
+    } else {
+      mockedCache.get.mockResolvedValue(null)
+      mockedCache.set.mockRejectedValue('redis gone')
+    }
+    mockedStatusRepo.findDailiesForKeys.mockResolvedValue(ok([]))
+    mockedStatusRepo.findLatestPerComponent.mockResolvedValue(ok([]))
+
+    expectOk(await StatusService.getCurrentSnapshot())
+
+    expect(vi.mocked(logger).error).toHaveBeenCalledWith(
+      event,
+      expect.objectContaining({ message: 'redis gone' }),
+    )
   })
 
   it('should still return snapshot when cache write throws', async () => {
@@ -986,6 +1045,45 @@ describe('StatusService.collect()', () => {
 
     expectOk(result)
     expect(mockedIncidentRepo.addUpdate).toHaveBeenCalled()
+  })
+
+  it('propagates a failing upsertDailies and stops before incidents and pruning', async () => {
+    mockedRunProbes.mockResolvedValue({
+      app: { status: 'OPERATIONAL', latencyMs: 5, error: null },
+      database: { status: 'MAJOR_OUTAGE', latencyMs: 10, error: 'down' },
+      cache: { status: 'OPERATIONAL', latencyMs: 3, error: null },
+      auth: { status: 'OPERATIONAL', latencyMs: 20, error: null },
+    })
+    mockedStatusRepo.recordChecks.mockResolvedValue(ok(undefined))
+    const failure = databaseError('upsert failed')
+    mockedStatusRepo.upsertDailies.mockResolvedValue(err(failure))
+
+    const result = await StatusService.collect('core')
+
+    expect(result).toEqual(err(failure))
+    expect(mockedIncidentRepo.findOpenByComponent).not.toHaveBeenCalled()
+    expect(mockedStatusRepo.pruneOldChecks).not.toHaveBeenCalled()
+    expect(mockedCache.invalidate).not.toHaveBeenCalled()
+  })
+
+  it('logs a non-Error thrown by the cache invalidation as a string', async () => {
+    mockedRunProbes.mockResolvedValue({
+      app: { status: 'OPERATIONAL', latencyMs: 5, error: null },
+      database: { status: 'OPERATIONAL', latencyMs: 10, error: null },
+      cache: { status: 'OPERATIONAL', latencyMs: 3, error: null },
+      auth: { status: 'OPERATIONAL', latencyMs: 20, error: null },
+    })
+    mockedStatusRepo.recordChecks.mockResolvedValue(ok(undefined))
+    mockedIncidentRepo.findOpenByComponent.mockResolvedValue(ok(null))
+    mockedStatusRepo.pruneOldChecks.mockResolvedValue(ok(0))
+    mockedCache.invalidate.mockRejectedValue('redis gone')
+
+    expectOk(await StatusService.collect('core'))
+
+    expect(vi.mocked(logger).error).toHaveBeenCalledWith(
+      'status.cache_invalidate_failed',
+      expect.objectContaining({ message: 'redis gone' }),
+    )
   })
 
   it('should propagate aggregateForDayByKeys error', async () => {

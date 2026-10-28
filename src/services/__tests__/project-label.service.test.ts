@@ -198,3 +198,47 @@ describe('ProjectLabelService', () => {
     })
   })
 })
+
+describe('ProjectLabelService error propagation', () => {
+  it.each([
+    [
+      'create',
+      () =>
+        ProjectLabelService.create('actor', 'ws1', {
+          name: 'X',
+          color: 'YELLOW',
+        }),
+    ],
+    [
+      'update',
+      () =>
+        ProjectLabelService.update('actor', 'ws1', 'plabel-1', { name: 'X' }),
+    ],
+    ['delete', () => ProjectLabelService.delete('actor', 'ws1', 'plabel-1')],
+  ] as const)('%s() propagates a failing membership lookup and stops', async (_name, call) => {
+    mockedMembership.findByUserAndWorkspace.mockResolvedValue(
+      err(databaseError('boom')),
+    )
+
+    expectErr(await call(), 'DATABASE_ERROR')
+    expect(mockedLabel.create).not.toHaveBeenCalled()
+    expect(mockedLabel.findById).not.toHaveBeenCalled()
+  })
+
+  it('update() propagates a failing write and skips the audit', async () => {
+    actingAs('OWNER')
+    mockedLabel.findById.mockResolvedValue(ok(labelIn('ws1')))
+    mockedLabel.update.mockResolvedValue(err(databaseError('boom')))
+
+    const result = await ProjectLabelService.update(
+      'actor',
+      'ws1',
+      'plabel-1',
+      {
+        name: 'Vendas',
+      },
+    )
+
+    expectErr(result, 'DATABASE_ERROR')
+  })
+})

@@ -5,6 +5,7 @@ import { seedProject } from '@/src/__tests__/factories/project.factory'
 import { seedUser } from '@/src/__tests__/factories/user.factory'
 import { seedWorkspace } from '@/src/__tests__/factories/workspace.factory'
 import { expectErr, expectOk } from '@/src/__tests__/helpers/result.helpers'
+import { prisma } from '@/src/lib/prisma'
 import { LabelRepository } from '../label.repository'
 
 afterEach(() => {
@@ -106,6 +107,22 @@ describe('LabelRepository', () => {
     it('should return DATABASE_ERROR for a nonexistent id', async () => {
       const result = await LabelRepository.delete('nonexistent')
       expectErr(result, 'DATABASE_ERROR')
+    })
+  })
+
+  describe('database failures', () => {
+    it('findById() should return DATABASE_ERROR when the query throws', async () => {
+      vi.spyOn(prisma.label, 'findUnique').mockRejectedValueOnce(
+        new Error('boom'),
+      )
+      expectErr(await LabelRepository.findById('x'), 'DATABASE_ERROR')
+    })
+
+    it('listByProject() should return DATABASE_ERROR when the query throws', async () => {
+      vi.spyOn(prisma.label, 'findMany').mockRejectedValueOnce(
+        new Error('boom'),
+      )
+      expectErr(await LabelRepository.listByProject('x'), 'DATABASE_ERROR')
     })
   })
 })

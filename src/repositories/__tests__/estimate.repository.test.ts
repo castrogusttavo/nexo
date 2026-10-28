@@ -5,6 +5,7 @@ import { seedProject } from '@/src/__tests__/factories/project.factory'
 import { seedUser } from '@/src/__tests__/factories/user.factory'
 import { seedWorkspace } from '@/src/__tests__/factories/workspace.factory'
 import { expectErr, expectOk } from '@/src/__tests__/helpers/result.helpers'
+import { prisma } from '@/src/lib/prisma'
 import { EstimateRepository } from '@/src/repositories/estimate.repository'
 
 afterEach(() => {
@@ -60,6 +61,28 @@ describe('EstimateRepository', () => {
       })
 
       expectErr(result, 'ESTIMATE_SETTINGS_NOT_FOUND')
+    })
+  })
+
+  describe('database failures', () => {
+    it('findByProjectId() should return DATABASE_ERROR when the query throws', async () => {
+      vi.spyOn(prisma.estimateSettings, 'findUnique').mockRejectedValueOnce(
+        new Error('boom'),
+      )
+      expectErr(await EstimateRepository.findByProjectId('x'), 'DATABASE_ERROR')
+    })
+
+    it('update() should return DATABASE_ERROR for a non-P2025 failure', async () => {
+      vi.spyOn(prisma.estimateSettings, 'update').mockRejectedValueOnce(
+        new Error('boom'),
+      )
+      expectErr(
+        await EstimateRepository.update('x', {
+          system: 'POINTS',
+          model: 'LINEAR',
+        }),
+        'DATABASE_ERROR',
+      )
     })
   })
 })

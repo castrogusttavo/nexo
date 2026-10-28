@@ -354,3 +354,113 @@ function arrangeOwnUpdate() {
   mockedIssueUpdate.update.mockResolvedValue(ok(withAuthor()))
   mockedIssueUpdate.delete.mockResolvedValue(ok(undefined))
 }
+
+describe('IssueUpdateService error propagation', () => {
+  const boom = err(databaseError('boom'))
+
+  function arrange() {
+    arrangeOwnUpdate()
+    inProject()
+  }
+
+  const methods = {
+    list: () => IssueUpdateService.list('actor', 'ws1', 'proj-slug', 'issue-1'),
+    create: () =>
+      IssueUpdateService.create('actor', 'ws1', 'proj-slug', 'issue-1', {
+        status: 'ON_TRACK',
+      }),
+    update: () =>
+      IssueUpdateService.update(
+        'actor',
+        'ws1',
+        'proj-slug',
+        'issue-1',
+        'update-1',
+        { status: 'AT_RISK' },
+      ),
+    delete: () =>
+      IssueUpdateService.delete(
+        'actor',
+        'ws1',
+        'proj-slug',
+        'issue-1',
+        'update-1',
+      ),
+  }
+  const names = Object.keys(methods) as (keyof typeof methods)[]
+
+  function expectNoUpdateWork() {
+    expect(mockedIssueUpdate.listByIssue).not.toHaveBeenCalled()
+    expect(mockedIssueUpdate.create).not.toHaveBeenCalled()
+    expect(mockedIssueUpdate.findById).not.toHaveBeenCalled()
+    expect(mockedIssueUpdate.update).not.toHaveBeenCalled()
+    expect(mockedIssueUpdate.delete).not.toHaveBeenCalled()
+  }
+
+  it.each(
+    names,
+  )('%s() stops when the actor is not a workspace member', async (name) => {
+    arrange()
+    mockedMembership.findByUserAndWorkspace.mockResolvedValue(ok(null))
+
+    expectErr(await methods[name](), 'FORBIDDEN')
+    expect(mockedIssue.findById).not.toHaveBeenCalled()
+    expectNoUpdateWork()
+  })
+
+  it.each(
+    names,
+  )('%s() propagates a failing issue lookup and stops', async (name) => {
+    arrange()
+    mockedIssue.findById.mockResolvedValue(boom)
+
+    expectErr(await methods[name](), 'DATABASE_ERROR')
+    expectNoUpdateWork()
+  })
+
+  it.each(
+    names,
+  )('%s() returns ISSUE_NOT_FOUND for an issue of another project', async (name) => {
+    arrange()
+    mockedIssue.findById.mockResolvedValue(
+      ok(createFakeIssue({ projectId: 'other-proj' })),
+    )
+
+    expectErr(await methods[name](), 'ISSUE_NOT_FOUND')
+    expectNoUpdateWork()
+  })
+
+  it.each([
+    ['create', () => mockedIssueUpdate.create],
+    ['update', () => mockedIssueUpdate.update],
+    ['delete', () => mockedIssueUpdate.delete],
+  ] as const)('%s() propagates a failing repository write', async (name, write) => {
+    arrange()
+    write().mockResolvedValue(boom)
+
+    expectErr(await methods[name](), 'DATABASE_ERROR')
+    expect(write()).toHaveBeenCalledTimes(1)
+  })
+
+  it.each([
+    'update',
+    'delete',
+  ] as const)('%s() propagates a failing update lookup and does not write', async (name) => {
+    arrange()
+    mockedIssueUpdate.findById.mockResolvedValue(boom)
+
+    expectErr(await methods[name](), 'DATABASE_ERROR')
+    expect(mockedIssueUpdate.update).not.toHaveBeenCalled()
+    expect(mockedIssueUpdate.delete).not.toHaveBeenCalled()
+  })
+
+  it('delete() returns ISSUE_UPDATE_NOT_FOUND for an update of another issue', async () => {
+    arrange()
+    mockedIssueUpdate.findById.mockResolvedValue(
+      ok(createFakeIssueUpdate({ issueId: 'issue-2', authorId: 'actor' })),
+    )
+
+    expectErr(await methods.delete(), 'ISSUE_UPDATE_NOT_FOUND')
+    expect(mockedIssueUpdate.delete).not.toHaveBeenCalled()
+  })
+})

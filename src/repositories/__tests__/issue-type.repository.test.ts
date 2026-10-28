@@ -4,6 +4,7 @@ import { seedProject } from '@/src/__tests__/factories/project.factory'
 import { seedUser } from '@/src/__tests__/factories/user.factory'
 import { seedWorkspace } from '@/src/__tests__/factories/workspace.factory'
 import { expectErr, expectOk } from '@/src/__tests__/helpers/result.helpers'
+import { prisma } from '@/src/lib/prisma'
 import { IssueTypeRepository } from '@/src/repositories/issue-type.repository'
 
 afterEach(() => {
@@ -207,6 +208,39 @@ describe('IssueTypeRepository', () => {
       ])
 
       expectErr(result, 'DATABASE_ERROR')
+    })
+  })
+
+  describe('database failures', () => {
+    it('findById() should return DATABASE_ERROR when the query throws', async () => {
+      vi.spyOn(prisma.issueType, 'findUnique').mockRejectedValueOnce(
+        new Error('boom'),
+      )
+      expectErr(await IssueTypeRepository.findById('x'), 'DATABASE_ERROR')
+    })
+
+    it('listByProject() should return DATABASE_ERROR when the query throws', async () => {
+      vi.spyOn(prisma.issueType, 'findMany').mockRejectedValueOnce(
+        new Error('boom'),
+      )
+      expectErr(await IssueTypeRepository.listByProject('x'), 'DATABASE_ERROR')
+    })
+
+    it('update() should return DATABASE_ERROR for a non-P2025 failure', async () => {
+      vi.spyOn(prisma.issueType, 'update').mockRejectedValueOnce(
+        new Error('boom'),
+      )
+      expectErr(
+        await IssueTypeRepository.update('x', { name: 'X' }),
+        'DATABASE_ERROR',
+      )
+    })
+
+    it('delete() should return DATABASE_ERROR for a non-P2025 failure', async () => {
+      vi.spyOn(prisma.issueType, 'delete').mockRejectedValueOnce(
+        new Error('boom'),
+      )
+      expectErr(await IssueTypeRepository.delete('x'), 'DATABASE_ERROR')
     })
   })
 })

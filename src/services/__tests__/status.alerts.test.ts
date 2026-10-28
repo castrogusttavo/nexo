@@ -1,12 +1,23 @@
 import type { ComponentStatus } from '@prisma/client'
-import { describe, expect, it } from 'vitest'
+import { beforeEach, describe, expect, it, vi } from 'vitest'
+
+vi.mock('@/src/lib/alerts/slack', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('@/src/lib/alerts/slack')>()),
+  sendSlackAlert: vi.fn().mockResolvedValue(undefined),
+}))
+
+import { sendSlackAlert } from '@/src/lib/alerts/slack'
 import {
+  alertCollectFailed,
+  alertCollectRecovered,
+  alertComponent,
   componentAlertText,
   decideComponentAlert,
   FLAP_TRANSITION_THRESHOLD,
   FLAP_WINDOW_MS,
   isOutageReminderDue,
   OUTAGE_REMINDER_INTERVAL_MS,
+  resetCollectFailureAlert,
   STABLE_PERIOD_MS,
   type StatusPoint,
 } from '@/src/services/status/status-alerts'
@@ -281,5 +292,119 @@ describe('componentAlertText - reminder', () => {
     )
     expect(text).toContain('continua fora do ar há')
     expect(text).toContain('Timed out after 5000ms')
+  })
+})
+
+describe('componentAlertText - fallbacks', () => {
+  const at = new Date('2026-09-22T17:04:00.000Z')
+  const base = { at, incidentStartedAt: null, error: null }
+
+  it('reports a recovery without an open incident as resolved at the check time', () => {
+    const text = componentAlertText(
+      { action: 'transition' },
+      { ...base, componentKey: 'database', from: M, to: O },
+    )
+
+    expect(text).toContain('voltou ao normal')
+    expect(text).toContain('Resolvido em 22/09 14:04')
+    expect(text).not.toContain('Ficou')
+  })
+
+  it('mentions the open incident on a severity change', () => {
+    const text = componentAlertText(
+      { action: 'transition' },
+      {
+        ...base,
+        componentKey: 'database',
+        from: D,
+        to: M,
+        incidentStartedAt: new Date(at.getTime() - 30 * MINUTE),
+      },
+    )
+
+    expect(text).toContain(
+      'Mudou às 22/09 14:04 (incidente aberto desde 22/09 13:34)',
+    )
+  })
+
+  it('falls back to the raw key for a component it does not know', () => {
+    const text = componentAlertText(
+      { action: 'transition' },
+      { ...base, componentKey: 'ghost' as never, from: O, to: M },
+    )
+
+    expect(text).toContain('*ghost* está fora do ar')
+  })
+})
+
+describe('alertComponent', () => {
+  const ctx = {
+    componentKey: 'database' as const,
+    at: new Date('2026-09-22T17:04:00.000Z'),
+    incidentStartedAt: null,
+    error: null,
+    from: O,
+    to: M,
+  }
+
+  beforeEach(() => {
+    vi.mocked(sendSlackAlert).mockClear()
+  })
+
+  it.each([
+    { action: 'none' as const },
+    { action: 'suppressed' as const },
+  ])('posts nothing for a $action decision', async (decision) => {
+    await alertComponent(decision, ctx)
+
+    expect(sendSlackAlert).not.toHaveBeenCalled()
+  })
+
+  it('posts the text under an event named after the decision', async () => {
+    await alertComponent({ action: 'transition' }, ctx)
+
+    expect(sendSlackAlert).toHaveBeenCalledWith({
+      event: 'status.transition',
+      text: componentAlertText({ action: 'transition' }, ctx),
+    })
+  })
+})
+
+describe('collect failure alerts', () => {
+  beforeEach(() => {
+    resetCollectFailureAlert()
+    vi.mocked(sendSlackAlert).mockClear()
+  })
+
+  it('posts once while failing, omitting the probe line when there is no probe error', async () => {
+    await alertCollectFailed('relation "health_check" does not exist', null)
+    await alertCollectFailed('still failing', null)
+
+    expect(sendSlackAlert).toHaveBeenCalledTimes(1)
+    const [{ event, text }] = vi.mocked(sendSlackAlert).mock.calls[0] ?? []
+    expect(event).toBe('status.collect_failed')
+    expect(text).toContain('relation "health_check" does not exist')
+    expect(text).not.toContain('Sonda do banco')
+  })
+
+  it('includes the database probe error when there is one', async () => {
+    await alertCollectFailed('write failed', 'connect ECONNREFUSED')
+
+    const [{ text }] = vi.mocked(sendSlackAlert).mock.calls[0] ?? []
+    expect(text).toContain('Sonda do banco: `connect ECONNREFUSED`')
+  })
+
+  it('posts the recovery only after a failure, and only once', async () => {
+    await alertCollectRecovered()
+    expect(sendSlackAlert).not.toHaveBeenCalled()
+
+    await alertCollectFailed('write failed', null)
+    await alertCollectRecovered()
+    await alertCollectRecovered()
+
+    expect(vi.mocked(sendSlackAlert).mock.calls.map(([a]) => a.event)).toEqual([
+      'status.collect_failed',
+      'status.collect_recovered',
+    ])
   })
 })

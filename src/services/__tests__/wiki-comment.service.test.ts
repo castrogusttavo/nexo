@@ -1,4 +1,5 @@
 import { describe, expect, it, vi } from 'vitest'
+import { auditMutation } from '@/lib/axiom/audit'
 import { createFakeMembership } from '@/src/__tests__/factories/membership.factory'
 import { createFakeWikiComment } from '@/src/__tests__/factories/wiki-comment.factory'
 import { createFakeWikiPage } from '@/src/__tests__/factories/wiki-page.factory'
@@ -10,6 +11,7 @@ import { WikiCommentRepository } from '@/src/repositories/wiki-comment.repositor
 import { WikiPageRepository } from '@/src/repositories/wiki-page.repository'
 import { WikiCommentService } from '../wiki-comment.service'
 
+vi.mock('@/lib/axiom/audit', () => ({ auditMutation: vi.fn() }))
 vi.mock('@/src/repositories/membership.repository')
 vi.mock('@/src/repositories/wiki-page.repository')
 vi.mock('@/src/repositories/wiki-comment.repository')
@@ -277,5 +279,170 @@ describe('WikiCommentService', () => {
       expectErr(result, 'WIKI_COMMENT_FORBIDDEN')
       expect(mockedWikiComment.delete).not.toHaveBeenCalled()
     })
+  })
+
+  describe('guard propagation', () => {
+    const dbFail = err(databaseError('boom'))
+    const call = {
+      list: () => WikiCommentService.list('actor', 'ws1', 'page-1'),
+      create: () =>
+        WikiCommentService.create('actor', 'ws1', 'page-1', {
+          markId: 'mark1',
+          content: [],
+          parentId: 'p1',
+        }),
+      update: () =>
+        WikiCommentService.update('actor', 'ws1', 'page-1', 'c1', {
+          content: [],
+        }),
+      resolve: () =>
+        WikiCommentService.resolve('actor', 'ws1', 'page-1', 'c1', {
+          resolved: true,
+        }),
+      delete: () => WikiCommentService.delete('actor', 'ws1', 'page-1', 'c1'),
+    }
+    const methods = Object.keys(call) as (keyof typeof call)[]
+
+    it.each(
+      methods,
+    )('%s() propagates a failing membership lookup and stops', async (method) => {
+      mockedMembership.findByUserAndWorkspace.mockResolvedValue(dbFail)
+
+      expectErr(await call[method](), 'DATABASE_ERROR')
+      expect(mockedWikiPage.findById).not.toHaveBeenCalled()
+      expect(auditMutation).not.toHaveBeenCalled()
+    })
+
+    it.each(
+      methods,
+    )('%s() propagates a failing page lookup and stops', async (method) => {
+      mockedMembership.findByUserAndWorkspace.mockResolvedValue(
+        ok(memberMembership),
+      )
+      mockedWikiPage.findById.mockResolvedValue(dbFail)
+
+      expectErr(await call[method](), 'DATABASE_ERROR')
+      expect(mockedWikiComment.findById).not.toHaveBeenCalled()
+      expect(mockedWikiComment.listByWikiPage).not.toHaveBeenCalled()
+      expect(auditMutation).not.toHaveBeenCalled()
+    })
+
+    it.each([
+      'create',
+      'update',
+      'resolve',
+      'delete',
+    ] as const)('%s() rejects a page from another workspace before touching comments', async (method) => {
+      mockedMembership.findByUserAndWorkspace.mockResolvedValue(
+        ok(memberMembership),
+      )
+      mockedWikiPage.findById.mockResolvedValue(
+        ok(createFakeWikiPage({ id: 'page-1', workspaceId: 'ws2' })),
+      )
+
+      expectErr(await call[method](), 'WIKI_PAGE_FORBIDDEN')
+      expect(mockedWikiComment.findById).not.toHaveBeenCalled()
+    })
+
+    it.each([
+      'create',
+      'update',
+      'resolve',
+      'delete',
+    ] as const)('%s() propagates a failing comment lookup and stops', async (method) => {
+      inPage()
+      mockedWikiComment.findById.mockResolvedValue(dbFail)
+
+      expectErr(await call[method](), 'DATABASE_ERROR')
+      expect(mockedWikiComment.create).not.toHaveBeenCalled()
+      expect(mockedWikiComment.update).not.toHaveBeenCalled()
+      expect(mockedWikiComment.resolve).not.toHaveBeenCalled()
+      expect(mockedWikiComment.delete).not.toHaveBeenCalled()
+      expect(auditMutation).not.toHaveBeenCalled()
+    })
+
+    it.each([
+      'create',
+      'update',
+      'resolve',
+      'delete',
+    ] as const)('%s() answers WIKI_COMMENT_NOT_FOUND for a comment of another page', async (method) => {
+      inPage()
+      mockedWikiComment.findById.mockResolvedValue(
+        ok(
+          withAuthor({
+            id: 'c1',
+            authorId: 'actor',
+            parentId: null,
+            wikiPageId: 'page-2',
+          }),
+        ),
+      )
+
+      expectErr(await call[method](), 'WIKI_COMMENT_NOT_FOUND')
+      expect(mockedWikiComment.create).not.toHaveBeenCalled()
+      expect(mockedWikiComment.update).not.toHaveBeenCalled()
+      expect(mockedWikiComment.resolve).not.toHaveBeenCalled()
+      expect(mockedWikiComment.delete).not.toHaveBeenCalled()
+    })
+
+    it('list() propagates a failing listByWikiPage', async () => {
+      inPage()
+      mockedWikiComment.listByWikiPage.mockResolvedValue(dbFail)
+
+      expectErr(await call.list(), 'DATABASE_ERROR')
+    })
+
+    it.each([
+      'update',
+      'resolve',
+      'delete',
+    ] as const)('%s() propagates a failing write and does not audit', async (method) => {
+      inPage()
+      mockedWikiComment.findById.mockResolvedValue(
+        ok(withAuthor({ id: 'c1', authorId: 'actor', parentId: null })),
+      )
+      mockedWikiComment[method].mockResolvedValue(dbFail)
+
+      expectErr(await call[method](), 'DATABASE_ERROR')
+      expect(auditMutation).not.toHaveBeenCalled()
+    })
+
+    it('create() does not audit when the write fails', async () => {
+      inPage()
+      mockedWikiComment.create.mockResolvedValue(dbFail)
+
+      expectErr(
+        await WikiCommentService.create('actor', 'ws1', 'page-1', {
+          markId: 'mark1',
+          content: [],
+        }),
+        'DATABASE_ERROR',
+      )
+      expect(auditMutation).not.toHaveBeenCalled()
+    })
+  })
+
+  it('resolve() with resolved=false clears resolvedById and audits an unresolve', async () => {
+    inPage()
+    const root = withAuthor({ id: 'c1', parentId: null })
+    mockedWikiComment.findById.mockResolvedValue(ok(root))
+    mockedWikiComment.resolve.mockResolvedValue(
+      ok({ ...root, resolved: false }),
+    )
+
+    expectOk(
+      await WikiCommentService.resolve('actor', 'ws1', 'page-1', 'c1', {
+        resolved: false,
+      }),
+    )
+
+    expect(mockedWikiComment.resolve).toHaveBeenCalledWith('c1', {
+      resolved: false,
+      resolvedById: null,
+    })
+    expect(auditMutation).toHaveBeenCalledWith(
+      expect.objectContaining({ action: 'unresolve', targetId: 'c1' }),
+    )
   })
 })

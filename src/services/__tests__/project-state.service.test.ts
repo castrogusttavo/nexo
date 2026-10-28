@@ -324,3 +324,47 @@ describe('ProjectStateService', () => {
     })
   })
 })
+
+describe('ProjectStateService error propagation', () => {
+  const boom = err(databaseError('boom'))
+
+  const writes = {
+    create: () =>
+      ProjectStateService.create('actor', 'ws1', {
+        name: 'Em revisão',
+        group: 'MONITORING',
+        color: 'PURPLE',
+      }),
+    update: () =>
+      ProjectStateService.update('actor', 'ws1', 'pstate-1', { name: 'Done' }),
+    delete: () => ProjectStateService.delete('actor', 'ws1', 'pstate-1'),
+    setDefault: () =>
+      ProjectStateService.setDefault('actor', 'ws1', 'pstate-1'),
+  }
+
+  it.each(
+    Object.entries(writes),
+  )('%s() propagates a failing membership lookup and stops', async (_, call) => {
+    mockedMembership.findByUserAndWorkspace.mockResolvedValue(boom)
+
+    expectErr(await call(), 'DATABASE_ERROR')
+    expect(mockedState.findById).not.toHaveBeenCalled()
+    expect(mockedState.create).not.toHaveBeenCalled()
+  })
+
+  it.each([
+    ['update', 'update'],
+    ['delete', 'countByGroup'],
+    ['setDefault', 'setDefault'],
+  ] as const)('%s() propagates a failing %s and stops', async (method, failing) => {
+    actingAs('OWNER')
+    mockedState.findById.mockResolvedValue(ok(stateIn('ws1')))
+    mockedState.countByGroup.mockResolvedValue(ok(2))
+    mockedState[failing].mockResolvedValue(boom as never)
+
+    const error = expectErr(await writes[method](), 'DATABASE_ERROR')
+
+    expect(error.message).toBe('boom')
+    expect(mockedState.deleteMovingProjects).not.toHaveBeenCalled()
+  })
+})

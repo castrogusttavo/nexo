@@ -1709,3 +1709,219 @@ function arrangeIssueRoundTrip() {
     ok([{ ...taskType, projectId: GATE_PROJECT_ID }]),
   )
 }
+
+describe('IssueService branch coverage', () => {
+  const boom = err(databaseError('boom'))
+
+  function arrange() {
+    arrangeIssueRoundTrip()
+    mockedMembership.findByUserAndWorkspace.mockResolvedValue(
+      ok(memberMembership),
+    )
+    mockedProject.findByWorkspaceAndSlug.mockResolvedValue(
+      ok(projectWith({ id: GATE_PROJECT_ID })),
+    )
+    mockedIssueType.findById.mockResolvedValue(
+      ok(createFakeIssueType({ id: 'type-bug', projectId: GATE_PROJECT_ID })),
+    )
+    mockedCycle.findById.mockResolvedValue(
+      ok(createFakeCycle({ id: 'cycle-1', projectId: GATE_PROJECT_ID })),
+    )
+    mockedModule.findById.mockResolvedValue(
+      ok(createFakeModule({ id: 'module-1', projectId: GATE_PROJECT_ID })),
+    )
+    mockedEstimateValue.findById.mockResolvedValue(
+      ok(
+        createFakeEstimateValue({
+          id: 'value-1',
+          estimateSettingsId: 'settings-1',
+        }),
+      ),
+    )
+    mockedEstimate.findByProjectId.mockResolvedValue(
+      ok(
+        createFakeEstimateSettings({
+          id: 'settings-1',
+          projectId: GATE_PROJECT_ID,
+        }),
+      ),
+    )
+  }
+
+  const update = (dto: Parameters<typeof IssueService.update>[4]) =>
+    IssueService.update('actor', 'ws1', 'proj-slug', 'issue-1', dto)
+
+  describe('list()', () => {
+    it('falls back to a null cursor when a next page is flagged but empty', async () => {
+      arrange()
+      mockedIssueListCache.get.mockResolvedValue({ version: '1', page: null })
+      mockedIssue.listByProjectPage.mockResolvedValue(
+        ok({ items: [], hasNextPage: true }),
+      )
+
+      const result = await IssueService.list('actor', 'ws1', 'proj-slug', {
+        limit: 20,
+      })
+
+      expect(expectOk(result)).toEqual({ items: [], nextCursor: null })
+    })
+  })
+
+  describe('create()', () => {
+    it('accepts an explicit type and associations that all belong to the project', async () => {
+      arrange()
+
+      const result = await IssueService.create('actor', 'ws1', 'proj-slug', {
+        title: 'New',
+        description: [],
+        stateId: 'state-1',
+        priority: 'NONE',
+        typeId: 'type-bug',
+        cycleId: 'cycle-1',
+        moduleId: 'module-1',
+        estimateValueId: 'value-1',
+      })
+
+      expectOk(result)
+      expect(mockedIssueType.listByProject).not.toHaveBeenCalled()
+      expect(mockedIssue.create).toHaveBeenCalledWith(
+        expect.objectContaining({
+          typeId: 'type-bug',
+          cycleId: 'cycle-1',
+          moduleId: 'module-1',
+          estimateValueId: 'value-1',
+          projectId: GATE_PROJECT_ID,
+        }),
+      )
+    })
+  })
+
+  describe('update()', () => {
+    it('stops when the actor is not a workspace member', async () => {
+      arrange()
+      mockedMembership.findByUserAndWorkspace.mockResolvedValue(ok(null))
+
+      expectErr(await update({ title: 'x' }), 'FORBIDDEN')
+      expect(mockedIssue.findById).not.toHaveBeenCalled()
+      expect(mockedIssue.update).not.toHaveBeenCalled()
+    })
+
+    it.each([
+      ['state', { stateId: 'state-1' }, () => mockedState.findById],
+      ['type', { typeId: 'type-bug' }, () => mockedIssueType.findById],
+      ['cycle', { cycleId: 'cycle-1' }, () => mockedCycle.findById],
+    ] as const)('propagates a failing %s lookup and does not write', async (_, dto, dep) => {
+      arrange()
+      dep().mockResolvedValue(boom)
+
+      expectErr(await update(dto), 'DATABASE_ERROR')
+      expect(mockedIssue.update).not.toHaveBeenCalled()
+      expect(mockedIssueListCache.invalidate).not.toHaveBeenCalled()
+    })
+
+    it('propagates a failing repository update without invalidating or recording', async () => {
+      arrange()
+      mockedIssue.update.mockResolvedValue(boom)
+
+      expectErr(await update({ priority: 'HIGH' }), 'DATABASE_ERROR')
+      expect(mockedIssueListCache.invalidate).not.toHaveBeenCalled()
+      expect(mockedActivityService.record).not.toHaveBeenCalled()
+    })
+
+    it('accepts state, type and associations that belong to the project and records them', async () => {
+      arrange()
+
+      const result = await update({
+        stateId: 'state-2',
+        typeId: 'type-bug',
+        cycleId: 'cycle-1',
+        moduleId: 'module-1',
+        estimateValueId: 'value-1',
+        startDate: '2025-03-01T10:00:00.000Z',
+        dueDate: '2025-03-05T10:00:00.000Z',
+      })
+
+      expectOk(result)
+      expect(mockedIssue.update).toHaveBeenCalledWith(
+        'issue-1',
+        expect.objectContaining({
+          startDate: new Date('2025-03-01T10:00:00.000Z'),
+          dueDate: new Date('2025-03-05T10:00:00.000Z'),
+        }),
+      )
+      const recorded = mockedActivityService.record.mock.calls.map(
+        ([input]) => [input.field, input.newValue],
+      )
+      expect(recorded).toEqual(
+        expect.arrayContaining([
+          ['cycleId', 'cycle-1'],
+          ['moduleId', 'module-1'],
+          ['estimateValueId', 'value-1'],
+          ['startDate', '2025-03-01T10:00:00.000Z'],
+          ['dueDate', '2025-03-05T10:00:00.000Z'],
+        ]),
+      )
+    })
+
+    it('clears dates and associations sent as null', async () => {
+      arrange()
+      mockedIssue.findById.mockResolvedValue(
+        ok(
+          createFakeIssue({
+            id: 'issue-1',
+            projectId: GATE_PROJECT_ID,
+            startDate: new Date('2025-03-01T10:00:00.000Z'),
+            dueDate: new Date('2025-03-05T10:00:00.000Z'),
+            cycleId: 'cycle-1',
+          }),
+        ),
+      )
+
+      const result = await update({
+        startDate: null,
+        dueDate: null,
+        cycleId: null,
+      })
+
+      expectOk(result)
+      expect(mockedCycle.findById).not.toHaveBeenCalled()
+      expect(mockedIssue.update).toHaveBeenCalledWith(
+        'issue-1',
+        expect.objectContaining({ startDate: null, dueDate: null }),
+      )
+      const recorded = mockedActivityService.record.mock.calls.map(
+        ([input]) => [input.field, input.newValue],
+      )
+      expect(recorded).toEqual(
+        expect.arrayContaining([
+          ['startDate', null],
+          ['dueDate', null],
+          ['cycleId', null],
+        ]),
+      )
+    })
+
+    it('stops walking an ancestor chain that loops without reaching the issue', async () => {
+      arrange()
+      const chain: Record<string, string> = {
+        'parent-1': 'parent-2',
+        'parent-2': 'parent-1',
+      }
+      mockedIssue.findById.mockImplementation(async (id: string) =>
+        ok(
+          createFakeIssue({
+            id,
+            projectId: GATE_PROJECT_ID,
+            parentId: chain[id] ?? null,
+          }),
+        ),
+      )
+
+      expectOk(await update({ parentId: 'parent-1' }))
+      expect(mockedIssue.update).toHaveBeenCalledWith(
+        'issue-1',
+        expect.objectContaining({ parentId: 'parent-1' }),
+      )
+    })
+  })
+})

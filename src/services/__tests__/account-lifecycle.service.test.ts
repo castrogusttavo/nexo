@@ -24,6 +24,7 @@ vi.mock('@/src/lib/mail/user/send-delete-account', () => ({
   sendDeleteAccountEmail: vi.fn(),
 }))
 
+import { logger } from '@/lib/axiom/logger'
 import { UserCache } from '@/src/cache/user.cache'
 import { sendDeleteAccountEmail } from '@/src/lib/mail/user/send-delete-account'
 import {
@@ -181,6 +182,58 @@ describe('AccountLifecycleService', () => {
       expectErr(result, 'DATABASE_ERROR')
       expect(mockedScheduleDeletion).not.toHaveBeenCalled()
     })
+    function readyToSchedule() {
+      const user = createFakeUser({ id: 'user-1' })
+      mockedUser.findById.mockResolvedValue(ok(user))
+      mockedUser.countBlockingSoleOwnerWorkspaces.mockResolvedValue(ok(0))
+      mockedUser.scheduleDeletion.mockImplementation(async (_id, at) =>
+        ok({ ...user, deletionScheduledAt: at }),
+      )
+      mockedUser.clearDeletionSchedule.mockResolvedValue(
+        ok({ ...user, deletionScheduledAt: null }),
+      )
+      return user
+    }
+
+    it('still succeeds and logs a warning when revoking sessions fails', async () => {
+      readyToSchedule()
+      mockedUser.deleteAllSessions.mockResolvedValue(err(databaseError('boom')))
+
+      expectOk(await AccountLifecycleService.deleteAccount('user-1'))
+
+      expect(vi.mocked(logger).warn).toHaveBeenCalledWith(
+        'user.delete_account.sessions_cleanup_failed',
+        expect.objectContaining({ userId: 'user-1', reason: 'DATABASE_ERROR' }),
+      )
+      expect(mockedUserCache.invalidate).toHaveBeenCalledWith('user-1')
+      expect(mockedSendEmail).toHaveBeenCalled()
+    })
+
+    it('logs a non-Error enqueue rejection as a string and reverts', async () => {
+      readyToSchedule()
+      mockedScheduleDeletion.mockRejectedValueOnce('queue offline')
+
+      expectErr(
+        await AccountLifecycleService.deleteAccount('user-1'),
+        'DATABASE_ERROR',
+      )
+      expect(vi.mocked(logger).error).toHaveBeenCalledWith(
+        'user.delete_account.enqueue_failed',
+        expect.objectContaining({ message: 'queue offline' }),
+      )
+      expect(mockedUser.clearDeletionSchedule).toHaveBeenCalledWith('user-1')
+    })
+
+    it('logs a non-Error email rejection as a string and still succeeds', async () => {
+      readyToSchedule()
+      mockedSendEmail.mockRejectedValueOnce('smtp offline')
+
+      expectOk(await AccountLifecycleService.deleteAccount('user-1'))
+      expect(vi.mocked(logger).warn).toHaveBeenCalledWith(
+        'user.delete_account.email_failed',
+        expect.objectContaining({ message: 'smtp offline' }),
+      )
+    })
   })
 
   describe('requestExport()', () => {
@@ -233,6 +286,22 @@ describe('AccountLifecycleService', () => {
       const result = await AccountLifecycleService.requestExport('user-1')
 
       expectErr(result, 'DATABASE_ERROR')
+    })
+
+    it('logs a non-Error enqueue rejection as a string', async () => {
+      mockedUser.findById.mockResolvedValue(
+        ok(createFakeUser({ id: 'user-1' })),
+      )
+      mockedEnqueueExport.mockRejectedValueOnce('redis offline')
+
+      expectErr(
+        await AccountLifecycleService.requestExport('user-1'),
+        'DATABASE_ERROR',
+      )
+      expect(vi.mocked(logger).error).toHaveBeenCalledWith(
+        'user.export.enqueue_failed',
+        expect.objectContaining({ message: 'redis offline' }),
+      )
     })
 
     it('propagates RESOURCE_NOT_FOUND from initial lookup', async () => {

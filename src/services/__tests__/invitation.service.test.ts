@@ -1,15 +1,18 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
+import { auditMutation } from '@/lib/axiom/audit'
 import { logger } from '@/lib/axiom/logger'
 import { createFakeInvitation } from '@/src/__tests__/factories/invitation.factory'
 import { createFakeMembership } from '@/src/__tests__/factories/membership.factory'
+import { createFakeProject } from '@/src/__tests__/factories/project.factory'
 import { createFakeUser } from '@/src/__tests__/factories/user.factory'
 import { createFakeWorkspace } from '@/src/__tests__/factories/workspace.factory'
 import { expectErr, expectOk } from '@/src/__tests__/helpers/result.helpers'
 import { databaseError } from '@/src/errors'
 import { sendInviteUserToWorkspaceEmail } from '@/src/lib/mail/workspace/send-invite-user-to-workspace'
-import { err, ok } from '@/src/lib/result'
+import { err, ok, type Result } from '@/src/lib/result'
 import { InvitationRepository } from '@/src/repositories/invitation.repository'
 import { MembershipRepository } from '@/src/repositories/membership.repository'
+import { ProjectRepository } from '@/src/repositories/project.repository'
 import { UserRepository } from '@/src/repositories/user.repository'
 import { WorkspaceRepository } from '@/src/repositories/workspace.repository'
 import { InvitationService } from '@/src/services/invitation.service'
@@ -17,6 +20,8 @@ import { InvitationService } from '@/src/services/invitation.service'
 vi.mock('@/src/cache/user.cache')
 vi.mock('@/src/repositories/invitation.repository')
 vi.mock('@/src/repositories/membership.repository')
+vi.mock('@/src/repositories/project.repository')
+vi.mock('@/lib/axiom/audit', () => ({ auditMutation: vi.fn() }))
 vi.mock('@/src/repositories/user.repository')
 vi.mock('@/src/repositories/workspace.repository')
 vi.mock('@/src/lib/mail/workspace/send-invite-user-to-workspace')
@@ -26,6 +31,7 @@ const mockedMembership = vi.mocked(MembershipRepository)
 const mockedUser = vi.mocked(UserRepository)
 const mockedWorkspace = vi.mocked(WorkspaceRepository)
 const mockedEmail = vi.mocked(sendInviteUserToWorkspaceEmail)
+const mockedProject = vi.mocked(ProjectRepository)
 
 const ownerMembership = createFakeMembership({
   userId: 'actor',
@@ -715,6 +721,289 @@ describe('InvitationService', () => {
 
       expectOk(result)
       expect(mockedInvite.create).toHaveBeenCalledWith(expect.anything(), null)
+    })
+  })
+
+  describe('guard propagation', () => {
+    const dbFail = err(databaseError('boom'))
+    const wsInvite = createFakeInvitation({
+      id: 'inv-1',
+      workspaceId: 'ws1',
+      projectId: 'proj-id',
+      status: 'PENDING',
+    })
+
+    function asOwner() {
+      mockedMembership.findByUserAndWorkspace.mockResolvedValue(
+        ok(ownerMembership),
+      )
+      mockedUser.findByEmail.mockResolvedValue(ok(null))
+      mockedInvite.findPendingByWorkspaceAndEmail.mockResolvedValue(ok(null))
+      mockedInvite.create.mockResolvedValue(ok(wsInvite))
+      mockedInvite.findById.mockResolvedValue(ok(wsInvite))
+      mockedProject.findByWorkspaceAndSlug.mockResolvedValue(
+        ok({
+          ...createFakeProject({
+            id: 'proj-id',
+            workspaceId: 'ws1',
+            slug: 'proj',
+            leadId: 'lead',
+          }),
+          members: [],
+          favourites: [],
+        } as never),
+      )
+    }
+
+    const workspaceScoped = {
+      create: () =>
+        InvitationService.create('actor', 'ws1', {
+          email: 'new@example.com',
+          role: 'MEMBER',
+        }),
+      list: () => InvitationService.list('actor', 'ws1'),
+      revoke: () => InvitationService.revoke('actor', 'ws1', 'inv-1'),
+      resend: () => InvitationService.resend('actor', 'ws1', 'inv-1'),
+      updateRole: () =>
+        InvitationService.updateRole('actor', 'ws1', 'inv-1', 'ADMIN'),
+    }
+    const projectScoped = {
+      createForProject: () =>
+        InvitationService.createForProject('actor', 'ws1', 'proj', {
+          email: 'new@example.com',
+          role: 'MEMBER',
+        }),
+      listForProject: () =>
+        InvitationService.listForProject('actor', 'ws1', 'proj'),
+      revokeForProject: () =>
+        InvitationService.revokeForProject('actor', 'ws1', 'proj', 'inv-1'),
+      resendForProject: () =>
+        InvitationService.resendForProject('actor', 'ws1', 'proj', 'inv-1'),
+    }
+    const all = { ...workspaceScoped, ...projectScoped }
+
+    function expectNoWrite() {
+      expect(mockedInvite.create).not.toHaveBeenCalled()
+      expect(mockedInvite.updateStatus).not.toHaveBeenCalled()
+      expect(mockedInvite.refreshToken).not.toHaveBeenCalled()
+      expect(mockedInvite.updateRole).not.toHaveBeenCalled()
+      expect(mockedProject.addMember).not.toHaveBeenCalled()
+      expect(auditMutation).not.toHaveBeenCalled()
+    }
+
+    it.each(
+      Object.keys(all) as (keyof typeof all)[],
+    )('%s() propagates a failing actor membership lookup and stops', async (method) => {
+      asOwner()
+      mockedMembership.findByUserAndWorkspace.mockResolvedValue(dbFail)
+
+      expectErr(await all[method](), 'DATABASE_ERROR')
+      expect(mockedInvite.findById).not.toHaveBeenCalled()
+      expect(mockedProject.findByWorkspaceAndSlug).not.toHaveBeenCalled()
+      expectNoWrite()
+    })
+
+    it.each(
+      Object.keys(projectScoped) as (keyof typeof projectScoped)[],
+    )('%s() propagates a failing project lookup and stops', async (method) => {
+      asOwner()
+      mockedProject.findByWorkspaceAndSlug.mockResolvedValue(dbFail)
+
+      expectErr(await projectScoped[method](), 'DATABASE_ERROR')
+      expect(mockedInvite.findById).not.toHaveBeenCalled()
+      expect(mockedInvite.listByProject).not.toHaveBeenCalled()
+      expectNoWrite()
+    })
+
+    it.each([
+      'revoke',
+      'resend',
+      'updateRole',
+      'revokeForProject',
+      'resendForProject',
+    ] as const)('%s() propagates a failing invitation lookup and stops', async (method) => {
+      asOwner()
+      mockedInvite.findById.mockResolvedValue(dbFail)
+
+      expectErr(await all[method](), 'DATABASE_ERROR')
+      expectNoWrite()
+    })
+
+    it.each([
+      'create',
+      'createForProject',
+    ] as const)('%s() propagates a failing findByEmail and stops', async (method) => {
+      asOwner()
+      mockedUser.findByEmail.mockResolvedValue(dbFail)
+
+      expectErr(await all[method](), 'DATABASE_ERROR')
+      expect(mockedInvite.findPendingByWorkspaceAndEmail).not.toHaveBeenCalled()
+      expectNoWrite()
+    })
+
+    it.each([
+      'create',
+      'createForProject',
+    ] as const)('%s() propagates a failing target membership lookup and stops', async (method) => {
+      asOwner()
+      mockedUser.findByEmail.mockResolvedValue(
+        ok(createFakeUser({ id: 'target' })),
+      )
+      mockedMembership.findByUserAndWorkspace
+        .mockResolvedValueOnce(ok(ownerMembership))
+        .mockResolvedValueOnce(dbFail)
+
+      expectErr(await all[method](), 'DATABASE_ERROR')
+      expect(mockedInvite.findPendingByWorkspaceAndEmail).not.toHaveBeenCalled()
+      expectNoWrite()
+    })
+
+    it.each([
+      'create',
+      'createForProject',
+    ] as const)('%s() invites an existing user who is not a workspace member yet', async (method) => {
+      asOwner()
+      mockedUser.findByEmail.mockResolvedValue(
+        ok(createFakeUser({ id: 'target' })),
+      )
+      mockedMembership.findByUserAndWorkspace
+        .mockResolvedValueOnce(ok(ownerMembership))
+        .mockResolvedValueOnce(ok(null))
+
+      const result: Result<unknown> = await all[method]()
+      expectOk(result)
+      expect(mockedProject.addMember).not.toHaveBeenCalled()
+      expect(mockedInvite.create).toHaveBeenCalledOnce()
+    })
+
+    it.each([
+      'create',
+      'createForProject',
+    ] as const)('%s() propagates a failing pending-invite lookup and stops', async (method) => {
+      asOwner()
+      mockedInvite.findPendingByWorkspaceAndEmail.mockResolvedValue(dbFail)
+
+      expectErr(await all[method](), 'DATABASE_ERROR')
+      expect(mockedWorkspace.findById).not.toHaveBeenCalled()
+      expectNoWrite()
+    })
+
+    it.each([
+      'create',
+      'createForProject',
+    ] as const)('%s() propagates a failing insert and sends no email', async (method) => {
+      asOwner()
+      mockedInvite.create.mockResolvedValue(dbFail)
+
+      expectErr(await all[method](), 'DATABASE_ERROR')
+      expect(mockedEmail).not.toHaveBeenCalled()
+      expect(auditMutation).not.toHaveBeenCalled()
+    })
+
+    it('createForProject() propagates a failing addMember and does not audit', async () => {
+      asOwner()
+      mockedUser.findByEmail.mockResolvedValue(
+        ok(createFakeUser({ id: 'target' })),
+      )
+      mockedMembership.findByUserAndWorkspace
+        .mockResolvedValueOnce(ok(ownerMembership))
+        .mockResolvedValueOnce(ok(memberMebership))
+      mockedProject.addMember.mockResolvedValue(dbFail)
+
+      expectErr(await projectScoped.createForProject(), 'DATABASE_ERROR')
+      expect(mockedInvite.create).not.toHaveBeenCalled()
+      expect(auditMutation).not.toHaveBeenCalled()
+    })
+
+    it.each([
+      ['list', 'listByWorkspace'],
+      ['listForProject', 'listByProject'],
+    ] as const)('%s() propagates a failing %s', async (method, repoMethod) => {
+      asOwner()
+      mockedInvite[repoMethod].mockResolvedValue(dbFail)
+
+      expectErr(await all[method](), 'DATABASE_ERROR')
+    })
+
+    it.each([
+      ['revoke', 'updateStatus'],
+      ['revokeForProject', 'updateStatus'],
+      ['resend', 'refreshToken'],
+      ['resendForProject', 'refreshToken'],
+    ] as const)('%s() propagates a failing %s and does not audit', async (method, repoMethod) => {
+      asOwner()
+      mockedInvite[repoMethod].mockResolvedValue(dbFail)
+
+      expectErr(await all[method](), 'DATABASE_ERROR')
+      expect(mockedEmail).not.toHaveBeenCalled()
+      expect(auditMutation).not.toHaveBeenCalled()
+    })
+
+    it('skips the email but still creates the invite when the inviter lookup fails', async () => {
+      asOwner()
+      mockedUser.findById.mockResolvedValue(dbFail)
+
+      expectOk(await workspaceScoped.create())
+      expect(mockedEmail).not.toHaveBeenCalled()
+      expect(auditMutation).toHaveBeenCalledWith(
+        expect.objectContaining({ action: 'create', targetId: 'inv-1' }),
+      )
+    })
+
+    it('logs "unknown" when the email transport throws a non-Error', async () => {
+      asOwner()
+      mockedEmail.mockRejectedValue('smtp offline')
+
+      expectOk(await workspaceScoped.create())
+      expect(vi.mocked(logger).warn).toHaveBeenCalledWith(
+        'invitation.email_failed',
+        expect.objectContaining({ error: 'unknown' }),
+      )
+    })
+  })
+
+  describe('accept() guard propagation', () => {
+    const invite = {
+      ...createFakeInvitation({
+        workspaceId: 'ws1',
+        email: 'invitee@example.com',
+        status: 'PENDING',
+      }),
+      workspace: createFakeWorkspace({ id: 'ws1', slug: 'acme' }),
+    }
+
+    it('propagates a failing token lookup', async () => {
+      mockedInvite.findByToken.mockResolvedValue(err(databaseError('boom')))
+
+      expectErr(
+        await InvitationService.accept('user', 'invitee@example.com', 'tok'),
+        'DATABASE_ERROR',
+      )
+      expect(mockedInvite.accept).not.toHaveBeenCalled()
+    })
+
+    it('answers INVITATION_EXPIRED for an invite already flagged EXPIRED', async () => {
+      mockedInvite.findByToken.mockResolvedValue(
+        ok({ ...invite, status: 'EXPIRED' }),
+      )
+
+      expectErr(
+        await InvitationService.accept('user', 'invitee@example.com', 'tok'),
+        'INVITATION_EXPIRED',
+      )
+      expect(mockedInvite.updateStatus).not.toHaveBeenCalled()
+      expect(mockedInvite.accept).not.toHaveBeenCalled()
+    })
+
+    it('propagates a failing accept write and does not audit', async () => {
+      mockedInvite.findByToken.mockResolvedValue(ok(invite))
+      mockedInvite.accept.mockResolvedValue(err(databaseError('boom')))
+
+      expectErr(
+        await InvitationService.accept('user', 'invitee@example.com', 'tok'),
+        'DATABASE_ERROR',
+      )
+      expect(auditMutation).not.toHaveBeenCalled()
     })
   })
 })

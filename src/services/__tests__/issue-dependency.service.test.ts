@@ -312,3 +312,124 @@ function arrangeDependencyRoundTrip() {
   )
   mockedDependency.remove.mockResolvedValue(ok(undefined))
 }
+
+describe('IssueDependencyService error propagation', () => {
+  const boom = err(databaseError('boom'))
+
+  function arrange() {
+    arrangeDependencyRoundTrip()
+    inProject()
+  }
+
+  const methods = {
+    list: () =>
+      IssueDependencyService.list('actor', 'ws1', 'proj-slug', 'issue-1'),
+    create: () =>
+      IssueDependencyService.create('actor', 'ws1', 'proj-slug', 'issue-1', {
+        targetId: 'issue-2',
+        type: 'BLOCKS',
+      }),
+    remove: () =>
+      IssueDependencyService.remove(
+        'actor',
+        'ws1',
+        'proj-slug',
+        'issue-1',
+        'dep-1',
+      ),
+  }
+  const names = Object.keys(methods) as (keyof typeof methods)[]
+
+  function expectNoDependencyWork() {
+    expect(mockedDependency.listByIssue).not.toHaveBeenCalled()
+    expect(mockedDependency.create).not.toHaveBeenCalled()
+    expect(mockedDependency.remove).not.toHaveBeenCalled()
+  }
+
+  it.each(
+    names,
+  )('%s() stops when the actor is not a workspace member', async (name) => {
+    arrange()
+    mockedMembership.findByUserAndWorkspace.mockResolvedValue(ok(null))
+
+    expectErr(await methods[name](), 'FORBIDDEN')
+    expect(mockedIssue.findById).not.toHaveBeenCalled()
+    expectNoDependencyWork()
+  })
+
+  it.each(
+    names,
+  )('%s() propagates a failing (source) issue lookup and stops', async (name) => {
+    arrange()
+    mockedIssue.findById.mockResolvedValueOnce(boom)
+
+    expectErr(await methods[name](), 'DATABASE_ERROR')
+    expect(mockedIssue.findById).toHaveBeenCalledTimes(1)
+    expectNoDependencyWork()
+  })
+
+  it('list() returns ISSUE_NOT_FOUND for an issue of another project', async () => {
+    arrange()
+    mockedIssue.findById.mockResolvedValue(
+      ok(createFakeIssue({ projectId: 'other-proj' })),
+    )
+
+    expectErr(await methods.list(), 'ISSUE_NOT_FOUND')
+    expect(mockedDependency.listByIssue).not.toHaveBeenCalled()
+  })
+
+  it.each([
+    [
+      'listOutgoing',
+      () => mockedDependency.listOutgoing,
+      [mockedDependency.create],
+    ],
+    ['create', () => mockedDependency.create, []],
+  ] as const)('create() propagates a failing %s and stops', async (_, dep, untouched) => {
+    arrange()
+    dep().mockResolvedValue(boom)
+
+    expectErr(await methods.create(), 'DATABASE_ERROR')
+    for (const fn of untouched) expect(fn).not.toHaveBeenCalled()
+  })
+
+  it('create() walks a shared descendant only once', async () => {
+    arrange()
+    const edges: Record<string, string[]> = {
+      'issue-2': ['issue-3', 'issue-4'],
+      'issue-3': ['issue-5'],
+      'issue-4': ['issue-5'],
+    }
+    mockedDependency.listOutgoing.mockImplementation(async (id: string) =>
+      ok(
+        (edges[id] ?? []).map((targetId) =>
+          createFakeIssueDependency({ sourceId: id, targetId }),
+        ),
+      ),
+    )
+
+    expectOk(await methods.create())
+    expect(mockedDependency.listOutgoing.mock.calls.map(([id]) => id)).toEqual([
+      'issue-2',
+      'issue-3',
+      'issue-4',
+      'issue-5',
+    ])
+    expect(mockedDependency.create).toHaveBeenCalledWith(
+      'issue-1',
+      'issue-2',
+      'BLOCKS',
+    )
+  })
+
+  it.each([
+    ['findById', () => mockedDependency.findById, [mockedDependency.remove]],
+    ['remove', () => mockedDependency.remove, []],
+  ] as const)('remove() propagates a failing %s and stops', async (_, dep, untouched) => {
+    arrange()
+    dep().mockResolvedValue(boom)
+
+    expectErr(await methods.remove(), 'DATABASE_ERROR')
+    for (const fn of untouched) expect(fn).not.toHaveBeenCalled()
+  })
+})

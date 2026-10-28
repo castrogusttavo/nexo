@@ -1,4 +1,4 @@
-import { describe, expect, it } from 'vitest'
+import { afterEach, describe, expect, it, vi } from 'vitest'
 import { seedSubscription } from '@/src/__tests__/factories/subscription.factory'
 import { seedUser } from '@/src/__tests__/factories/user.factory'
 import { seedWorkspace } from '@/src/__tests__/factories/workspace.factory'
@@ -6,6 +6,10 @@ import { expectErr, expectOk } from '@/src/__tests__/helpers/result.helpers'
 import { DEFAULT_PROJECT_STATES } from '@/src/config/project-states'
 import { prisma } from '@/src/lib/prisma'
 import { WorkspaceRepository } from '@/src/repositories/workspace.repository'
+
+afterEach(() => {
+  vi.restoreAllMocks()
+})
 
 describe('WorkspaceRepository', () => {
   describe('findById()', () => {
@@ -285,6 +289,52 @@ describe('WorkspaceRepository', () => {
       const result = await WorkspaceRepository.delete('nonexistent')
 
       expectErr(result, 'DATABASE_ERROR')
+    })
+  })
+
+  describe('database failures', () => {
+    it('findById() should return DATABASE_ERROR when the query throws', async () => {
+      vi.spyOn(prisma.workspace, 'findUnique').mockRejectedValueOnce(
+        new Error('boom'),
+      )
+      expectErr(await WorkspaceRepository.findById('x'), 'DATABASE_ERROR')
+    })
+
+    it('findBySlug() should return DATABASE_ERROR when the query throws', async () => {
+      vi.spyOn(prisma.workspace, 'findUnique').mockRejectedValueOnce(
+        new Error('boom'),
+      )
+      expectErr(await WorkspaceRepository.findBySlug('x'), 'DATABASE_ERROR')
+    })
+
+    it('create() should return DATABASE_ERROR for a non-P2002 failure', async () => {
+      vi.spyOn(prisma.workspace, 'create').mockRejectedValueOnce(
+        new Error('boom'),
+      )
+      expectErr(
+        await WorkspaceRepository.create({ name: 'X', slug: 'x' }),
+        'DATABASE_ERROR',
+      )
+    })
+
+    it('update() should return DATABASE_ERROR for a non-P2002 failure', async () => {
+      vi.spyOn(prisma.workspace, 'update').mockRejectedValueOnce(
+        new Error('boom'),
+      )
+      expectErr(
+        await WorkspaceRepository.update('x', { name: 'X' }),
+        'DATABASE_ERROR',
+      )
+    })
+
+    it('revertExpiredTrials() should return DATABASE_ERROR when the query throws', async () => {
+      vi.spyOn(prisma.workspace, 'findMany').mockRejectedValueOnce(
+        new Error('boom'),
+      )
+      expectErr(
+        await WorkspaceRepository.revertExpiredTrials(),
+        'DATABASE_ERROR',
+      )
     })
   })
 })
