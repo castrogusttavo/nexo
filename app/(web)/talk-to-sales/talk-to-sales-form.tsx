@@ -2,7 +2,7 @@
 
 import { useState } from 'react'
 import { Button } from '@/components/ui/button'
-import { Field, FieldError, FieldLabel } from '@/components/ui/field'
+import { Field, FieldLabel } from '@/components/ui/field'
 import { Input } from '@/components/ui/input'
 import {
   Select,
@@ -16,6 +16,7 @@ import { Textarea } from '@/components/ui/textarea'
 import { useLogger } from '@/lib/axiom/client'
 import { notify } from '@/lib/notify'
 import { captureEvent } from '@/lib/posthog/client'
+import { ApiError, apiSend } from '@/src/hooks/_fetch'
 import { TEAM_SIZES } from '@/src/schemas/talk-to-sales.schema'
 
 const EMPTY = { name: '', email: '', message: '' }
@@ -27,7 +28,6 @@ export function TalkToSalesForm() {
   const [status, setStatus] = useState<'idle' | 'sending' | 'sent' | 'error'>(
     'idle',
   )
-  const [error, setError] = useState<string | null>(null)
 
   const sending = status === 'sending'
 
@@ -41,7 +41,6 @@ export function TalkToSalesForm() {
   ) {
     e.preventDefault()
 
-    setError(null)
     setStatus('sending')
 
     const form = new FormData(e.currentTarget)
@@ -53,27 +52,31 @@ export function TalkToSalesForm() {
     }
 
     try {
-      const res = await fetch('/api/talk-to-sales', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload),
-      })
-      if (res.ok) {
-        captureEvent('talk_to_sales_submit', { team_size: teamSize })
-        setFields(EMPTY)
-        setTeamSize('')
-        setStatus('sent')
+      await apiSend(
+        '/api/talk-to-sales',
+        {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload),
+        },
+        'Verifique os campos e tente novamente',
+      )
+      captureEvent('talk_to_sales_submit', { team_size: teamSize })
+      setFields(EMPTY)
+      setTeamSize('')
+      setStatus('sent')
+    } catch (err) {
+      setStatus('error')
+      // The server's own pt-BR message (e.g. which field is wrong).
+      if (err instanceof ApiError) {
+        notify.error(err)
         return
       }
-      notify.error('Verifique os campos e tente novamente')
-      setStatus('error')
-    } catch (err) {
-      log.error('tal_to_sales.submit_failed', {
+      log.error('talk_to_sales.submit_failed', {
         component: 'TalkToSalesForm',
         message: err instanceof Error ? err.message : String(err),
       })
       notify.error('Não foi possível enviar. Tente novamente.')
-      setStatus('error')
     }
   }
 
@@ -108,7 +111,7 @@ export function TalkToSalesForm() {
         />
       </Field>
       <Field>
-        <FieldLabel>
+        <FieldLabel htmlFor='email'>
           Seu e-mail <span className='text-destructive'>*</span>
         </FieldLabel>
         <Input
@@ -162,7 +165,6 @@ export function TalkToSalesForm() {
           disabled={sending}
         />
       </Field>
-      {error && <FieldError>{error}</FieldError>}
       <Button
         size='lg'
         className='w-full'

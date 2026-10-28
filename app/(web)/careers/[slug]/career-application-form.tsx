@@ -13,6 +13,7 @@ import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
 import { useLogger } from '@/lib/axiom/client'
 import { notify } from '@/lib/notify'
+import { ApiError, apiSend } from '@/src/hooks/_fetch'
 
 interface Props {
   slug: string
@@ -41,23 +42,24 @@ export function CareerApplicationForm({ slug }: Props) {
     form.set('consent', consent ? 'true' : 'false')
 
     try {
-      const res = await fetch(`/api/careers/${slug}/apply`, {
-        method: 'POST',
-        body: form,
-      })
-      if (res.ok) {
-        setStatus('sent')
+      await apiSend(
+        `/api/careers/${slug}/apply`,
+        { method: 'POST', body: form },
+        'Verifique os campos e tente novamente',
+      )
+      setStatus('sent')
+    } catch (err) {
+      setStatus('error')
+      // The server's own pt-BR message (e.g. "Envie o currículo em PDF").
+      if (err instanceof ApiError) {
+        notify.error(err)
         return
       }
-      notify.error('Verifique os campos e tente novamente')
-      setStatus('error')
-    } catch (err) {
       log.error('career_application.submit_failed', {
         component: 'CareerApplicationForm',
         message: err instanceof Error ? err.message : String(err),
       })
       notify.error('Não foi possível enviar. Tente novamente.')
-      setStatus('error')
     }
   }
 
