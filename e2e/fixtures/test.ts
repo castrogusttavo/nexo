@@ -205,9 +205,8 @@ export const signedOutTest = test.extend({
 })
 
 /** The avatar button that opens the profile menu is named after the initial. */
-export function profileMenuTrigger(page: Page, account: Account) {
-  return page.getByRole('button', {
-    name: account.name.charAt(0).toUpperCase(),
-    exact: true,
-  })
+// The avatar button in the header. Named by its aria-label, not by the
+// initials it shows, which change with the account's name.
+export function profileMenuTrigger(page: Page) {
+  return page.getByRole('button', { name: 'Menu do perfil', exact: true })
 }

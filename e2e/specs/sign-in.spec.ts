@@ -35,7 +35,7 @@ test.describe('sign-in', () => {
     await expect(page).toHaveURL(atPath(`/${account.workspaceSlug}`))
     await expect(page.getByRole('link', { name: 'Wiki' }).first()).toBeVisible()
 
-    await profileMenuTrigger(page, account).click()
+    await profileMenuTrigger(page).click()
     await page.getByRole('menuitem', { name: 'Sair' }).click()
 
     await expect(page).toHaveURL(/\/sign-in$/)

@@ -61,7 +61,8 @@ function renderDropdown(user: UserDTO = USER) {
 }
 
 async function openMenu(user: ReturnType<typeof renderDropdown>['user']) {
-  await user.click(screen.getAllByRole('button')[0])
+  // Named by its label, not by the initials it shows.
+  await user.click(screen.getByRole('button', { name: 'Menu do perfil' }))
 }
 
 beforeEach(() => {

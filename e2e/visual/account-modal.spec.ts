@@ -26,10 +26,7 @@ for (const variant of VARIANTS) {
 
         // Opened the way a user does: the avatar button, then the menu item.
         await page
-          .getByRole('button', {
-            name: IDENTITY.name.charAt(0).toUpperCase(),
-            exact: true,
-          })
+          .getByRole('button', { name: 'Menu do perfil', exact: true })
           .click()
         await page.getByRole('menuitem', { name: tab.item }).click()
 

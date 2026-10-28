@@ -4,6 +4,9 @@ import { Logout05Icon } from '@hugeicons-pro/core-stroke-rounded'
 import Image from 'next/image'
 import { useRouter } from 'next/navigation'
 import { useState } from 'react'
+import { NexoIcon } from '@/components/icon/icon'
+import { H4 } from '@/components/typography/heading/h4'
+import { Muted } from '@/components/typography/text/muted'
 import { Button } from '@/components/ui/button'
 import {
   DropdownMenu,
@@ -15,9 +18,6 @@ import {
 import { UserAvatar } from '@/components/user-avatar'
 import { useUser } from '@/src/hooks/use-user'
 import { authClient } from '@/src/lib/auth-client'
-import { NexoIcon } from '../../../components/icon/icon'
-import { H4 } from '../../../components/typography/heading/h4'
-import { Muted } from '../../../components/typography/text/muted'
 import {
   type ProfileTab,
   profileTriggers,
@@ -42,6 +42,7 @@ export function UserDropdownProfile() {
             <Button
               variant='ghost'
               size='icon'
+              aria-label='Menu do perfil'
               className='data-popup-open:bg-muted dark:data-popup-open:bg-muted p-1 rounded-md'
             >
               <UserAvatar
