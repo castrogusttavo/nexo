@@ -6,8 +6,8 @@ import {
   mockFetch,
   renderWithProviders,
 } from '@/src/__tests__/helpers/component'
-import { CookieConsentBanner } from '../banner'
-import { CookieConsentProvider } from '../provider'
+import { CookieConsentBanner } from '../cookie-consent-banner'
+import { CookieConsentProvider } from '../cookie-consent-provider'
 
 vi.mock('@/src/lib/auth-client', () => ({
   authClient: { useSession: () => ({ data: null }) },

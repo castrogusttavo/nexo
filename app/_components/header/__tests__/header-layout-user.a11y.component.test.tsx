@@ -8,7 +8,7 @@ import {
   renderWithProviders,
 } from '@/src/__tests__/helpers/component'
 import type { UserDTO } from '@/types/user'
-import { UserHeader } from '../header-layout-user'
+import { HeaderLayoutUser } from '../header-layout-user'
 import { HeaderPromotionBanner } from '../header-promotion-banner'
 
 // Unlike header-layout-user.component.test.tsx, the dropdowns are the real
@@ -69,7 +69,7 @@ async function renderHeader() {
         plan='PRO'
         slug='nexo'
       />
-      <UserHeader slug='nexo' />
+      <HeaderLayoutUser slug='nexo' />
     </>,
   )
   // The workspace selector names the workspace once the user query lands.

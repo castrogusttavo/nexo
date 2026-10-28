@@ -15,7 +15,7 @@ import type {
   EstimateSystemDTO,
   EstimateValueDTO,
 } from '@/types/estimate'
-import { EstimateSystemForm } from '../dialog-estimate-create'
+import { EstimateSystemForm } from '../estimate-system-form'
 
 vi.mock('sonner', () => ({
   toast: {

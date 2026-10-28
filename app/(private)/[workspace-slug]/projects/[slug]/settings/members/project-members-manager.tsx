@@ -33,8 +33,8 @@ import {
   useRemoveProjectMember,
 } from '@/src/hooks/use-project-member'
 import { AddProjectMemberDialog } from './add-project-member-dialog'
-import { getProjectMemberColumns } from './columns'
 import { ProjectLeadSelect } from './project-lead-select'
+import { getProjectMemberColumns } from './project-member-columns'
 
 const ROLE_OPTIONS = [
   { value: 'LEAD', label: 'Líder' },

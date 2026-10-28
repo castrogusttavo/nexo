@@ -1,16 +1,16 @@
 import { LUCIDE_ICONS } from './modal/lucide-icons'
 
-interface ProjectEmojiProps {
+interface WorkspaceProjectEmojiProps {
   value: string | null | undefined
   size?: number
   fallback?: string
 }
 
-export function ProjectEmoji({
+export function WorkspaceProjectEmoji({
   value,
   size = 24,
   fallback = '📁',
-}: ProjectEmojiProps) {
+}: WorkspaceProjectEmojiProps) {
   if (!value) return <>{fallback}</>
 
   const [name, color] = value.includes(':')

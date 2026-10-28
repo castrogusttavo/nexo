@@ -35,9 +35,13 @@ vi.mock('sonner', () => ({
 // The pickers are rich dropdowns (emoji catalogue, uploads) tested on their
 // own; stub them down to a button that reports a fixed selection.
 vi.mock(
-  '@/app/_components/workspace/projects/modal/workspace-project-modal-emoji-icon-dialog',
+  '@/app/_components/workspace/projects/modal/workspace-project-emoji-icon-picker',
   () => ({
-    EmojiIconPicker: ({ onSelect }: { onSelect?: (emoji: string) => void }) => (
+    WorkspaceProjectEmojiIconPicker: ({
+      onSelect,
+    }: {
+      onSelect?: (emoji: string) => void
+    }) => (
       <button type='button' onClick={() => onSelect?.('🚀')}>
         Escolher emoji
       </button>

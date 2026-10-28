@@ -14,7 +14,7 @@ import {
 } from '@/src/__tests__/helpers/component'
 import type { IssueDTO } from '@/types/issue'
 import type { StateDTO } from '@/types/state'
-import { IssuesFilters } from '../filters'
+import { IssueFilters } from '../issue-filters'
 
 // See issue-list-view.component.test.tsx: the localStorage-backed store
 // can't initialise under Node >= 25, so a plain object stands in.
@@ -102,7 +102,7 @@ function renderToolbar(searchParams?: Record<string, string>) {
         onUrlUpdate={onUrlUpdate}
         hasMemory
       >
-        <IssuesFilters workspaceId={WORKSPACE_ID} projectSlug={PROJECT_SLUG} />
+        <IssueFilters workspaceId={WORKSPACE_ID} projectSlug={PROJECT_SLUG} />
         <IssueListView
           workspaceId={WORKSPACE_ID}
           workspaceSlug='acme'
@@ -116,7 +116,7 @@ function renderToolbar(searchParams?: Record<string, string>) {
   return { user: userEvent.setup(), lastUrl, onUrlUpdate }
 }
 
-describe('<IssuesFilters />', () => {
+describe('<IssueFilters />', () => {
   it('narrows the list when a basic filter is picked', async () => {
     mockProjectApi()
     const { user, lastUrl } = renderToolbar()

@@ -4,9 +4,9 @@ import { Suspense } from 'react'
 import { Skeleton } from '@/components/ui/skeleton'
 import { getAuthSession } from '@/src/lib/auth-session'
 import { UserService } from '@/src/services/user.service'
-import { OnboardingBackButton } from './header-onboarding-back-button'
-import { OnboardingProgressBar } from './header-onboarding-progress-bar'
-import { OnboardingUserButton } from './header-onboarding-user-button'
+import { HeaderOnboardingBackButton } from './header-onboarding-back-button'
+import { HeaderOnboardingProgressBar } from './header-onboarding-progress-bar'
+import { HeaderOnboardingUserButton } from './header-onboarding-user-button'
 
 // Everything but the avatar is the same for everyone, so it renders at once;
 // only the user menu waits for the session. Reading the session here, outside
@@ -14,10 +14,10 @@ import { OnboardingUserButton } from './header-onboarding-user-button'
 export async function HeaderOnboarding() {
   return (
     <div className='w-full flex flex-col gap-4 sticky top-0 z-10'>
-      <OnboardingProgressBar />
+      <HeaderOnboardingProgressBar />
       <div className='flex items-center justify-between gap-5 w-full px-6'>
         <div className='flex items-center gap-2.5'>
-          <OnboardingBackButton />
+          <HeaderOnboardingBackButton />
           <Image
             src='/brand/logo.svg'
             alt='nexo-logo'
@@ -51,7 +51,7 @@ async function HeaderOnboardingUser() {
     .slice(0, 2)
 
   return (
-    <OnboardingUserButton
+    <HeaderOnboardingUserButton
       name={name ?? null}
       email={email}
       image={image ?? null}

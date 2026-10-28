@@ -6,7 +6,7 @@ import {
   mockFetch,
   renderWithProviders,
 } from '@/src/__tests__/helpers/component'
-import { CookieConsentProvider } from '../../../cookie-consent/provider'
+import { CookieConsentProvider } from '../../../cookie-consent/cookie-consent-provider'
 import { UserModalSecurityPrivacyField } from '../user-modal-security-privacy-field'
 
 function renderField(initial: CookieConsent, isAuthenticated = true) {

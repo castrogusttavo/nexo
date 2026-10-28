@@ -2,7 +2,7 @@
 
 import { FilterMailIcon } from '@hugeicons-pro/core-stroke-rounded'
 import { useState } from 'react'
-import { IssueShowPropertiesDropdown } from '@/app/_components/issue/filter/issue-show-properties'
+import { IssueShowPropertiesDropdown } from '@/app/_components/issue/filter/issue-show-properties-dropdown'
 import { IssuesAnalyticsPanel } from '@/app/_components/issue/panel/issues-analytics-panel'
 import { activeIssueFilterCount } from '@/components/filters/apply-issue-filters'
 import { FilterContainer } from '@/components/filters/filter-container'
@@ -16,15 +16,12 @@ import {
   PopoverTrigger,
 } from '@/components/ui/popover'
 
-interface IssuesFiltersProps {
+interface IssueFiltersProps {
   workspaceId: string
   projectSlug: string
 }
 
-export function IssuesFilters({
-  workspaceId,
-  projectSlug,
-}: IssuesFiltersProps) {
+export function IssueFilters({ workspaceId, projectSlug }: IssueFiltersProps) {
   const [open, setOpen] = useState(false)
   const [filterState] = useIssueFilters()
   const activeCount = activeIssueFilterCount(filterState)

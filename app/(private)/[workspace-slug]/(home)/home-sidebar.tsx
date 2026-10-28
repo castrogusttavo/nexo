@@ -2,13 +2,13 @@ import {
   KeyframesMultipleAddIcon,
   PanelLeftIcon,
 } from '@hugeicons-pro/core-stroke-rounded'
+import { NavigationCustomizeDialog } from '@/app/_components/navigation/navigation-customize-dialog'
 import {
   ContextHeader,
   ContextPrimaryAction,
   ContextSidebar,
 } from '@/app/_components/navigation/sidebar-context'
 import { SidebarProjects } from '@/app/_components/navigation/sidebar-project/sidebar-projects'
-import { DialogCustomizeNavigation } from '@/app/_components/project/dialog-customize-navigation'
 import { NexoIcon } from '@/components/icon/icon'
 import { Button } from '@/components/ui/button'
 import { requireMembership } from '@/src/lib/dal'
@@ -51,7 +51,7 @@ export async function HomeSidebar({
         title='Projetos'
         actions={
           <>
-            <DialogCustomizeNavigation />
+            <NavigationCustomizeDialog />
             <Button
               variant='ghost'
               size='icon-sm'

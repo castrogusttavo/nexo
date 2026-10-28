@@ -15,7 +15,7 @@ import {
   type SidebarNavigation,
 } from '@/src/schemas/user-preference.schema'
 import type { UserPreferenceDTO } from '@/types/user-preference'
-import { DialogCustomizeNavigation } from '../dialog-customize-navigation'
+import { NavigationCustomizeDialog } from '../navigation-customize-dialog'
 
 const { useSession } = vi.hoisted(() => ({ useSession: vi.fn() }))
 vi.mock('@/src/lib/auth-client', () => ({ authClient: { useSession } }))
@@ -37,7 +37,7 @@ async function openDialog(
     PREFERENCE_KEY,
     createFakeUserPreferenceDTO({ navigation }),
   )
-  const utils = renderWithProviders(<DialogCustomizeNavigation />, {
+  const utils = renderWithProviders(<NavigationCustomizeDialog />, {
     queryClient,
   })
   await utils.user.click(
@@ -50,7 +50,7 @@ const checkbox = (name: string) => screen.getByRole('checkbox', { name })
 const LIMIT_TOGGLE = 'Mostrar projetos limitados na barra lateral'
 const LIMIT_INPUT = 'Quantidade de projetos na barra lateral'
 
-describe('DialogCustomizeNavigation', () => {
+describe('NavigationCustomizeDialog', () => {
   it('names the dialog by its title', async () => {
     const { dialog } = await openDialog()
 

@@ -1,10 +1,10 @@
 import { screen, waitFor, within } from '@testing-library/react'
 import { describe, expect, it } from 'vitest'
 import { renderWithProviders } from '@/src/__tests__/helpers/component'
-import { ProjectorderButton } from '../workspace-project-order-button'
+import { WorkspaceProjectOrderButton } from '../workspace-project-order-button'
 
 function renderButton(searchParams?: Record<string, string>) {
-  return renderWithProviders(<ProjectorderButton />, { searchParams })
+  return renderWithProviders(<WorkspaceProjectOrderButton />, { searchParams })
 }
 
 const trigger = () => screen.getByRole('button')
@@ -22,7 +22,7 @@ const checked = (menu: MenuQueries) =>
     .filter((item) => item.getAttribute('aria-checked') === 'true')
     .map((item) => item.textContent)
 
-describe('<ProjectorderButton />', () => {
+describe('<WorkspaceProjectOrderButton />', () => {
   it('labels the trigger with the default sort field', () => {
     renderButton()
 

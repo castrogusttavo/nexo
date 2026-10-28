@@ -8,9 +8,9 @@ import {
 import { Settings02Icon } from '@hugeicons-pro/core-stroke-rounded'
 import { usePathname } from 'next/navigation'
 import { NexoIcon } from '@/components/icon/icon'
-import { GlobalButtonNavigation } from './navigation-sidebar-global-button'
+import { NavigationSidebarGlobalButton } from './navigation-sidebar-global-button'
 
-export function GlobalSidebarNavigation({ slug }: { slug: string }) {
+export function NavigationSidebarGlobal({ slug }: { slug: string }) {
   const base = `/${slug}`
   const pathname = usePathname()
 
@@ -28,7 +28,7 @@ export function GlobalSidebarNavigation({ slug }: { slug: string }) {
   return (
     <div className=' h-screen px-2 py-3'>
       <div className='h-fit flex flex-col justify-between gap-3'>
-        <GlobalButtonNavigation
+        <NavigationSidebarGlobalButton
           linkNavigation={base}
           description='Projetos'
           active={isActive(base)}
@@ -41,29 +41,29 @@ export function GlobalSidebarNavigation({ slug }: { slug: string }) {
             icon={JoinStraightIcon}
             className='absolute bottom-2 left-2 size-3'
           />
-        </GlobalButtonNavigation>
-        <GlobalButtonNavigation
+        </NavigationSidebarGlobalButton>
+        <NavigationSidebarGlobalButton
           linkNavigation={`${base}/wiki`}
           description='Wiki'
           active={isActive(`${base}/wiki`)}
         >
           <NexoIcon icon={StickyNote03Icon} className='size-5' />
-        </GlobalButtonNavigation>
-        <GlobalButtonNavigation
+        </NavigationSidebarGlobalButton>
+        <NavigationSidebarGlobalButton
           linkNavigation={`${base}/ai`}
           description='IA'
           active={isActive(`${base}/ai`)}
         >
           <NexoIcon icon={SparklesIcon} className='size-5' />
-        </GlobalButtonNavigation>
+        </NavigationSidebarGlobalButton>
         <div className='w-full h-px bg-secondary' />
-        <GlobalButtonNavigation
+        <NavigationSidebarGlobalButton
           linkNavigation={`${base}/settings`}
           description='Ajustes'
           active={isActive(`${base}/settings`)}
         >
           <NexoIcon icon={Settings02Icon} className='size-5' />
-        </GlobalButtonNavigation>
+        </NavigationSidebarGlobalButton>
       </div>
     </div>
   )

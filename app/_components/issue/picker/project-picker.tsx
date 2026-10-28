@@ -1,7 +1,7 @@
 'use client'
 
 import type * as React from 'react'
-import { ProjectEmoji } from '@/app/_components/workspace/projects/workspace-project-emoji'
+import { WorkspaceProjectEmoji } from '@/app/_components/workspace/projects/workspace-project-emoji'
 import { Button } from '@/components/ui/button'
 import { useProjects } from '@/src/hooks/use-project'
 import type { ProjectDTO } from '@/types/project'
@@ -15,7 +15,7 @@ interface ProjectPickerProps {
 }
 
 // `emoji` holds either an emoji or a picked icon as "Name:#color", so it goes
-// through ProjectEmoji instead of being printed. Decorative either way: the
+// through WorkspaceProjectEmoji instead of being printed. Decorative either way: the
 // control is named by the project, not by its icon.
 function ProjectLabel({ project }: { project: ProjectDTO }) {
   return (
@@ -25,7 +25,7 @@ function ProjectLabel({ project }: { project: ProjectDTO }) {
           aria-hidden='true'
           className='size-4 shrink-0 grid place-items-center text-sm leading-none'
         >
-          <ProjectEmoji value={project.emoji} size={14} />
+          <WorkspaceProjectEmoji value={project.emoji} size={14} />
         </span>
       )}
       <span className='truncate'>{project.name}</span>

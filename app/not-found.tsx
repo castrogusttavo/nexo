@@ -3,10 +3,10 @@ import type { Metadata } from 'next'
 import Link from 'next/link'
 import { NexoIcon } from '@/components/icon/icon'
 import { Muted } from '@/components/typography/text/muted'
-import { WebFooter } from './(web)/_components/footer'
 import { WebHeader } from './(web)/_components/header/web-header'
 import { SubTitle } from './(web)/_components/text/sub-title'
 import { Title } from './(web)/_components/text/title'
+import { WebFooter } from './(web)/_components/web-footer'
 
 export const metadata: Metadata = {
   title: 'Página não encontrada | Nexo',

@@ -8,7 +8,7 @@ import {
   mockFetch,
   renderWithProviders,
 } from '@/src/__tests__/helpers/component'
-import { UserShortcutLinkModal } from '../user-shortcut-link-modal'
+import { UserShortcutLinkDialog } from '../user-shortcut-link-dialog'
 
 vi.mock('sonner', () => ({
   toast: {
@@ -58,7 +58,7 @@ const submitButton = () =>
   screen.getByRole('button', { name: 'Adicionar Link rápido' })
 
 async function openModal() {
-  const utils = renderWithProviders(<UserShortcutLinkModal />)
+  const utils = renderWithProviders(<UserShortcutLinkDialog />)
   await utils.user.click(
     screen.getByRole('button', { name: 'Adicionar link rápido' }),
   )
@@ -70,7 +70,7 @@ beforeEach(() => {
   vi.mocked(toast.promise).mockClear()
 })
 
-describe('<UserShortcutLinkModal /> validation', () => {
+describe('<UserShortcutLinkDialog /> validation', () => {
   it('opens on an empty form', async () => {
     await openModal()
 
@@ -135,7 +135,7 @@ describe('<UserShortcutLinkModal /> validation', () => {
   })
 })
 
-describe('<UserShortcutLinkModal /> submission', () => {
+describe('<UserShortcutLinkDialog /> submission', () => {
   it('posts the trimmed title with the url and closes the dialog', async () => {
     const fetchSpy = mockFetch().mockResolvedValue(apiSuccess(SHORT_LINK, 201))
     const { user } = await openModal()

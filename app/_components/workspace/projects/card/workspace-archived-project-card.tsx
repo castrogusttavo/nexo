@@ -23,18 +23,18 @@ import {
 import { notify } from '@/lib/notify'
 import { useDeleteProject, useRestoreProject } from '@/src/hooks/use-project'
 import type { ProjectDTO } from '@/types/project'
-import { ProjectEmoji } from '../workspace-project-emoji'
-import { ProjectCardActions } from './workspace-project-card-action-button'
+import { WorkspaceProjectEmoji } from '../workspace-project-emoji'
+import { WorkspaceProjectCardActions } from './workspace-project-card-actions'
 
-interface ArchivedProjectCardProps {
+interface WorkspaceArchivedProjectCardProps {
   project: ProjectDTO
   workspaceId: string
 }
 
-export function ArchivedProjectCard({
+export function WorkspaceArchivedProjectCard({
   project,
   workspaceId,
-}: ArchivedProjectCardProps) {
+}: WorkspaceArchivedProjectCardProps) {
   const restore = useRestoreProject(workspaceId, project.slug)
   const remove = useDeleteProject(workspaceId, project.slug)
 
@@ -72,7 +72,7 @@ export function ArchivedProjectCard({
         <div className='absolute bottom-4 z-1 flex h-10 w-full items-center justify-between gap-3 px-4'>
           <div className='flex grow items-center gap-2.5 truncate'>
             <div className='size-9 shrink-0 grid place-items-center rounded-sm bg-black/30 dark:bg-white/30'>
-              <ProjectEmoji value={project.emoji} size={18} />
+              <WorkspaceProjectEmoji value={project.emoji} size={18} />
             </div>
             <div className='flex flex-col gap-0.5'>
               <CardTitle className='text-white truncate'>
@@ -87,7 +87,7 @@ export function ArchivedProjectCard({
             <Tooltip>
               <TooltipTrigger
                 render={
-                  <ProjectCardActions
+                  <WorkspaceProjectCardActions
                     onClick={handleRestore}
                     aria-label='Restaurar projeto'
                     disabled={restore.isPending}
@@ -96,7 +96,7 @@ export function ArchivedProjectCard({
                       icon={ArrowReloadHorizontalIcon}
                       strokeWidth={2}
                     />
-                  </ProjectCardActions>
+                  </WorkspaceProjectCardActions>
                 }
               />
               <TooltipContent side='bottom'>Restaurar</TooltipContent>
@@ -104,14 +104,14 @@ export function ArchivedProjectCard({
             <Tooltip>
               <TooltipTrigger
                 render={
-                  <ProjectCardActions
+                  <WorkspaceProjectCardActions
                     onClick={handleDelete}
                     aria-label='Excluir projeto permanentemente'
                     disabled={remove.isPending}
                     className='flex h-7 w-7 items-center justify-center rounded-sm bg-black/30 dark:bg-white/30 text-red-400 hover:text-red-300'
                   >
                     <NexoIcon icon={Delete02Icon} strokeWidth={2} />
-                  </ProjectCardActions>
+                  </WorkspaceProjectCardActions>
                 }
               />
               <TooltipContent side='bottom'>

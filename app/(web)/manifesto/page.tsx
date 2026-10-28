@@ -1,7 +1,7 @@
 import type { Metadata } from 'next'
-import { WebFooter } from '../_components/footer'
 import { SubTitle } from '../_components/text/sub-title'
 import { Title } from '../_components/text/title'
+import { WebFooter } from '../_components/web-footer'
 import { ManifestoHeroImage } from './manifesto-hero-image'
 import { ManifestoPrinciples } from './manifesto-principles'
 

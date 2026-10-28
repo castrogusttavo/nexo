@@ -4,7 +4,7 @@ import {
   deferredResponse,
   renderWithProviders,
 } from '@/src/__tests__/helpers/component'
-import { OnboardingBackButton } from '../header-onboarding-back-button'
+import { HeaderOnboardingBackButton } from '../header-onboarding-back-button'
 
 const { push, usePathname, goBackOnboarding } = vi.hoisted(() => ({
   push: vi.fn(),
@@ -19,7 +19,7 @@ vi.mock('@/app/onboarding/actions', () => ({ goBackOnboarding }))
 
 function renderButton(pathname: string) {
   usePathname.mockReturnValue(pathname)
-  return renderWithProviders(<OnboardingBackButton />)
+  return renderWithProviders(<HeaderOnboardingBackButton />)
 }
 
 const backButton = () => screen.queryByRole('button', { name: 'Voltar' })
@@ -28,7 +28,7 @@ beforeEach(() => {
   goBackOnboarding.mockResolvedValue(undefined)
 })
 
-describe('<OnboardingBackButton />', () => {
+describe('<HeaderOnboardingBackButton />', () => {
   it.each([
     ['/onboarding/role-setup', '/onboarding/profile-setup'],
     ['/onboarding/goals-setup', '/onboarding/role-setup'],

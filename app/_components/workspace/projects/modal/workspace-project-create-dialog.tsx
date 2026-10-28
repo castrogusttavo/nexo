@@ -41,9 +41,9 @@ import {
 import { Textarea } from '@/components/ui/textarea'
 import { notify } from '@/lib/notify'
 import { useCreateProject } from '@/src/hooks/use-project'
-import { ProjectCreateButton } from '../workspace-project-create-button'
+import { WorkspaceProjectCreateButton } from '../workspace-project-create-button'
+import { WorkspaceProjectEmojiIconPicker } from './workspace-project-emoji-icon-picker'
 import { CoverImagePicker } from './workspace-project-modal-coverimage-dialog'
-import { EmojiIconPicker } from './workspace-project-modal-emoji-icon-dialog'
 
 function randomCoverImage() {
   return COVER_IMAGES[Math.floor(Math.random() * COVER_IMAGES.length)]
@@ -110,17 +110,17 @@ function projectDraftReducer(
   }
 }
 
-interface WorkspaceProjectModalProps {
+interface WorkspaceProjectCreateDialogProps {
   workspaceId: string
   trigger?: React.ReactElement
   nativeButton?: boolean
 }
 
-export function WorkspaceProjectModal({
+export function WorkspaceProjectCreateDialog({
   workspaceId,
   trigger,
   nativeButton = true,
-}: WorkspaceProjectModalProps) {
+}: WorkspaceProjectCreateDialogProps) {
   const [open, setOpen] = useState(false)
   const [draft, dispatch] = useReducer(
     projectDraftReducer,
@@ -178,7 +178,7 @@ export function WorkspaceProjectModal({
         nativeButton={nativeButton}
         render={
           trigger ?? (
-            <ProjectCreateButton
+            <WorkspaceProjectCreateButton
               variant='default'
               size='xs'
               label='Adicionar projeto'
@@ -208,7 +208,7 @@ export function WorkspaceProjectModal({
               />
             </div>
             <div className='absolute -bottom-5 left-3'>
-              <EmojiIconPicker
+              <WorkspaceProjectEmojiIconPicker
                 currentEmoji={emoji}
                 onSelect={(nextEmoji) =>
                   dispatch({ type: 'emojiChanged', emoji: nextEmoji })

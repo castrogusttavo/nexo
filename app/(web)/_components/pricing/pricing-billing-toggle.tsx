@@ -8,7 +8,7 @@ import type { Billing } from './plans'
 import { billingParser, DEFAULT_BILLING } from './plans-params'
 
 // The server renders the default; the URL's value takes over in the browser.
-export function BillingToggle() {
+export function PricingBillingToggle() {
   return (
     <Suspense fallback={<BillingSwitch billing={DEFAULT_BILLING} />}>
       <BillingToggleFromUrl />

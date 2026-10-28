@@ -16,9 +16,9 @@ import {
   sortOrderParser,
 } from '@/src/lib/project-params'
 import type { ProjectDTO } from '@/types/project'
-import { ProjectCard } from './card/workspace-project-card'
+import { WorkspaceProjectCard } from './card/workspace-project-card'
 
-interface ProjectListProps {
+interface WorkspaceProjectListProps {
   workspaceId: string
   workspaceSlug: string
 }
@@ -64,7 +64,10 @@ function endOfPickedDay(day: Date) {
   ).getTime()
 }
 
-export function ProjectList({ workspaceId, workspaceSlug }: ProjectListProps) {
+export function WorkspaceProjectList({
+  workspaceId,
+  workspaceSlug,
+}: WorkspaceProjectListProps) {
   const { data: projects, isLoading, isError } = useProjects(workspaceId)
   const { data: session } = useCacheUser()
   const currentUserId = session?.user?.id
@@ -165,7 +168,7 @@ export function ProjectList({ workspaceId, workspaceSlug }: ProjectListProps) {
   return (
     <div className='grid grid-cols-1 gap-8 md:grid-cols-2 lg:grid-cols-3 p-5'>
       {filtered.map((project) => (
-        <ProjectCard
+        <WorkspaceProjectCard
           key={project.id}
           project={project}
           workspaceSlug={workspaceSlug}

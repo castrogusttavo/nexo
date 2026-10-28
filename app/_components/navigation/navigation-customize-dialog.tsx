@@ -37,7 +37,7 @@ import {
   PERSONAL_NAV_ITEMS,
   type SidebarNavItemMeta,
   WORKSPACE_NAV_ITEMS,
-} from '../navigation/sidebar-navigation-items'
+} from './sidebar-navigation-items'
 
 type NavEntry<T extends string> = { id: T; visible: boolean }
 
@@ -146,7 +146,7 @@ function ProjectsLimitInput({
   )
 }
 
-export function DialogCustomizeNavigation() {
+export function NavigationCustomizeDialog() {
   const navigation = useSidebarNavigation()
   const updatePreferences = useUpdateUserPreferences()
 

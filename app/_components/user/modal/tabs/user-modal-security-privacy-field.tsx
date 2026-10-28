@@ -8,7 +8,7 @@ import {
   FieldLabel,
 } from '@/components/ui/field'
 import { Switch } from '@/components/ui/switch'
-import { useCookieConsent } from '../../cookie-consent/provider'
+import { useCookieConsent } from '../../cookie-consent/cookie-consent-provider'
 
 export function UserModalSecurityPrivacyField() {
   const { consent, setConsent } = useCookieConsent()

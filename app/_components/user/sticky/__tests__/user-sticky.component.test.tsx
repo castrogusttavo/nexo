@@ -10,7 +10,7 @@ import {
   renderWithProviders,
 } from '@/src/__tests__/helpers/component'
 import type { StickyNoteDTO } from '@/types/sticky-note'
-import { UserStick } from '../user-sticky'
+import { UserSticky } from '../user-sticky'
 
 vi.mock('sonner', () => ({
   toast: {
@@ -116,7 +116,7 @@ const STICKY: StickyNoteDTO = {
 }
 
 function renderSticky(sticky: StickyNoteDTO = STICKY) {
-  const utils = renderWithProviders(<UserStick sticky={sticky} />)
+  const utils = renderWithProviders(<UserSticky sticky={sticky} />)
   const card = utils.container.firstElementChild
   if (!(card instanceof HTMLElement)) throw new Error('No sticky card')
   return { ...utils, card }
@@ -142,7 +142,7 @@ beforeEach(() => {
   tiptap.commands.length = 0
 })
 
-describe('<UserStick /> rendering', () => {
+describe('<UserSticky /> rendering', () => {
   it('paints the sticky in its own colour', () => {
     const { card } = renderSticky()
 
@@ -159,7 +159,7 @@ describe('<UserStick /> rendering', () => {
   })
 })
 
-describe('<UserStick /> content saving', () => {
+describe('<UserSticky /> content saving', () => {
   it('saves the edited content once the typing settles', async () => {
     const fetchSpy = mockFetch().mockResolvedValue(
       apiSuccess({ ...STICKY, content: docWith('Nota nova') }),
@@ -235,7 +235,7 @@ describe('<UserStick /> content saving', () => {
   })
 })
 
-describe('<UserStick /> toolbar', () => {
+describe('<UserSticky /> toolbar', () => {
   it('runs the formatting commands on the editor', async () => {
     const { user } = renderSticky()
 

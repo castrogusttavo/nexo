@@ -3,7 +3,7 @@ import Link from 'next/link'
 import { NexoIcon } from '@/components/icon/icon'
 import { NavigationMenuLink } from '@/components/ui/navigation-menu'
 
-export function ListItem({
+export function WebHeaderListItem({
   title,
   children,
   href,

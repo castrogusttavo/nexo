@@ -1,8 +1,8 @@
 import type { Metadata } from 'next'
 import Link from 'next/link'
-import { WebFooter } from '../_components/footer'
 import { SubTitle } from '../_components/text/sub-title'
 import { Title } from '../_components/text/title'
+import { WebFooter } from '../_components/web-footer'
 
 const TITLE = 'Jurídico | Nexo'
 const DESCRIPTION = 'Políticas e acordos que regem o uso do Nexo.'

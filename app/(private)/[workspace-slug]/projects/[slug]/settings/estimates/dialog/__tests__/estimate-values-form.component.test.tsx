@@ -11,7 +11,7 @@ import {
   renderWithProviders,
 } from '@/src/__tests__/helpers/component'
 import type { EstimateSettingsDTO, EstimateValueDTO } from '@/types/estimate'
-import { EstimateValuesForm } from '../dialog-estimate-manage-values'
+import { EstimateValuesForm } from '../estimate-values-form'
 
 vi.mock('sonner', () => ({
   toast: {

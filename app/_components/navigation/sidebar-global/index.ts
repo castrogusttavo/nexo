@@ -1,2 +1,2 @@
-export { GlobalSidebarNavigation } from './navigation-sidebar-global'
-export { GlobalButtonNavigation } from './navigation-sidebar-global-button'
+export { NavigationSidebarGlobal } from './navigation-sidebar-global'
+export { NavigationSidebarGlobalButton } from './navigation-sidebar-global-button'

@@ -5,8 +5,8 @@ import { WebHeader } from '@/app/(web)/_components/header/web-header'
 import { ButtonLink } from '@/components/button-link'
 import { NexoIcon } from '@/components/icon/icon'
 import { Muted } from '@/components/typography/text/muted'
-import { WebFooter } from './(web)/_components/footer'
 import { NexoAiShowcase } from './(web)/_components/nexo-ai-showcase'
+import { WebFooter } from './(web)/_components/web-footer'
 
 const TITLE = 'Nexo — gestão de projetos nativa em IA para o seu time'
 const DESCRIPTION =

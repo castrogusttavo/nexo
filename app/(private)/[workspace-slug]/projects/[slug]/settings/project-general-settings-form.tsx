@@ -7,8 +7,8 @@ import {
 } from '@hugeicons-pro/core-stroke-rounded'
 import { useRouter } from 'next/navigation'
 import { useId, useState } from 'react'
+import { WorkspaceProjectEmojiIconPicker } from '@/app/_components/workspace/projects/modal/workspace-project-emoji-icon-picker'
 import { CoverImagePicker } from '@/app/_components/workspace/projects/modal/workspace-project-modal-coverimage-dialog'
-import { EmojiIconPicker } from '@/app/_components/workspace/projects/modal/workspace-project-modal-emoji-icon-dialog'
 import { NexoIcon } from '@/components/icon/icon'
 import { Muted } from '@/components/typography/text/muted'
 import {
@@ -152,7 +152,10 @@ export function ProjectGeneralSettingsForm({
             />
           </div>
           <div className='absolute flex gap-3 bottom-2 left-2'>
-            <EmojiIconPicker currentEmoji={emoji} onSelect={setEmoji} />
+            <WorkspaceProjectEmojiIconPicker
+              currentEmoji={emoji}
+              onSelect={setEmoji}
+            />
             <div className='space-y-1'>
               <div className='font-medium'>{project.name}</div>
               <div className='text-xs text-muted-foreground'>

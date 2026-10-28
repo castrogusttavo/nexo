@@ -16,7 +16,7 @@ import {
 } from '@/components/ui/dropdown-menu'
 import { sortFieldParser, sortOrderParser } from '@/src/lib/project-params'
 
-export function ProjectorderButton() {
+export function WorkspaceProjectOrderButton() {
   const [{ sortField, sortOrder }, setSort] = useQueryStates({
     sortField: sortFieldParser,
     sortOrder: sortOrderParser,

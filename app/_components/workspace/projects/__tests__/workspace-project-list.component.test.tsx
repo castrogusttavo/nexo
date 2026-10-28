@@ -8,7 +8,7 @@ import {
   renderWithProviders,
 } from '@/src/__tests__/helpers/component'
 import type { ProjectDTO } from '@/types/project'
-import { ProjectList } from '../workspace-project-list'
+import { WorkspaceProjectList } from '../workspace-project-list'
 
 const { useSession } = vi.hoisted(() => ({ useSession: vi.fn() }))
 
@@ -29,7 +29,7 @@ beforeEach(() => {
 // member cache query); the list only owns filtering, sorting and the states
 // around them, so the card is stubbed down to its title.
 vi.mock('../card/workspace-project-card', () => ({
-  ProjectCard: ({
+  WorkspaceProjectCard: ({
     project,
     workspaceSlug,
     workspaceId,
@@ -79,7 +79,7 @@ async function renderList(
 ) {
   mockFetch().mockResolvedValue(apiSuccess(projects))
   const utils = renderWithProviders(
-    <ProjectList workspaceId={WORKSPACE_ID} workspaceSlug='acme' />,
+    <WorkspaceProjectList workspaceId={WORKSPACE_ID} workspaceSlug='acme' />,
     { searchParams },
   )
   await waitFor(() =>
@@ -91,12 +91,12 @@ async function renderList(
 const cardNames = () =>
   screen.queryAllByTestId('project-card').map((card) => card.textContent)
 
-describe('<ProjectList /> states', () => {
+describe('<WorkspaceProjectList /> states', () => {
   it('shows three skeletons while the projects load', async () => {
     const deferred = deferredResponse()
     mockFetch().mockReturnValueOnce(deferred.promise)
     const { container } = renderWithProviders(
-      <ProjectList workspaceId={WORKSPACE_ID} workspaceSlug='acme' />,
+      <WorkspaceProjectList workspaceId={WORKSPACE_ID} workspaceSlug='acme' />,
     )
 
     expect(container.querySelectorAll('.animate-pulse')).toHaveLength(3)
@@ -109,7 +109,7 @@ describe('<ProjectList /> states', () => {
   it('explains a failed load', async () => {
     mockFetch().mockResolvedValueOnce(Response.json({}, { status: 500 }))
     renderWithProviders(
-      <ProjectList workspaceId={WORKSPACE_ID} workspaceSlug='acme' />,
+      <WorkspaceProjectList workspaceId={WORKSPACE_ID} workspaceSlug='acme' />,
     )
 
     expect(
@@ -151,7 +151,7 @@ describe('<ProjectList /> states', () => {
   })
 })
 
-describe('<ProjectList /> sorting', () => {
+describe('<WorkspaceProjectList /> sorting', () => {
   const projects = [
     buildProject({
       id: 'p-1',
@@ -202,7 +202,7 @@ describe('<ProjectList /> sorting', () => {
   })
 })
 
-describe('<ProjectList /> filters', () => {
+describe('<WorkspaceProjectList /> filters', () => {
   const publicProject = buildProject({
     id: 'p-pub',
     name: 'Público',
@@ -449,7 +449,7 @@ describe('<ProjectList /> filters', () => {
   })
 })
 
-describe('<ProjectList /> date range across timezones', () => {
+describe('<WorkspaceProjectList /> date range across timezones', () => {
   const ORIGINAL_TZ = process.env.TZ
 
   beforeEach(() => {

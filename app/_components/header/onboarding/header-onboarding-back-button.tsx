@@ -13,7 +13,7 @@ const PREV_ROUTE: Record<string, string> = {
   '/onboarding/workspace-setup': '/onboarding/goals-setup',
 }
 
-export function OnboardingBackButton() {
+export function HeaderOnboardingBackButton() {
   const pathname = usePathname()
   const { push } = useRouter()
   const [isPending, startTransition] = useTransition()

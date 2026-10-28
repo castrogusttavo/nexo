@@ -10,13 +10,13 @@ import { JsonLd } from '@/components/seo/json-ld'
 import { NEXT_PUBLIC_URL } from '@/lib/env/env'
 import { PAID_PLAN_PRICES } from '@/src/config/plan-prices'
 import { CardCertifications } from '../_components/card-certifications'
-import { WebFooter } from '../_components/footer'
-import { BillingToggle } from '../_components/pricing/pricing-billing-toggle'
+import { PricingBillingToggle } from '../_components/pricing/pricing-billing-toggle'
 import { PricingCalculator } from '../_components/pricing/pricing-calculator'
 import { PricingCardPlan } from '../_components/pricing/pricing-card-plan'
 import { PricingTableDetailsPlan } from '../_components/pricing/table/pricing-table-details-plan'
 import { SubTitle } from '../_components/text/sub-title'
 import { Title } from '../_components/text/title'
+import { WebFooter } from '../_components/web-footer'
 import { PricingFaq } from './pricing-faq'
 
 // Prices in cents (source: src/config/plan-prices.ts) converted to
@@ -80,7 +80,7 @@ export default function PricingPage() {
           </SubTitle>
         </div>
         <div className='w-full flex justify-start gap-4 border-border items-center border px-5 py-6'>
-          <BillingToggle />
+          <PricingBillingToggle />
         </div>
         <div className='border-x border-border grid w-full grid-cols-1 lg:grid-cols-2 xl:grid-cols-4'>
           <PricingCardPlan plan='FREE' />

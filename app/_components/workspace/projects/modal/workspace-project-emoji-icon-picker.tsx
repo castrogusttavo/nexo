@@ -21,24 +21,28 @@ import {
   InputGroupInput,
 } from '@/components/ui/input-group'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
-import { ProjectEmoji } from '../workspace-project-emoji'
+import { WorkspaceProjectEmoji } from '../workspace-project-emoji'
 import { LUCIDE_ICONS } from './lucide-icons'
 
-interface EmojiIconPickerProps {
+interface WorkspaceProjectEmojiIconPickerProps {
   currentEmoji?: string
   onSelect?: (emoji: string) => void
 }
 
-export function EmojiIconPicker({
+export function WorkspaceProjectEmojiIconPicker({
   currentEmoji,
   onSelect,
-}: EmojiIconPickerProps) {
+}: WorkspaceProjectEmojiIconPickerProps) {
   return (
     <DropdownMenu>
       <DropdownMenuTrigger
         render={
           <Button variant='secondary' className='size-12 text-lg'>
-            <ProjectEmoji value={currentEmoji} fallback='😊' size={20} />
+            <WorkspaceProjectEmoji
+              value={currentEmoji}
+              fallback='😊'
+              size={20}
+            />
           </Button>
         }
       />

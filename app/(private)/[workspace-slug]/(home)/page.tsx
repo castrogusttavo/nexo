@@ -7,8 +7,8 @@ import {
   HeaderBreadcrumbList,
 } from '@/app/_components/header/breadcrumb-page'
 import HeaderInternalNavigation from '@/app/_components/header/header-internal-navigation'
+import { UserShortcutLinkDialog } from '@/app/_components/user/shortcut-link/user-shortcut-link-dialog'
 import { UserShortcutLinkList } from '@/app/_components/user/shortcut-link/user-shortcut-link-list'
-import { UserShortcutLinkModal } from '@/app/_components/user/shortcut-link/user-shortcut-link-modal'
 import { UserStickyCreateButton } from '@/app/_components/user/sticky/user-sticky-create-button'
 import { UserStickyList } from '@/app/_components/user/sticky/user-sticky-list'
 import { NexoIcon } from '@/components/icon/icon'
@@ -110,7 +110,7 @@ export default async function Page() {
         <div className='flex flex-col flex-wrap w-full gap-y-3'>
           <div className='w-full flex items-center justify-between'>
             <Small>Links rápidos</Small>
-            <UserShortcutLinkModal />
+            <UserShortcutLinkDialog />
           </div>
           <UserShortcutLinkList />
         </div>

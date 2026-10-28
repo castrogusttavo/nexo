@@ -13,19 +13,19 @@ import { Switch } from '@/components/ui/switch'
 import { Textarea } from '@/components/ui/textarea'
 import { IssueProjectSwitcher } from '../issue-project-switcher'
 
-interface IssueModalProps {
+interface IssueCreateDialogProps {
   trigger: ReactElement
   workspaceId: string
   workspaceSlug: string
   projectSlug: string
 }
 
-export function IssueModal({
+export function IssueCreateDialog({
   trigger,
   workspaceId,
   workspaceSlug,
   projectSlug,
-}: IssueModalProps) {
+}: IssueCreateDialogProps) {
   return (
     <Dialog>
       <DialogTrigger render={trigger} />

@@ -6,7 +6,7 @@ import {
   renderWithProviders,
 } from '@/src/__tests__/helpers/component'
 import type { MembershipDTO, UserDTO } from '@/types/user'
-import { WorkSpaceDropdown } from '../workspace-dropdown-selector'
+import { WorkspaceDropdownSelector } from '../workspace-dropdown-selector'
 
 const { push } = vi.hoisted(() => ({ push: vi.fn() }))
 vi.mock('next/navigation', () => ({ useRouter: () => ({ push }) }))
@@ -38,7 +38,7 @@ async function renderDropdown(
 ) {
   mockFetch().mockImplementation(async () => apiSuccess(buildUser(memberships)))
   const utils = renderWithProviders(
-    <WorkSpaceDropdown currentSlug={currentSlug} />,
+    <WorkspaceDropdownSelector currentSlug={currentSlug} />,
   )
   return utils
 }
@@ -60,7 +60,7 @@ beforeEach(() => {
   })
 })
 
-describe('<WorkSpaceDropdown /> trigger', () => {
+describe('<WorkspaceDropdownSelector /> trigger', () => {
   it('waits for the memberships before naming a workspace', async () => {
     await renderDropdown()
 
@@ -87,7 +87,7 @@ describe('<WorkSpaceDropdown /> trigger', () => {
   })
 })
 
-describe('<WorkSpaceDropdown /> menu', () => {
+describe('<WorkspaceDropdownSelector /> menu', () => {
   it('shows the signed-in email as a disabled row', async () => {
     const { user } = await renderDropdown()
     await screen.findByText('Acme')
@@ -152,7 +152,7 @@ describe('<WorkSpaceDropdown /> menu', () => {
   })
 })
 
-describe('<WorkSpaceDropdown /> switching', () => {
+describe('<WorkspaceDropdownSelector /> switching', () => {
   it('goes to the workspace that was picked', async () => {
     const { user } = await renderDropdown()
     await screen.findByText('Acme')

@@ -5,7 +5,7 @@ import type { ReactNode } from 'react'
 import { Muted } from '@/components/typography/text/muted'
 import { buttonVariants } from '@/components/ui/button'
 
-export function GlobalButtonNavigation({
+export function NavigationSidebarGlobalButton({
   linkNavigation,
   children,
   description,

@@ -40,7 +40,7 @@ const dateFmt = new Intl.DateTimeFormat('pt-BR', {
   year: 'numeric',
 })
 
-export const memberColumns: ColumnDef<MemberDTO>[] = [
+export const workspaceMemberColumns: ColumnDef<MemberDTO>[] = [
   {
     accessorKey: 'name',
     header: ({ column }) => (

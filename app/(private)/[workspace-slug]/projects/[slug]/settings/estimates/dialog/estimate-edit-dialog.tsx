@@ -15,24 +15,24 @@ import {
   DialogTrigger,
 } from '@/components/ui/dialog'
 import type { EstimateModelDTO, EstimateSystemDTO } from '@/types/estimate'
-import { EstimateSystemForm } from './dialog-estimate-create'
-import { EstimateValuesForm } from './dialog-estimate-manage-values'
+import { EstimateSystemForm } from './estimate-system-form'
+import { EstimateValuesForm } from './estimate-values-form'
 
 type View = 'menu' | 'system' | 'values'
 
-interface DialogEstimateEditOptionsProps {
+interface EstimateEditDialogProps {
   workspaceId: string
   projectSlug: string
   currentSystem: EstimateSystemDTO
   currentModel: EstimateModelDTO
 }
 
-export function DialogEstimateEditOptions({
+export function EstimateEditDialog({
   workspaceId,
   projectSlug,
   currentSystem,
   currentModel,
-}: DialogEstimateEditOptionsProps) {
+}: EstimateEditDialogProps) {
   const [open, setOpen] = useState(false)
   const [view, setView] = useState<View>('menu')
 

@@ -7,7 +7,7 @@ import {
   renderWithProviders,
 } from '@/src/__tests__/helpers/component'
 import type { MembershipDTO, UserDTO } from '@/types/user'
-import { WorkSpaceDropdown } from '../workspace-dropdown-selector'
+import { WorkspaceDropdownSelector } from '../workspace-dropdown-selector'
 
 const { push, useSession } = vi.hoisted(() => ({
   push: vi.fn(),
@@ -29,7 +29,9 @@ async function openMenu() {
       memberships: MEMBERSHIPS,
     } satisfies Partial<UserDTO>),
   )
-  const utils = renderWithProviders(<WorkSpaceDropdown currentSlug='acme' />)
+  const utils = renderWithProviders(
+    <WorkspaceDropdownSelector currentSlug='acme' />,
+  )
   await screen.findByText('Acme')
   await utils.user.click(screen.getByRole('button'))
   const menu = await screen.findByRole('menu')
@@ -43,7 +45,7 @@ beforeEach(() => {
   })
 })
 
-describe('<WorkSpaceDropdown /> accessibility', () => {
+describe('<WorkspaceDropdownSelector /> accessibility', () => {
   it('has no axe violations while open', async () => {
     await openMenu()
 

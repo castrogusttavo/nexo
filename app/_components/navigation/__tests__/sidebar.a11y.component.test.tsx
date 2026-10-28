@@ -23,7 +23,7 @@ import {
   NavGroupAccordion,
   NavItem,
 } from '../sidebar-context'
-import { GlobalSidebarNavigation } from '../sidebar-global'
+import { NavigationSidebarGlobal } from '../sidebar-global'
 import { SidebarProjects } from '../sidebar-project/sidebar-projects'
 
 const { usePathname } = vi.hoisted(() => ({ usePathname: vi.fn() }))
@@ -66,7 +66,7 @@ function renderSidebars() {
   )
   return renderWithProviders(
     <div className='flex'>
-      <GlobalSidebarNavigation slug='acme' />
+      <NavigationSidebarGlobal slug='acme' />
       <ContextSidebar>
         <ContextHeader
           title='Projetos'

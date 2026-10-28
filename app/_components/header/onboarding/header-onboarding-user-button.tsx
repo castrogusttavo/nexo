@@ -11,19 +11,19 @@ import {
 } from '@/components/ui/dropdown-menu'
 import { authClient } from '@/src/lib/auth-client'
 
-interface OnboardingUserButtonProps {
+interface HeaderOnboardingUserButtonProps {
   name: string | null
   email: string
   image: string | null
   initials: string
 }
 
-export function OnboardingUserButton({
+export function HeaderOnboardingUserButton({
   name,
   email,
   image,
   initials,
-}: OnboardingUserButtonProps) {
+}: HeaderOnboardingUserButtonProps) {
   const { push } = useRouter()
 
   async function handleWrongEmail() {

@@ -16,7 +16,7 @@ import {
   CardTitle,
 } from '@/components/ui/card'
 import { NavigationMenuContent } from '@/components/ui/navigation-menu'
-import { ListItem } from './web-header-list-item'
+import { WebHeaderListItem } from './web-header-list-item'
 import { industries, scale, useCases } from './web-header-nav-data'
 
 export function WebHeaderSolutionsMenu() {
@@ -28,14 +28,14 @@ export function WebHeaderSolutionsMenu() {
             <Muted className='px-2'>Casos de Uso</Muted>
             <ul className='grid grid-cols-1 gap-4'>
               {useCases.map((useCase) => (
-                <ListItem
+                <WebHeaderListItem
                   key={useCase.title}
                   title={useCase.title}
                   href={useCase.href}
                   icon={useCase.icon}
                 >
                   <span className='text-sm'>{useCase.description}</span>
-                </ListItem>
+                </WebHeaderListItem>
               ))}
             </ul>
           </div>
@@ -43,14 +43,14 @@ export function WebHeaderSolutionsMenu() {
             <Muted className='px-2'>Setores</Muted>
             <ul className='grid grid-cols-1 gap-4'>
               {industries.map((industry) => (
-                <ListItem
+                <WebHeaderListItem
                   key={industry.title}
                   title={industry.title}
                   href={industry.href}
                   icon={industry.icon}
                 >
                   <span className='text-sm'>{industry.description}</span>
-                </ListItem>
+                </WebHeaderListItem>
               ))}
             </ul>
           </div>
@@ -58,14 +58,14 @@ export function WebHeaderSolutionsMenu() {
             <Muted className='px-2'>Escala</Muted>
             <ul className='grid grid-cols-1 gap-4'>
               {scale.map((size) => (
-                <ListItem
+                <WebHeaderListItem
                   key={size.title}
                   title={size.title}
                   href={size.href}
                   icon={size.icon}
                 >
                   <span className='text-sm'>{size.description}</span>
-                </ListItem>
+                </WebHeaderListItem>
               ))}
             </ul>
           </div>

@@ -61,7 +61,7 @@ interface UserStickyProps {
   sticky: StickyNoteDTO
 }
 
-export function UserStick({ sticky }: UserStickyProps) {
+export function UserSticky({ sticky }: UserStickyProps) {
   const [color, setColor] = useState<StickyColorDTO>(sticky.color)
   const update = useUpdateStickyNote(sticky.id)
   const remove = useDeleteStickyNote()

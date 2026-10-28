@@ -12,9 +12,9 @@ import {
   StarIcon,
 } from '@hugeicons-pro/core-stroke-rounded'
 import { usePathname, useRouter } from 'next/navigation'
-import { NavGroupAccordion } from '@/app/_components/navigation/sidebar-context/navigation-sidebar-context-accordion'
-import { WorkspaceProjectModal } from '@/app/_components/workspace/projects/modal/workspace-project-modal-create'
-import { ProjectEmoji } from '@/app/_components/workspace/projects/workspace-project-emoji'
+import { NavGroupAccordion } from '@/app/_components/navigation/sidebar-context/nav-group-accordion'
+import { WorkspaceProjectCreateDialog } from '@/app/_components/workspace/projects/modal/workspace-project-create-dialog'
+import { WorkspaceProjectEmoji } from '@/app/_components/workspace/projects/workspace-project-emoji'
 import { ButtonLink } from '@/components/button-link'
 import { NexoIcon } from '@/components/icon/icon'
 import { Button } from '@/components/ui/button'
@@ -77,7 +77,7 @@ export function ProjectRow({
             aria-hidden='true'
             className='size-4 shrink-0 grid place-items-center text-sm leading-none'
           >
-            <ProjectEmoji value={project.emoji} size={14} />
+            <WorkspaceProjectEmoji value={project.emoji} size={14} />
           </span>
         )}
         <span className='flex-1 min-w-0 truncate text-sm font-medium'>
@@ -189,7 +189,7 @@ export function SidebarProjects({
         label='Projetos'
         defaultOpen
         action={
-          <WorkspaceProjectModal
+          <WorkspaceProjectCreateDialog
             workspaceId={workspaceId}
             trigger={
               <Button variant='ghost' size='icon-sm' aria-label='Novo projeto'>

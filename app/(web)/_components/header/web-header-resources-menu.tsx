@@ -9,7 +9,7 @@ import {
   CardTitle,
 } from '@/components/ui/card'
 import { NavigationMenuContent } from '@/components/ui/navigation-menu'
-import { ListItem } from './web-header-list-item'
+import { WebHeaderListItem } from './web-header-list-item'
 import { discover, learn } from './web-header-nav-data'
 
 export function WebHeaderResourcesMenu() {
@@ -21,14 +21,14 @@ export function WebHeaderResourcesMenu() {
             <Muted className='px-2'>Descobrir</Muted>
             <ul className='grid grid-cols-1 gap-4'>
               {discover.map((item) => (
-                <ListItem
+                <WebHeaderListItem
                   key={item.title}
                   title={item.title}
                   href={item.href}
                   icon={item.icon}
                 >
                   <span className='text-sm'>{item.description}</span>
-                </ListItem>
+                </WebHeaderListItem>
               ))}
             </ul>
           </div>
@@ -36,14 +36,14 @@ export function WebHeaderResourcesMenu() {
             <Muted className='px-2'>Aprender</Muted>
             <ul className='grid grid-cols-1 gap-4'>
               {learn.map((item) => (
-                <ListItem
+                <WebHeaderListItem
                   key={item.title}
                   title={item.title}
                   href={item.href}
                   icon={item.icon}
                 >
                   <span className='text-sm'>{item.description}</span>
-                </ListItem>
+                </WebHeaderListItem>
               ))}
             </ul>
           </div>

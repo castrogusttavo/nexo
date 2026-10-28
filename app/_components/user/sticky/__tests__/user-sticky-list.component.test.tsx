@@ -14,7 +14,7 @@ import { UserStickyList } from '../user-sticky-list'
 // The sticky card mounts a TipTap editor and has a suite of its own; the
 // list only has to hand each note to it.
 vi.mock('@/app/_components/user/sticky/user-sticky', () => ({
-  UserStick: ({ sticky }: { sticky: StickyNoteDTO }) => (
+  UserSticky: ({ sticky }: { sticky: StickyNoteDTO }) => (
     <article aria-label={`Sticky ${sticky.id}`}>{sticky.color}</article>
   ),
 }))

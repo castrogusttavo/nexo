@@ -5,7 +5,7 @@ import {
   InputGroupAddon,
   InputGroupInput,
 } from '@/components/ui/input-group'
-import { WorkspaceSettingsMemberImportDialog } from './dialog/workspace-settings-member-import-users'
+import { WorkspaceSettingsMemberImportDialog } from './dialog/workspace-settings-member-import-dialog'
 import { WorkspaceSettingsMemberInviteDialog } from './dialog/workspace-settings-member-invite-dialog'
 import { WorkspaceSettingsMemberFilterRole } from './workspace-settings-member-filter-role'
 

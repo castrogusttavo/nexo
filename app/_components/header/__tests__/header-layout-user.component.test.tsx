@@ -1,14 +1,14 @@
 import { screen } from '@testing-library/react'
 import { describe, expect, it, vi } from 'vitest'
 import { renderWithProviders } from '@/src/__tests__/helpers/component'
-import { UserHeader } from '../header-layout-user'
+import { HeaderLayoutUser } from '../header-layout-user'
 
 // The header is a composition: each dropdown has (or will have) a suite of
 // its own, so they are reduced to markers and only the wiring is asserted.
 vi.mock(
   '@/app/_components/workspace/workspace-dropdown/workspace-dropdown-selector',
   () => ({
-    WorkSpaceDropdown: ({ currentSlug }: { currentSlug: string }) => (
+    WorkspaceDropdownSelector: ({ currentSlug }: { currentSlug: string }) => (
       <div>{`Workspace ${currentSlug}`}</div>
     ),
   }),
@@ -20,15 +20,15 @@ vi.mock('@/app/_components/user/user-dropdown-profile', () => ({
   UserDropdownProfile: () => <div>Perfil</div>,
 }))
 
-describe('<UserHeader />', () => {
+describe('<HeaderLayoutUser />', () => {
   it('hands the current workspace slug to the workspace selector', () => {
-    renderWithProviders(<UserHeader slug='nexo' />)
+    renderWithProviders(<HeaderLayoutUser slug='nexo' />)
 
     expect(screen.getByText('Workspace nexo')).toBeInTheDocument()
   })
 
   it('links the get-started and inbox shortcuts to the current workspace', () => {
-    renderWithProviders(<UserHeader slug='nexo' />)
+    renderWithProviders(<HeaderLayoutUser slug='nexo' />)
 
     expect(screen.getByRole('link', { name: 'Comece agora' })).toHaveAttribute(
       'href',
@@ -40,7 +40,7 @@ describe('<UserHeader />', () => {
   })
 
   it('does not nest the icon-only inbox link inside a button', () => {
-    renderWithProviders(<UserHeader slug='nexo' />)
+    renderWithProviders(<HeaderLayoutUser slug='nexo' />)
 
     const inbox = screen.getByRole('link', { name: 'Caixa de entrada' })
     expect(inbox.closest('button')).toBeNull()
@@ -48,7 +48,7 @@ describe('<UserHeader />', () => {
   })
 
   it('re-points every link when the workspace changes', () => {
-    renderWithProviders(<UserHeader slug='atlas' />)
+    renderWithProviders(<HeaderLayoutUser slug='atlas' />)
 
     expect(screen.getByRole('link', { name: 'Comece agora' })).toHaveAttribute(
       'href',
@@ -61,7 +61,7 @@ describe('<UserHeader />', () => {
   })
 
   it('mounts the help and profile menus', () => {
-    renderWithProviders(<UserHeader slug='nexo' />)
+    renderWithProviders(<HeaderLayoutUser slug='nexo' />)
 
     expect(screen.getByText('Ajuda')).toBeInTheDocument()
     expect(screen.getByText('Perfil')).toBeInTheDocument()

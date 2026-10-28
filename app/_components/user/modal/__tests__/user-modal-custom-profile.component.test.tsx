@@ -10,7 +10,7 @@ import {
   type ProfileTab,
   profileTriggers,
   UserModalCustomProfile,
-} from '../user-modal-custom-proile'
+} from '../user-modal-custom-profile'
 
 const { useSession } = vi.hoisted(() => ({ useSession: vi.fn() }))
 vi.mock('@/src/lib/auth-client', () => ({ authClient: { useSession } }))

@@ -2,15 +2,15 @@ import { screen } from '@testing-library/react'
 import { describe, expect, it, vi } from 'vitest'
 import { appPageRoutes, hasAppPage } from '@/src/__tests__/helpers/app-routes'
 import { renderWithProviders } from '@/src/__tests__/helpers/component'
-import { GlobalSidebarNavigation } from '../navigation-sidebar-global'
-import { GlobalButtonNavigation } from '../navigation-sidebar-global-button'
+import { NavigationSidebarGlobal } from '../navigation-sidebar-global'
+import { NavigationSidebarGlobalButton } from '../navigation-sidebar-global-button'
 
 const { usePathname } = vi.hoisted(() => ({ usePathname: vi.fn() }))
 vi.mock('next/navigation', () => ({ usePathname }))
 
 function renderSidebar(pathname: string, slug = 'nexo') {
   usePathname.mockReturnValue(pathname)
-  return renderWithProviders(<GlobalSidebarNavigation slug={slug} />)
+  return renderWithProviders(<NavigationSidebarGlobal slug={slug} />)
 }
 
 const link = (name: string) => screen.getByRole('link', { name })
@@ -20,7 +20,7 @@ const currentName = () =>
     .filter((element) => element.getAttribute('aria-current') === 'page')
     .map((element) => element.textContent)
 
-describe('<GlobalSidebarNavigation />', () => {
+describe('<NavigationSidebarGlobal />', () => {
   it('points every section at the current workspace', () => {
     renderSidebar('/nexo', 'atlas')
 
@@ -68,12 +68,15 @@ describe('<GlobalSidebarNavigation />', () => {
   })
 })
 
-describe('<GlobalButtonNavigation />', () => {
+describe('<NavigationSidebarGlobalButton />', () => {
   it('labels the destination and does not claim to be current', () => {
     renderWithProviders(
-      <GlobalButtonNavigation linkNavigation='/nexo/wiki' description='Wiki'>
+      <NavigationSidebarGlobalButton
+        linkNavigation='/nexo/wiki'
+        description='Wiki'
+      >
         <span>icon</span>
-      </GlobalButtonNavigation>,
+      </NavigationSidebarGlobalButton>,
     )
 
     const wiki = screen.getByRole('link', { name: /Wiki/ })
@@ -83,13 +86,13 @@ describe('<GlobalButtonNavigation />', () => {
 
   it('marks itself as the current page when active', () => {
     renderWithProviders(
-      <GlobalButtonNavigation
+      <NavigationSidebarGlobalButton
         linkNavigation='/nexo/wiki'
         description='Wiki'
         active
       >
         <span>icon</span>
-      </GlobalButtonNavigation>,
+      </NavigationSidebarGlobalButton>,
     )
 
     expect(screen.getByRole('link', { name: /Wiki/ })).toHaveAttribute(

@@ -9,14 +9,14 @@ import {
   renderWithProviders,
 } from '@/src/__tests__/helpers/component'
 import type { ProjectDTO } from '@/types/project'
-import { ArchivedProjectList } from '../workspace-archived-project-list'
+import { WorkspaceArchivedProjectList } from '../workspace-archived-project-list'
 
 const WORKSPACE_ID = 'ws-1'
 
 // The card owns its own surface (next/image, tooltips, restore and delete);
 // the list only owns sorting and the states around it.
 vi.mock('../card/workspace-archived-project-card', () => ({
-  ArchivedProjectCard: ({
+  WorkspaceArchivedProjectCard: ({
     project,
     workspaceId,
   }: {
@@ -39,7 +39,7 @@ function buildProject(overrides: Partial<ProjectDTO> = {}): ProjectDTO {
 
 function renderList(searchParams?: Record<string, string>) {
   return renderWithProviders(
-    <ArchivedProjectList workspaceId={WORKSPACE_ID} />,
+    <WorkspaceArchivedProjectList workspaceId={WORKSPACE_ID} />,
     {
       searchParams,
     },
@@ -82,7 +82,7 @@ const PROJECTS = [
   }),
 ]
 
-describe('<ArchivedProjectList /> states', () => {
+describe('<WorkspaceArchivedProjectList /> states', () => {
   it('asks the api for the archived projects only', async () => {
     const { fetchSpy } = await renderWith([buildProject()])
 
@@ -133,7 +133,7 @@ describe('<ArchivedProjectList /> states', () => {
   })
 })
 
-describe('<ArchivedProjectList /> sorting', () => {
+describe('<WorkspaceArchivedProjectList /> sorting', () => {
   it('defaults to the most recently touched project first', async () => {
     await renderWith(PROJECTS)
 

@@ -10,7 +10,7 @@ import {
   vi,
 } from 'vitest'
 import { renderWithProviders } from '@/src/__tests__/helpers/component'
-import { ProjectFilterButton } from '../workspace-project-filter-button'
+import { WorkspaceProjectFilterButton } from '../workspace-project-filter-button'
 
 // A viewer west of UTC, like most of the product's users: the day a picked
 // date names must survive the round trip through the query string.
@@ -34,7 +34,7 @@ afterEach(() => {
 })
 
 function renderButton(searchParams?: Record<string, string>) {
-  return renderWithProviders(<ProjectFilterButton />, { searchParams })
+  return renderWithProviders(<WorkspaceProjectFilterButton />, { searchParams })
 }
 
 const trigger = () => screen.getByRole('button', { name: /Filtros/ })
@@ -61,7 +61,7 @@ function dateTrigger() {
   return el
 }
 
-describe('<ProjectFilterButton /> active count', () => {
+describe('<WorkspaceProjectFilterButton /> active count', () => {
   it('shows no badge while nothing is filtered', () => {
     renderButton()
 
@@ -85,7 +85,7 @@ describe('<ProjectFilterButton /> active count', () => {
   })
 })
 
-describe('<ProjectFilterButton /> ownership', () => {
+describe('<WorkspaceProjectFilterButton /> ownership', () => {
   it('claims only the projects the viewer leads', async () => {
     const { user } = renderButton()
 
@@ -111,7 +111,7 @@ describe('<ProjectFilterButton /> ownership', () => {
   })
 })
 
-describe('<ProjectFilterButton /> access', () => {
+describe('<WorkspaceProjectFilterButton /> access', () => {
   it('adds an access without dropping the other', async () => {
     const { user } = renderButton({ access: 'public' })
 
@@ -154,7 +154,7 @@ describe('<ProjectFilterButton /> access', () => {
   })
 })
 
-describe('<ProjectFilterButton /> creation date', () => {
+describe('<WorkspaceProjectFilterButton /> creation date', () => {
   it('offers the four presets', async () => {
     const { user } = renderButton()
 
@@ -212,7 +212,7 @@ describe('<ProjectFilterButton /> creation date', () => {
   })
 })
 
-describe('<ProjectFilterButton /> custom range', () => {
+describe('<WorkspaceProjectFilterButton /> custom range', () => {
   it('labels a stored single day', async () => {
     const { user } = renderButton({ dateFrom: '2026-09-20' })
 
@@ -295,7 +295,7 @@ describe('<ProjectFilterButton /> custom range', () => {
   })
 })
 
-describe('<ProjectFilterButton /> preset toggle', () => {
+describe('<WorkspaceProjectFilterButton /> preset toggle', () => {
   it('drops the preset when the picked one is clicked again', async () => {
     const { user } = renderButton({ createdAt: 'today' })
 

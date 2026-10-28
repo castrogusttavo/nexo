@@ -2,7 +2,7 @@ import { render, screen } from '@testing-library/react'
 import { describe, expect, it, vi } from 'vitest'
 import type { CookieConsent } from '@/lib/cookie-consent/types'
 import { ConsentedTrackers } from '../consented-trackers'
-import { CookieConsentProvider } from '../provider'
+import { CookieConsentProvider } from '../cookie-consent-provider'
 
 // Stub the analytics integrations with marker nodes. The real modules pull in
 // browser-only telemetry; here we only care *whether* they get rendered,

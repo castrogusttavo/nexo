@@ -2,7 +2,7 @@ import { Add01Icon } from '@hugeicons-pro/core-stroke-rounded'
 import { screen } from '@testing-library/react'
 import { describe, expect, it, vi } from 'vitest'
 import { renderWithProviders } from '@/src/__tests__/helpers/component'
-import { NavGroupAccordion } from '../navigation-sidebar-context-accordion'
+import { NavGroupAccordion } from '../nav-group-accordion'
 
 function renderGroup(
   props: Partial<React.ComponentProps<typeof NavGroupAccordion>> = {},

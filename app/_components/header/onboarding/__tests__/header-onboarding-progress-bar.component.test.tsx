@@ -1,7 +1,7 @@
 import { waitFor } from '@testing-library/react'
 import { describe, expect, it, vi } from 'vitest'
 import { renderWithProviders } from '@/src/__tests__/helpers/component'
-import { OnboardingProgressBar } from '../header-onboarding-progress-bar'
+import { HeaderOnboardingProgressBar } from '../header-onboarding-progress-bar'
 
 const { usePathname } = vi.hoisted(() => ({ usePathname: vi.fn() }))
 vi.mock('next/navigation', () => ({ usePathname }))
@@ -10,12 +10,14 @@ vi.mock('next/navigation', () => ({ usePathname }))
 // is read straight from the DOM — its inline width is the whole behaviour.
 function renderBar(pathname: string) {
   usePathname.mockReturnValue(pathname)
-  const { container, rerender } = renderWithProviders(<OnboardingProgressBar />)
+  const { container, rerender } = renderWithProviders(
+    <HeaderOnboardingProgressBar />,
+  )
   const fill = container.firstElementChild?.firstElementChild as HTMLElement
   return { container, fill, rerender }
 }
 
-describe('<OnboardingProgressBar />', () => {
+describe('<HeaderOnboardingProgressBar />', () => {
   it('starts empty before the first animation frame', () => {
     const { fill } = renderBar('/onboarding/profile-setup')
 
@@ -60,7 +62,7 @@ describe('<OnboardingProgressBar />', () => {
     await waitFor(() => expect(fill.style.width).toBe('40%'))
 
     usePathname.mockReturnValue('/onboarding/role-setup')
-    rerender(<OnboardingProgressBar />)
+    rerender(<HeaderOnboardingProgressBar />)
 
     await waitFor(() => expect(fill.style.width).toBe('60%'))
   })

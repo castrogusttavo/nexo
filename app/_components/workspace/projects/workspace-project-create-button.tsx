@@ -7,18 +7,18 @@ import { Button } from '@/components/ui/button'
 
 type ButtonProps = ComponentProps<typeof Button>
 
-interface ProjectCreateButtonProps {
+interface WorkspaceProjectCreateButtonProps {
   variant?: ButtonProps['variant']
   size?: ButtonProps['size']
   label?: string
 }
 
-export function ProjectCreateButton({
+export function WorkspaceProjectCreateButton({
   variant = 'link',
   size = 'xs',
   label = 'Adicionar sticky',
   ...props
-}: ProjectCreateButtonProps) {
+}: WorkspaceProjectCreateButtonProps) {
   return (
     <Button variant={variant} size={size} {...props}>
       <NexoIcon icon={Add01Icon} strokeWidth={2} />

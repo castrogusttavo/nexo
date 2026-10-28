@@ -7,8 +7,8 @@ import {
   resetPostHogForTests,
 } from '@/lib/posthog/client'
 import { ConsentedTrackers } from '../consented-trackers'
+import { CookieConsentProvider } from '../cookie-consent-provider'
 import { PostHogTracker } from '../posthog-tracker'
-import { CookieConsentProvider } from '../provider'
 
 // `sdk.imports` counts how many times the `posthog-js` module itself was
 // evaluated. Vitest runs a `vi.mock` factory lazily, on the first import, so

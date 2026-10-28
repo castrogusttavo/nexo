@@ -10,9 +10,9 @@ import { TooltipProvider } from '@/components/ui/tooltip'
 import { NEXT_PUBLIC_URL } from '@/lib/env/env'
 import { cn } from '@/lib/utils'
 import { Providers } from './_components/providers'
-import { CookieConsentBanner } from './_components/user/cookie-consent/banner'
 import { ConsentedTrackers } from './_components/user/cookie-consent/consented-trackers'
-import { CookieConsentProvider } from './_components/user/cookie-consent/provider'
+import { CookieConsentBanner } from './_components/user/cookie-consent/cookie-consent-banner'
+import { CookieConsentProvider } from './_components/user/cookie-consent/cookie-consent-provider'
 
 const TITLE = 'Nexo — gestão de projetos nativa em IA'
 const DESCRIPTION =

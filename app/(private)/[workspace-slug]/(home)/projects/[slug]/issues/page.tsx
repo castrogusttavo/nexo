@@ -11,14 +11,14 @@ import { IssueCalendarView } from '@/app/_components/issue/issue-calendar-view'
 import { IssueGanttView } from '@/app/_components/issue/issue-gantt-view'
 import { IssueKanbanView } from '@/app/_components/issue/issue-kanban-view'
 import { IssueListView } from '@/app/_components/issue/issue-list-view'
-import { IssueModal } from '@/app/_components/issue/modal/issue-modal'
+import { IssueCreateDialog } from '@/app/_components/issue/modal/issue-create-dialog'
 import { PageSkeleton } from '@/app/(private)/_components/page-skeleton'
 import { NexoIcon } from '@/components/icon/icon'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { getProjectContext } from '@/src/lib/project-context'
 import { IssueService } from '@/src/services/issue.service'
-import { IssuesFilters } from './filters'
+import { IssueFilters } from './issue-filters'
 import { IssueLayoutToggle } from './issue-layout-toggle'
 
 export const metadata: Metadata = {
@@ -91,11 +91,11 @@ async function IssuesHeader({ params }: { params: Params }) {
       <IssuesBreadcrumb after={<Badge variant='info'>{issueCount}</Badge>} />
       <div className='flex items-center gap-2'>
         <IssueLayoutToggle />
-        <IssuesFilters
+        <IssueFilters
           workspaceId={context.workspaceId}
           projectSlug={context.project.slug}
         />
-        <IssueModal
+        <IssueCreateDialog
           trigger={
             <Button size='sm' className='h-8'>
               Adicionar issue

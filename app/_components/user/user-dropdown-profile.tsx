@@ -22,7 +22,7 @@ import {
   type ProfileTab,
   profileTriggers,
   UserModalCustomProfile,
-} from './modal/user-modal-custom-proile'
+} from './modal/user-modal-custom-profile'
 
 export function UserDropdownProfile() {
   const { push } = useRouter()

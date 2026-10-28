@@ -6,9 +6,9 @@ import { Card, CardContent, CardHeader } from '@/components/ui/card'
 import { useProjects } from '@/src/hooks/use-project'
 import { sortFieldParser, sortOrderParser } from '@/src/lib/project-params'
 import type { ProjectDTO } from '@/types/project'
-import { ArchivedProjectCard } from './card/workspace-archived-project-card'
+import { WorkspaceArchivedProjectCard } from './card/workspace-archived-project-card'
 
-interface ArchivedProjectListProps {
+interface WorkspaceArchivedProjectListProps {
   workspaceId: string
 }
 
@@ -27,7 +27,9 @@ function ArchivedProjectCardSkeleton() {
   )
 }
 
-export function ArchivedProjectList({ workspaceId }: ArchivedProjectListProps) {
+export function WorkspaceArchivedProjectList({
+  workspaceId,
+}: WorkspaceArchivedProjectListProps) {
   const { data: projects, isLoading, isError } = useProjects(workspaceId, true)
   const [{ sortField, sortOrder }] = useQueryStates({
     sortField: sortFieldParser,
@@ -75,7 +77,7 @@ export function ArchivedProjectList({ workspaceId }: ArchivedProjectListProps) {
   return (
     <div className='grid grid-cols-1 gap-8 md:grid-cols-2 lg:grid-cols-3 p-5'>
       {sorted.map((project) => (
-        <ArchivedProjectCard
+        <WorkspaceArchivedProjectCard
           key={project.id}
           project={project}
           workspaceId={workspaceId}

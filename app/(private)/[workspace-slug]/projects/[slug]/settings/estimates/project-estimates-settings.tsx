@@ -7,7 +7,7 @@ import { Switch } from '@/components/ui/switch'
 import { notify } from '@/lib/notify'
 import { useEstimateSettings } from '@/src/hooks/use-estimate'
 import { useProject, useUpdateProject } from '@/src/hooks/use-project'
-import { DialogEstimateEditOptions } from './dialog/dialog-estimate-edit'
+import { EstimateEditDialog } from './dialog/estimate-edit-dialog'
 
 const SYSTEM_LABEL: Record<string, string> = {
   POINTS: 'Pontos',
@@ -87,7 +87,7 @@ export function ProjectEstimatesSettings({
             <Muted>{settings?.values.map((v) => v.value).join(', ')}</Muted>
           </div>
           {settings && (
-            <DialogEstimateEditOptions
+            <EstimateEditDialog
               workspaceId={workspaceId}
               projectSlug={projectSlug}
               currentSystem={settings.system}

@@ -5,7 +5,7 @@ import {
   deferredResponse,
   renderWithProviders,
 } from '@/src/__tests__/helpers/component'
-import { CookieConsentProvider } from '../../../cookie-consent/provider'
+import { CookieConsentProvider } from '../../../cookie-consent/cookie-consent-provider'
 import { UserModalSecurityTab } from '../user-modal-security-tab'
 
 const { useSession, listAccounts, requestPasswordReset } = vi.hoisted(() => ({

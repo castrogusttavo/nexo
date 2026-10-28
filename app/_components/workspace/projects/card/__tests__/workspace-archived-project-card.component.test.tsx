@@ -12,7 +12,7 @@ import {
   renderWithProviders,
 } from '@/src/__tests__/helpers/component'
 import type { ProjectDTO } from '@/types/project'
-import { ArchivedProjectCard } from '../workspace-archived-project-card'
+import { WorkspaceArchivedProjectCard } from '../workspace-archived-project-card'
 
 vi.mock('sonner', () => ({
   toast: {
@@ -48,7 +48,7 @@ function buildProject(overrides: Partial<ProjectDTO> = {}): ProjectDTO {
 
 function renderCard(overrides: Partial<ProjectDTO> = {}) {
   return renderWithProviders(
-    <ArchivedProjectCard
+    <WorkspaceArchivedProjectCard
       project={buildProject(overrides)}
       workspaceId={WORKSPACE_ID}
     />,
@@ -60,7 +60,7 @@ const restoreButton = () =>
 const deleteButton = () =>
   screen.getByRole('button', { name: 'Excluir projeto permanentemente' })
 
-describe('<ArchivedProjectCard /> content', () => {
+describe('<WorkspaceArchivedProjectCard /> content', () => {
   it('identifies the project by name and slug', () => {
     renderCard()
 
@@ -111,7 +111,7 @@ describe('<ArchivedProjectCard /> content', () => {
   })
 })
 
-describe('<ArchivedProjectCard /> restoring', () => {
+describe('<WorkspaceArchivedProjectCard /> restoring', () => {
   it('restores the project and confirms it', async () => {
     const fetchSpy = mockFetch().mockImplementation(async () =>
       apiSuccess(buildProject()),
@@ -155,7 +155,7 @@ describe('<ArchivedProjectCard /> restoring', () => {
   })
 })
 
-describe('<ArchivedProjectCard /> deleting', () => {
+describe('<WorkspaceArchivedProjectCard /> deleting', () => {
   it('deletes the project for good and confirms it', async () => {
     // A DELETE answers 204 with no body at all.
     const fetchSpy = mockFetch().mockImplementation(

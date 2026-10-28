@@ -1,8 +1,8 @@
 import type { Metadata } from 'next'
 import { Muted } from '@/components/typography/text/muted'
 import { P } from '@/components/typography/text/p'
-import { WebFooter } from '../../_components/footer'
 import { Title } from '../../_components/text/title'
+import { WebFooter } from '../../_components/web-footer'
 import { linkifyLegalText } from '../linkify-legal-text'
 import { SectionHeading } from '../section-heading'
 

@@ -26,21 +26,21 @@ import {
 } from '@/components/ui/tooltip'
 import { useProjectActions } from '@/src/hooks/use-project-actions'
 import type { ProjectDTO } from '@/types/project'
-import { ProjectEmoji } from '../workspace-project-emoji'
-import { ProjectCardActions } from './workspace-project-card-action-button'
-import { ProjectCardMembers } from './workspace-project-card-membres'
+import { WorkspaceProjectEmoji } from '../workspace-project-emoji'
+import { WorkspaceProjectCardActions } from './workspace-project-card-actions'
+import { WorkspaceProjectCardMembers } from './workspace-project-card-members'
 
-interface ProjectCardProps {
+interface WorkspaceProjectCardProps {
   project: ProjectDTO
   workspaceSlug: string
   workspaceId: string
 }
 
-export function ProjectCard({
+export function WorkspaceProjectCard({
   project,
   workspaceSlug,
   workspaceId,
-}: ProjectCardProps) {
+}: WorkspaceProjectCardProps) {
   const router = useRouter()
   const { toggleFavorite, copyLink } = useProjectActions(
     workspaceId,
@@ -76,7 +76,7 @@ export function ProjectCard({
           <div className='absolute bottom-4 z-1 flex h-10 w-full items-center justify-between gap-3 px-4'>
             <div className='flex grow items-center gap-2.5 truncate'>
               <Button className='size-9 shrink-0 grid place-items-center rounded-sm bg-black/30 dark:bg-white/30 text-white'>
-                <ProjectEmoji value={project.emoji} size={18} />
+                <WorkspaceProjectEmoji value={project.emoji} size={18} />
               </Button>
               <div className='flex flex-col gap-0.5'>
                 <CardTitle className='text-white truncate'>
@@ -88,7 +88,7 @@ export function ProjectCard({
               </div>
             </div>
             <div className='flex gap-2.5'>
-              <ProjectCardActions
+              <WorkspaceProjectCardActions
                 onClick={(e) => {
                   e.stopPropagation()
                   copyLink()
@@ -96,8 +96,8 @@ export function ProjectCard({
                 aria-label='Copiar link'
               >
                 <NexoIcon icon={Link01Icon} strokeWidth={2} />
-              </ProjectCardActions>
-              <ProjectCardActions
+              </WorkspaceProjectCardActions>
+              <WorkspaceProjectCardActions
                 onClick={(e) => {
                   e.stopPropagation()
                   toggleFavorite()
@@ -109,7 +109,7 @@ export function ProjectCard({
                   strokeWidth={2}
                   className={project.isFavorited ? 'text-yellow-400' : ''}
                 />
-              </ProjectCardActions>
+              </WorkspaceProjectCardActions>
             </div>
           </div>
         </CardHeader>
@@ -138,7 +138,7 @@ export function ProjectCard({
                   {project.isPublic ? 'Público' : 'Privado'}
                 </TooltipContent>
               </Tooltip>
-              <ProjectCardMembers leadId={project.leadId} />
+              <WorkspaceProjectCardMembers leadId={project.leadId} />
             </div>
             <Button size='icon-sm' variant='ghost' onClick={goToSettings}>
               <NexoIcon icon={Settings01Icon} strokeWidth={2} />

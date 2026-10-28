@@ -1,8 +1,8 @@
 'use client'
 
 import { WebVitals } from '@/lib/axiom/client'
+import { useCookieConsent } from './cookie-consent-provider'
 import { PostHogTracker } from './posthog-tracker'
-import { useCookieConsent } from './provider'
 
 // Renders the analytics integrations (Axiom WebVitals, PostHog product
 // analytics) only when the user has explicitly accepted. Rejected or

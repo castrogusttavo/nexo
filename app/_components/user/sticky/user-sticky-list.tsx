@@ -1,6 +1,6 @@
 'use client'
 
-import { UserStick } from '@/app/_components/user/sticky/user-sticky'
+import { UserSticky } from '@/app/_components/user/sticky/user-sticky'
 import { Muted } from '@/components/typography/text/muted'
 import { Skeleton } from '@/components/ui/skeleton'
 import { useStickyNotes } from '@/src/hooks/use-sticky-note'
@@ -31,7 +31,7 @@ export function UserStickyList() {
   return (
     <div className='flex flex-wrap gap-3'>
       {data.map((sticky) => (
-        <UserStick key={sticky.id} sticky={sticky} />
+        <UserSticky key={sticky.id} sticky={sticky} />
       ))}
     </div>
   )

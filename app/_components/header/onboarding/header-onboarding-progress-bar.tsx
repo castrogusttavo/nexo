@@ -14,7 +14,7 @@ const STEP_MAP: Record<string, number> = {
 
 const TOTAL_STEPS = 5
 
-export function OnboardingProgressBar() {
+export function HeaderOnboardingProgressBar() {
   const pathname = usePathname()
   const step = STEP_MAP[pathname] ?? 1
   const percent = (step / TOTAL_STEPS) * 100

@@ -4,9 +4,9 @@ import Image from 'next/image'
 import Link from 'next/link'
 import { ButtonLink } from '@/components/button-link'
 import { NexoIcon } from '@/components/icon/icon'
-import { WebFooter } from '../_components/footer'
 import { SubTitle } from '../_components/text/sub-title'
 import { Title } from '../_components/text/title'
+import { WebFooter } from '../_components/web-footer'
 
 const TITLE = 'Seguro por design, privado por padrão | Nexo'
 const DESCRIPTION =

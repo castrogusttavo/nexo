@@ -2,7 +2,7 @@
 
 import Link from 'next/link'
 import { Button } from '@/components/ui/button'
-import { useCookieConsent } from './provider'
+import { useCookieConsent } from './cookie-consent-provider'
 
 export function CookieConsentBanner() {
   const { consent, ready, setConsent } = useCookieConsent()

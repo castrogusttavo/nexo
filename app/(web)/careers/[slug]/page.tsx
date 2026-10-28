@@ -16,8 +16,8 @@ import { NEXT_PUBLIC_URL } from '@/lib/env/env'
 import { CAREER_EMPLOYMENT_TYPE_LABELS } from '@/src/lib/career-labels'
 import { CareerJobService } from '@/src/services/career-job.service'
 import type { CareerJobDTO } from '@/types/career-job'
-import { WebFooter } from '../../_components/footer'
 import { Title } from '../../_components/text/title'
+import { WebFooter } from '../../_components/web-footer'
 import { CareerApplicationForm } from './career-application-form'
 
 // Blocking on purpose: the page is the record itself, and an unknown id must

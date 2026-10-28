@@ -10,7 +10,7 @@ import {
   mockFetch,
   renderWithProviders,
 } from '@/src/__tests__/helpers/component'
-import { WorkspaceProjectModal } from '../workspace-project-modal-create'
+import { WorkspaceProjectCreateDialog } from '../workspace-project-create-dialog'
 
 vi.mock('sonner', () => ({
   toast: {
@@ -35,8 +35,12 @@ vi.mock('next/image', () => ({
 
 // The pickers are rich dropdowns (emoji catalogue, uploads) with their own
 // concerns; stub them down to a button that reports a fixed selection.
-vi.mock('../workspace-project-modal-emoji-icon-dialog', () => ({
-  EmojiIconPicker: ({ onSelect }: { onSelect?: (emoji: string) => void }) => (
+vi.mock('../workspace-project-emoji-icon-picker', () => ({
+  WorkspaceProjectEmojiIconPicker: ({
+    onSelect,
+  }: {
+    onSelect?: (emoji: string) => void
+  }) => (
     <button type='button' onClick={() => onSelect?.('🚀')}>
       Escolher emoji
     </button>
@@ -79,7 +83,7 @@ const PROJECT = {
 
 async function openModal() {
   const utils = renderWithProviders(
-    <WorkspaceProjectModal workspaceId='ws-1' />,
+    <WorkspaceProjectCreateDialog workspaceId='ws-1' />,
   )
   await utils.user.click(
     screen.getByRole('button', { name: 'Adicionar projeto' }),
@@ -92,7 +96,7 @@ const nameInput = () => screen.getByPlaceholderText('Nome do projeto')
 const slugInput = () => screen.getByPlaceholderText('ID do projeto')
 const submitButton = () => screen.getByRole('button', { name: 'Criar projeto' })
 
-describe('<WorkspaceProjectModal />', () => {
+describe('<WorkspaceProjectCreateDialog />', () => {
   it('keeps the submit button disabled until a name is typed', async () => {
     const { user } = await openModal()
 

@@ -2,7 +2,7 @@ import { screen, waitFor, within } from '@testing-library/react'
 import type { ComponentProps, ReactNode } from 'react'
 import { describe, expect, it, vi } from 'vitest'
 import { renderWithProviders } from '@/src/__tests__/helpers/component'
-import { EmojiIconPicker } from '../workspace-project-modal-emoji-icon-dialog'
+import { WorkspaceProjectEmojiIconPicker } from '../workspace-project-emoji-icon-picker'
 
 // The emoji catalogue is a virtualised list that fetches its data set at
 // runtime; stub it at the module boundary and drive the selection by hand,
@@ -44,7 +44,10 @@ const DARK_BLUE = '#266df0'
 function renderPicker(currentEmoji?: string) {
   const onSelect = vi.fn()
   const utils = renderWithProviders(
-    <EmojiIconPicker currentEmoji={currentEmoji} onSelect={onSelect} />,
+    <WorkspaceProjectEmojiIconPicker
+      currentEmoji={currentEmoji}
+      onSelect={onSelect}
+    />,
   )
   return { ...utils, onSelect }
 }
@@ -87,7 +90,7 @@ function hexToRgb(hex: string) {
 
 const searchBox = () => within(panel()).getByPlaceholderText('Pesquisar')
 
-describe('<EmojiIconPicker /> trigger', () => {
+describe('<WorkspaceProjectEmojiIconPicker /> trigger', () => {
   it('offers a smiley while the project has no icon', () => {
     renderPicker()
 
@@ -101,7 +104,7 @@ describe('<EmojiIconPicker /> trigger', () => {
   })
 })
 
-describe('<EmojiIconPicker /> icons tab', () => {
+describe('<WorkspaceProjectEmojiIconPicker /> icons tab', () => {
   it('opens on the icon catalogue', async () => {
     await openPicker()
 
@@ -190,7 +193,7 @@ describe('<EmojiIconPicker /> icons tab', () => {
   })
 })
 
-describe('<EmojiIconPicker /> emoji tab', () => {
+describe('<WorkspaceProjectEmojiIconPicker /> emoji tab', () => {
   async function openEmojiTab() {
     const utils = await openPicker()
     await utils.user.click(screen.getByRole('tab', { name: 'Emoji' }))

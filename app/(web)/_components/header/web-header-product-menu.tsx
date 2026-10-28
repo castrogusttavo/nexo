@@ -18,7 +18,7 @@ import {
   CardTitle,
 } from '@/components/ui/card'
 import { NavigationMenuContent } from '@/components/ui/navigation-menu'
-import { ListItem } from './web-header-list-item'
+import { WebHeaderListItem } from './web-header-list-item'
 import { featureCapabilities, products } from './web-header-nav-data'
 
 export function WebHeaderProductMenu() {
@@ -30,14 +30,14 @@ export function WebHeaderProductMenu() {
             <Muted className='px-2'>Produtos</Muted>
             <ul className='grid grid-cols-1 gap-4'>
               {products.map((product) => (
-                <ListItem
+                <WebHeaderListItem
                   key={product.title}
                   title={product.title}
                   href={product.href}
                   icon={product.icon}
                 >
                   <span className='text-sm'>{product.description}</span>
-                </ListItem>
+                </WebHeaderListItem>
               ))}
             </ul>
           </div>
@@ -45,14 +45,14 @@ export function WebHeaderProductMenu() {
             <Muted className='px-2'>Capacidades de Recursos</Muted>
             <ul className='grid grid-cols-2 gap-4'>
               {featureCapabilities.map((feature) => (
-                <ListItem
+                <WebHeaderListItem
                   key={feature.title}
                   title={feature.title}
                   href={feature.href}
                   icon={feature.icon}
                 >
                   <span className='text-sm'>{feature.description}</span>
-                </ListItem>
+                </WebHeaderListItem>
               ))}
             </ul>
           </div>

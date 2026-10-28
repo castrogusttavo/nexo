@@ -32,7 +32,7 @@ function isValidUrl(value: string) {
   }
 }
 
-export function UserShortcutLinkModal() {
+export function UserShortcutLinkDialog() {
   const createShortLink = useCreateShortLink()
 
   const [open, setOpen] = useState(false)

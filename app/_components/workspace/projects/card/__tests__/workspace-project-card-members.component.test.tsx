@@ -1,7 +1,7 @@
 import { screen, waitFor } from '@testing-library/react'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { renderWithProviders } from '@/src/__tests__/helpers/component'
-import { ProjectCardMembers } from '../workspace-project-card-membres'
+import { WorkspaceProjectCardMembers } from '../workspace-project-card-members'
 
 const { useSession } = vi.hoisted(() => ({ useSession: vi.fn() }))
 vi.mock('@/src/lib/auth-client', () => ({ authClient: { useSession } }))
@@ -16,7 +16,7 @@ function signedInAs(user: { id: string; name: string; image?: string | null }) {
 }
 
 function renderMembers(leadId: string | null) {
-  return renderWithProviders(<ProjectCardMembers leadId={leadId} />)
+  return renderWithProviders(<WorkspaceProjectCardMembers leadId={leadId} />)
 }
 
 /** The avatar itself is the tooltip trigger, and it carries no own text. */
@@ -36,7 +36,7 @@ beforeEach(() => {
   signedInAs({ id: SIGNED_IN_USER, name: 'Ana Souza' })
 })
 
-describe('<ProjectCardMembers />', () => {
+describe('<WorkspaceProjectCardMembers />', () => {
   it('shows the signed-in viewer initials when they lead the project', () => {
     renderMembers(SIGNED_IN_USER)
 

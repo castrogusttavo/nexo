@@ -61,7 +61,7 @@ const PRESET_LABELS: Record<NonNullable<CreatedAtPreset>, string> = {
   '30days': 'Últimos 30 dias',
 }
 
-export function ProjectFilterButton() {
+export function WorkspaceProjectFilterButton() {
   const [datePickerOpen, setDatePickerOpen] = useState(false)
   const [{ mine, access, createdAt, dateFrom, dateTo }, setFilters] =
     useQueryStates({

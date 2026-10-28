@@ -1,7 +1,10 @@
 import { renderHook, waitFor } from '@testing-library/react'
 import type { ReactNode } from 'react'
 import { afterEach, describe, expect, it, vi } from 'vitest'
-import { CookieConsentProvider, useCookieConsent } from '../provider'
+import {
+  CookieConsentProvider,
+  useCookieConsent,
+} from '../cookie-consent-provider'
 
 const { useSession } = vi.hoisted(() => ({
   useSession: vi.fn(() => ({ data: null })),

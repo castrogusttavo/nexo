@@ -1,8 +1,8 @@
 import type { Metadata } from 'next'
 import { type ReactNode, Suspense } from 'react'
-import { UserHeader } from '@/app/_components/header/header-layout-user'
+import { HeaderLayoutUser } from '@/app/_components/header/header-layout-user'
 import { HeaderTrialBanner } from '@/app/_components/header/header-trial-banner'
-import { GlobalSidebarNavigation } from '@/app/_components/navigation/sidebar-global'
+import { NavigationSidebarGlobal } from '@/app/_components/navigation/sidebar-global'
 import { Skeleton } from '@/components/ui/skeleton'
 import { requireMembership } from '@/src/lib/dal'
 import { SubscriptionService } from '@/src/services/subscription.service'
@@ -55,12 +55,12 @@ export default function WorkspaceLayout({
 
 async function Header({ params }: { params: Params }) {
   const { 'workspace-slug': slug } = await params
-  return <UserHeader slug={slug} />
+  return <HeaderLayoutUser slug={slug} />
 }
 
 async function Sidebar({ params }: { params: Params }) {
   const { 'workspace-slug': slug } = await params
-  return <GlobalSidebarNavigation slug={slug} />
+  return <NavigationSidebarGlobal slug={slug} />
 }
 
 async function TrialBanner({ params }: { params: Params }) {

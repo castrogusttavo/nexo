@@ -1,6 +1,6 @@
 import type { Metadata } from 'next'
 import Image from 'next/image'
-import { WebFooter } from '../_components/footer'
+import { WebFooter } from '../_components/web-footer'
 
 const TITLE = 'Sobre | Nexo'
 const DESCRIPTION = 'Por que construímos o Nexo e pra quem ele é feito.'

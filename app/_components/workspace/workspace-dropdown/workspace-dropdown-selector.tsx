@@ -17,7 +17,11 @@ import { useUser } from '@/src/hooks/use-user'
 import type { MembershipDTO } from '@/types/user'
 import { WorkspaceDropdownCard } from './workspace-dropdown-card'
 
-export function WorkSpaceDropdown({ currentSlug }: { currentSlug: string }) {
+export function WorkspaceDropdownSelector({
+  currentSlug,
+}: {
+  currentSlug: string
+}) {
   const { push } = useRouter()
   const { data: user } = useUser()
 

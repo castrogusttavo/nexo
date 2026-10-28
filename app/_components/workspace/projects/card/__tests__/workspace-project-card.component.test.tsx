@@ -12,7 +12,7 @@ import {
   renderWithProviders,
 } from '@/src/__tests__/helpers/component'
 import type { ProjectDTO } from '@/types/project'
-import { ProjectCard } from '../workspace-project-card'
+import { WorkspaceProjectCard } from '../workspace-project-card'
 
 const { push } = vi.hoisted(() => ({ push: vi.fn() }))
 vi.mock('next/navigation', () => ({ useRouter: () => ({ push }) }))
@@ -50,7 +50,7 @@ function buildProject(overrides: Partial<ProjectDTO> = {}): ProjectDTO {
 
 function renderCard(overrides: Partial<ProjectDTO> = {}) {
   return renderWithProviders(
-    <ProjectCard
+    <WorkspaceProjectCard
       project={buildProject(overrides)}
       workspaceSlug='acme'
       workspaceId={WORKSPACE_ID}
@@ -81,7 +81,7 @@ beforeEach(() => {
   })
 })
 
-describe('<ProjectCard /> content', () => {
+describe('<WorkspaceProjectCard /> content', () => {
   it('identifies the project by name and slug', () => {
     renderCard()
 
@@ -139,7 +139,7 @@ describe('<ProjectCard /> content', () => {
   })
 })
 
-describe('<ProjectCard /> navigation', () => {
+describe('<WorkspaceProjectCard /> navigation', () => {
   it('opens the project when the card is clicked', async () => {
     const { user } = renderCard()
 
@@ -174,7 +174,7 @@ describe('<ProjectCard /> navigation', () => {
   })
 })
 
-describe('<ProjectCard /> favoriting', () => {
+describe('<WorkspaceProjectCard /> favoriting', () => {
   it('favorites a project that is not favorited yet', async () => {
     const fetchSpy = mockFetch().mockImplementation(async () =>
       apiSuccess({ favourited: true }),

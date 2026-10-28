@@ -14,7 +14,7 @@ import {
 import { NO_LEAD_NAME } from '@/lib/removed-user'
 import { useCacheUser } from '@/src/hooks/cache/use-user'
 
-interface ProjectCardMembersProps {
+interface WorkspaceProjectCardMembersProps {
   leadId: string | null
 }
 
@@ -27,7 +27,9 @@ function nameInitials(name: string) {
     .join('')
 }
 
-export function ProjectCardMembers({ leadId }: ProjectCardMembersProps) {
+export function WorkspaceProjectCardMembers({
+  leadId,
+}: WorkspaceProjectCardMembersProps) {
   const { data: session } = useCacheUser()
   // A project whose lead was deleted keeps no lead at all.
   const hasLead = leadId !== null

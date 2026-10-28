@@ -6,10 +6,10 @@ import {
   HeaderBreadcrumbList,
 } from '@/app/_components/header/breadcrumb-page'
 import HeaderInternalNavigation from '@/app/_components/header/header-internal-navigation'
-import { WorkspaceProjectModal } from '@/app/_components/workspace/projects/modal/workspace-project-modal-create'
-import { ProjectFilterButton } from '@/app/_components/workspace/projects/workspace-project-filter-button'
-import { ProjectList } from '@/app/_components/workspace/projects/workspace-project-list'
-import { ProjectorderButton } from '@/app/_components/workspace/projects/workspace-project-order-button'
+import { WorkspaceProjectCreateDialog } from '@/app/_components/workspace/projects/modal/workspace-project-create-dialog'
+import { WorkspaceProjectFilterButton } from '@/app/_components/workspace/projects/workspace-project-filter-button'
+import { WorkspaceProjectList } from '@/app/_components/workspace/projects/workspace-project-list'
+import { WorkspaceProjectOrderButton } from '@/app/_components/workspace/projects/workspace-project-order-button'
 import { PageSkeleton } from '@/app/(private)/_components/page-skeleton'
 import { NexoIcon } from '@/components/icon/icon'
 import { requireMembership } from '@/src/lib/dal'
@@ -41,8 +41,8 @@ export default function ProjectsPage({ params }: { params: Params }) {
           </HeaderBreadcrumbCrumb>
         </HeaderBreadcrumbList>
         <div className='flex items-center space-x-2'>
-          <ProjectorderButton />
-          <ProjectFilterButton />
+          <WorkspaceProjectOrderButton />
+          <WorkspaceProjectFilterButton />
           <Suspense fallback={null}>
             <CreateProject params={params} />
           </Suspense>
@@ -58,13 +58,16 @@ export default function ProjectsPage({ params }: { params: Params }) {
 async function CreateProject({ params }: { params: Params }) {
   const { 'workspace-slug': slug } = await params
   const { membership } = await requireMembership(slug)
-  return <WorkspaceProjectModal workspaceId={membership.workspaceId} />
+  return <WorkspaceProjectCreateDialog workspaceId={membership.workspaceId} />
 }
 
 async function Projects({ params }: { params: Params }) {
   const { 'workspace-slug': slug } = await params
   const { membership } = await requireMembership(slug)
   return (
-    <ProjectList workspaceId={membership.workspaceId} workspaceSlug={slug} />
+    <WorkspaceProjectList
+      workspaceId={membership.workspaceId}
+      workspaceSlug={slug}
+    />
   )
 }

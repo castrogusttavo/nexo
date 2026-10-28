@@ -2,11 +2,11 @@
 
 import type { SortingState } from '@tanstack/react-table'
 import { useEffect, useState } from 'react'
-import { WorkspaceSettingsMemberHeader } from '@/app/_components/workspace/settings/members/workspace-settings-memeber-header'
+import { WorkspaceSettingsMemberHeader } from '@/app/_components/workspace/settings/members/workspace-settings-member-header'
 import { DataTable } from '@/components/ui/data-table/data-table'
 import { useMembers } from '@/src/hooks/use-member'
-import { memberColumns } from './columns'
 import { PendingInvitationsList } from './pending-invitations-list'
+import { workspaceMemberColumns } from './workspace-member-columns'
 
 const PAGE_SIZE = 20
 
@@ -50,7 +50,7 @@ export function MembersManager({ workspaceId }: { workspaceId: string }) {
         resultCount={data?.total ?? 0}
       />
       <DataTable
-        columns={memberColumns}
+        columns={workspaceMemberColumns}
         data={data?.members ?? []}
         sorting={sorting}
         onSortingChange={setSorting}
