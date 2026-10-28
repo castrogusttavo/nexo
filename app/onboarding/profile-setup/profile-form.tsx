@@ -27,7 +27,10 @@ export function ProfileForm({
   twoFactorEnabled: boolean
   hasPassword: boolean
 }) {
+  // Drafts seeded from the server: the step edits its own copy until it is submitted.
+  // react-doctor-disable-next-line react-doctor/no-derived-useState
   const [nameValue, setNameValue] = useState(name)
+  // react-doctor-disable-next-line react-doctor/no-derived-useState
   const [imageUrl, setImageUrl] = useState<string | null>(image)
   const uploadAvatar = useUploadAvatar()
   const fileInputRef = useRef<HTMLInputElement>(null)

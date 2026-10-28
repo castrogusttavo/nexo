@@ -80,7 +80,10 @@ export function EstimateSystemForm({
   onBack,
   onDone,
 }: EstimateSystemFormProps) {
+  // Drafts seeded from the saved settings: the form edits its own copy until it is applied.
+  // react-doctor-disable-next-line react-doctor/no-derived-useState
   const [system, setSystem] = useState<EstimateSystemDTO>(currentSystem)
+  // react-doctor-disable-next-line react-doctor/no-derived-useState
   const [model, setModel] = useState<EstimateModelDTO | null>(currentModel)
 
   const updateSettings = useUpdateEstimateSettings(workspaceId, projectSlug)

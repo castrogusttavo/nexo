@@ -11,13 +11,7 @@ import TaskItem from '@tiptap/extension-task-item'
 import TaskList from '@tiptap/extension-task-list'
 import { EditorContent, type JSONContent, useEditor } from '@tiptap/react'
 import StarterKit from '@tiptap/starter-kit'
-import {
-  type ComponentProps,
-  type ReactNode,
-  useEffect,
-  useRef,
-  useState,
-} from 'react'
+import { type ComponentProps, type ReactNode, useEffect, useRef } from 'react'
 import { ColorSwatchPicker } from '@/components/color-swatch-picker'
 import { NexoIcon } from '@/components/icon/icon'
 import { Button } from '@/components/ui/button'
@@ -62,8 +56,11 @@ interface UserStickyProps {
 }
 
 export function UserSticky({ sticky }: UserStickyProps) {
-  const [color, setColor] = useState<StickyColorDTO>(sticky.color)
   const update = useUpdateStickyNote(sticky.id)
+  // Optimistic through the pending mutation: while a colour change is in
+  // flight it shows; if it fails, the stored colour comes back by itself
+  // (a local copy kept the wrong colour after an error).
+  const color = (update.isPending && update.variables?.color) || sticky.color
   const remove = useDeleteStickyNote()
 
   const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null)
@@ -113,7 +110,6 @@ export function UserSticky({ sticky }: UserStickyProps) {
   })
 
   const handleColorChange = (next: StickyColorDTO) => {
-    setColor(next)
     update.mutate({ color: next }, { onError: notify.error })
   }
 

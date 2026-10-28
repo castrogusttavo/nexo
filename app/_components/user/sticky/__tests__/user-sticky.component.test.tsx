@@ -5,6 +5,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest'
 import {
   apiError,
   apiSuccess,
+  deferredResponse,
   getFetchCall,
   mockFetch,
   renderWithProviders,
@@ -246,10 +247,9 @@ describe('<UserSticky /> toolbar', () => {
     expect(tiptap.commands).toEqual(['bold', 'italic', 'taskList'])
   })
 
-  it('repaints the sticky and saves the picked colour', async () => {
-    const fetchSpy = mockFetch().mockResolvedValue(
-      apiSuccess({ ...STICKY, color: 'RED' }),
-    )
+  it('repaints the sticky while the picked colour is saved', async () => {
+    const response = deferredResponse()
+    const fetchSpy = mockFetch().mockReturnValueOnce(response.promise)
     const { user, card } = renderSticky()
 
     await user.click(toolbarButton('Cor da nota'))
@@ -258,13 +258,31 @@ describe('<UserSticky /> toolbar', () => {
       swatch.querySelectorAll('button')[0] as HTMLButtonElement, // RED
     )
 
-    expect(card).toHaveClass('bg-red-100', 'dark:bg-red-950')
-    await waitFor(() => expect(fetchSpy).toHaveBeenCalledTimes(1))
+    await waitFor(() =>
+      expect(card).toHaveClass('bg-red-100', 'dark:bg-red-950'),
+    )
     expect(getFetchCall(fetchSpy)).toEqual({
       url: '/api/sticky-notes/sticky-1',
       method: 'PATCH',
       body: { color: 'RED' },
     })
+    response.resolve(apiSuccess({ ...STICKY, color: 'RED' }))
+  })
+
+  // The repaint used to be a local copy that kept the wrong colour after a
+  // failed save; now the stored colour comes back.
+  it('goes back to the stored colour when the save fails', async () => {
+    mockFetch().mockResolvedValue(apiError(500, 'Erro ao atualizar sticky'))
+    const { user, card } = renderSticky()
+    const storedClasses = card.className
+
+    await user.click(toolbarButton('Cor da nota'))
+    const swatch = await screen.findByRole('dialog')
+    await user.click(swatch.querySelectorAll('button')[0] as HTMLButtonElement)
+
+    await waitFor(() => expect(toast.error).toHaveBeenCalled())
+    await waitFor(() => expect(card.className).toBe(storedClasses))
+    expect(card).not.toHaveClass('bg-red-100')
   })
 
   it('reports a failed colour change', async () => {

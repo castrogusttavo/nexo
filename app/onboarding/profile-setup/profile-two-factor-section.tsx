@@ -21,6 +21,8 @@ export function ProfileTwoFactorSection({
   twoFactorEnabled,
   hasPassword,
 }: ProfileTwoFactorSectionProps) {
+  // Seeded from the server, then owned here: the page props never refresh after a toggle.
+  // react-doctor-disable-next-line react-doctor/no-derived-useState
   const [is2FAEnabled, setIs2FAEnabled] = useState(twoFactorEnabled)
   const prompt = useTwoFactorPassword((action) => {
     if (action === 'enable') setIs2FAEnabled(true)
