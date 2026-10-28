@@ -21,20 +21,9 @@ export function UpgradeOrderSummaryCard({
     price,
     seats,
     billing,
-    setBilling,
-    discount,
-    savings,
-    maxDiscount,
-    couponInput,
-    setCouponInput,
     appliedCoupon,
-    couponError,
-    setCouponError,
-    couponPending,
     couponDiscount,
     finalTotal,
-    applyCoupon,
-    removeCoupon,
     error,
     isPending,
     workspaceId,
@@ -61,98 +50,14 @@ export function UpgradeOrderSummaryCard({
             <div className='gap-2 text-sm font-medium group-data-[disabled=true]/field:opacity-50 flex w-fit items-center leading-snug'>
               Frequência de faturamento
             </div>
-            <Tabs
-              value={billing}
-              onValueChange={(v) => setBilling(v as Billing)}
-              className='w-full gap-5'
-            >
-              <TabsList className='w-full bg-card'>
-                <TabsTrigger value='monthly'>Mensal</TabsTrigger>
-                <TabsTrigger value='yearly'>
-                  Anual (economize até {Math.round(maxDiscount * 100)}%)
-                </TabsTrigger>
-              </TabsList>
-
-              {price && (
-                <div className='flex flex-col gap-4'>
-                  <TabsContent
-                    value='monthly'
-                    className='flex items-center justify-between text-base'
-                  >
-                    <Muted className='text-base'>
-                      {seats} usuários × {formatCurrency(price.monthly)} × 1 mês
-                    </Muted>
-                    <span>{formatCurrency(price.monthly * seats)}</span>
-                  </TabsContent>
-
-                  <TabsContent
-                    value='yearly'
-                    className='flex flex-col gap-2 items-start justify-between text-base'
-                  >
-                    <div className='flex items-center justify-between w-full'>
-                      <Muted className='text-base'>
-                        {seats} usuários × {formatCurrency(price.monthly)} × 12
-                        meses
-                      </Muted>
-                      <span>{formatCurrency(price.monthly * 12 * seats)}</span>
-                    </div>
-                    <div className='text-green-700 dark:text-green-200 flex items-center justify-between w-full'>
-                      Desconto anual (economizado {Math.round(discount * 100)}
-                      %)
-                      <span>-{formatCurrency(savings)}</span>
-                    </div>
-                  </TabsContent>
-                </div>
-              )}
-            </Tabs>
+            <OrderBillingTabs checkout={checkout} price={price} />
           </div>
           <div className='w-full h-px bg-border/80' />
           <div className='flex flex-col gap-3'>
             <div className='gap-2 text-sm font-medium flex w-fit items-center leading-snug'>
               Cupom de desconto
             </div>
-            {appliedCoupon ? (
-              <div className='flex items-center justify-between bg-card rounded-lg pl-3 pr-1.5 py-1.5 text-sm'>
-                <span className='font-medium'>{appliedCoupon.code}</span>
-                <Button
-                  variant='ghost'
-                  size='xs'
-                  className='hover:bg-transparent! text-muted-foreground'
-                  onClick={removeCoupon}
-                >
-                  Remover
-                </Button>
-              </div>
-            ) : (
-              <div className='flex items-center gap-2'>
-                <Input
-                  value={couponInput}
-                  onChange={(e) => {
-                    setCouponInput(e.target.value)
-                    setCouponError(null)
-                  }}
-                  onKeyDown={(e) => {
-                    if (e.key === 'Enter') {
-                      e.preventDefault()
-                      applyCoupon()
-                    }
-                  }}
-                  placeholder='Insira o código'
-                  className='h-9 border border-border uppercase placeholder:normal-case'
-                />
-                <Button
-                  variant='outline'
-                  size='sm'
-                  onClick={applyCoupon}
-                  disabled={couponPending}
-                >
-                  {couponPending ? 'Validando...' : 'Aplicar'}
-                </Button>
-              </div>
-            )}
-            {couponError && (
-              <p className='text-sm text-destructive'>{couponError}</p>
-            )}
+            <OrderCouponField checkout={checkout} />
           </div>
           {couponDiscount > 0 && (
             <div className='flex justify-between text-sm text-green-700 dark:text-green-200'>
@@ -180,5 +85,119 @@ export function UpgradeOrderSummaryCard({
         {isPending ? 'Processando...' : 'Prossiga para o pagamento'}
       </Button>
     </div>
+  )
+}
+
+interface OrderSectionProps {
+  checkout: UpgradeCheckout
+}
+
+function OrderBillingTabs({
+  checkout,
+  price,
+}: OrderSectionProps & { price: NonNullable<UpgradeCheckout['price']> }) {
+  const { seats, billing, setBilling, discount, savings, maxDiscount } =
+    checkout
+
+  return (
+    <Tabs
+      value={billing}
+      onValueChange={(v) => setBilling(v as Billing)}
+      className='w-full gap-5'
+    >
+      <TabsList className='w-full bg-card'>
+        <TabsTrigger value='monthly'>Mensal</TabsTrigger>
+        <TabsTrigger value='yearly'>
+          Anual (economize até {Math.round(maxDiscount * 100)}%)
+        </TabsTrigger>
+      </TabsList>
+
+      <div className='flex flex-col gap-4'>
+        <TabsContent
+          value='monthly'
+          className='flex items-center justify-between text-base'
+        >
+          <Muted className='text-base'>
+            {seats} usuários × {formatCurrency(price.monthly)} × 1 mês
+          </Muted>
+          <span>{formatCurrency(price.monthly * seats)}</span>
+        </TabsContent>
+
+        <TabsContent
+          value='yearly'
+          className='flex flex-col gap-2 items-start justify-between text-base'
+        >
+          <div className='flex items-center justify-between w-full'>
+            <Muted className='text-base'>
+              {seats} usuários × {formatCurrency(price.monthly)} × 12 meses
+            </Muted>
+            <span>{formatCurrency(price.monthly * 12 * seats)}</span>
+          </div>
+          <div className='text-green-700 dark:text-green-200 flex items-center justify-between w-full'>
+            Desconto anual (economizado {Math.round(discount * 100)}
+            %)
+            <span>-{formatCurrency(savings)}</span>
+          </div>
+        </TabsContent>
+      </div>
+    </Tabs>
+  )
+}
+
+function OrderCouponField({ checkout }: OrderSectionProps) {
+  const {
+    couponInput,
+    setCouponInput,
+    appliedCoupon,
+    couponError,
+    setCouponError,
+    couponPending,
+    applyCoupon,
+    removeCoupon,
+  } = checkout
+
+  return (
+    <>
+      {appliedCoupon ? (
+        <div className='flex items-center justify-between bg-card rounded-lg pl-3 pr-1.5 py-1.5 text-sm'>
+          <span className='font-medium'>{appliedCoupon.code}</span>
+          <Button
+            variant='ghost'
+            size='xs'
+            className='hover:bg-transparent! text-muted-foreground'
+            onClick={removeCoupon}
+          >
+            Remover
+          </Button>
+        </div>
+      ) : (
+        <div className='flex items-center gap-2'>
+          <Input
+            value={couponInput}
+            onChange={(e) => {
+              setCouponInput(e.target.value)
+              setCouponError(null)
+            }}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter') {
+                e.preventDefault()
+                applyCoupon()
+              }
+            }}
+            placeholder='Insira o código'
+            className='h-9 border border-border uppercase placeholder:normal-case'
+          />
+          <Button
+            variant='outline'
+            size='sm'
+            onClick={applyCoupon}
+            disabled={couponPending}
+          >
+            {couponPending ? 'Validando...' : 'Aplicar'}
+          </Button>
+        </div>
+      )}
+      {couponError && <p className='text-sm text-destructive'>{couponError}</p>}
+    </>
   )
 }

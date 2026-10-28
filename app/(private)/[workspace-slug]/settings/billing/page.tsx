@@ -78,10 +78,6 @@ async function Billing({ params }: { params: Params }) {
   const { membership } = await requireMembership(slug)
   const workspace = membership.workspace
 
-  const trialEndsAt = workspace.trialEndsAt
-    ? new Date(workspace.trialEndsAt)
-    : null
-
   const [subResult, membersResult] = await Promise.all([
     SubscriptionService.getActiveByWorkspace(workspace.id),
     MembershipService.countByWorkspace(workspace.id),
@@ -89,12 +85,12 @@ async function Billing({ params }: { params: Params }) {
   const subscription = subResult.ok ? subResult.value : null
   const usedSeats = membersResult.ok ? membersResult.value : 0
 
+  const trialEndsAt = workspace.trialEndsAt
+    ? new Date(workspace.trialEndsAt)
+    : null
   const now = Date.now()
   const isTrialing =
     !subscription && trialEndsAt != null && trialEndsAt.getTime() > now
-  const trialDaysLeft = trialEndsAt
-    ? Math.max(0, Math.ceil((trialEndsAt.getTime() - now) / 86_400_000))
-    : 0
 
   // Seats: paid = purchased; trial/plan = catalog cap (null = unlimited)
   const purchasedSeats =
@@ -102,80 +98,117 @@ async function Billing({ params }: { params: Params }) {
   const freeSeats =
     purchasedSeats == null ? null : Math.max(0, purchasedSeats - usedSeats)
 
-  const planLabel = isTrialing
-    ? `${formatPlanName(workspace.activePlan)} Trial`
-    : formatPlanName(workspace.activePlan)
-
-  const periodLabel = isTrialing
-    ? trialEndsAt
-      ? `Termina em ${dateFmt.format(trialEndsAt)}`
-      : '—'
-    : subscription
-      ? `${dateFmt.format(subscription.createdAt)} — ${dateFmt.format(
-          addInterval(subscription.createdAt, subscription.interval),
-        )}`
-      : '—'
-
   return (
     <>
-      {isTrialing && (
-        <div className='w-full bg-muted flex items-center px-4 py-3 gap-3 rounded-lg border border-border overflow-hidden'>
-          <div className='p-2 rounded-sm bg-blue-950 w-fit flex items-center justify-center'>
-            <NexoIcon icon={Diamond02Icon} className='text-primary' size={24} />
-          </div>
-          <div className='flex-1 flex flex-col gap-1.5 min-w-0'>
-            <div className='flex items-center gap-2'>
-              <h4 className='font-bold text-sm'>
-                Seu teste de 14 dias do plano Business está ativo!
-              </h4>
-              <Badge variant='warning'>
-                {trialDaysLeft === 1
-                  ? 'O teste termina em 1 dia'
-                  : `O teste termina em ${trialDaysLeft} dias`}
-              </Badge>
-            </div>
-            <Muted>
-              Explore todos os recursos Business. Quando estiver pronto, escolha
-              assinar. Você não será cobrado automaticamente.
-            </Muted>
-          </div>
-        </div>
-      )}
-
-      <div className='w-full bg-muted flex flex-col items-center rounded-lg border border-border overflow-hidden'>
-        <div className='w-full flex items-center justify-between px-4 py-3 gap-2'>
-          <div className='flex items-center gap-1.5'>
-            <h4 className='text-sm font-semibold'>{planLabel}</h4>
-            <Badge variant='info'>Seu Plano</Badge>
-          </div>
-          {subscription && (
-            <Button variant='outline' size='sm'>
-              Gerenciar assinatura
-            </Button>
+      {isTrialing && trialEndsAt && (
+        <BillingTrialNotice
+          daysLeft={Math.max(
+            0,
+            Math.ceil((trialEndsAt.getTime() - now) / 86_400_000),
           )}
-        </div>
+        />
+      )}
+      <BillingPlanCard
+        planLabel={
+          isTrialing
+            ? `${formatPlanName(workspace.activePlan)} Trial`
+            : formatPlanName(workspace.activePlan)
+        }
+        canManage={subscription != null}
+        usedSeats={usedSeats}
+        freeSeats={freeSeats}
+        periodLabel={
+          isTrialing && trialEndsAt
+            ? `Termina em ${dateFmt.format(trialEndsAt)}`
+            : subscriptionPeriod(subscription)
+        }
+      />
+      <BillingUpgrade currentPlan={workspace.activePlan} />
+    </>
+  )
+}
 
-        <div className='w-full bg-app p-4'>
-          <div className='grid grid-cols-3 max-w-4xl'>
-            <div className='space-y-2'>
-              <Muted>Total de usuários</Muted>
-              <p className='text-sm font-medium'>{usedSeats}</p>
-            </div>
-            <div className='space-y-2'>
-              <Muted>Assentos livres</Muted>
-              <p className='text-sm font-medium'>
-                {freeSeats === null ? 'Ilimitado' : freeSeats}
-              </p>
-            </div>
-            <div className='space-y-2'>
-              <Muted>Período da assinatura</Muted>
-              <p className='text-sm font-medium'>{periodLabel}</p>
-            </div>
+function subscriptionPeriod(
+  subscription: { createdAt: Date; interval: 'MONTHLY' | 'YEARLY' } | null,
+): string {
+  if (!subscription) return '—'
+  const end = addInterval(subscription.createdAt, subscription.interval)
+  return `${dateFmt.format(subscription.createdAt)} — ${dateFmt.format(end)}`
+}
+
+function BillingTrialNotice({ daysLeft }: { daysLeft: number }) {
+  return (
+    <div className='w-full bg-muted flex items-center px-4 py-3 gap-3 rounded-lg border border-border overflow-hidden'>
+      <div className='p-2 rounded-sm bg-blue-950 w-fit flex items-center justify-center'>
+        <NexoIcon icon={Diamond02Icon} className='text-primary' size={24} />
+      </div>
+      <div className='flex-1 flex flex-col gap-1.5 min-w-0'>
+        <div className='flex items-center gap-2'>
+          <h4 className='font-bold text-sm'>
+            Seu teste de 14 dias do plano Business está ativo!
+          </h4>
+          <Badge variant='warning'>
+            {daysLeft === 1
+              ? 'O teste termina em 1 dia'
+              : `O teste termina em ${daysLeft} dias`}
+          </Badge>
+        </div>
+        <Muted>
+          Explore todos os recursos Business. Quando estiver pronto, escolha
+          assinar. Você não será cobrado automaticamente.
+        </Muted>
+      </div>
+    </div>
+  )
+}
+
+interface BillingPlanCardProps {
+  planLabel: string
+  canManage: boolean
+  usedSeats: number
+  freeSeats: number | null
+  periodLabel: string
+}
+
+function BillingPlanCard({
+  planLabel,
+  canManage,
+  usedSeats,
+  freeSeats,
+  periodLabel,
+}: BillingPlanCardProps) {
+  return (
+    <div className='w-full bg-muted flex flex-col items-center rounded-lg border border-border overflow-hidden'>
+      <div className='w-full flex items-center justify-between px-4 py-3 gap-2'>
+        <div className='flex items-center gap-1.5'>
+          <h4 className='text-sm font-semibold'>{planLabel}</h4>
+          <Badge variant='info'>Seu Plano</Badge>
+        </div>
+        {canManage && (
+          <Button variant='outline' size='sm'>
+            Gerenciar assinatura
+          </Button>
+        )}
+      </div>
+
+      <div className='w-full bg-app p-4'>
+        <div className='grid grid-cols-3 max-w-4xl'>
+          <div className='space-y-2'>
+            <Muted>Total de usuários</Muted>
+            <p className='text-sm font-medium'>{usedSeats}</p>
+          </div>
+          <div className='space-y-2'>
+            <Muted>Assentos livres</Muted>
+            <p className='text-sm font-medium'>
+              {freeSeats === null ? 'Ilimitado' : freeSeats}
+            </p>
+          </div>
+          <div className='space-y-2'>
+            <Muted>Período da assinatura</Muted>
+            <p className='text-sm font-medium'>{periodLabel}</p>
           </div>
         </div>
       </div>
-
-      <BillingUpgrade currentPlan={workspace.activePlan} />
-    </>
+    </div>
   )
 }

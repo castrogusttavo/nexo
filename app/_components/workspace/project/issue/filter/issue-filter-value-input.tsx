@@ -59,11 +59,19 @@ interface IssueFilterValueInputProps {
   onChange: (value: BasicFilterValue) => void
 }
 
-function useFiledOptions(
+interface FilterOption {
+  label: string
+  value: string
+}
+
+const byId = (items?: { id: string; name: string }[]): FilterOption[] =>
+  (items ?? []).map((item) => ({ label: item.name, value: item.id }))
+
+function useFieldOptions(
   field: FilterField,
   workspaceId: string,
   projectSlug: string,
-) {
+): FilterOption[] {
   const states = useStates(workspaceId, projectSlug)
   const types = useIssueTypes(workspaceId, projectSlug)
   const labels = useLabels(workspaceId, projectSlug)
@@ -72,128 +80,146 @@ function useFiledOptions(
   const members = useProjectMembers(workspaceId, projectSlug)
   const issues = useIssues(workspaceId, projectSlug)
 
-  switch (field) {
-    case 'state':
-      return (states.data ?? []).map((s) => ({ label: s.name, value: s.id }))
-    case 'type':
-      return (types.data ?? []).map((t) => ({ label: t.name, value: t.id }))
-    case 'labels':
-      return (labels.data ?? []).map((l) => ({ label: l.name, value: l.id }))
-    case 'cycle':
-      return (cycles.data ?? []).map((c) => ({ label: c.name, value: c.id }))
-    case 'module':
-      return (modules.data ?? []).map((m) => ({ label: m.name, value: m.id }))
-    case 'assignees':
-    case 'mentions':
-    case 'created-by':
-      return (members.data ?? []).map((m) => ({
-        label: m.name,
-        value: m.userId,
-      }))
-    case 'sub-issues':
-      return (issues.data ?? []).map((i) => ({ label: i.title, value: i.id }))
-    case 'priority':
-      return PRIORITY_OPTIONS
-    case 'state-group':
-      return STATE_GROUP_OPTIONS
-    default:
-      return []
+  const toMembers = () =>
+    (members.data ?? []).map((m) => ({ label: m.name, value: m.userId }))
+  // Thunks, so only the requested field's list is mapped.
+  const sources: Partial<Record<FilterField, () => FilterOption[]>> = {
+    state: () => byId(states.data),
+    type: () => byId(types.data),
+    labels: () => byId(labels.data),
+    cycle: () => byId(cycles.data),
+    module: () => byId(modules.data),
+    assignees: toMembers,
+    mentions: toMembers,
+    'created-by': toMembers,
+    'sub-issues': () =>
+      (issues.data ?? []).map((i) => ({ label: i.title, value: i.id })),
+    priority: () => PRIORITY_OPTIONS,
+    'state-group': () => STATE_GROUP_OPTIONS,
   }
+  return sources[field]?.() ?? []
 }
 
 export function IssueFilterValueInput({
-  workspaceId,
-  projectSlug,
-  field,
   operator,
   value,
   onChange,
+  ...props
 }: IssueFilterValueInputProps) {
-  const options = useFiledOptions(field, workspaceId, projectSlug)
-
   if (operator === 'is-empty') return null
 
-  const fieldType = FILTER_FIELDS[field].type
-
-  if (fieldType === 'text') {
-    return (
-      <Input
-        value={typeof value === 'string' ? value : ''}
-        onChange={(e) => onChange(e.target.value)}
-        placeholder='Valor'
-        className='h-8 w-48'
-      />
-    )
-  }
-
-  if (fieldType === 'date') {
-    if (operator === 'between' || operator === 'not-between') {
-      const [start, end] = Array.isArray(value) ? value : ['', '']
-      const from = toFilterDay(start)
-      const to = toFilterDay(end)
+  switch (FILTER_FIELDS[props.field].type) {
+    case 'text':
       return (
-        <Popover>
-          <PopoverTrigger
-            render={
-              <Button variant='outline' size='sm' className='h-8'>
-                {from && to
-                  ? `${formatIssueDay(from)} - ${formatIssueDay(to)}`
-                  : 'Selecionar período'}
-              </Button>
-            }
-          />
-          <PopoverContent className='w-auto p-0'>
-            <Calendar
-              mode='range'
-              selected={{ from, to }}
-              onSelect={(range) =>
-                onChange([
-                  range?.from ? toIssueDateISO(range.from) : '',
-                  range?.to ? toIssueDateISO(range.to) : '',
-                ])
-              }
-            />
-          </PopoverContent>
-        </Popover>
+        <Input
+          value={typeof value === 'string' ? value : ''}
+          onChange={(e) => onChange(e.target.value)}
+          placeholder='Valor'
+          className='h-8 w-48'
+        />
       )
-    }
+    case 'date':
+      return operator === 'between' || operator === 'not-between' ? (
+        <FilterDateRangeInput value={value} onChange={onChange} />
+      ) : (
+        <FilterDayInput value={value} onChange={onChange} />
+      )
+    default:
+      return (
+        <FilterOptionsInput
+          {...props}
+          multiple={operator === 'is' || operator === 'is-not'}
+          value={value}
+          onChange={onChange}
+        />
+      )
+  }
+}
 
-    const day = toFilterDay(typeof value === 'string' ? value : '')
-    return (
-      <Popover>
-        <PopoverTrigger
-          render={
-            <Button variant='outline' size='sm' className='h-8'>
-              {day ? formatIssueDay(day) : 'Selecionar data'}
-            </Button>
+interface FilterValueProps {
+  value: BasicFilterValue
+  onChange: (value: BasicFilterValue) => void
+}
+
+function FilterDateRangeInput({ value, onChange }: FilterValueProps) {
+  const [start, end] = Array.isArray(value) ? value : ['', '']
+  const from = toFilterDay(start)
+  const to = toFilterDay(end)
+  return (
+    <Popover>
+      <PopoverTrigger
+        render={
+          <Button variant='outline' size='sm' className='h-8'>
+            {from && to
+              ? `${formatIssueDay(from)} - ${formatIssueDay(to)}`
+              : 'Selecionar período'}
+          </Button>
+        }
+      />
+      <PopoverContent className='w-auto p-0'>
+        <Calendar
+          mode='range'
+          selected={{ from, to }}
+          onSelect={(range) =>
+            onChange([
+              range?.from ? toIssueDateISO(range.from) : '',
+              range?.to ? toIssueDateISO(range.to) : '',
+            ])
           }
         />
-        <PopoverContent className='w-auto p-0'>
-          <Calendar
-            mode='single'
-            selected={day}
-            onSelect={(date) => onChange(date ? toIssueDateISO(date) : null)}
-          />
-        </PopoverContent>
-      </Popover>
-    )
-  }
+      </PopoverContent>
+    </Popover>
+  )
+}
 
-  const isMulti = operator === 'is' || operator === 'is-not'
-
-  if (isMulti) {
-    return (
-      <IssueFilterSelect
-        multiple
-        title='Selecionar'
-        options={options}
-        value={Array.isArray(value) ? value : []}
-        onChange={onChange}
-      />
-    )
-  }
-
+function FilterDayInput({ value, onChange }: FilterValueProps) {
+  const day = toFilterDay(typeof value === 'string' ? value : '')
   return (
+    <Popover>
+      <PopoverTrigger
+        render={
+          <Button variant='outline' size='sm' className='h-8'>
+            {day ? formatIssueDay(day) : 'Selecionar data'}
+          </Button>
+        }
+      />
+      <PopoverContent className='w-auto p-0'>
+        <Calendar
+          mode='single'
+          selected={day}
+          onSelect={(date) => onChange(date ? toIssueDateISO(date) : null)}
+        />
+      </PopoverContent>
+    </Popover>
+  )
+}
+
+interface FilterOptionsInputProps extends FilterValueProps {
+  workspaceId: string
+  projectSlug: string
+  field: FilterField
+  multiple: boolean
+}
+
+function FilterOptionsInput({
+  workspaceId,
+  projectSlug,
+  field,
+  multiple,
+  value,
+  onChange,
+}: FilterOptionsInputProps) {
+  const options = useFieldOptions(field, workspaceId, projectSlug)
+
+  return multiple ? (
+    <IssueFilterSelect
+      multiple
+      title='Selecionar'
+      options={options}
+      value={Array.isArray(value) ? value : []}
+      onChange={onChange}
+    />
+  ) : (
     <IssueFilterSelect
       title='Selecionar'
       options={options}
