@@ -9,9 +9,10 @@ import {
 } from '@/src/__tests__/helpers/component'
 import { ProfileForm } from '../profile-form'
 
-const { saveProfileSetup, toastPromise } = vi.hoisted(() => ({
+const { saveProfileSetup, toastPromise, refresh } = vi.hoisted(() => ({
   saveProfileSetup: vi.fn(),
   toastPromise: vi.fn(),
+  refresh: vi.fn(),
 }))
 
 // Server action stub: the form only depends on its state contract.
@@ -20,6 +21,8 @@ vi.mock('@/src/lib/auth-client', () => ({
   authClient: { twoFactor: { enable: vi.fn(), disable: vi.fn() } },
 }))
 vi.mock('sonner', () => ({ toast: { promise: toastPromise } }))
+// The header lives in the layout: a successful upload refreshes it.
+vi.mock('next/navigation', () => ({ useRouter: () => ({ refresh }) }))
 
 const DEFAULT_PROPS = {
   name: 'Ana Souza',
@@ -44,6 +47,7 @@ function toastErrorMessage(err: unknown) {
 }
 
 beforeEach(() => {
+  refresh.mockClear()
   saveProfileSetup.mockResolvedValue({ ok: true })
 })
 
@@ -186,6 +190,7 @@ describe('<ProfileForm />', () => {
         }),
       )
       await expect(toastPromise.mock.calls[0]?.[0]).resolves.toBeUndefined()
+      expect(refresh).toHaveBeenCalledTimes(1)
     })
 
     it('surfaces the server message when the upload is rejected', async () => {
@@ -203,6 +208,7 @@ describe('<ProfileForm />', () => {
       const upload = toastPromise.mock.calls[0]?.[0] as Promise<unknown>
       const failure = await upload.catch((err: unknown) => err)
       expect(toastErrorMessage(failure)).toBe('Arquivo muito grande')
+      expect(refresh).not.toHaveBeenCalled()
     })
 
     it('falls back to a generic upload error message', async () => {

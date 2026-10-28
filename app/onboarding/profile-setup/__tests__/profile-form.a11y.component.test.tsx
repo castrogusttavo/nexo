@@ -12,6 +12,7 @@ vi.mock('@/src/lib/auth-client', () => ({
   authClient: { twoFactor: { enable: vi.fn(), disable: vi.fn() } },
 }))
 vi.mock('sonner', () => ({ toast: { promise: vi.fn() } }))
+vi.mock('next/navigation', () => ({ useRouter: () => ({ refresh: vi.fn() }) }))
 
 // Onboarding steps render inside a layout that owns the landmarks and the
 // <h1>, so the page-level structure rules cannot hold for the step alone.

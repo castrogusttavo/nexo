@@ -1,6 +1,7 @@
 'use client'
 
 import { Image } from '@hugeicons-pro/core-stroke-rounded'
+import { useRouter } from 'next/navigation'
 import { useActionState, useRef, useState } from 'react'
 import { NexoIcon } from '@/components/icon/icon'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
@@ -30,6 +31,7 @@ export function ProfileForm({
   const [imageUrl, setImageUrl] = useState<string | null>(image)
   const [uploading, setUploading] = useState(false)
   const fileInputRef = useRef<HTMLInputElement>(null)
+  const { refresh } = useRouter()
 
   const [state, formAction, isPending] = useActionState(
     saveProfileSetup,
@@ -61,6 +63,7 @@ export function ProfileForm({
         throw new ApiError(json?.message ?? 'Erro ao enviar imagem')
       }
       setImageUrl(`${json.data.url}?t=${Date.now()}`)
+      refresh()
     }
 
     try {
