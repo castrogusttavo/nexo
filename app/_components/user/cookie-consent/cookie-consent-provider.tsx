@@ -8,12 +8,14 @@ import {
   useEffect,
   useState,
 } from 'react'
+import { useLogger } from '@/lib/axiom/client'
 import {
   COOKIE_MAX_AGE,
   COOKIE_NAME,
   type CookieConsent,
   parseCookieConsent,
 } from '@/lib/cookie-consent/types'
+import { apiSend } from '@/src/hooks/_fetch'
 import { authClient } from '@/src/lib/auth-client'
 
 interface CookieConsentCtx {
@@ -73,6 +75,7 @@ export function CookieConsentProvider({
   userId = null,
   children,
 }: ProviderProps) {
+  const log = useLogger()
   const [consent, setConsentState] = useState<CookieConsent>(initial ?? null)
   const [ready, setReady] = useState(initial !== undefined)
   const [session, setSession] = useState<SessionState>({
@@ -92,17 +95,26 @@ export function CookieConsentProvider({
       document.cookie = `${COOKIE_NAME}=${next}; path=/; max-age=${COOKIE_MAX_AGE}; SameSite=Lax${location.protocol === 'https:' ? '; Secure' : ''}`
       setConsentState(next)
       if (session.isAuthenticated) {
-        // Fire-and-forget: cookie is authoritative for the client; the
-        // server call only writes the audit trail. Failure here doesn't
-        // change the user's experience.
-        void fetch('/api/users/me/cookie-consent', {
+        // Fire-and-forget: the cookie is authoritative for the client; the
+        // server call only writes the LGPD audit trail, so a failure never
+        // changes the user's experience. It is logged, though: a refused
+        // write (fetch does not reject on 4xx/5xx) used to leave a gap in
+        // the trail with no trace. keepalive lets it finish when the user
+        // navigates right after answering the banner.
+        apiSend('/api/users/me/cookie-consent', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ accepted: next === 'accepted' }),
-        }).catch(() => {})
+          keepalive: true,
+        }).catch((error: unknown) => {
+          log.warn('cookie_consent.audit_failed', {
+            component: 'CookieConsentProvider',
+            message: error instanceof Error ? error.message : String(error),
+          })
+        })
       }
     },
-    [session.isAuthenticated],
+    [session.isAuthenticated, log],
   )
 
   return (

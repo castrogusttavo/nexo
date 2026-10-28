@@ -2,6 +2,7 @@ import { render, screen, waitFor } from '@testing-library/react'
 import { afterEach, describe, expect, it, vi } from 'vitest'
 import type { CookieConsent } from '@/lib/cookie-consent/types'
 import {
+  apiError,
   getFetchCall,
   mockFetch,
   renderWithProviders,
@@ -11,6 +12,11 @@ import { CookieConsentProvider } from '../cookie-consent-provider'
 
 vi.mock('@/src/lib/auth-client', () => ({
   authClient: { useSession: () => ({ data: null }) },
+}))
+
+const { logWarn } = vi.hoisted(() => ({ logWarn: vi.fn() }))
+vi.mock('@/lib/axiom/client', () => ({
+  useLogger: () => ({ warn: logWarn, error: vi.fn() }),
 }))
 
 const CONSENT_URL = '/api/users/me/cookie-consent'
@@ -81,6 +87,47 @@ describe('<CookieConsentBanner />', () => {
     await user.click(screen.getByRole('button', { name: 'Aceitar' }))
 
     expect(banner()).not.toBeInTheDocument()
+  })
+
+  it('keeps the audit call alive across a navigation', async () => {
+    const fetchSpy = mockFetch().mockResolvedValue(new Response(null))
+    const { user } = renderBanner(null)
+
+    await user.click(screen.getByRole('button', { name: 'Aceitar' }))
+
+    expect(fetchSpy.mock.calls[0]?.[1]?.keepalive).toBe(true)
+  })
+
+  // fetch resolves on a 4xx/5xx, so a refused write used to vanish.
+  it('logs an audit write the server refused, without bothering the user', async () => {
+    logWarn.mockClear()
+    mockFetch().mockResolvedValue(apiError(500, 'Erro no servidor'))
+    const { user } = renderBanner(null)
+
+    await user.click(screen.getByRole('button', { name: 'Aceitar' }))
+
+    expect(banner()).not.toBeInTheDocument()
+    await waitFor(() =>
+      expect(logWarn).toHaveBeenCalledWith(
+        'cookie_consent.audit_failed',
+        expect.objectContaining({ message: 'Erro no servidor' }),
+      ),
+    )
+  })
+
+  it('logs an audit call lost to the network', async () => {
+    logWarn.mockClear()
+    mockFetch().mockRejectedValue(new Error('offline'))
+    const { user } = renderBanner(null)
+
+    await user.click(screen.getByRole('button', { name: 'Aceitar' }))
+
+    await waitFor(() =>
+      expect(logWarn).toHaveBeenCalledWith(
+        'cookie_consent.audit_failed',
+        expect.objectContaining({ message: 'offline' }),
+      ),
+    )
   })
 
   it('skips the audit call for a visitor who is not signed in', async () => {

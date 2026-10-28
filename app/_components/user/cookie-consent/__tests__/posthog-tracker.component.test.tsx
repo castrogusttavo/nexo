@@ -48,7 +48,10 @@ vi.mock('@/lib/env/env', () => ({
   NODE_ENV: 'test',
 }))
 
-vi.mock('@/lib/axiom/client', () => ({ WebVitals: () => null }))
+vi.mock('@/lib/axiom/client', () => ({
+  WebVitals: () => null,
+  useLogger: () => ({ warn: vi.fn(), error: vi.fn() }),
+}))
 
 beforeEach(() => {
   sdk.imports = 0

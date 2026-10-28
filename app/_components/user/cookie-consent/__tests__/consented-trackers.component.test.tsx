@@ -10,6 +10,7 @@ import { CookieConsentProvider } from '../cookie-consent-provider'
 // null in production, so the stub also exposes the id it was handed.
 vi.mock('@/lib/axiom/client', () => ({
   WebVitals: () => <div data-testid='axiom-web-vitals' />,
+  useLogger: () => ({ warn: vi.fn(), error: vi.fn() }),
 }))
 vi.mock('../posthog-tracker', () => ({
   PostHogTracker: ({ userId }: { userId: string | null }) => (
