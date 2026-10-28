@@ -9,7 +9,8 @@ import {
 } from '@/app/_components/header/breadcrumb'
 import HeaderInternalNavigation from '@/app/_components/header/header-internal-navigation'
 import { NexoIcon } from '@/components/icon/icon'
-import { ProjectDetails, ProjectDetailsToggle } from './project-details'
+import { DetailsPanelToggle } from '@/components/layouts/details-panel'
+import { PROJECT_DETAILS_ID, ProjectDetails } from './project-details'
 
 // export const metadata: Metadata = {
 //   title: 'Overview - Project | Nexo',
@@ -31,9 +32,10 @@ export default function ProjectsPage() {
             />
           </HeaderBreadcrumbCrumb>
         </HeaderBreadcrumbList>
-        <ProjectDetailsToggle
-          onToggle={() => setDetailsOpen((open) => !open)}
+        <DetailsPanelToggle
+          panelId={PROJECT_DETAILS_ID}
           open={detailsOpen}
+          onToggle={() => setDetailsOpen((open) => !open)}
         />
       </HeaderInternalNavigation>
       <div className='w-full flex items-start justify-between h-full'>
