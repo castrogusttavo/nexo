@@ -8,7 +8,6 @@ import {
   PanelLeftIcon,
   PencilEdit01Icon,
   PresentationLineChart01Icon,
-  SlidersHorizontalIcon,
   StickyNote02Icon,
   UserLove01Icon,
   WorkIcon,
@@ -22,10 +21,14 @@ import {
   NavItem,
 } from '@/app/_components/navigation/sidebar-context'
 import { SidebarProjects } from '@/app/_components/navigation/sidebar-project/sidebar-projects'
+import { DialogCustomizeNavigation } from '@/app/_components/project/dialog-customize-navigation'
 import { NexoIcon } from '@/components/icon/icon'
 import { Button } from '@/components/ui/button'
 import { requireMembership } from '@/src/lib/dal'
+import { DEFAULT_SIDEBAR_NAVIGATION } from '@/src/schemas/user-preference.schema'
 import { isPrivilegedRole } from '@/src/services/_authz'
+import { UserPreferenceService } from '@/src/services/user-preference.service'
+import { HomeSidebarNavigation } from './home-sidebar-navigation'
 
 export async function HomeSidebar({
   params,
@@ -39,6 +42,14 @@ export async function HomeSidebar({
   // the layouts above: layouts render in parallel, and whatever this one
   // renders reaches the RSC payload even when one of them redirects.
   const { user, membership } = await requireMembership(slug)
+
+  // Read on the server so a customised sidebar paints in its own order;
+  // the client query takes over from there.
+  const preferences = await UserPreferenceService.get(user.id)
+  const navigation = preferences.ok
+    ? preferences.value.navigation
+    : DEFAULT_SIDEBAR_NAVIGATION
+
   // Who is looking decides which project actions the sidebar offers.
 
   const viewer = {
@@ -53,13 +64,7 @@ export async function HomeSidebar({
         title='Projetos'
         actions={
           <>
-            <Button
-              variant='ghost'
-              size='icon-sm'
-              aria-label='Opções de exibição'
-            >
-              <NexoIcon icon={SlidersHorizontalIcon} strokeWidth={2} />
-            </Button>
+            <DialogCustomizeNavigation />
             <Button
               variant='ghost'
               size='icon-sm'
@@ -76,40 +81,7 @@ export async function HomeSidebar({
           </ContextPrimaryAction>
         }
       />
-      <NavGroup>
-        <NavItem href={base} icon={Home03Icon}>
-          Página inicial
-        </NavItem>
-        <NavItem href={`${base}/drafts`} icon={PencilEdit01Icon}>
-          Rascunhos
-        </NavItem>
-        <NavItem href={`${base}/profile`} icon={UserLove01Icon}>
-          Seu trabalho
-        </NavItem>
-        <NavItem href={`${base}/stickies`} icon={StickyNote02Icon}>
-          Notas adesivas
-        </NavItem>
-      </NavGroup>
-      <NavGroupAccordion label='Espaço de trabalho' defaultOpen={true}>
-        <NavItem href={`${base}/projects`} icon={WorkIcon}>
-          Projetos
-        </NavItem>
-        <NavItem href={`${base}/workspace-views`} icon={Layers01Icon}>
-          Visualizações
-        </NavItem>
-        <NavItem href={`${base}/active-cycles`} icon={LayerMask01Icon}>
-          Ciclos
-        </NavItem>
-        <NavItem href={`${base}/analytics`} icon={Analytics01Icon}>
-          Análises
-        </NavItem>
-        <NavItem href={`${base}/archives`} icon={Archive03Icon}>
-          Arquivados
-        </NavItem>
-        <NavItem href={`${base}/dashboards`} icon={PresentationLineChart01Icon}>
-          Dashboards
-        </NavItem>
-      </NavGroupAccordion>
+      <HomeSidebarNavigation base={base} initialNavigation={navigation} />
       <SidebarProjects
         workspaceId={viewer.workspaceId}
         base={base}

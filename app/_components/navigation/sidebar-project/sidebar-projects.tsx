@@ -27,6 +27,7 @@ import {
 } from '@/components/ui/dropdown-menu'
 import { useProjects } from '@/src/hooks/use-project'
 import { useProjectActions } from '@/src/hooks/use-project-actions'
+import { useSidebarNavigation } from '@/src/hooks/use-user-preferences'
 import type { ProjectDTO } from '@/types/project'
 
 export function ProjectRow({
@@ -163,7 +164,11 @@ export function SidebarProjects({
   isPrivileged: boolean
 }) {
   const { data: projects = [] } = useProjects(workspaceId)
+  const { projectsLimit } = useSidebarNavigation()
   const favorites = projects.filter((p) => p.isFavorited)
+  const others = projects.filter((p) => !p.isFavorited)
+  // Favourites are never cut: the limit only trims the main list.
+  const shown = projectsLimit === null ? others : others.slice(0, projectsLimit)
 
   return (
     <div className='space-y-1'>
@@ -194,17 +199,25 @@ export function SidebarProjects({
           />
         }
       >
-        {projects
-          .filter((p) => !p.isFavorited)
-          .map((p) => (
-            <ProjectRow
-              key={p.id}
-              project={p}
-              base={base}
-              workspaceId={workspaceId}
-              canManage={isPrivileged || p.leadId === userId}
-            />
-          ))}
+        {shown.map((p) => (
+          <ProjectRow
+            key={p.id}
+            project={p}
+            base={base}
+            workspaceId={workspaceId}
+            canManage={isPrivileged || p.leadId === userId}
+          />
+        ))}
+        {shown.length < others.length && (
+          <ButtonLink
+            href={`${base}/projects`}
+            variant='ghost'
+            size='sm'
+            className='flex w-full justify-start text-muted-foreground'
+          >
+            Ver todos ({others.length})
+          </ButtonLink>
+        )}
       </NavGroupAccordion>
     </div>
   )
