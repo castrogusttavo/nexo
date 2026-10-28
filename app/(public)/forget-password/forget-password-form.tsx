@@ -38,13 +38,16 @@ export function ForgetPasswordForm() {
       })
 
     setIsPending(true)
-    const ok = await notify.run(promise, {
-      loading: 'Enviando e-mail...',
-      success: 'E-mail enviado',
-      error: 'Não foi possível enviar o e-mail de redefinição',
-    })
-    setIsPending(false)
-    if (ok) setSent(true)
+    try {
+      const ok = await notify.run(promise, {
+        loading: 'Enviando e-mail...',
+        success: 'E-mail enviado',
+        error: 'Não foi possível enviar o e-mail de redefinição',
+      })
+      if (ok) setSent(true)
+    } finally {
+      setIsPending(false)
+    }
   }
 
   return (

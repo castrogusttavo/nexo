@@ -28,15 +28,18 @@ export function UserModalSecurityPasswordField({
         if (error) throw error
       })
 
-    await notify.run(promise, {
-      loading: 'Enviando e-mail...',
-      success:
-        hasPassword === false
-          ? 'Enviamos um e-mail para você definir sua senha'
-          : 'Enviamos um e-mail para você redefinir sua senha',
-      error: 'Não foi possível enviar o e-mail',
-    })
-    setPwBusy(false)
+    try {
+      await notify.run(promise, {
+        loading: 'Enviando e-mail...',
+        success:
+          hasPassword === false
+            ? 'Enviamos um e-mail para você definir sua senha'
+            : 'Enviamos um e-mail para você redefinir sua senha',
+        error: 'Não foi possível enviar o e-mail',
+      })
+    } finally {
+      setPwBusy(false)
+    }
   }
 
   return (

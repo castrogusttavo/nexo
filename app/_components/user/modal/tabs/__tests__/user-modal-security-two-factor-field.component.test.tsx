@@ -257,6 +257,22 @@ describe('<UserModalSecurityTwoFactorField /> enabling', () => {
     )
   })
 
+  // Better Auth rejects (rather than resolving { error }) when the request
+  // itself fails; the form used to stay stuck on its busy state.
+  it('recovers from a dropped connection while enabling', async () => {
+    enable.mockRejectedValue(new TypeError('Failed to fetch'))
+    const { user } = renderField()
+
+    await user.click(switchControl())
+    await user.type(passwordInput(), 'my-password')
+    await user.click(screen.getByRole('button', { name: 'Ativar 2FA' }))
+
+    expect(await screen.findByRole('alert')).toHaveTextContent(
+      'Não foi possível conectar',
+    )
+    expect(screen.getByRole('button', { name: 'Ativar 2FA' })).toBeEnabled()
+  })
+
   it('cancels the confirmation without calling the API', async () => {
     const { user } = renderField()
 
@@ -301,6 +317,21 @@ describe('<UserModalSecurityTwoFactorField /> disabling', () => {
     expect(await screen.findByRole('alert')).toHaveTextContent(
       'Não foi possível desativar a 2FA',
     )
+    expect(getSession).not.toHaveBeenCalled()
+  })
+
+  it('recovers from a dropped connection while disabling', async () => {
+    disable.mockRejectedValue(new TypeError('Failed to fetch'))
+    const { user } = renderField({ twoFactorEnabled: true })
+
+    await user.click(switchControl())
+    await user.type(passwordInput(), 'my-password')
+    await user.click(screen.getByRole('button', { name: 'Desativar 2FA' }))
+
+    expect(await screen.findByRole('alert')).toHaveTextContent(
+      'Não foi possível conectar',
+    )
+    expect(screen.getByRole('button', { name: 'Desativar 2FA' })).toBeEnabled()
     expect(getSession).not.toHaveBeenCalled()
   })
 })

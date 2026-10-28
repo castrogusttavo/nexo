@@ -3,6 +3,7 @@
 import { useState } from 'react'
 import { authClient } from '@/src/lib/auth-client'
 import { authErrorMessage } from '@/src/lib/auth-errors'
+import { settleAuthRequest } from '@/src/lib/auth-request'
 
 export type TwoFactorPasswordAction = 'enable' | 'disable' | 'regenerate'
 
@@ -59,15 +60,21 @@ export function useTwoFactorPassword(
     }
     setError(null)
     setBusy(true)
-    const { data, error: failure } = await ACTIONS[action].run(password)
-    setBusy(false)
-    if (failure) {
-      setError(authErrorMessage(failure, ACTIONS[action].failure))
-      return
+    try {
+      // A dropped connection rejects instead of resolving { error }.
+      const { data, error: failure } = await settleAuthRequest(
+        ACTIONS[action].run(password),
+      )
+      if (failure) {
+        setError(authErrorMessage(failure, ACTIONS[action].failure))
+        return
+      }
+      const done = action
+      cancel()
+      onDone?.(done, data)
+    } finally {
+      setBusy(false)
     }
-    const done = action
-    cancel()
-    onDone?.(done, data)
   }
 
   return { action, password, setPassword, error, busy, start, cancel, confirm }

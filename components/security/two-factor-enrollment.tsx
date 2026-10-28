@@ -8,6 +8,7 @@ import { Input } from '@/components/ui/input'
 import { notify } from '@/lib/notify'
 import { authClient } from '@/src/lib/auth-client'
 import { authErrorMessage } from '@/src/lib/auth-errors'
+import { settleAuthRequest } from '@/src/lib/auth-request'
 import { rememberTwoFactorMethod } from '@/src/lib/two-factor-method-hint'
 
 type Method = 'totp' | 'otp'
@@ -70,32 +71,33 @@ export function TwoFactorEnrollment({
     }
     setError(null)
     setBusy(true)
+    try {
+      // A dropped connection rejects instead of resolving { error }.
+      const { data, error: enableError } = await settleAuthRequest(
+        authClient.twoFactor.enable({ password, method }),
+      )
+      if (enableError) {
+        setError(authErrorMessage(enableError, 'Não foi possível ativar a 2FA'))
+        return
+      }
 
-    const { data, error: enableError } = await authClient.twoFactor.enable({
-      password,
-      method,
-    })
-    setBusy(false)
+      setPassword('')
 
-    if (enableError) {
-      setError(authErrorMessage(enableError, 'Não foi possível ativar a 2FA'))
-      return
+      if (!data || data.method === 'otp') {
+        // Tells the next sign-in on this browser which step to open on, so an
+        // authenticator user is not mailed a code they will not use.
+        rememberTwoFactorMethod('otp')
+        await refreshSession()
+        await onEnabled()
+        return
+      }
+
+      setTotpUri(data.totpURI)
+      setBackupCodes(data.backupCodes)
+      setStep('scan')
+    } finally {
+      setBusy(false)
     }
-
-    setPassword('')
-
-    if (!data || data.method === 'otp') {
-      // Tells the next sign-in on this browser which step to open on, so an
-      // authenticator user is not mailed a code they will not use.
-      rememberTwoFactorMethod('otp')
-      await refreshSession()
-      await onEnabled()
-      return
-    }
-
-    setTotpUri(data.totpURI)
-    setBackupCodes(data.backupCodes)
-    setStep('scan')
   }
 
   async function handleVerifyTotp(e: React.FormEvent<HTMLFormElement>) {
@@ -106,21 +108,22 @@ export function TwoFactorEnrollment({
     }
     setError(null)
     setBusy(true)
+    try {
+      const { error: verifyError } = await settleAuthRequest(
+        authClient.twoFactor.verifyTotp({ code: code.trim() }),
+      )
+      if (verifyError) {
+        setError(authErrorMessage(verifyError, 'Código inválido ou expirado'))
+        return
+      }
 
-    const { error: verifyError } = await authClient.twoFactor.verifyTotp({
-      code: code.trim(),
-    })
-    setBusy(false)
-
-    if (verifyError) {
-      setError(authErrorMessage(verifyError, 'Código inválido ou expirado'))
-      return
+      setCode('')
+      rememberTwoFactorMethod('totp')
+      await refreshSession()
+      setStep('codes')
+    } finally {
+      setBusy(false)
     }
-
-    setCode('')
-    rememberTwoFactorMethod('totp')
-    await refreshSession()
-    setStep('codes')
   }
 
   async function copyBackupCodes() {
