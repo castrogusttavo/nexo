@@ -1,3 +1,4 @@
+import { io } from 'next/cache'
 import { cache } from 'react'
 import type { WikiPageDTO } from '@/types/wiki-page'
 import { WikiPageService } from '../services/wiki-page.service'
@@ -31,6 +32,9 @@ export const getWikiPageContext = cache(
     const context = await getWikiContext(workspaceSlug)
     if (!context) return null
 
+    // Below the DAL's private cache, a query that opens a pooled connection
+    // draws random bytes (pg's SCRAM nonce), which a prerender refuses.
+    await io()
     const page = await WikiPageService.getById(
       context.userId,
       context.workspaceId,

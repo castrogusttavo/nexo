@@ -1,3 +1,4 @@
+import { io } from 'next/cache'
 import { cache } from 'react'
 import { isPrivilegedRole } from '@/src/services/_authz'
 import { ProjectService } from '@/src/services/project.service'
@@ -22,6 +23,9 @@ export const getProjectContext = cache(
   ): Promise<ProjectContext | null> => {
     const { user, membership } = await requireMembership(workspaceSlug)
 
+    // Below the DAL's private cache, a query that opens a pooled connection
+    // draws random bytes (pg's SCRAM nonce), which a prerender refuses.
+    await io()
     const project = await ProjectService.getBySlug(
       user.id,
       membership.workspaceId,

@@ -2,6 +2,7 @@ import {
   KeyframesMultipleAddIcon,
   PanelLeftIcon,
 } from '@hugeicons-pro/core-stroke-rounded'
+import { io } from 'next/cache'
 import { NavigationCustomizeDialog } from '@/app/_components/navigation/navigation-customize-dialog'
 import {
   ContextHeader,
@@ -29,6 +30,10 @@ export async function HomeSidebar({
   // the layouts above: layouts render in parallel, and whatever this one
   // renders reaches the RSC payload even when one of them redirects.
   const { user, membership } = await requireMembership(slug)
+
+  // Below the DAL's private cache, a query that opens a pooled connection
+  // draws random bytes (pg's SCRAM nonce), which a prerender refuses.
+  await io()
 
   // Read on the server so a customised sidebar paints in its own order;
   // the client query takes over from there.
