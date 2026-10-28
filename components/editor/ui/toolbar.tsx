@@ -15,6 +15,7 @@ import { Separator } from '@/components/ui/separator';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import { cn } from '@/lib/utils';
 import { Kbd } from '../../ui/kbd';
+import { useHydrated } from '@/components/hooks/use-hydrated';
 
 export function Toolbar({
   className,
@@ -306,11 +307,7 @@ function withTooltip<T extends React.ElementType>(Component: T) {
     tooltipTriggerProps,
     ...props
   }: TooltipProps<T>) {
-    const [mounted, setMounted] = React.useState(false);
-
-    React.useEffect(() => {
-      setMounted(true);
-    }, []);
+    const mounted = useHydrated();
 
     const component = <Component {...(props as React.ComponentProps<T>)} />;
 

@@ -1,7 +1,7 @@
 'use client'
 
 import { CheckmarkCircle02Icon } from '@hugeicons-pro/core-stroke-rounded'
-import { useActionState, useEffect, useState } from 'react'
+import { useActionState, useState } from 'react'
 import { NexoIcon } from '@/components/icon/icon'
 import { Button } from '@/components/ui/button'
 import {
@@ -53,7 +53,7 @@ function toSlug(value: string) {
 
 export function WorkspaceForm() {
   const [name, setName] = useState('')
-  const [slug, setSlug] = useState('')
+  const [slugDraft, setSlugDraft] = useState('')
   const [slugTouched, setSlugTouched] = useState(false)
   const [teamSize, setTeamSize] = useState<string | null>(null)
   const [state, formAction, isPending] = useActionState(
@@ -61,9 +61,8 @@ export function WorkspaceForm() {
     INITIAL_STATE,
   )
 
-  useEffect(() => {
-    if (!slugTouched) setSlug(toSlug(name))
-  }, [name, slugTouched])
+  // The slug follows the name until the user types one of their own.
+  const slug = slugTouched ? slugDraft : toSlug(name)
 
   const submittedSlug = toSlug(slug)
   const isValid = name.trim().length >= 2 && submittedSlug.length >= 2
@@ -100,9 +99,9 @@ export function WorkspaceForm() {
                   value={slug}
                   onChange={(e) => {
                     setSlugTouched(true)
-                    setSlug(slugify(e.target.value))
+                    setSlugDraft(slugify(e.target.value))
                   }}
-                  onBlur={() => setSlug(submittedSlug)}
+                  onBlur={() => setSlugDraft(submittedSlug)}
                   placeholder='Digite ou cole um URL'
                   disabled={isPending}
                   className='text-foreground'

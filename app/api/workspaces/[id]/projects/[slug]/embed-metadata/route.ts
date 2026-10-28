@@ -19,8 +19,10 @@ export const POST = withAxiom(async (request: NextRequest, ctx: Params) => {
   const limit = await consume(apiLimiter, `user:${auth.value.user.id}`)
   if (!limit.ok) return handleError(limit.error)
 
-  const { id, slug } = await ctx.params
-  const body = await request.json().catch(() => null)
+  const [{ id, slug }, body] = await Promise.all([
+    ctx.params,
+    request.json().catch(() => null),
+  ])
   const parsed = EmbedMetadataSchema.safeParse(body)
   if (!parsed.success) {
     return standardError(

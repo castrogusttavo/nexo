@@ -16,12 +16,13 @@ export const POST = withAxiom(async (request: NextRequest, ctx: Params) => {
   const limit = await consume(apiLimiter, `user:${auth.value.user.id}`)
   if (!limit.ok) return handleError(limit.error)
 
-  const { id } = await ctx.params
-
-  const file = await readUploadFile(request, 'file', {
-    invalidBody: 'Formulário inválido',
-    invalidFile: 'Arquivo CSV não enviado',
-  })
+  const [{ id }, file] = await Promise.all([
+    ctx.params,
+    readUploadFile(request, 'file', {
+      invalidBody: 'Formulário inválido',
+      invalidFile: 'Arquivo CSV não enviado',
+    }),
+  ])
   if (!file.ok) return handleError(file.error)
 
   const parsed = await parseMemberImportCsv(file.value)

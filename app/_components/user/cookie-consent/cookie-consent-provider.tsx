@@ -83,9 +83,12 @@ export function CookieConsentProvider({
     userId,
   })
 
+  // The cookie only exists in the browser: read it once mounted when the
+  // server could not hand the provider an initial value.
   useEffect(() => {
     if (initial !== undefined) return
     setConsentState(readConsentCookie())
+    // react-doctor-disable-next-line react-doctor/no-adjust-state-on-prop-change
     setReady(true)
   }, [initial])
 

@@ -11,6 +11,9 @@ export function useMounted() {
   const [mounted, setMounted] = React.useState(false)
 
   React.useEffect(() => {
+    // Not useHydrated: this must wait for Strict Mode's mount-unmount-mount
+    // to settle, which only a state set from an effect does.
+    // react-doctor-disable-next-line react-doctor/no-initialize-state
     setMounted(true)
   }, [])
 

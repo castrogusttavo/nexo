@@ -81,10 +81,8 @@ export function UserModalNotificationsTab({ tab }: { tab: string }) {
 
   return (
     <TabsContent value={tab}>
-      <form
-        onSubmit={(e) => e.preventDefault()}
-        className='flex flex-col gap-7 w-full'
-      >
+      {/* Every control saves on change; there is nothing to submit. */}
+      <div className='flex flex-col gap-7 w-full'>
         <div>
           <H4>Notificações por e-mail</H4>
           <Muted>
@@ -109,7 +107,7 @@ export function UserModalNotificationsTab({ tab }: { tab: string }) {
             </Field>
           ))}
         </div>
-      </form>
+      </div>
     </TabsContent>
   )
 }

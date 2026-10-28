@@ -72,6 +72,8 @@ export function ResetPasswordForm({
       await authClient.signOut().catch(() => {})
       push('/sign-in')
     } finally {
+      // The submit button is disabled while pending: one request at a time.
+      // react-doctor-disable-next-line react-doctor/no-unowned-async-error-clear
       setIsPending(false)
     }
   }

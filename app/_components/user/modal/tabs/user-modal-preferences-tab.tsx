@@ -107,10 +107,8 @@ export function UserModalPreferencesTab({ tab }: { tab: string }) {
 
   return (
     <TabsContent value={tab}>
-      <form
-        onSubmit={(e) => e.preventDefault()}
-        className='flex flex-col gap-7 w-full'
-      >
+      {/* Every control saves on change; there is nothing to submit. */}
+      <div className='flex flex-col gap-7 w-full'>
         <div>
           <H4>Preferências</H4>
           <Muted>
@@ -334,7 +332,7 @@ export function UserModalPreferencesTab({ tab }: { tab: string }) {
             </DropdownMenu>
           </Field>
         </div>
-      </form>
+      </div>
     </TabsContent>
   )
 }

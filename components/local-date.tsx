@@ -15,10 +15,11 @@ type LocalDateProps = {
 // instants and use formatIssueDay instead.
 export function LocalDate({ value, options }: LocalDateProps) {
   const hydrated = useHydrated()
+  // Keyed by the serialized options, so a new object literal on every
+  // render does not rebuild the formatter.
   const optionsKey = JSON.stringify(options ?? {})
-  // biome-ignore lint/correctness/useExhaustiveDependencies: keyed by the serialized options, so a new object literal each render does not rebuild it
   const formatter = useMemo(
-    () => new Intl.DateTimeFormat('pt-BR', options),
+    () => new Intl.DateTimeFormat('pt-BR', JSON.parse(optionsKey)),
     [optionsKey],
   )
   if (!hydrated) return null

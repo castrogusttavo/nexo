@@ -60,9 +60,10 @@ export function ExportToolbarButton(props: React.ComponentProps<typeof DropdownM
   }
 
   const exportToPdf = async () => {
-    const canvas = await getCanvas()
-
-    const PDFLib = await import('pdf-lib')
+    const [canvas, PDFLib] = await Promise.all([
+      getCanvas(),
+      import('pdf-lib'),
+    ])
     const pdfDoc = await PDFLib.PDFDocument.create()
     const page = pdfDoc.addPage([canvas.width, canvas.height])
     const imageEmbed = await pdfDoc.embedPng(canvas.toDataURL('PNG'))
