@@ -64,6 +64,8 @@ const TABLE_COLORS = [
   { name: 'Rosa', value: '#fbcfe8' },
 ]
 
+// A component, made by a HOC the rule cannot see through.
+// react-doctor-disable-next-line react-doctor/only-export-components
 export const TableElement = withHOC(
   TableProvider,
   function TableElement({ children, ...props }: PlateElementProps<TTableElement>) {

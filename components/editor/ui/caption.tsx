@@ -40,6 +40,8 @@ export function CaptionTextarea(props: React.ComponentProps<typeof CaptionTextar
   )
 }
 
+// A component, made by a HOC the rule cannot see through.
+// react-doctor-disable-next-line react-doctor/only-export-components
 export const CaptionButton = createPrimitiveComponent(Button)({
   propsHook: useCaptionButton,
   stateHook: useCaptionButtonState

@@ -23,7 +23,7 @@ import { getBlockType, setBlockType } from '../transforms'
 import { DropdownMenu, DropdownMenuContent, DropdownMenuRadioItem, DropdownMenuTrigger } from '../../ui/dropdown-menu'
 import { ToolbarButton, ToolbarMenuGroup } from './toolbar'
 
-export const turnIntoItems = [
+const turnIntoItems = [
   { icon: <PilcrowIcon /> , keywords: ['paragraph'], label: 'Texto', value: KEYS.p },
   { icon: <Heading1Icon /> , keywords: ['título', 'h1'], label: 'Título 1', value: KEYS.h1 },
   { icon: <Heading2Icon /> , keywords: ['título', 'h2'], label: 'Título 2', value: KEYS.h2 },

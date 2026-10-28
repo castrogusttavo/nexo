@@ -83,5 +83,7 @@ export {
   ButtonGroup,
   ButtonGroupSeparator,
   ButtonGroupText,
+  // shadcn/ui API: the variants ship with the component, as upstream does.
+  // react-doctor-disable-next-line react-doctor/only-export-components
   buttonGroupVariants,
 }

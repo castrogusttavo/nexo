@@ -9,6 +9,8 @@ import {
   useResizeHandleState,
 } from '@platejs/resizable'
 
+// Plate UI API: the variants ship with the component, as upstream does.
+// react-doctor-disable-next-line react-doctor/only-export-components
 export const mediaResizeHandleVariants = cva(
   cn(
     'top-0 flex w-6 select-none flex-col justify-center',

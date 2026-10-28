@@ -122,6 +122,8 @@ type ToolbarButtonProps = {
 > &
   VariantProps<typeof toolbarButtonVariants>;
 
+// A component, made by a HOC the rule cannot see through.
+// react-doctor-disable-next-line react-doctor/only-export-components
 export const ToolbarButton = withTooltip(function ToolbarButton({
   children,
   className,

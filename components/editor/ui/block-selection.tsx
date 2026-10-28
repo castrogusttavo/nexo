@@ -4,6 +4,8 @@ import { useBlockSelected } from '@platejs/selection/react'
 import { cva } from 'class-variance-authority'
 import type { PlateElementProps } from 'platejs/react'
 
+// Plate UI API: the variants ship with the component, as upstream does.
+// react-doctor-disable-next-line react-doctor/only-export-components
 export const blockSelectionVariants = cva(
   'pointer-events-none absolute inset-0 z-1 bg-brand/[.13] transition-opacity',
   { defaultVariants: { active: true }, variants: { active: { false: 'opacity-0', true: 'opacity-100' } } }

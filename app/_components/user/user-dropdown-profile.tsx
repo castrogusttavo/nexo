@@ -18,11 +18,8 @@ import {
 import { UserAvatar } from '@/components/user-avatar'
 import { useUser } from '@/src/hooks/use-user'
 import { authClient } from '@/src/lib/auth-client'
-import {
-  type ProfileTab,
-  profileTriggers,
-  UserModalCustomProfile,
-} from './modal/user-modal-custom-profile'
+import { type ProfileTab, profileTriggers } from './modal/profile-triggers'
+import { UserModalCustomProfile } from './modal/user-modal-custom-profile'
 
 export function UserDropdownProfile() {
   const { push } = useRouter()

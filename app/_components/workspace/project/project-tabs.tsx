@@ -36,7 +36,7 @@ type ProjectTab = {
   comingSoon?: true
 }
 
-export const PROJECT_TABS: readonly ProjectTab[] = [
+const PROJECT_TABS: readonly ProjectTab[] = [
   { label: 'Visão geral', segment: 'overview' },
   { label: 'Issues', segment: 'issues' },
   {

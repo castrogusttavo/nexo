@@ -14,23 +14,11 @@ import { Dialog, DialogContent, DialogTitle } from '@/components/ui/dialog'
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { UserAvatar } from '@/components/user-avatar'
 import { useUser } from '@/src/hooks/use-user'
+import type { ProfileTab } from './profile-triggers'
 import { UserModalNotificationsTab } from './tabs/user-modal-notifications-tab'
 import { UserModalPreferencesTab } from './tabs/user-modal-preferences-tab'
 import { UserModalProfileTab } from './tabs/user-modal-profile-tab'
 import { UserModalSecurityTab } from './tabs/user-modal-security-tab'
-
-export type ProfileTab =
-  | 'profile'
-  | 'preferences'
-  | 'notifications'
-  | 'security'
-
-export const profileTriggers = {
-  profile: { name: 'Configurações', icon: Settings01Icon },
-  preferences: { name: 'Preferências', icon: PreferenceHorizontalIcon },
-} satisfies Partial<
-  Record<ProfileTab, { name: string; icon: typeof Settings01Icon }>
->
 
 interface UserModalCustomProfileProps {
   tab: ProfileTab | null

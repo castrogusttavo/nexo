@@ -47,4 +47,7 @@ function Badge({
   })
 }
 
+// shadcn/ui API: the variants ship with the component, as upstream does,
+// so a `shadcn add` can overwrite this file cleanly.
+// react-doctor-disable-next-line react-doctor/only-export-components
 export { Badge, badgeVariants }

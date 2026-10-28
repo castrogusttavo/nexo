@@ -164,6 +164,8 @@ export {
   NavigationMenuLink,
   NavigationMenuList,
   NavigationMenuTrigger,
+  // shadcn/ui API: the variants ship with the component, as upstream does.
+  // react-doctor-disable-next-line react-doctor/only-export-components
   navigationMenuTriggerStyle,
   NavigationMenuPositioner,
 }

@@ -7,6 +7,8 @@ import { type PlateStaticProps, PlateStatic } from 'platejs/static';
 
 import { cn } from '@/lib/utils';
 
+// Plate UI API: the variants ship with the component, as upstream does.
+// react-doctor-disable-next-line react-doctor/only-export-components
 export const editorVariants = cva(
   cn(
     'group/editor',

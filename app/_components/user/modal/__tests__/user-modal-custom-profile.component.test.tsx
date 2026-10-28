@@ -6,11 +6,8 @@ import {
   renderWithProviders,
 } from '@/src/__tests__/helpers/component'
 import type { UserDTO } from '@/types/user'
-import {
-  type ProfileTab,
-  profileTriggers,
-  UserModalCustomProfile,
-} from '../user-modal-custom-profile'
+import { type ProfileTab, profileTriggers } from '../profile-triggers'
+import { UserModalCustomProfile } from '../user-modal-custom-profile'
 
 const { useSession } = vi.hoisted(() => ({ useSession: vi.fn() }))
 vi.mock('@/src/lib/auth-client', () => ({ authClient: { useSession } }))

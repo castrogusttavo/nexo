@@ -18,6 +18,8 @@ const CONTENT: Record<string, { accept: string[]; content: ReactNode; icon: Reac
   [KEYS.video]: { accept: ['video/*'], content: 'Adicionar um vídeo', icon: <Film /> },
 }
 
+// A component, made by a HOC the rule cannot see through.
+// react-doctor-disable-next-line react-doctor/only-export-components
 export const PlaceholderElement = withHOC(
   PlaceholderProvider,
   function PlaceholderElement(props: PlateElementProps<TPlaceholderElement>) {
