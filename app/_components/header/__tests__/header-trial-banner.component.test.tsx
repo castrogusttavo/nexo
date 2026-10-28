@@ -49,3 +49,17 @@ describe('<HeaderTrialBanner />', () => {
     expect(container).toBeEmptyDOMElement()
   })
 })
+
+describe('<HeaderTrialBanner /> on the server', () => {
+  // The server's clock and UTC date differ from the viewer's, so the server
+  // HTML holds nothing for the client to disagree with.
+  it('renders nothing before hydration', async () => {
+    const { renderToString } = await import('react-dom/server')
+
+    const html = renderToString(
+      <HeaderTrialBanner endDate={inDays(3)} plan='PRO' slug='nexo' />,
+    )
+
+    expect(html).toBe('')
+  })
+})

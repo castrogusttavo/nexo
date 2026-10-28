@@ -11,7 +11,6 @@ import {
   useMemo,
   useRef,
   useState,
-  useSyncExternalStore,
 } from "react"
 import { mergeProps } from "@base-ui/react/merge-props"
 import { useRender } from "@base-ui/react/use-render"
@@ -50,6 +49,7 @@ import {
 import { CSS } from "@dnd-kit/utilities"
 import { createPortal } from "react-dom"
 
+import { useHydrated } from "@/components/hooks/use-hydrated"
 import { cn } from "@/lib/utils"
 
 interface KanbanContextProps<T> {
@@ -113,21 +113,6 @@ const dropAnimationConfig: DropAnimation = {
   }),
 }
 
-/**
- * Client-mount gate for the `createPortal` call in KanbanOverlay, which needs
- * `document.body` and so must not run on the server or during hydration.
- *
- * A never-notifying subscription makes `useSyncExternalStore` return the server
- * snapshot (`false`) while rendering on the server and while hydrating, then the
- * client snapshot (`true`) once mounted - the same gate the previous
- * `useLayoutEffect(() => setMounted(true), [])` provided, minus the extra render
- * pass that `react-hooks/set-state-in-effect` flags. All three functions are
- * module-scoped so their identities stay stable; an inline `getSnapshot` is the
- * classic cause of an infinite re-subscribe loop.
- */
-const subscribeToNothing = () => () => {}
-const getIsMounted = () => true
-const getIsMountedOnServer = () => false
 
 const MOUSE_SENSOR_OPTIONS = { activationConstraint: { distance: 10 } }
 const TOUCH_SENSOR_OPTIONS = {
@@ -918,11 +903,8 @@ export interface KanbanOverlayProps extends Omit<
 
 function KanbanOverlay({ children, className, ...props }: KanbanOverlayProps) {
   const { activeId, isColumn, modifiers } = useContext(KanbanContext)
-  const mounted = useSyncExternalStore(
-    subscribeToNothing,
-    getIsMounted,
-    getIsMountedOnServer
-  )
+  // createPortal needs `document.body`: not on the server, not while hydrating.
+  const mounted = useHydrated()
 
   const variant = activeId ? (isColumn(activeId) ? "column" : "item") : "item"
 

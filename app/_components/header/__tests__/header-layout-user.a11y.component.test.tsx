@@ -68,6 +68,7 @@ async function renderHeader() {
         endDate={new Date(Date.now() + 2 * 86_400_000).toISOString()}
         plan='PRO'
         slug='nexo'
+        now={Date.now()}
       />
       <HeaderLayoutUser slug='nexo' />
     </>,

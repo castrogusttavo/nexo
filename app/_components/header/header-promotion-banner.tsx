@@ -11,6 +11,8 @@ interface HeaderPromotionBannerProps {
   endDate: string
   plan: PlanGrid
   slug: string
+  /** The viewer's clock, read once by the caller after hydration. */
+  now: number
 }
 
 const dateFormatter = new Intl.DateTimeFormat('pt-BR', {
@@ -22,9 +24,10 @@ export function HeaderPromotionBanner({
   endDate,
   plan,
   slug,
+  now,
 }: HeaderPromotionBannerProps) {
   const end = new Date(endDate)
-  const days = Math.max(0, Math.ceil((end.getTime() - Date.now()) / 86_400_000))
+  const days = Math.max(0, Math.ceil((end.getTime() - now) / 86_400_000))
   const dayLabel = days === 1 ? '1 dia' : `${days} dias`
   const planName = formatPlanName(plan)
 

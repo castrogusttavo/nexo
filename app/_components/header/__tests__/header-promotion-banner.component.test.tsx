@@ -39,6 +39,7 @@ function renderBanner(
       endDate={new Date(2026, 8, 17, 12).toISOString()}
       plan='PRO'
       slug='nexo'
+      now={Date.now()}
       {...props}
     />,
   )
