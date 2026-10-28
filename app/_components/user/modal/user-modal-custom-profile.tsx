@@ -3,7 +3,6 @@
 import {
   Notification01Icon,
   PreferenceHorizontalIcon,
-  Settings01Icon,
   SquareLock01Icon,
   UserCircleIcon,
 } from '@hugeicons-pro/core-stroke-rounded'
