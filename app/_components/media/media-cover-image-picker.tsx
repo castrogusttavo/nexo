@@ -166,10 +166,14 @@ function MediaCoverImageUpload({
         )}
       </button>
       {error && <p className='text-xs text-destructive'>{error}</p>}
+      {/* Opened by the drop zone above: named for assistive tech, but out of
+          the tab order so the zone stays the single stop. */}
       <input
         ref={inputRef}
         type='file'
         accept='image/*'
+        aria-label='Enviar capa'
+        tabIndex={-1}
         className='sr-only'
         onChange={handleChange}
       />

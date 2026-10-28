@@ -9,7 +9,8 @@ import {
   StarIcon,
 } from '@hugeicons-pro/core-stroke-rounded'
 import Image from 'next/image'
-import { useRouter } from 'next/navigation'
+import Link from 'next/link'
+import { ButtonLink } from '@/components/button-link'
 import { NexoIcon } from '@/components/icon/icon'
 import { Button } from '@/components/ui/button'
 import {
@@ -41,24 +42,19 @@ export function ProjectCard({
   workspaceSlug,
   workspaceId,
 }: ProjectCardProps) {
-  const router = useRouter()
+  const projectHref = `/${workspaceSlug}/projects/${project.slug}`
   const { toggleFavorite, copyLink } = useProjectActions(
     workspaceId,
-    `/${workspaceSlug}/projects/${project.slug}`,
+    projectHref,
     project,
   )
 
-  function navigate() {
-    router.push(`/${workspaceSlug}/projects/${project.slug}`)
-  }
-
-  function goToSettings(e: React.MouseEvent) {
-    e.stopPropagation()
-    router.push(`/${workspaceSlug}/projects/${project.slug}/settings`)
-  }
-
+  // The project name is the card's link and its ::after covers the whole
+  // card, so a click anywhere opens the project and keyboard users reach a
+  // real link. The controls inside sit above it (z-10); none is nested in
+  // the link, which an <a> wrapping buttons would be.
   return (
-    <div onClick={navigate} className='cursor-pointer'>
+    <div className='relative rounded-xl focus-within:ring-2 focus-within:ring-ring'>
       <Card className='p-0 gap-0 groupq'>
         <CardHeader className='relative h-30 w-full rounded-t p-0'>
           {project.coverImage ? (
@@ -80,28 +76,27 @@ export function ProjectCard({
               </Button>
               <div className='flex flex-col gap-0.5'>
                 <CardTitle className='text-white truncate'>
-                  {project.name}
+                  <Link
+                    href={projectHref}
+                    className="outline-none after:absolute after:inset-0 after:z-5 after:content-['']"
+                  >
+                    {project.name}
+                  </Link>
                 </CardTitle>
                 <CardDescription className='text-xs text-white/70'>
                   {project.slug}
                 </CardDescription>
               </div>
             </div>
-            <div className='flex gap-2.5'>
+            <div className='relative z-10 flex gap-2.5'>
               <ProjectCardActions
-                onClick={(e) => {
-                  e.stopPropagation()
-                  copyLink()
-                }}
+                onClick={() => copyLink()}
                 aria-label='Copiar link'
               >
                 <NexoIcon icon={Link01Icon} strokeWidth={2} />
               </ProjectCardActions>
               <ProjectCardActions
-                onClick={(e) => {
-                  e.stopPropagation()
-                  toggleFavorite()
-                }}
+                onClick={() => toggleFavorite()}
                 aria-label={project.isFavorited ? 'Desfavoritar' : 'Favoritar'}
               >
                 <NexoIcon
@@ -118,16 +113,10 @@ export function ProjectCard({
             {project.description ?? 'Sem descrição'}
           </p>
           <div className='w-full flex justify-between'>
-            <div className='flex items-center gap-2'>
+            <div className='relative z-10 flex items-center gap-2'>
               <Tooltip>
                 <TooltipTrigger
-                  render={
-                    <Button
-                      size='icon-sm'
-                      variant='ghost'
-                      onClick={(e) => e.stopPropagation()}
-                    />
-                  }
+                  render={<Button size='icon-sm' variant='ghost' />}
                 >
                   <NexoIcon
                     icon={project.isPublic ? GlobalIcon : SquareLock02Icon}
@@ -140,9 +129,15 @@ export function ProjectCard({
               </Tooltip>
               <ProjectCardMembers leadId={project.leadId} />
             </div>
-            <Button size='icon-sm' variant='ghost' onClick={goToSettings}>
+            <ButtonLink
+              href={`${projectHref}/settings`}
+              size='icon-sm'
+              variant='ghost'
+              aria-label={`Configurações de ${project.name}`}
+              className='relative z-10'
+            >
               <NexoIcon icon={Settings01Icon} strokeWidth={2} />
-            </Button>
+            </ButtonLink>
           </div>
         </CardContent>
       </Card>

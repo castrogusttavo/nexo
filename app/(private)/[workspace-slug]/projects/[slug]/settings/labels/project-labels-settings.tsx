@@ -93,6 +93,7 @@ export function ProjectLabelsSettings({
               <Button
                 size='icon-sm'
                 variant='ghost'
+                aria-label={`Editar etiqueta ${label.name}`}
                 onClick={() => setFormTarget({ mode: 'edit', label })}
               >
                 <NexoIcon icon={PencilEdit01Icon} strokeWidth={2} />

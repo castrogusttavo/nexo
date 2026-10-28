@@ -103,14 +103,14 @@ function IconsTab({ onSelect }: { onSelect?: (emoji: string) => void }) {
   const [color, setColor] = useState('#5c5e63')
 
   const ICON_COLOR = [
-    { color: '#5c5e63', value: 'gray' },
-    { color: '#ff5b59', value: 'peach' },
-    { color: '#f65385', value: 'pink' },
-    { color: '#fd9038', value: 'orange' },
-    { color: '#0fc27b', value: 'green' },
-    { color: '#17bee9', value: 'light-blue' },
-    { color: '#266df0', value: 'dark-blue' },
-    { color: '#9162f9', value: 'purple' },
+    { color: '#5c5e63', value: 'gray', label: 'Cinza' },
+    { color: '#ff5b59', value: 'peach', label: 'Pêssego' },
+    { color: '#f65385', value: 'pink', label: 'Rosa' },
+    { color: '#fd9038', value: 'orange', label: 'Laranja' },
+    { color: '#0fc27b', value: 'green', label: 'Verde' },
+    { color: '#17bee9', value: 'light-blue', label: 'Azul-claro' },
+    { color: '#266df0', value: 'dark-blue', label: 'Azul-escuro' },
+    { color: '#9162f9', value: 'purple', label: 'Roxo' },
   ]
 
   const filteredIcons = LUCIDE_ICONS.filter((icon) =>
@@ -134,8 +134,11 @@ function IconsTab({ onSelect }: { onSelect?: (emoji: string) => void }) {
         <div className='flex flex-col gap-2'>
           <div className='w-full flex items-center justify-between'>
             {ICON_COLOR.map((iconColor) => (
-              <div
+              <button
+                type='button'
                 key={iconColor.value}
+                aria-label={`Cor ${iconColor.label}`}
+                aria-pressed={color === iconColor.color}
                 onClick={() => setColor(iconColor.color)}
                 className='p-0 m-0 size-6 rounded border border-border hover:opacity-80 flex items-center justify-center cursor-pointer'
                 style={{ backgroundColor: iconColor.color || 'transparent' }}
@@ -153,13 +156,15 @@ function IconsTab({ onSelect }: { onSelect?: (emoji: string) => void }) {
 
       <div className='flex flex-wrap gap-3 max-h-64 overflow-y-auto scrollbar-hidden'>
         {filteredIcons.map(({ name, icon: IconComponent }) => (
-          <div
+          <button
+            type='button'
             key={name}
+            aria-label={name}
             onClick={() => onSelect?.(`${name}:${color}`)}
             className='flex flex-col items-center gap-1 p-2 hover:bg-accent rounded cursor-pointer'
           >
             <IconComponent color={color} size={20} />
-          </div>
+          </button>
         ))}
       </div>
 

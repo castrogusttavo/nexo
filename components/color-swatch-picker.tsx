@@ -22,6 +22,17 @@ interface ColorSwatchPickerProps<TColor extends string> {
   align?: 'start' | 'end' | 'center'
 }
 
+// What a screen reader says for each swatch; the app's palettes (states,
+// labels, stickies) share these values.
+const COLOR_NAMES: Record<string, string> = {
+  RED: 'Vermelho',
+  YELLOW: 'Amarelo',
+  BLUE: 'Azul',
+  GREEN: 'Verde',
+  PURPLE: 'Roxo',
+  ZINC: 'Cinza',
+}
+
 export function ColorSwatchPicker<TColor extends string>({
   colors,
   value,
@@ -39,6 +50,8 @@ export function ColorSwatchPicker<TColor extends string>({
             <button
               key={color.value}
               type='button'
+              aria-label={COLOR_NAMES[color.value] ?? color.value}
+              aria-pressed={value === color.value}
               onClick={() => onChange(color.value)}
               className={cn(
                 'size-6 cursor-pointer',

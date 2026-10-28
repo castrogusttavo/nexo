@@ -73,6 +73,7 @@ export function SwitchCompareCarousel() {
           <Button
             variant='outline'
             size='icon-lg'
+            aria-label='Anterior'
             onClick={() => scrollByDirection(-1)}
           >
             <NexoIcon icon={ArrowLeft02Icon} strokeWidth={2} />
@@ -80,6 +81,7 @@ export function SwitchCompareCarousel() {
           <Button
             variant='outline'
             size='icon-lg'
+            aria-label='Próximo'
             onClick={() => scrollByDirection(1)}
           >
             <NexoIcon icon={ArrowRight02Icon} strokeWidth={2} />

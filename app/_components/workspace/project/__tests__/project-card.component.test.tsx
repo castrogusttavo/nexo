@@ -61,11 +61,6 @@ function renderCard(overrides: Partial<ProjectDTO> = {}) {
 const favoriteButton = (name: 'Favoritar' | 'Desfavoritar' = 'Favoritar') =>
   screen.getByRole('button', { name })
 
-/** The icon-only buttons carry no text, so they are found by position. */
-function unlabelledButtons() {
-  return screen.getAllByRole('button', { name: '' })
-}
-
 /** The lock/globe badge is the first tooltip trigger on the card. */
 function visibilityBadge() {
   const el = document.querySelector('[data-slot="tooltip-trigger"]')
@@ -140,23 +135,23 @@ describe('<ProjectCard /> content', () => {
 })
 
 describe('<ProjectCard /> navigation', () => {
-  it('opens the project when the card is clicked', async () => {
-    const { user } = renderCard()
+  // The name is the card's link; its ::after stretches over the card, so a
+  // click anywhere lands on it and the keyboard reaches a real link.
+  it('makes the project name the link that opens it', () => {
+    renderCard()
 
-    await user.click(screen.getByText('Alpha'))
-
-    expect(push).toHaveBeenCalledWith('/acme/projects/alpha')
+    expect(screen.getByRole('link', { name: 'Alpha' })).toHaveAttribute(
+      'href',
+      '/acme/projects/alpha',
+    )
   })
 
-  it('goes to the settings without also opening the project', async () => {
-    const { user } = renderCard()
+  it('links the cog to the project settings, named after the project', () => {
+    renderCard()
 
-    // The settings cog is the last unlabelled button on the card.
-    const settings = unlabelledButtons().at(-1)
-    await user.click(settings as HTMLElement)
-
-    expect(push).toHaveBeenCalledTimes(1)
-    expect(push).toHaveBeenCalledWith('/acme/projects/alpha/settings')
+    expect(
+      screen.getByRole('link', { name: 'Configurações de Alpha' }),
+    ).toHaveAttribute('href', '/acme/projects/alpha/settings')
   })
 
   it('copies the project link without opening the project', async () => {

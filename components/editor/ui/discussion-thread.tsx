@@ -167,6 +167,7 @@ export function DiscussionThread({ markId }: { markId: string }) {
         <Button
           size='icon'
           className='size-8 shrink-0'
+          aria-label='Enviar resposta'
           onClick={handleSubmit}
           disabled={!reply.trim()}
         >

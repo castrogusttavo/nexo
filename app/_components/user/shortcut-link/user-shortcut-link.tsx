@@ -58,6 +58,7 @@ export function UserShortcutLink({ title, url, createdAt }: LinkProps) {
         <Button
           size='icon-xs'
           variant='ghost'
+          aria-label='Mais opções'
           className='hidden group-hover:flex'
         >
           <NexoIcon icon={MoreVerticalCircle01Icon} />
