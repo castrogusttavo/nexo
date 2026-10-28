@@ -78,6 +78,7 @@ export function SignInForm({
       authClient.signIn.email({ email: submittedEmail, password }),
     )
 
+    // A 429 is retried after the server's Retry-After (plus jitter).
     for (
       let attempt = 0;
       result.error &&
@@ -174,73 +175,55 @@ export function SignInForm({
     }
   }
 
-  async function handleVerifyBackupCode(
+  // The app code and a backup code differ only in their endpoint and copy.
+  async function verifyTypedCode(
     e: React.SyntheticEvent<HTMLFormElement>,
+    method: 'totp' | 'backup',
   ) {
     e.preventDefault()
-    if (!backupCode.trim()) {
-      setOtpError('Informe um código de backup')
+    const code = (method === 'totp' ? totpCode : backupCode).trim()
+    if (!code) {
+      setOtpError(
+        method === 'totp'
+          ? 'Informe o código do aplicativo'
+          : 'Informe um código de backup',
+      )
       return
     }
     setOtpError(null)
     setIsVerifying(true)
     const { error: verifyError } = await settleAuthRequest(
-      authClient.twoFactor.verifyBackupCode({
-        code: backupCode.trim(),
-        trustDevice,
-      }),
+      method === 'totp'
+        ? authClient.twoFactor.verifyTotp({ code, trustDevice })
+        : authClient.twoFactor.verifyBackupCode({ code, trustDevice }),
     )
     setIsVerifying(false)
     if (verifyError) {
-      setOtpError(authErrorMessage(verifyError, 'Código de backup inválido'))
+      setOtpError(
+        authErrorMessage(
+          verifyError,
+          method === 'totp'
+            ? 'Código inválido ou expirado'
+            : 'Código de backup inválido',
+        ),
+      )
       return
     }
+    if (method === 'totp') rememberTwoFactorMethod('totp')
     push(redirectTo)
   }
 
-  async function handleVerifyTotp(e: React.SyntheticEvent<HTMLFormElement>) {
-    e.preventDefault()
-    if (!totpCode.trim()) {
-      setOtpError('Informe o código do aplicativo')
-      return
-    }
-    setOtpError(null)
-    setIsVerifying(true)
-    const { error: verifyError } = await settleAuthRequest(
-      authClient.twoFactor.verifyTotp({
-        code: totpCode.trim(),
-        trustDevice,
-      }),
-    )
-    setIsVerifying(false)
-    if (verifyError) {
-      setOtpError(authErrorMessage(verifyError, 'Código inválido ou expirado'))
-      return
-    }
-    rememberTwoFactorMethod('totp')
-    push(redirectTo)
-  }
-
-  function handleBack() {
-    setStep('form')
+  function goTo(next: Step) {
+    setStep(next)
     setOtpError(null)
   }
 
   const trustDeviceField = (
-    <Field orientation='horizontal'>
-      <Checkbox
-        id='sign-in-trust-device'
-        checked={trustDevice}
-        onCheckedChange={(state) => setTrustDevice(state === true)}
-        disabled={isVerifying}
-      />
-      <FieldLabel
-        htmlFor='sign-in-trust-device'
-        className='text-sm leading-5 text-muted-foreground'
-      >
-        Confiar neste dispositivo por 30 dias
-      </FieldLabel>
-    </Field>
+    <SignInTrustDeviceField
+      checked={trustDevice}
+      onCheckedChange={setTrustDevice}
+      disabled={isVerifying}
+    />
   )
 
   return (
@@ -260,24 +243,18 @@ export function SignInForm({
         <>
           <EmailValidationWithOtp
             email={email}
-            onBack={handleBack}
+            onBack={() => goTo('form')}
             onVerify={handleVerify}
             onResend={handleResend}
             isPending={isVerifying}
             error={otpError}
-            onUseBackupCode={() => {
-              setStep('backup')
-              setOtpError(null)
-            }}
+            onUseBackupCode={() => goTo('backup')}
           />
           {trustDeviceField}
           <div className='text-center text-sm'>
             <button
               type='button'
-              onClick={() => {
-                setStep('totp')
-                setOtpError(null)
-              }}
+              onClick={() => goTo('totp')}
               className='text-primary hover:underline'
             >
               Tenho um aplicativo autenticador
@@ -299,10 +276,9 @@ export function SignInForm({
           error={otpError}
           pending={isVerifying}
           trustDevice={trustDeviceField}
-          onSubmit={handleVerifyTotp}
+          onSubmit={(e) => verifyTypedCode(e, 'totp')}
           onUseEmail={() => {
-            setStep('otp')
-            setOtpError(null)
+            goTo('otp')
             setTotpCode('')
           }}
         />
@@ -320,14 +296,42 @@ export function SignInForm({
           error={otpError}
           pending={isVerifying}
           trustDevice={trustDeviceField}
-          onSubmit={handleVerifyBackupCode}
+          onSubmit={(e) => verifyTypedCode(e, 'backup')}
           onUseEmail={() => {
-            setStep('otp')
-            setOtpError(null)
+            goTo('otp')
             setBackupCode('')
           }}
         />
       )}
     </AuthLayout>
+  )
+}
+
+interface SignInTrustDeviceFieldProps {
+  checked: boolean
+  onCheckedChange: (checked: boolean) => void
+  disabled: boolean
+}
+
+function SignInTrustDeviceField({
+  checked,
+  onCheckedChange,
+  disabled,
+}: SignInTrustDeviceFieldProps) {
+  return (
+    <Field orientation='horizontal'>
+      <Checkbox
+        id='sign-in-trust-device'
+        checked={checked}
+        onCheckedChange={(state) => onCheckedChange(state === true)}
+        disabled={disabled}
+      />
+      <FieldLabel
+        htmlFor='sign-in-trust-device'
+        className='text-sm leading-5 text-muted-foreground'
+      >
+        Confiar neste dispositivo por 30 dias
+      </FieldLabel>
+    </Field>
   )
 }

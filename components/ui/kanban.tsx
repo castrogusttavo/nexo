@@ -164,23 +164,32 @@ export interface KanbanRootProps<T> extends Omit<
   modifiers?: Modifiers
 }
 
-function Kanban<T>({
+type KanbanDragOptions<T> = Pick<
+  KanbanRootProps<T>,
+  | "value"
+  | "onValueChange"
+  | "getItemValue"
+  | "onMove"
+  | "onValueCommit"
+  | "restoreOnCancel"
+  | "onDragStart"
+  | "onDragEnd"
+  | "onDragCancel"
+>
+
+// The board's drag engine: live preview on dragOver, column reorders and
+// same-column moves on dragEnd, and the commit/cancel bookkeeping.
+function useKanbanDrag<T>({
   value,
   onValueChange,
   getItemValue,
-  children,
-  className,
-  render,
   onMove,
   onValueCommit,
   restoreOnCancel = false,
   onDragStart,
   onDragEnd,
   onDragCancel,
-  accessibility,
-  modifiers,
-  ...props
-}: KanbanRootProps<T>) {
+}: KanbanDragOptions<T>) {
   const columns = value
   const setColumns = onValueChange
   const [activeId, setActiveId] = useState<UniqueIdentifier | null>(null)
@@ -539,6 +548,62 @@ function Kanban<T>({
     ]
   )
 
+  return {
+    activeId,
+    setActiveId,
+    sensors,
+    columnIds,
+    isColumn,
+    findContainer,
+    handleDragStart,
+    handleDragOver,
+    handleDragEnd,
+    handleDragCancel,
+  }
+}
+
+function Kanban<T>({
+  value,
+  onValueChange,
+  getItemValue,
+  children,
+  className,
+  render,
+  onMove,
+  onValueCommit,
+  restoreOnCancel = false,
+  onDragStart,
+  onDragEnd,
+  onDragCancel,
+  accessibility,
+  modifiers,
+  ...props
+}: KanbanRootProps<T>) {
+  const columns = value
+  const setColumns = onValueChange
+  const {
+    activeId,
+    setActiveId,
+    sensors,
+    columnIds,
+    isColumn,
+    findContainer,
+    handleDragStart,
+    handleDragOver,
+    handleDragEnd,
+    handleDragCancel,
+  } = useKanbanDrag({
+    value,
+    onValueChange,
+    getItemValue,
+    onMove,
+    onValueCommit,
+    restoreOnCancel,
+    onDragStart,
+    onDragEnd,
+    onDragCancel,
+  })
+
   const contextValue = useMemo(
     () => ({
       columns,
@@ -557,6 +622,7 @@ function Kanban<T>({
       getItemValue,
       columnIds,
       activeId,
+      setActiveId,
       findContainer,
       isColumn,
       modifiers,
