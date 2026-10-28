@@ -1,9 +1,4 @@
-import {
-  type PqlField,
-  type PqlFunctionName,
-  type PqlOperator,
-  PqlOrderBy,
-} from './pql-types'
+import type { PqlField, PqlFunctionName, PqlOperator } from './pql-types'
 
 interface PqlFieldMeta {
   label: string
