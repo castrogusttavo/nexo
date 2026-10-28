@@ -1,3 +1,4 @@
+import { useId } from 'react'
 import {
   type IssueGroupBy,
   type IssueSortBy,
@@ -19,8 +20,31 @@ import {
 import { Field, FieldGroup, FieldLabel } from '@/components/ui/field'
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group'
 
+const GROUP_BY_OPTIONS: { value: IssueGroupBy; label: string }[] = [
+  { value: 'state', label: 'Estados' },
+  { value: 'priority', label: 'Prioridade' },
+  { value: 'cycle', label: 'Ciclo' },
+  { value: 'module', label: 'Módulo' },
+  { value: 'labels', label: 'Etiquetas' },
+  { value: 'assignees', label: 'Responsáveis' },
+  { value: 'created-by', label: 'Criado por' },
+  { value: 'none', label: 'Nenhum' },
+]
+
+const SORT_BY_OPTIONS: { value: IssueSortBy; label: string }[] = [
+  { value: 'manual', label: 'Manual - classificação' },
+  { value: 'created-at', label: 'Criado em' },
+  { value: 'updated-at', label: 'Atualizado em' },
+  { value: 'start-date', label: 'Data de início' },
+  { value: 'due-date', label: 'Data de vencimento' },
+  { value: 'priority', label: 'Prioridade' },
+]
+
 export function IssueShowPropertiesDropdown() {
   const { preferences, update } = useIssueListPreferences()
+  // Every label points at its control by id; useId keeps the ids unique if
+  // the dropdown is ever rendered twice on a page.
+  const id = useId()
 
   return (
     <DropdownMenu>
@@ -40,44 +64,20 @@ export function IssueShowPropertiesDropdown() {
               </AccordionTrigger>
               <AccordionContent className='flex flex-col gap-2'>
                 <RadioGroup
+                  aria-label='Agrupado por'
                   className='gap-2'
                   value={preferences.groupBy}
                   onValueChange={(value) =>
                     update({ groupBy: value as IssueGroupBy })
                   }
                 >
-                  <Field orientation='horizontal'>
-                    <RadioGroupItem value='state' className='size-3' />
-                    <FieldLabel className='text-xs'>Estados</FieldLabel>
-                  </Field>
-                  <Field orientation='horizontal'>
-                    <RadioGroupItem value='priority' className='size-3' />
-                    <FieldLabel className='text-xs'>Prioridade</FieldLabel>
-                  </Field>
-                  <Field orientation='horizontal'>
-                    <RadioGroupItem value='cycle' className='size-3' />
-                    <FieldLabel className='text-xs'>Ciclo</FieldLabel>
-                  </Field>
-                  <Field orientation='horizontal'>
-                    <RadioGroupItem value='module' className='size-3' />
-                    <FieldLabel className='text-xs'>Módulo</FieldLabel>
-                  </Field>
-                  <Field orientation='horizontal'>
-                    <RadioGroupItem value='labels' className='size-3' />
-                    <FieldLabel className='text-xs'>Etiquetas</FieldLabel>
-                  </Field>
-                  <Field orientation='horizontal'>
-                    <RadioGroupItem value='assignees' className='size-3' />
-                    <FieldLabel className='text-xs'>Responsáveis</FieldLabel>
-                  </Field>
-                  <Field orientation='horizontal'>
-                    <RadioGroupItem value='created-by' className='size-3' />
-                    <FieldLabel className='text-xs'>Criado por</FieldLabel>
-                  </Field>
-                  <Field orientation='horizontal'>
-                    <RadioGroupItem value='none' className='size-3' />
-                    <FieldLabel className='text-xs'>Nenhum</FieldLabel>
-                  </Field>
+                  {GROUP_BY_OPTIONS.map((option) => (
+                    <IssueShowPropertiesOption
+                      key={option.value}
+                      id={`${id}-group-${option.value}`}
+                      {...option}
+                    />
+                  ))}
                 </RadioGroup>
               </AccordionContent>
             </AccordionItem>
@@ -87,40 +87,20 @@ export function IssueShowPropertiesDropdown() {
               </AccordionTrigger>
               <AccordionContent className='flex flex-col gap-2'>
                 <RadioGroup
+                  aria-label='Ordenar por'
                   className='gap-2'
                   value={preferences.sortBy}
                   onValueChange={(value) =>
                     update({ sortBy: value as IssueSortBy })
                   }
                 >
-                  <Field orientation='horizontal'>
-                    <RadioGroupItem value='manual' className='size-3' />
-                    <FieldLabel className='text-xs'>
-                      Manual - classificação
-                    </FieldLabel>
-                  </Field>
-                  <Field orientation='horizontal'>
-                    <RadioGroupItem value='created-at' className='size-3' />
-                    <FieldLabel className='text-xs'>Criado em</FieldLabel>
-                  </Field>
-                  <Field orientation='horizontal'>
-                    <RadioGroupItem value='updated-at' className='size-3' />
-                    <FieldLabel className='text-xs'>Atualizado em</FieldLabel>
-                  </Field>
-                  <Field orientation='horizontal'>
-                    <RadioGroupItem value='start-date' className='size-3' />
-                    <FieldLabel className='text-xs'>Data de início</FieldLabel>
-                  </Field>
-                  <Field orientation='horizontal'>
-                    <RadioGroupItem value='due-date' className='size-3' />
-                    <FieldLabel className='text-xs'>
-                      Data de vencimento
-                    </FieldLabel>
-                  </Field>
-                  <Field orientation='horizontal'>
-                    <RadioGroupItem value='priority' className='size-3' />
-                    <FieldLabel className='text-xs'>Prioridade</FieldLabel>
-                  </Field>
+                  {SORT_BY_OPTIONS.map((option) => (
+                    <IssueShowPropertiesOption
+                      key={option.value}
+                      id={`${id}-sort-${option.value}`}
+                      {...option}
+                    />
+                  ))}
                 </RadioGroup>
               </AccordionContent>
             </AccordionItem>
@@ -128,27 +108,52 @@ export function IssueShowPropertiesDropdown() {
           <FieldGroup className='gap-1.5'>
             <Field orientation='horizontal'>
               <Checkbox
+                id={`${id}-sub-issues`}
                 checked={preferences.showSubIssues}
                 onCheckedChange={(checked) =>
                   update({ showSubIssues: checked === true })
                 }
                 className='size-3'
               />
-              <FieldLabel className='text-xs'>Mostrar sub-issues</FieldLabel>
+              <FieldLabel htmlFor={`${id}-sub-issues`} className='text-xs'>
+                Mostrar sub-issues
+              </FieldLabel>
             </Field>
             <Field orientation='horizontal'>
               <Checkbox
+                id={`${id}-empty-groups`}
                 checked={preferences.showEmptyGroups}
                 onCheckedChange={(checked) =>
                   update({ showEmptyGroups: checked === true })
                 }
                 className='size-3'
               />
-              <FieldLabel className='text-xs'>Mostrar grupos vazios</FieldLabel>
+              <FieldLabel htmlFor={`${id}-empty-groups`} className='text-xs'>
+                Mostrar grupos vazios
+              </FieldLabel>
             </Field>
           </FieldGroup>
         </div>
       </DropdownMenuContent>
     </DropdownMenu>
+  )
+}
+
+function IssueShowPropertiesOption({
+  id,
+  value,
+  label,
+}: {
+  id: string
+  value: string
+  label: string
+}) {
+  return (
+    <Field orientation='horizontal'>
+      <RadioGroupItem id={id} value={value} className='size-3' />
+      <FieldLabel htmlFor={id} className='text-xs'>
+        {label}
+      </FieldLabel>
+    </Field>
   )
 }
