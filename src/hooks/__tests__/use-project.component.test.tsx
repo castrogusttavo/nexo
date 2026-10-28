@@ -601,6 +601,31 @@ describe.each([
     await waitFor(() => expect(result.current.isSuccess).toBe(true))
   })
 
+  // A project page still loading has a cache entry under the same prefix but
+  // no data yet: the optimistic update must leave it alone.
+  it('skips a project page that is still loading', async () => {
+    const fetchSpy = mockFetch().mockResolvedValueOnce(
+      apiSuccess({ favourited: to }),
+    )
+    const { result, queryClient } = renderHookWithProviders(() =>
+      useHook(WORKSPACE_ID),
+    )
+    const { alpha, beta } = seedLists(queryClient)
+    void queryClient.prefetchQuery({
+      queryKey: detailKey('gamma'),
+      queryFn: () => new Promise<ProjectDTO>(() => {}),
+    })
+
+    await act(() => result.current.mutateAsync('alpha'))
+
+    expect(queryClient.getQueryData(detailKey('gamma'))).toBeUndefined()
+    expect(queryClient.getQueryData(listKey(false))).toEqual([
+      { ...alpha, isFavorited: to },
+      beta,
+    ])
+    expect(fetchSpy).toHaveBeenCalledTimes(1)
+  })
+
   it('rolls a cached project page back when the request fails', async () => {
     mockFetch().mockResolvedValueOnce(apiError(403, 'Sem permissão'))
     const { result, queryClient } = renderHookWithProviders(() =>

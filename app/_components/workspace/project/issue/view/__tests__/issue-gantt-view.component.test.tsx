@@ -292,6 +292,32 @@ describe('<IssueGanttView /> scheduling', () => {
   })
 })
 
+describe('<IssueGanttView /> today', () => {
+  it('highlights the column of the current day', async () => {
+    vi.useFakeTimers({ toFake: ['Date'] })
+    vi.setSystemTime(new Date(2026, 2, 11, 12))
+    try {
+      mockProjectApi([
+        buildIssue({
+          title: 'Sprint',
+          startDate: localDay(2026, 3, 10),
+          dueDate: localDay(2026, 3, 12),
+        }),
+      ])
+      renderTimeline()
+      await findBar('Sprint')
+
+      // The header holds one column per day, 8 to 14 March.
+      const today = screen.getByText('11').parentElement as HTMLElement
+      const other = screen.getByText('12').parentElement as HTMLElement
+      expect(today).toHaveClass('text-primary')
+      expect(other).not.toHaveClass('text-primary')
+    } finally {
+      vi.useRealTimers()
+    }
+  })
+})
+
 describe('<IssueGanttView /> undated tray', () => {
   it('collects the undated issues below the timeline', async () => {
     mockProjectApi([

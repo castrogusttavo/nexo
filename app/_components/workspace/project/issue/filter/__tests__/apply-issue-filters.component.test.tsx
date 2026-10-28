@@ -1,4 +1,4 @@
-import { afterAll, beforeAll, describe, expect, it } from 'vitest'
+import { afterAll, beforeAll, describe, expect, it, vi } from 'vitest'
 import { toIssueDateISO } from '@/app/_components/workspace/project/issue/issue-dates'
 import type { CycleDTO } from '@/types/cycle'
 import type { IssueDTO } from '@/types/issue'
@@ -8,11 +8,13 @@ import type { ModuleDTO } from '@/types/module'
 import type { ProjectMemberDTO } from '@/types/project'
 import type { StateDTO } from '@/types/state'
 import {
+  activeIssueFilterCount,
   applyIssueFilters,
   type IssueFilterContext,
   type IssueFilterState,
   isIssueFilterActive,
   unsupportedIssueFilters,
+  usesCurrentUser,
 } from '../apply-issue-filters'
 import type {
   BasicFilterClause,
@@ -20,6 +22,30 @@ import type {
   BasicOperator,
   FilterField,
 } from '../filter-schema'
+import { parsePql } from '../pql-parser'
+import type { PqlQuery } from '../pql-types'
+
+// The real parser by default; a test swaps one parse to reach the states the
+// parser itself never produces (a crash, a field it does not know).
+vi.mock('../pql-parser', async (importOriginal) => {
+  const actual = await importOriginal<typeof import('../pql-parser')>()
+  return { ...actual, parsePql: vi.fn(actual.parsePql) }
+})
+
+// Fields an older URL may still carry after the registry dropped their
+// handling: they keep a type, but no accessor knows them.
+vi.mock('../field-registry', async (importOriginal) => {
+  const actual = await importOriginal<typeof import('../field-registry')>()
+  return {
+    ...actual,
+    FILTER_FIELDS: {
+      ...actual.FILTER_FIELDS,
+      'legacy-date': { label: 'Data antiga', type: 'date' },
+      'legacy-scalar': { label: 'Campo antigo', type: 'enum-single' },
+      'legacy-list': { label: 'Lista antiga', type: 'relation-multi' },
+    },
+  }
+})
 
 const TIMESTAMPS = {
   createdAt: '2026-01-01T12:00:00.000Z',
@@ -936,5 +962,110 @@ describe('applyIssueFilters with loose or missing data', () => {
   it('counts a bare limit as an active query', () => {
     expect(isIssueFilterActive(pql('limit 2'))).toBe(true)
     expect(isIssueFilterActive(pql('   '))).toBe(false)
+  })
+})
+
+describe('applyIssueFilters past what the parser and registry produce', () => {
+  function withQuery(query: PqlQuery) {
+    vi.mocked(parsePql).mockReturnValueOnce(query)
+    return ids(applyIssueFilters(ISSUES, pql('qualquer coisa'), CTX).issues)
+  }
+
+  it('reports a generic message when parsing fails with an unexpected error', () => {
+    vi.mocked(parsePql).mockImplementationOnce(() => {
+      throw new TypeError('boom')
+    })
+    const result = applyIssueFilters(ISSUES, pql('title = x'), CTX)
+    expect(result.error).toBe('Erro ao interpretar a consulta.')
+    expect(result.active).toBe(false)
+    expect(result.issues).toBe(ISSUES)
+  })
+
+  it('reads a description once even when two clauses ask for it', () => {
+    expect(runPql('description ~ "oauth" description ~ "google"')).toEqual([
+      'i-login',
+    ])
+  })
+
+  it('does not narrow a text field by an operator it does not know', () => {
+    expect(runBasic('title', 'before' as BasicOperator, 'login')).toEqual(ALL)
+  })
+
+  it('treats a date field without an accessor as an issue with no date', () => {
+    expect(runBasic('legacy-date' as never, 'is-empty', null)).toEqual(ALL)
+    expect(
+      runBasic('legacy-date' as never, 'is', issueDay(2026, 9, 1)),
+    ).toEqual([])
+  })
+
+  it('treats a single-value field without an accessor as empty', () => {
+    expect(runBasic('legacy-scalar' as never, 'is-empty', null)).toEqual(ALL)
+    expect(runBasic('legacy-scalar' as never, 'is', 'x')).toEqual([])
+  })
+
+  it('treats a list field without an accessor as an empty list', () => {
+    expect(runBasic('legacy-list' as never, 'is-empty', null)).toEqual(ALL)
+    expect(runBasic('legacy-list' as never, 'is-not', ['x'])).toEqual(ALL)
+  })
+
+  it('does not narrow a date field by an operator it does not know', () => {
+    expect(
+      withQuery({
+        clauses: [
+          {
+            kind: 'field',
+            field: 'due-date',
+            operator: '~',
+            value: { kind: 'date', value: '2026-09-01' },
+          },
+        ],
+      }),
+    ).toEqual(['i-login', 'i-api', 'i-docs'])
+  })
+
+  it('matches nothing for a PQL field without an accessor', () => {
+    expect(
+      withQuery({
+        clauses: [
+          {
+            kind: 'field',
+            field: 'legacy' as never,
+            operator: '=',
+            value: { kind: 'string', value: 'x' },
+          },
+        ],
+      }),
+    ).toEqual([])
+  })
+
+  it('lets a function it does not know through', () => {
+    expect(
+      withQuery({
+        clauses: [{ kind: 'function', name: 'legacyFn' as never, args: [] }],
+      }),
+    ).toEqual(ALL)
+  })
+
+  it('keeps the original order when sorting by a field without a key', () => {
+    expect(
+      withQuery({
+        clauses: [],
+        orderBy: { field: 'legacy' as never, direction: 'asc' },
+      }),
+    ).toEqual(ALL)
+  })
+})
+
+describe('activeIssueFilterCount', () => {
+  it('counts a whole PQL query as one filter', () => {
+    expect(activeIssueFilterCount(pql('priority = HIGH title ~ login'))).toBe(1)
+    expect(activeIssueFilterCount(pql('title ='))).toBe(0)
+  })
+})
+
+describe('usesCurrentUser', () => {
+  it('is false for an empty-value clause on a user field', () => {
+    expect(usesCurrentUser(pql('assignees IS NULL'))).toBe(false)
+    expect(usesCurrentUser(pql('assignees IN (me)'))).toBe(true)
   })
 })

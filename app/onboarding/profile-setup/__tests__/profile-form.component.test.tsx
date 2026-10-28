@@ -1,8 +1,9 @@
-import { screen, waitFor } from '@testing-library/react'
+import { fireEvent, screen, waitFor } from '@testing-library/react'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import {
   apiError,
   apiSuccess,
+  deferredResponse,
   getFetchCall,
   mockFetch,
   renderWithProviders,
@@ -193,6 +194,36 @@ describe('<ProfileForm />', () => {
         'https://cdn.nexo.dev/a.png',
       )
       expect(refresh).toHaveBeenCalledTimes(1)
+    })
+
+    it('sends nothing when the picker is closed without a file', () => {
+      const fetchSpy = mockFetch()
+      const { container } = renderWithProviders(
+        <ProfileForm {...DEFAULT_PROPS} />,
+      )
+
+      fireEvent.change(fileInput(container), { target: { files: [] } })
+
+      expect(fetchSpy).not.toHaveBeenCalled()
+      expect(toastPromise).not.toHaveBeenCalled()
+    })
+
+    it('still refreshes the header when the step is left mid-upload', async () => {
+      const deferred = deferredResponse()
+      mockFetch().mockReturnValueOnce(deferred.promise)
+      const { user, container, unmount } = renderWithProviders(
+        <ProfileForm {...DEFAULT_PROPS} />,
+      )
+
+      await user.upload(
+        fileInput(container),
+        new File(['img'], 'me.png', { type: 'image/png' }),
+      )
+      await waitFor(() => expect(toastPromise).toHaveBeenCalled())
+      unmount()
+      deferred.resolve(apiSuccess({ url: 'https://cdn.nexo.dev/a.png' }))
+
+      await waitFor(() => expect(refresh).toHaveBeenCalledTimes(1))
     })
 
     it('surfaces the server message when the upload is rejected', async () => {

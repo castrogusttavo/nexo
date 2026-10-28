@@ -3,6 +3,13 @@ import userEvent from '@testing-library/user-event'
 import { NuqsTestingAdapter, type UrlUpdateEvent } from 'nuqs/adapters/testing'
 import { describe, expect, it, vi } from 'vitest'
 import { IssueFilterPql } from '../issue-filter-pql'
+import { parsePql } from '../pql-parser'
+
+// The real parser, unless a test makes one parse crash outright.
+vi.mock('../pql-parser', async (importOriginal) => {
+  const actual = await importOriginal<typeof import('../pql-parser')>()
+  return { ...actual, parsePql: vi.fn(actual.parsePql) }
+})
 
 // The shared helper hides nuqs' `onUrlUpdate`, and what this component owes
 // the page is exactly when the draft reaches the URL — so it is mounted with
@@ -76,5 +83,20 @@ describe('<IssueFilterPql />', () => {
 
     await new Promise((resolve) => setTimeout(resolve, 300))
     expect(onUrlUpdate).toHaveBeenCalledTimes(1)
+  })
+
+  it('shows a generic message when the parser fails unexpectedly', async () => {
+    vi.mocked(parsePql).mockImplementation(() => {
+      throw new TypeError('boom')
+    })
+    const { user } = renderPql()
+
+    await user.type(input(), 'x')
+
+    expect(
+      screen.getByText('Erro ao interpretar a consulta.'),
+    ).toBeInTheDocument()
+    expect(input()).toHaveAttribute('aria-invalid', 'true')
+    vi.mocked(parsePql).mockRestore()
   })
 })

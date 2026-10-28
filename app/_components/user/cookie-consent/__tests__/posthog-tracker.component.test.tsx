@@ -3,6 +3,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { COOKIE_NAME, type CookieConsent } from '@/lib/cookie-consent/types'
 import {
   captureEvent,
+  loadPostHog,
   POSTHOG_OPTIONS,
   resetPostHogForTests,
 } from '@/lib/posthog/client'
@@ -127,6 +128,20 @@ describe('<PostHogTracker /> loading gates', () => {
     first.unmount()
     renderBehindConsent('accepted', null)
     await settle()
+    expect(sdk.init).toHaveBeenCalledTimes(1)
+  })
+})
+
+describe('loadPostHog() failure', () => {
+  it('resolves to null instead of rejecting when the SDK fails to start', async () => {
+    env.key = 'phc_test'
+    sdk.init.mockImplementationOnce(() => {
+      throw new Error('blocked by an extension')
+    })
+
+    await expect(loadPostHog()).resolves.toBeNull()
+    // Memoised: the page does not keep retrying a broken SDK.
+    await expect(loadPostHog()).resolves.toBeNull()
     expect(sdk.init).toHaveBeenCalledTimes(1)
   })
 })

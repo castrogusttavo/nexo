@@ -141,6 +141,39 @@ describe('<UserModalPreferencesTab />', () => {
     )
   })
 
+  it('prompts to pick the first day when the stored one is unknown', async () => {
+    await renderTab(
+      mockPreferencesApi(
+        buildPreferences({
+          weekStartsOn: 9 as UserPreferenceDTO['weekStartsOn'],
+        }),
+      ),
+    )
+
+    expect(weekStartButton()).toHaveTextContent('Selecionar dia da semana')
+  })
+
+  it('saves the selected timezone', async () => {
+    const { user, fetchSpy } = await renderTab()
+
+    await user.click(screen.getByRole('combobox', { name: 'Fuso horário' }))
+    await user.click(
+      await screen.findByRole('option', { name: 'America/Manaus' }),
+    )
+
+    await waitFor(() => expect(patchCalls(fetchSpy)).toHaveLength(1))
+    expect(patchCalls(fetchSpy)[0]).toEqual({
+      url: PREFS_URL,
+      method: 'PATCH',
+      body: { timezone: 'America/Manaus' },
+    })
+    await waitFor(() =>
+      expect(
+        screen.getByRole('combobox', { name: 'Fuso horário' }),
+      ).toHaveTextContent('America/Manaus'),
+    )
+  })
+
   it('saves the smooth cursor toggle immediately', async () => {
     const { user, fetchSpy } = await renderTab()
 

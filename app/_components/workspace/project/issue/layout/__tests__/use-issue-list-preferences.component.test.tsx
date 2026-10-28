@@ -109,6 +109,15 @@ describe('useIssueListPreferences', () => {
     expect(result.current.preferences).toEqual(DEFAULTS)
   })
 
+  it('falls back to the defaults when the storage hands back nothing', async () => {
+    const { useIssueListPreferences, storage } = await loadModules()
+    vi.spyOn(storage, 'getOrInit').mockReturnValue(undefined)
+
+    const { result } = renderHook(() => useIssueListPreferences())
+
+    expect(result.current.preferences).toEqual(DEFAULTS)
+  })
+
   it('merges a partial update and persists it', async () => {
     const { useIssueListPreferences, storage } = await loadModules()
     const { result } = renderHook(() => useIssueListPreferences())

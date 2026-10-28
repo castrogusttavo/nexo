@@ -128,6 +128,18 @@ describe('useFilteredIssues', () => {
     )
   })
 
+  it('matches no one for "me" when nobody is signed in', async () => {
+    mockProjectApi()
+    getSession.mockResolvedValue({ data: null })
+    const { result } = renderFiltered({
+      mode: 'pql',
+      pql: 'assignees IN (me)',
+    })
+
+    await waitFor(() => expect(getSession).toHaveBeenCalled())
+    await waitFor(() => expect(result.current.data).toEqual([]))
+  })
+
   it('keeps the fetch error of the issues query', async () => {
     mockFetch().mockResolvedValue(apiError(500, 'Falha ao buscar'))
 

@@ -238,6 +238,28 @@ describe('useUploadWikiMedia', () => {
     expect(result.current.isUploading).toBe(false)
   })
 
+  it('hides the raw message of an unexpected failure behind the fallback', async () => {
+    // A browser can throw from send() itself (e.g. a revoked file handle):
+    // that message is not written for users.
+    class ThrowingXhr extends FakeXhr {
+      override send() {
+        throw new DOMException('The object is in an invalid state.')
+      }
+    }
+    vi.stubGlobal('XMLHttpRequest', ThrowingXhr)
+    const { result } = renderUploadHook()
+
+    await act(async () => {
+      await expect(result.current.uploadFile(buildFile())).rejects.toThrow(
+        'The object is in an invalid state.',
+      )
+    })
+
+    expect(toastError).toHaveBeenCalledExactlyOnceWith('Erro ao enviar arquivo')
+    expect(result.current.isUploading).toBe(false)
+    expect(result.current.uploadingFile).toBeUndefined()
+  })
+
   it('throws when used outside the wiki editor provider', () => {
     vi.spyOn(console, 'error').mockImplementation(() => {})
 

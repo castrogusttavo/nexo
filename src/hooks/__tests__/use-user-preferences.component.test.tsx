@@ -148,6 +148,24 @@ describe('useUpdateUserPreferences', () => {
     // No cached preferences → onMutate never touches the theme.
     expect(isDark()).toBe(false)
   })
+
+  it('leaves the empty cache and the theme alone when a cold save fails', async () => {
+    document.documentElement.classList.add('dark')
+    mockFetch().mockResolvedValueOnce(apiError(500, 'Erro no servidor'))
+    const { result, queryClient } = renderHookWithProviders(() =>
+      useUpdateUserPreferences(),
+    )
+
+    await act(async () => {
+      await expect(
+        result.current.mutateAsync({ theme: 'LIGHT' }),
+      ).rejects.toThrow('Erro no servidor')
+    })
+
+    // Nothing to roll back to: no cache entry is invented, the theme stays.
+    expect(queryClient.getQueryData(PREFERENCE_KEY)).toBeUndefined()
+    expect(isDark()).toBe(true)
+  })
 })
 
 describe('applyTheme', () => {

@@ -96,6 +96,17 @@ describe('<ProjectCardMembers />', () => {
     expect(screen.queryByRole('img')).not.toBeInTheDocument()
   })
 
+  it('treats a viewer lead without a name as an unnamed member', async () => {
+    useSession.mockReturnValue({
+      data: { user: { id: SIGNED_IN_USER, name: null, image: null } },
+      isPending: false,
+    })
+    const { user } = renderMembers(SIGNED_IN_USER)
+
+    expect(screen.getByText('??')).toBeInTheDocument()
+    expect(await hoverAvatar(user)).toHaveTextContent('Membro')
+  })
+
   it('names the lead on hover', async () => {
     const { user } = renderMembers(SIGNED_IN_USER)
 

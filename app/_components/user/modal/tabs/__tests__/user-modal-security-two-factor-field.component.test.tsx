@@ -357,6 +357,25 @@ describe('<UserModalSecurityTwoFactorField /> backup codes', () => {
     expect(getSession).not.toHaveBeenCalled()
   })
 
+  it('shows no codes panel when the regeneration returns none', async () => {
+    generateBackupCodes.mockResolvedValue({ data: {}, error: null })
+    const { user } = renderField({ twoFactorEnabled: true })
+
+    await user.click(
+      screen.getByRole('button', { name: 'Gerar novos códigos de backup' }),
+    )
+    await user.type(passwordInput(), 'my-password')
+    await user.click(screen.getByRole('button', { name: 'Gerar códigos' }))
+
+    await waitFor(() =>
+      expect(screen.queryByPlaceholderText('••••••')).not.toBeInTheDocument(),
+    )
+    expect(screen.queryByText('Códigos de backup')).not.toBeInTheDocument()
+    expect(
+      screen.queryByRole('button', { name: 'Copiar códigos' }),
+    ).not.toBeInTheDocument()
+  })
+
   it('shows the error when regenerating fails', async () => {
     generateBackupCodes.mockResolvedValue({
       data: null,

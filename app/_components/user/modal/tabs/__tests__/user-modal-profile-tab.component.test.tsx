@@ -1,4 +1,4 @@
-import { screen, waitFor, within } from '@testing-library/react'
+import { fireEvent, screen, waitFor, within } from '@testing-library/react'
 import type { ImgHTMLAttributes } from 'react'
 import { toast } from 'sonner'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
@@ -254,6 +254,41 @@ describe('<UserModalProfileTab /> avatar', () => {
       message: 'Avatar atualizado',
     })
     expect(refetch).toHaveBeenCalledTimes(1)
+  })
+
+  it('opens the file picker from the avatar button', async () => {
+    const { user } = renderTab()
+    const click = vi.spyOn(screen.getByLabelText('Foto de perfil'), 'click')
+
+    await user.click(screen.getByRole('button', { name: 'Alterar avatar' }))
+
+    expect(click).toHaveBeenCalledTimes(1)
+  })
+
+  it('sends nothing when the file picker is closed without a file', () => {
+    const fetchSpy = mockFetch()
+    renderTab()
+
+    fireEvent.change(screen.getByLabelText('Foto de perfil'), {
+      target: { files: [] },
+    })
+
+    expect(fetchSpy).not.toHaveBeenCalled()
+    expect(toast.promise).not.toHaveBeenCalled()
+  })
+
+  it('ignores a submit while nothing changed', () => {
+    const fetchSpy = mockFetch()
+    renderTab()
+
+    // The disabled button is the first guard; the handler is the second,
+    // for a submit that does not go through the button.
+    const form = nameInput().closest('form')
+    if (!form) throw new Error('No form')
+    fireEvent.submit(form)
+
+    expect(fetchSpy).not.toHaveBeenCalled()
+    expect(toast.promise).not.toHaveBeenCalled()
   })
 })
 

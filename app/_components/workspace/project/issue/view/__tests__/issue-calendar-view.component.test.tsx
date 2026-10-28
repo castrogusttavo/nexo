@@ -302,6 +302,36 @@ describe('<IssueCalendarView /> navigation', () => {
   })
 })
 
+describe('<IssueCalendarView /> grid chips', () => {
+  it('opens the details panel from a chip on its due day', async () => {
+    mockIssues([
+      buildIssue({
+        title: 'Login',
+        priority: 'HIGH',
+        dueDate: localDay(2026, 3, 3),
+      }),
+    ])
+    const { user } = renderCalendar()
+
+    const chip = await screen.findByRole('button', { name: 'NEX-1 Login' })
+    // A set priority puts its icon before the identifier.
+    expect(chip.querySelector('svg')).not.toBeNull()
+    await user.click(chip)
+
+    expect(
+      screen.getByRole('dialog', { name: 'Detalhes da issue' }),
+    ).toHaveTextContent('Login')
+  })
+
+  it('shows no priority icon for an issue without priority', async () => {
+    mockIssues([buildIssue({ title: 'Login', dueDate: localDay(2026, 3, 3) })])
+    renderCalendar()
+
+    const chip = await screen.findByRole('button', { name: 'NEX-1 Login' })
+    expect(chip.querySelector('svg')).toBeNull()
+  })
+})
+
 describe('<IssueCalendarView /> filters', () => {
   it('renders only the issues matching the filters in the URL', async () => {
     mockIssues([

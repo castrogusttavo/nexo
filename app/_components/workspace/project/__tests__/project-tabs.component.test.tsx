@@ -185,6 +185,16 @@ describe('<ProjectTabs /> project picker', () => {
 
     expect(push).toHaveBeenCalledExactlyOnceWith('/acme/projects/beta/issues')
   })
+
+  it('lands on the overview when switching from a page outside the tabs', async () => {
+    pathname.current = `${BASE}/settings`
+    const { user } = renderTabs()
+
+    await user.click(screen.getByRole('button', { name: 'Alpha' }))
+    await user.click(await screen.findByRole('option', { name: 'Beta' }))
+
+    expect(push).toHaveBeenCalledExactlyOnceWith('/acme/projects/beta/overview')
+  })
 })
 
 describe('<ProjectTabs /> menu', () => {

@@ -11,6 +11,7 @@ import {
   mockFetch,
   renderWithProviders,
 } from '@/src/__tests__/helpers/component'
+import { DEFAULT_SIDEBAR_NAVIGATION } from '@/src/schemas/user-preference.schema'
 import type { ProjectDTO } from '@/types/project'
 import { ProjectSidebar } from '../project-sidebar'
 
@@ -49,13 +50,23 @@ function buildProject(overrides: Partial<ProjectDTO> = {}): ProjectDTO {
  */
 function renderSidebar(
   projects: ProjectDTO[],
-  { userId = 'user-1', isPrivileged = false } = {},
+  {
+    userId = 'user-1',
+    isPrivileged = false,
+    projectsLimit,
+  }: { userId?: string; isPrivileged?: boolean; projectsLimit?: number } = {},
 ) {
   const queryClient = createTestQueryClient()
   queryClient.setQueryData(
     [['projects'], WORKSPACE_ID, { archived: false }],
     projects,
   )
+  // The viewer's "show N projects" sidebar preference.
+  if (projectsLimit !== undefined) {
+    queryClient.setQueryData(['user-preferences'], {
+      navigation: { ...DEFAULT_SIDEBAR_NAVIGATION, projectsLimit },
+    })
+  }
   return renderWithProviders(
     <ProjectSidebar
       workspaceId={WORKSPACE_ID}
@@ -143,6 +154,38 @@ describe('<ProjectSidebar /> listing', () => {
     expect(
       await screen.findByRole('link', { name: 'Favorito' }),
     ).toBeInTheDocument()
+  })
+
+  it('trims the list to the viewer limit and links to the full list', () => {
+    renderSidebar(
+      [
+        buildProject(),
+        buildProject({ id: 'project-2', name: 'Beta', slug: 'beta' }),
+        buildProject({ id: 'project-3', name: 'Gama', slug: 'gama' }),
+      ],
+      { projectsLimit: 2 },
+    )
+
+    expect(projectLink(/^Alpha$/)).toBeInTheDocument()
+    expect(projectLink(/^Beta$/)).toBeInTheDocument()
+    expect(screen.queryByRole('link', { name: /^Gama$/ })).toBeNull()
+    expect(screen.getByRole('link', { name: 'Ver todos (3)' })).toHaveAttribute(
+      'href',
+      `${BASE}/projects`,
+    )
+  })
+
+  it('shows no "see all" link when the list fits the limit', () => {
+    renderSidebar(
+      [
+        buildProject(),
+        buildProject({ id: 'project-2', name: 'Beta', slug: 'beta' }),
+      ],
+      { projectsLimit: 5 },
+    )
+
+    expect(projectLink(/^Beta$/)).toBeInTheDocument()
+    expect(screen.queryByRole('link', { name: /Ver todos/ })).toBeNull()
   })
 
   it('renders nothing but the group when the workspace has no project', () => {

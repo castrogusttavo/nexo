@@ -133,6 +133,30 @@ describe('<UserDropdownProfile />', () => {
     ).toHaveAttribute('aria-selected', 'true')
   })
 
+  it('closes the profile modal on Escape and can reopen it', async () => {
+    const { user } = renderDropdown()
+
+    await screen.findByText('AS')
+    await openMenu(user)
+    await user.click(
+      await screen.findByRole('menuitem', { name: 'Configurações' }),
+    )
+    await screen.findByRole('dialog')
+
+    await user.keyboard('{Escape}')
+
+    await waitFor(() =>
+      expect(screen.queryByRole('dialog')).not.toBeInTheDocument(),
+    )
+    await openMenu(user)
+    await user.click(
+      await screen.findByRole('menuitem', { name: 'Configurações' }),
+    )
+    expect(await screen.findByRole('dialog')).toHaveTextContent(
+      'Painel perfil (profile)',
+    )
+  })
+
   it('signs the user out and sends them to the sign-in page', async () => {
     const { user } = renderDropdown()
 

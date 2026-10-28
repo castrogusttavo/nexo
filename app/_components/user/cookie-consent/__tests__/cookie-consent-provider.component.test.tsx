@@ -1,4 +1,4 @@
-import { renderHook, waitFor } from '@testing-library/react'
+import { act, renderHook, waitFor } from '@testing-library/react'
 import type { ReactNode } from 'react'
 import { afterEach, describe, expect, it, vi } from 'vitest'
 import {
@@ -12,6 +12,11 @@ const { useSession } = vi.hoisted(() => ({
 
 vi.mock('@/src/lib/auth-client', () => ({
   authClient: { useSession },
+}))
+
+const { logWarn } = vi.hoisted(() => ({ logWarn: vi.fn() }))
+vi.mock('@/lib/axiom/client', () => ({
+  useLogger: () => ({ warn: logWarn, error: vi.fn() }),
 }))
 
 function wrapper(isAuthenticated: boolean) {
@@ -36,6 +41,7 @@ function setConsentCookie(value: string | null) {
 }
 
 afterEach(() => {
+  vi.unstubAllGlobals()
   setConsentCookie(null)
   useSession.mockReset()
   useSession.mockReturnValue({ data: null })
@@ -109,5 +115,39 @@ describe('useCookieConsent', () => {
     )
 
     consoleError.mockRestore()
+  })
+
+  it('marks the consent cookie Secure when the page is served over https', () => {
+    vi.stubGlobal('location', { ...window.location, protocol: 'https:' })
+    const cookieSetter = vi.spyOn(document, 'cookie', 'set')
+    const { result } = renderHook(() => useCookieConsent(), {
+      wrapper: wrapper(false),
+    })
+
+    act(() => result.current.setConsent('accepted'))
+
+    expect(cookieSetter).toHaveBeenCalledWith(
+      expect.stringMatching(
+        /^nx_cookie_consent=accepted; .*; SameSite=Lax; Secure$/,
+      ),
+    )
+    expect(result.current.consent).toBe('accepted')
+  })
+
+  it('logs an audit call that fails with something other than an Error', async () => {
+    vi.spyOn(globalThis, 'fetch').mockRejectedValue('socket hang up')
+    const { result } = renderHook(() => useCookieConsent(), {
+      wrapper: wrapper(true),
+    })
+
+    act(() => result.current.setConsent('rejected'))
+
+    await waitFor(() =>
+      expect(logWarn).toHaveBeenCalledWith('cookie_consent.audit_failed', {
+        component: 'CookieConsentProvider',
+        message: 'socket hang up',
+      }),
+    )
+    expect(result.current.consent).toBe('rejected')
   })
 })

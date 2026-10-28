@@ -62,6 +62,21 @@ describe('useEditorMediaUrl', () => {
     expect(fetchSpy).not.toHaveBeenCalled()
   })
 
+  it('asks for an empty key on an explicit refetch without one', async () => {
+    // `enabled` only gates automatic fetches; refetch() runs regardless.
+    const fetchSpy = mockFetch().mockResolvedValueOnce(
+      apiError(400, 'Chave inválida'),
+    )
+    const { result } = renderHookWithProviders(() =>
+      useEditorMediaUrl('ws-1', 'nexo', undefined),
+    )
+
+    const refetched = await act(() => result.current.refetch())
+
+    expect(getFetchCall(fetchSpy).url).toBe(`${BASE_URL}?key=`)
+    expect(refetched.error?.message).toBe('Chave inválida')
+  })
+
   it('caches the url per workspace, project and key', async () => {
     mockFetch().mockResolvedValueOnce(apiSuccess({ url: 'https://x' }))
 

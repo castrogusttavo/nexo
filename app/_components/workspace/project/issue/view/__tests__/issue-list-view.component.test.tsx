@@ -740,6 +740,19 @@ describe('<IssueListView /> selection', () => {
     expect(within(getRow('Cadastro')).getByRole('checkbox')).not.toBeChecked()
   })
 
+  it('unselects a row when its checkbox is clicked again', async () => {
+    mockProjectApi({ issues: [buildIssue({ id: 'i-1', title: 'Login' })] })
+    const { user } = renderList()
+
+    await screen.findByText('Login')
+    const box = within(getRow('Login')).getByRole('checkbox')
+    await user.click(box)
+    expect(box).toBeChecked()
+
+    await user.click(box)
+    expect(box).not.toBeChecked()
+  })
+
   it('marks the section as partially selected when only some rows are', async () => {
     mockProjectApi({
       issues: [
@@ -784,6 +797,41 @@ describe('<IssueListView /> quick create', () => {
       screen.getByRole('button', { name: 'Nova issue em Concluído' }),
     )
 
+    expect(screen.getByPlaceholderText('Nome da issue')).toBeInTheDocument()
+  })
+
+  it('closes the creator on Escape without creating anything', async () => {
+    const fetchSpy = mockProjectApi()
+    await createIn('Concluído', 'Rascunho{Escape}')
+
+    expect(
+      screen.queryByPlaceholderText('Nome da issue'),
+    ).not.toBeInTheDocument()
+    expect(mutationCalls(fetchSpy)).toHaveLength(0)
+  })
+
+  it('closes the creator when it loses focus', async () => {
+    mockProjectApi()
+    const { user } = renderList()
+    await findSection('Concluído')
+    await user.click(
+      screen.getByRole('button', { name: 'Nova issue em Concluído' }),
+    )
+    await user.type(screen.getByPlaceholderText('Nome da issue'), 'Rascunho')
+
+    await user.tab()
+
+    expect(
+      screen.queryByPlaceholderText('Nome da issue'),
+    ).not.toBeInTheDocument()
+  })
+
+  it('creates nothing for a blank title and keeps the creator open', async () => {
+    const fetchSpy = mockProjectApi()
+    await createIn('Concluído', '   ')
+
+    await new Promise((resolve) => setTimeout(resolve, 20))
+    expect(mutationCalls(fetchSpy)).toHaveLength(0)
     expect(screen.getByPlaceholderText('Nome da issue')).toBeInTheDocument()
   })
 

@@ -118,6 +118,22 @@ describe('<IssueFilterValueInput /> dates', () => {
 
     expect(onChange).toHaveBeenLastCalledWith(null)
   })
+
+  it('clears both ends when a one-day range is unselected', async () => {
+    const { user, onChange } = renderInput('between', [
+      '2026-09-18T00:00:00.000Z',
+      '2026-09-18T00:00:00.000Z',
+    ])
+
+    await user.click(
+      screen.getByRole('button', { name: '18/09/2026 - 18/09/2026' }),
+    )
+    await user.click(
+      await screen.findByRole('button', { name: /September 18/i }),
+    )
+
+    expect(onChange).toHaveBeenLastCalledWith(['', ''])
+  })
 })
 
 describe('<IssueFilterValueInput /> shapes', () => {
@@ -146,7 +162,10 @@ describe('<IssueFilterValueInput /> shapes', () => {
 
 describe('<IssueFilterValueInput /> option sources', () => {
   const SOURCES = {
-    '/states': [{ id: 'state-1', name: 'A fazer' }],
+    '/states': [
+      { id: 'state-1', name: 'A fazer' },
+      { id: 'state-2', name: 'Em revisão' },
+    ],
     '/issue-types': [{ id: 'type-1', name: 'Bug' }],
     '/labels': [{ id: 'label-1', name: 'Urgente' }],
     '/cycles': [{ id: 'cycle-1', name: 'Sprint 1' }],
@@ -225,6 +244,22 @@ describe('<IssueFilterValueInput /> option sources', () => {
     await user.click(list.getByRole('option', { name: 'A fazer' }))
 
     expect(onChange).toHaveBeenCalledWith([])
+  })
+
+  it('counts the selection on the trigger once more than one is picked', async () => {
+    renderField('state', 'is', ['state-1', 'state-2'])
+
+    expect(
+      await screen.findByRole('button', { name: 'Selecionar (2)' }),
+    ).toBeInTheDocument()
+  })
+
+  it('treats a list value as no single selection', () => {
+    renderField('priority', 'contains', ['LOW'])
+
+    expect(
+      screen.getByRole('button', { name: 'Selecionar' }),
+    ).toBeInTheDocument()
   })
 
   it('treats a non-array value as an empty multi selection', () => {
