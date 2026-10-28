@@ -10850,6 +10850,81 @@
           }
         ]
       },
+      "SidebarNavigation": {
+        "type": "object",
+        "description": "Ordem e visibilidade dos itens da barra lateral. Página inicial e Projetos são fixos e não aparecem aqui.",
+        "required": [
+          "personal",
+          "workspace",
+          "projectsLimit"
+        ],
+        "properties": {
+          "personal": {
+            "type": "array",
+            "minItems": 3,
+            "maxItems": 3,
+            "description": "Todos os itens da seção, uma vez cada, na ordem de exibição.",
+            "items": {
+              "type": "object",
+              "required": [
+                "id",
+                "visible"
+              ],
+              "properties": {
+                "id": {
+                  "type": "string",
+                  "enum": [
+                    "drafts",
+                    "your-work",
+                    "stickies"
+                  ]
+                },
+                "visible": {
+                  "type": "boolean"
+                }
+              }
+            }
+          },
+          "workspace": {
+            "type": "array",
+            "minItems": 5,
+            "maxItems": 5,
+            "description": "Todos os itens da seção, uma vez cada, na ordem de exibição.",
+            "items": {
+              "type": "object",
+              "required": [
+                "id",
+                "visible"
+              ],
+              "properties": {
+                "id": {
+                  "type": "string",
+                  "enum": [
+                    "views",
+                    "cycles",
+                    "analytics",
+                    "archives",
+                    "dashboards"
+                  ]
+                },
+                "visible": {
+                  "type": "boolean"
+                }
+              }
+            }
+          },
+          "projectsLimit": {
+            "type": [
+              "integer",
+              "null"
+            ],
+            "minimum": 1,
+            "maximum": 50,
+            "description": "Quantos projetos aparecem na barra lateral; null mostra todos.",
+            "example": 10
+          }
+        }
+      },
       "UserPreference": {
         "type": "object",
         "description": "Preferências do usuário autenticado.",
@@ -10900,6 +10975,9 @@
               0,
               6
             ]
+          },
+          "navigation": {
+            "$ref": "#/components/schemas/SidebarNavigation"
           }
         }
       },
@@ -10969,6 +11047,9 @@
               0,
               6
             ]
+          },
+          "navigation": {
+            "$ref": "#/components/schemas/SidebarNavigation"
           }
         }
       },

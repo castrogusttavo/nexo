@@ -3,14 +3,17 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import {
   apiError,
   apiSuccess,
+  createTestQueryClient,
   deferredResponse,
   getFetchCall,
   mockFetch,
   renderHookWithProviders,
 } from '@/src/__tests__/helpers/component'
+import { DEFAULT_SIDEBAR_NAVIGATION } from '@/src/schemas/user-preference.schema'
 import type { UserPreferenceDTO } from '@/types/user-preference'
 import {
   applyTheme,
+  useSidebarNavigation,
   useUpdateUserPreferences,
   useUserPreferences,
 } from '../use-user-preferences'
@@ -30,6 +33,7 @@ function buildPreferences(
     timezone: 'America/Sao_Paulo',
     weekStartsOn: 0,
     weekendDays: [0, 6],
+    navigation: DEFAULT_SIDEBAR_NAVIGATION,
     ...overrides,
   }
 }
@@ -166,5 +170,74 @@ describe('applyTheme', () => {
     expect(window.matchMedia).toHaveBeenCalledWith(
       '(prefers-color-scheme:dark)',
     )
+  })
+})
+
+describe('useSidebarNavigation', () => {
+  const customised = {
+    ...DEFAULT_SIDEBAR_NAVIGATION,
+    personal: [
+      { id: 'stickies' as const, visible: false },
+      { id: 'drafts' as const, visible: true },
+      { id: 'your-work' as const, visible: true },
+    ],
+    projectsLimit: 5,
+  }
+
+  it('returns the default while signed out and nothing seeds it', () => {
+    useSession.mockReturnValue({ data: null })
+    mockFetch()
+
+    const { result } = renderHookWithProviders(() => useSidebarNavigation())
+
+    expect(result.current).toEqual(DEFAULT_SIDEBAR_NAVIGATION)
+  })
+
+  it('returns the server-read navigation until the query answers', () => {
+    const response = deferredResponse()
+    mockFetch().mockReturnValueOnce(response.promise)
+
+    const { result } = renderHookWithProviders(() =>
+      useSidebarNavigation(customised),
+    )
+
+    expect(result.current).toEqual(customised)
+  })
+
+  it('follows the fetched preferences once they load', async () => {
+    mockFetch().mockResolvedValueOnce(
+      apiSuccess(buildPreferences({ navigation: customised })),
+    )
+
+    const { result } = renderHookWithProviders(() => useSidebarNavigation())
+
+    await waitFor(() => expect(result.current).toEqual(customised))
+  })
+
+  it('reflects an optimistic navigation update at once', async () => {
+    const response = deferredResponse()
+    const fetchSpy = mockFetch().mockReturnValueOnce(response.promise)
+    // Seeded before mount, so the query is fresh and the only request is
+    // the PATCH.
+    const queryClient = createTestQueryClient()
+    queryClient.setQueryData(PREFERENCE_KEY, buildPreferences())
+    const { result } = renderHookWithProviders(
+      () => ({
+        navigation: useSidebarNavigation(),
+        update: useUpdateUserPreferences(),
+      }),
+      { queryClient },
+    )
+
+    act(() => {
+      result.current.update.mutate({ navigation: customised })
+    })
+
+    await waitFor(() => expect(result.current.navigation).toEqual(customised))
+    expect(getFetchCall(fetchSpy)).toMatchObject({
+      method: 'PATCH',
+      body: { navigation: customised },
+    })
+    response.resolve(apiSuccess(buildPreferences({ navigation: customised })))
   })
 })

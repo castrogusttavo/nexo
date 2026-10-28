@@ -9,6 +9,7 @@ import {
   mockFetch,
   renderWithProviders,
 } from '@/src/__tests__/helpers/component'
+import { DEFAULT_SIDEBAR_NAVIGATION } from '@/src/schemas/user-preference.schema'
 import type { UserPreferenceDTO } from '@/types/user-preference'
 import { UserModalPreferencesTab } from '../user-modal-preferences-tab'
 
@@ -38,6 +39,7 @@ function buildPreferences(
     timezone: 'America/Sao_Paulo',
     weekStartsOn: 0,
     weekendDays: [0, 6],
+    navigation: DEFAULT_SIDEBAR_NAVIGATION,
     ...overrides,
   }
 }

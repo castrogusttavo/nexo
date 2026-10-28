@@ -117,6 +117,7 @@ model UserPreference {
   timezone          String            @default("UTC")
   weekStartsOn      Int               @default(1) @map("week_starts_on")
   weekendDays       Int[]             @default([0, 6]) @map("weekend_days")
+  navigation Json? 
   createdAt         DateTime          @default(now()) @map("created_at")
   updatedAt         DateTime          @updatedAt @map("updated_at")
 

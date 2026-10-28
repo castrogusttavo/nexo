@@ -1,4 +1,5 @@
 import type { Prisma, UserPreference } from '@prisma/client'
+import { DEFAULT_SIDEBAR_NAVIGATION } from '@/src/schemas/user-preference.schema'
 import type { UserPreferenceDTO } from '@/types/user-preference'
 
 export function createFakeUserPreference(
@@ -14,6 +15,7 @@ export function createFakeUserPreference(
     timezone: 'UTC',
     weekStartsOn: 1,
     weekendDays: [0, 6],
+    navigation: null,
     createdAt: now,
     updatedAt: now,
     ...overrides,
@@ -30,6 +32,7 @@ export function createFakeUserPreferenceDTO(
     timezone: 'UTC',
     weekStartsOn: 1,
     weekendDays: [0, 6],
+    navigation: DEFAULT_SIDEBAR_NAVIGATION,
     ...overrides,
   }
 }

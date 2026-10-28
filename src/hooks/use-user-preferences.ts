@@ -2,7 +2,11 @@ import type { Theme } from '@prisma/client'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import type { UserPreferenceDTO } from '@/types/user-preference'
 import { authClient } from '../lib/auth-client'
-import type { UpdateUserPreferenceDTO } from '../schemas/user-preference.schema'
+import {
+  DEFAULT_SIDEBAR_NAVIGATION,
+  type SidebarNavigation,
+  type UpdateUserPreferenceDTO,
+} from '../schemas/user-preference.schema'
 import { apiFetch, apiFetchJson } from './_fetch'
 
 const PREFERENCE_KEY = ['user-preferences']
@@ -69,4 +73,11 @@ export function applyTheme(theme: Theme) {
     (theme === 'SYSTEM' &&
       window.matchMedia('(prefers-color-scheme:dark)').matches)
   root.classList.toggle('dark', dark)
+}
+
+export function useSidebarNavigation(
+  initial?: SidebarNavigation,
+): SidebarNavigation {
+  const { data } = useUserPreferences()
+  return data?.navigation ?? initial ?? DEFAULT_SIDEBAR_NAVIGATION
 }
