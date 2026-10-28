@@ -5,8 +5,6 @@ import Image from 'next/image'
 import { useRouter } from 'next/navigation'
 import { useState } from 'react'
 import { NexoIcon } from '@/components/icon/icon'
-import { H4 } from '@/components/typography/heading/h4'
-import { Muted } from '@/components/typography/text/muted'
 import { Button } from '@/components/ui/button'
 import {
   DropdownMenu,
@@ -66,8 +64,8 @@ export function UserDropdownProfile() {
                 image={user?.image}
                 className='size-12'
               />
-              <H4 className='text-sm'>{user?.name}</H4>
-              <Muted className='text-xs text-primary'>{user?.email}</Muted>
+              <h4 className='text-sm text-white'>{user?.name}</h4>
+              <p className='text-xs text-white'>{user?.email}</p>
             </div>
           </DropdownMenuGroup>
           <DropdownMenuGroup className='flex flex-col'>
