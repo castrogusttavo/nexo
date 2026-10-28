@@ -5,7 +5,7 @@ import { cacheLife, cacheTag } from 'next/cache'
 import {
   HeaderBreadcrumbCrumb,
   HeaderBreadcrumbList,
-} from '@/app/_components/header/breadcrumb-page'
+} from '@/app/_components/header/breadcrumb'
 import HeaderInternalNavigation from '@/app/_components/header/header-internal-navigation'
 import { UserShortcutLinkDialog } from '@/app/_components/user/shortcut-link/user-shortcut-link-dialog'
 import { UserShortcutLinkList } from '@/app/_components/user/shortcut-link/user-shortcut-link-list'

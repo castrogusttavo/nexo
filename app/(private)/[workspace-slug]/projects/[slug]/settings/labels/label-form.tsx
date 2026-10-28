@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import { ColorSwatchPicker } from '@/app/_components/ui/color-swatch-picker'
+import { ColorSwatchPicker } from '@/components/color-swatch-picker'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { notify } from '@/lib/notify'

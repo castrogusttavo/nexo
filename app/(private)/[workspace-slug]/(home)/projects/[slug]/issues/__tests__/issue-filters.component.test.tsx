@@ -6,7 +6,7 @@ import {
   type OnUrlUpdateFunction,
 } from 'nuqs/adapters/testing'
 import { describe, expect, it, vi } from 'vitest'
-import { IssueListView } from '@/app/_components/issue/issue-list-view'
+import { IssueListView } from '@/app/_components/workspace/project/issue/view/issue-list-view'
 import {
   apiSuccess,
   createTestQueryClient,
@@ -18,21 +18,27 @@ import { IssueFilters } from '../issue-filters'
 
 // See issue-list-view.component.test.tsx: the localStorage-backed store
 // can't initialise under Node >= 25, so a plain object stands in.
-vi.mock('@/components/layouts/use-issue-list-preferences', () => ({
-  useIssueListPreferences: () => ({
-    preferences: {
-      groupBy: 'none',
-      sortBy: 'manual',
-      showSubIssues: true,
-      showEmptyGroups: true,
-    },
-    update: vi.fn(),
+vi.mock(
+  '@/app/_components/workspace/project/issue/layout/use-issue-list-preferences',
+  () => ({
+    useIssueListPreferences: () => ({
+      preferences: {
+        groupBy: 'none',
+        sortBy: 'manual',
+        showSubIssues: true,
+        showEmptyGroups: true,
+      },
+      update: vi.fn(),
+    }),
   }),
-}))
+)
 
-vi.mock('@/app/_components/issue/panel/issue-details-panel', () => ({
-  IssueDetailsPanel: () => null,
-}))
+vi.mock(
+  '@/app/_components/workspace/project/issue/issue-details-panel',
+  () => ({
+    IssueDetailsPanel: () => null,
+  }),
+)
 
 const WORKSPACE_ID = 'ws-1'
 const PROJECT_SLUG = 'nexo'

@@ -3,7 +3,7 @@ import { NexoIcon } from "../icon/icon";
 import { Button } from "../ui/button";
 import { Add01Icon } from "@hugeicons-pro/core-stroke-rounded";
 import { Badge } from "../ui/badge";
-import { IssueCardList } from "@/app/_components/issue/issue-card";
+import { IssueCardList } from "@/app/_components/workspace/project/issue/view/issue-card";
 import { Checkbox } from "../ui/checkbox";
 import { IssueDTO, IssuePriorityDTO } from "@/types/issue";
 import { StateDTO } from "@/types/state";

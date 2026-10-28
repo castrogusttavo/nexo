@@ -1,7 +1,7 @@
 'use client'
 
 import { ColumnPlugin, ColumnItemPlugin } from '@platejs/layout/react'
-import { ColumnElement, ColumnGroupElement } from "@/components/ui/column-node"
+import { ColumnElement, ColumnGroupElement } from "@/components/editor/ui/column-node"
 
 export const ColumnKit = [
   ColumnPlugin.withComponent(ColumnGroupElement),

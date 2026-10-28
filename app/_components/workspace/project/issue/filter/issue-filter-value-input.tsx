@@ -1,0 +1,203 @@
+'use client'
+
+import {
+  parseIssueDate,
+  toIssueDateISO,
+} from '@/app/_components/workspace/project/issue/issue-dates'
+import { Button } from '@/components/ui/button'
+import { Calendar } from '@/components/ui/calendar'
+import { Input } from '@/components/ui/input'
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from '@/components/ui/popover'
+import { useCycles } from '@/src/hooks/use-cycle'
+import { useIssues } from '@/src/hooks/use-issue'
+import { useIssueTypes } from '@/src/hooks/use-issue-type'
+import { useLabels } from '@/src/hooks/use-label'
+import { useModules } from '@/src/hooks/use-module'
+import { useProjectMembers } from '@/src/hooks/use-project-member'
+import { useStates } from '@/src/hooks/use-state'
+import { FILTER_FIELDS } from './field-registry'
+import type {
+  BasicFilterValue,
+  BasicOperator,
+  FilterField,
+} from './filter-schema'
+import { IssueFilterSelect } from './issue-filter-select'
+
+// Date filters name calendar days, stored like issue dates (UTC midnight of
+// the picked day) so a filter reads the same day in every timezone.
+function toFilterDay(iso: string): Date | undefined {
+  return iso ? parseIssueDate(iso) : undefined
+}
+
+const PRIORITY_OPTIONS = [
+  { label: 'Sem prioridade', value: 'NONE' },
+  { label: 'Baixa', value: 'LOW' },
+  { label: 'Média', value: 'MEDIUM' },
+  { label: 'Alta', value: 'HIGH' },
+  { label: 'Urgente', value: 'URGENT' },
+]
+
+const STATE_GROUP_OPTIONS = [
+  { label: 'Backlog', value: 'BACKLOG' },
+  { label: 'Não iniciado', value: 'UNSTARTED' },
+  { label: 'Em andamento', value: 'STARTED' },
+  { label: 'Concluído', value: 'COMPLETED' },
+  { label: 'Cancelado', value: 'CANCELLED' },
+]
+
+interface IssueFilterValueInputProps {
+  workspaceId: string
+  projectSlug: string
+  field: FilterField
+  operator: BasicOperator
+  value: BasicFilterValue
+  onChange: (value: BasicFilterValue) => void
+}
+
+function useFiledOptions(
+  field: FilterField,
+  workspaceId: string,
+  projectSlug: string,
+) {
+  const states = useStates(workspaceId, projectSlug)
+  const types = useIssueTypes(workspaceId, projectSlug)
+  const labels = useLabels(workspaceId, projectSlug)
+  const cycles = useCycles(workspaceId, projectSlug)
+  const modules = useModules(workspaceId, projectSlug)
+  const members = useProjectMembers(workspaceId, projectSlug)
+  const issues = useIssues(workspaceId, projectSlug)
+
+  switch (field) {
+    case 'state':
+      return (states.data ?? []).map((s) => ({ label: s.name, value: s.id }))
+    case 'type':
+      return (types.data ?? []).map((t) => ({ label: t.name, value: t.id }))
+    case 'labels':
+      return (labels.data ?? []).map((l) => ({ label: l.name, value: l.id }))
+    case 'cycle':
+      return (cycles.data ?? []).map((c) => ({ label: c.name, value: c.id }))
+    case 'module':
+      return (modules.data ?? []).map((m) => ({ label: m.name, value: m.id }))
+    case 'assignees':
+    case 'mentions':
+    case 'created-by':
+      return (members.data ?? []).map((m) => ({
+        label: m.name,
+        value: m.userId,
+      }))
+    case 'sub-issues':
+      return (issues.data ?? []).map((i) => ({ label: i.title, value: i.id }))
+    case 'priority':
+      return PRIORITY_OPTIONS
+    case 'state-group':
+      return STATE_GROUP_OPTIONS
+    default:
+      return []
+  }
+}
+
+export function IssueFilterValueInput({
+  workspaceId,
+  projectSlug,
+  field,
+  operator,
+  value,
+  onChange,
+}: IssueFilterValueInputProps) {
+  const options = useFiledOptions(field, workspaceId, projectSlug)
+
+  if (operator === 'is-empty') return null
+
+  const fieldType = FILTER_FIELDS[field].type
+
+  if (fieldType === 'text') {
+    return (
+      <Input
+        value={typeof value === 'string' ? value : ''}
+        onChange={(e) => onChange(e.target.value)}
+        placeholder='Valor'
+        className='h-8 w-48'
+      />
+    )
+  }
+
+  if (fieldType === 'date') {
+    if (operator === 'between' || operator === 'not-between') {
+      const [start, end] = Array.isArray(value) ? value : ['', '']
+      const from = toFilterDay(start)
+      const to = toFilterDay(end)
+      return (
+        <Popover>
+          <PopoverTrigger
+            render={
+              <Button variant='outline' size='sm' className='h-8'>
+                {from && to
+                  ? `${from.toLocaleDateString('pt-BR')} - ${to.toLocaleDateString('pt-BR')}`
+                  : 'Selecionar período'}
+              </Button>
+            }
+          />
+          <PopoverContent className='w-auto p-0'>
+            <Calendar
+              mode='range'
+              selected={{ from, to }}
+              onSelect={(range) =>
+                onChange([
+                  range?.from ? toIssueDateISO(range.from) : '',
+                  range?.to ? toIssueDateISO(range.to) : '',
+                ])
+              }
+            />
+          </PopoverContent>
+        </Popover>
+      )
+    }
+
+    const day = toFilterDay(typeof value === 'string' ? value : '')
+    return (
+      <Popover>
+        <PopoverTrigger
+          render={
+            <Button variant='outline' size='sm' className='h-8'>
+              {day ? day.toLocaleDateString('pt-BR') : 'Selecionar data'}
+            </Button>
+          }
+        />
+        <PopoverContent className='w-auto p-0'>
+          <Calendar
+            mode='single'
+            selected={day}
+            onSelect={(date) => onChange(date ? toIssueDateISO(date) : null)}
+          />
+        </PopoverContent>
+      </Popover>
+    )
+  }
+
+  const isMulti = operator === 'is' || operator === 'is-not'
+
+  if (isMulti) {
+    return (
+      <IssueFilterSelect
+        multiple
+        title='Selecionar'
+        options={options}
+        value={Array.isArray(value) ? value : []}
+        onChange={onChange}
+      />
+    )
+  }
+
+  return (
+    <IssueFilterSelect
+      title='Selecionar'
+      options={options}
+      value={typeof value === 'string' ? value : undefined}
+      onChange={onChange}
+    />
+  )
+}

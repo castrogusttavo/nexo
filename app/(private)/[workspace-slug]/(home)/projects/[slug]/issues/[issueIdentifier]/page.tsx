@@ -5,7 +5,7 @@ import { Suspense } from 'react'
 import {
   HeaderBreadcrumbCrumb,
   HeaderBreadcrumbList,
-} from '@/app/_components/header/breadcrumb-page'
+} from '@/app/_components/header/breadcrumb'
 import HeaderInternalNavigation from '@/app/_components/header/header-internal-navigation'
 import { NexoIcon } from '@/components/icon/icon'
 import { getProjectContext } from '@/src/lib/project-context'

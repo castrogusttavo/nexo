@@ -2,7 +2,7 @@
 
 import { BlockSelectionPlugin } from '@platejs/selection/react'
 import { getPluginTypes, KEYS } from 'platejs'
-import { BlockSelection } from '@/components/ui/block-selection'
+import { BlockSelection } from '@/components/editor/ui/block-selection'
 
 const hasSelectableClass = ({ attributes, className }: { attributes: { className?: string }; className?: string }) =>
   [className, attributes.className].filter(Boolean).join(' ').includes('slate-selectable')

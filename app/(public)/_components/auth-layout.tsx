@@ -1,6 +1,6 @@
 import type { ReactNode } from 'react'
-import { HeaderLogin } from '@/components/header-login'
-import { SocialLoginButtonProps } from '@/components/social-login-button'
+import { AuthHeader } from '@/app/(public)/_components/auth-header'
+import { AuthSocialButton } from '@/app/(public)/_components/auth-social-button'
 import { H4 } from '@/components/typography/heading/h4'
 import { Muted } from '@/components/typography/text/muted'
 
@@ -20,7 +20,7 @@ export function AuthLayout({
 }) {
   return (
     <div className='min-h-screen flex flex-col items-center justify-center p-4 pb-12'>
-      <HeaderLogin
+      <AuthHeader
         path={switchHref}
         pathname={switchLabel}
         prompt={switchPrompt}
@@ -62,12 +62,12 @@ export function AuthLayoutSocial({
   return (
     <>
       <div className='flex flex-col gap-3'>
-        <SocialLoginButtonProps
+        <AuthSocialButton
           provider='google'
           isPending={isPending}
           callbackURL={callbackURL}
         />
-        <SocialLoginButtonProps
+        <AuthSocialButton
           provider='github'
           isPending={isPending}
           callbackURL={callbackURL}

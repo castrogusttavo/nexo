@@ -1,11 +1,11 @@
 import { screen } from '@testing-library/react'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
+import { CookieConsentProvider } from '@/app/_components/user/cookie-consent/cookie-consent-provider'
 import { Tabs } from '@/components/ui/tabs'
 import {
   deferredResponse,
   renderWithProviders,
 } from '@/src/__tests__/helpers/component'
-import { CookieConsentProvider } from '../../../cookie-consent/cookie-consent-provider'
 import { UserModalSecurityTab } from '../user-modal-security-tab'
 
 const { useSession, listAccounts, requestPasswordReset } = vi.hoisted(() => ({

@@ -5,6 +5,7 @@ import {
   SlidersHorizontalIcon,
 } from '@hugeicons-pro/core-stroke-rounded'
 import { useState } from 'react'
+import { AboutTooltip } from '@/components/about-tooltip'
 import { NexoIcon } from '@/components/icon/icon'
 import { Button } from '@/components/ui/button'
 import { Checkbox } from '@/components/ui/checkbox'
@@ -32,7 +33,6 @@ import {
   PROJECTS_LIMIT_MAX,
   type SidebarNavigation,
 } from '@/src/schemas/user-preference.schema'
-import { AboutTooltip } from '../about-tooltip'
 import {
   PERSONAL_NAV_ITEMS,
   type SidebarNavItemMeta,

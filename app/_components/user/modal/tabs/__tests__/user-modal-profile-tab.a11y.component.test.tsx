@@ -42,7 +42,7 @@ vi.mock('next/image', () => ({
 }))
 
 // The cover picker has its own upload flow; out of scope here.
-vi.mock('../../../user-cover-image-picker', () => ({
+vi.mock('@/app/_components/user/user-cover-image-picker', () => ({
   UserCoverImagePicker: () => null,
 }))
 

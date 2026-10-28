@@ -46,14 +46,11 @@ beforeEach(() => {
 
 // The project tree fetches its own data and guards its own links in
 // sidebar-projects.component.test.tsx; here it is only a marker.
-vi.mock(
-  '@/app/_components/navigation/sidebar-project/sidebar-projects',
-  () => ({
-    SidebarProjects: ({ base }: { base: string }) => (
-      <div>{`Projetos de ${base}`}</div>
-    ),
-  }),
-)
+vi.mock('@/app/_components/workspace/project/project-sidebar', () => ({
+  ProjectSidebar: ({ base }: { base: string }) => (
+    <div>{`Projetos de ${base}`}</div>
+  ),
+}))
 
 async function renderLayout() {
   const ui = await HomeSidebar({

@@ -28,8 +28,15 @@ const BACKEND_COVERAGE = [
 // are left out on purpose — Testing Library cannot render them, so counting
 // them would peg the metric below 100 no matter how many tests exist (the
 // e2e suite does exercise them, but v8 cannot instrument `next start`).
+// Pure client modules that live under app/ (no 'use client' line, but they
+// only run in the browser): the issue filter engine and list layout state.
+const PURE_CLIENT_DIRS = [
+  'app/_components/workspace/project/issue/filter/',
+  'app/_components/workspace/project/issue/layout/',
+]
+
 function clientSourceFiles(): string[] {
-  const roots = ['app', 'components/hooks', 'components/filters', 'components/layouts']
+  const roots = ['app', 'components/hooks', 'components/layouts']
   const files: string[] = []
   for (const root of roots) {
     if (!existsSync(root)) continue
@@ -43,9 +50,12 @@ function clientSourceFiles(): string[] {
       // Inside app/, only files that ship to the browser count: the .ts
       // files there are server-side (route handlers, robots/sitemap/manifest,
       // feeds), which Testing Library cannot render. Outside app/ the roots
-      // are hooks and pure client modules, so .ts files are in scope.
+      // are hooks and pure client modules, so .ts files are in scope; so are
+      // the PURE_CLIENT_DIRS inside app/.
       const isClient = /^['"]use client['"]/.test(readFileSync(path, 'utf8'))
-      if (path.startsWith('app/') ? isClient : true) files.push(path)
+      const pureClient = PURE_CLIENT_DIRS.some((dir) => path.startsWith(dir))
+      if (path.startsWith('app/') && !pureClient ? isClient : true)
+        files.push(path)
     }
   }
   return files

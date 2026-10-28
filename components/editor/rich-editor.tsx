@@ -2,17 +2,17 @@
 
 import type { Value } from "platejs"
 import { Plate, usePlateEditor } from "platejs/react"
-import { Editor, EditorContainer } from "../ui/editor"
+import { Editor, EditorContainer } from "./ui/editor"
 import { cn } from "@/lib/utils"
-import { FixedToolbar } from "../ui/fixed-toolbar"
-import { MarkToolbarButton } from "../ui/mark-toolbar-button"
+import { FixedToolbar } from "./ui/fixed-toolbar"
+import { MarkToolbarButton } from "./ui/mark-toolbar-button"
 import { NexoIcon } from "../icon/icon"
 import { Heading01Icon, Heading02Icon, Heading03Icon, QuoteDownIcon, TextBoldIcon, TextItalicIcon, TextStrikethroughIcon, TextUnderlineIcon } from "@hugeicons-pro/core-stroke-rounded"
 import { BasicNodesKit } from "./plugins/basic-nodes-kit"
 import { ListKit } from "./plugins/list-kit"
 import { CodeBlockKit } from "./plugins/code-block-kit"
-import { BulletedListToolbarButton, NumberedListToolbarButton, TodoListToolbarButton } from "../ui/list-toolbar-button"
-import { ToolbarButton } from "../ui/toolbar"
+import { BulletedListToolbarButton, NumberedListToolbarButton, TodoListToolbarButton } from "./ui/list-toolbar-button"
+import { ToolbarButton } from "./ui/toolbar"
 
 interface IssueRichEditorProps {
   content: Value

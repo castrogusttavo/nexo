@@ -3,7 +3,7 @@
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { useState } from 'react'
-import { EmailValidationWithOtp } from '@/components/form/email-validation-with-otp'
+import { EmailValidationWithOtp } from '@/components/security/email-validation-with-otp'
 import { Muted } from '@/components/typography/text/muted'
 import { Button } from '@/components/ui/button'
 import { Checkbox } from '@/components/ui/checkbox'

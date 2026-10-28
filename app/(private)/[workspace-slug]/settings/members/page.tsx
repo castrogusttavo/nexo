@@ -4,7 +4,7 @@ import { Suspense } from 'react'
 import {
   HeaderBreadcrumbCrumb,
   HeaderBreadcrumbList,
-} from '@/app/_components/header/breadcrumb-page'
+} from '@/app/_components/header/breadcrumb'
 import HeaderInternalNavigation from '@/app/_components/header/header-internal-navigation'
 import { PageSkeleton } from '@/app/(private)/_components/page-skeleton'
 import { SettingsPage } from '@/app/(private)/_components/settings-page'

@@ -6,7 +6,7 @@ import {
   PencilEdit01Icon,
 } from '@hugeicons-pro/core-stroke-rounded'
 import { useMemo, useState } from 'react'
-import { issueStatesIcon } from '@/app/_components/issue/issue-icons'
+import { issueStatesIcon } from '@/app/_components/workspace/project/issue/issue-icons'
 import { SettingsPage } from '@/app/(private)/_components/settings-page'
 import { ConfirmDialog } from '@/components/confirm-dialog'
 import { NexoIcon } from '@/components/icon/icon'

@@ -8,7 +8,7 @@ import {
   ContextPrimaryAction,
   ContextSidebar,
 } from '@/app/_components/navigation/sidebar-context'
-import { SidebarProjects } from '@/app/_components/navigation/sidebar-project/sidebar-projects'
+import { ProjectSidebar } from '@/app/_components/workspace/project/project-sidebar'
 import { NexoIcon } from '@/components/icon/icon'
 import { Button } from '@/components/ui/button'
 import { requireMembership } from '@/src/lib/dal'
@@ -69,7 +69,7 @@ export async function HomeSidebar({
         }
       />
       <HomeSidebarNavigation base={base} initialNavigation={navigation} />
-      <SidebarProjects
+      <ProjectSidebar
         workspaceId={viewer.workspaceId}
         base={base}
         userId={viewer.userId}

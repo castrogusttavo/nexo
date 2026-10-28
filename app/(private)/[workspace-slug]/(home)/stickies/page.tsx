@@ -3,7 +3,7 @@ import type { Metadata } from 'next'
 import {
   HeaderBreadcrumbCrumb,
   HeaderBreadcrumbList,
-} from '@/app/_components/header/breadcrumb-page'
+} from '@/app/_components/header/breadcrumb'
 import HeaderInternalNavigation from '@/app/_components/header/header-internal-navigation'
 import { UserStickyCreateButton } from '@/app/_components/user/sticky/user-sticky-create-button'
 import { UserStickyList } from '@/app/_components/user/sticky/user-sticky-list'

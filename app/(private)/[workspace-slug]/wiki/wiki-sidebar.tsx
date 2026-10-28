@@ -4,8 +4,8 @@ import {
   ContextHeader,
   ContextSidebar,
 } from '@/app/_components/navigation/sidebar-context'
-import { WikiCreatePageButton } from '@/app/_components/wiki/wiki-create-page-button'
-import { WikiSidebarTree } from '@/app/_components/wiki/wiki-sidebar-tree'
+import { WikiCreatePageButton } from '@/app/_components/workspace/wiki/wiki-create-page-button'
+import { WikiSidebarTree } from '@/app/_components/workspace/wiki/wiki-sidebar-tree'
 import { NexoIcon } from '@/components/icon/icon'
 import { Button } from '@/components/ui/button'
 import { getWikiContext } from '@/src/lib/wiki-context'

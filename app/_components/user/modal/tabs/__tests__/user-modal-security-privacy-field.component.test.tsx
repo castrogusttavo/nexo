@@ -1,12 +1,12 @@
 import { screen } from '@testing-library/react'
 import { describe, expect, it } from 'vitest'
+import { CookieConsentProvider } from '@/app/_components/user/cookie-consent/cookie-consent-provider'
 import type { CookieConsent } from '@/lib/cookie-consent/types'
 import {
   getFetchCall,
   mockFetch,
   renderWithProviders,
 } from '@/src/__tests__/helpers/component'
-import { CookieConsentProvider } from '../../../cookie-consent/cookie-consent-provider'
 import { UserModalSecurityPrivacyField } from '../user-modal-security-privacy-field'
 
 function renderField(initial: CookieConsent, isAuthenticated = true) {

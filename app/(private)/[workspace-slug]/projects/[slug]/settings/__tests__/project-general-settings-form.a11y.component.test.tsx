@@ -24,19 +24,15 @@ vi.mock('sonner', () => ({
 // The pickers are rich dropdowns (emoji catalogue, uploads) tested on their
 // own; stub them down to a named button, as the behavioural suite does.
 vi.mock(
-  '@/app/_components/workspace/projects/modal/workspace-project-emoji-icon-picker',
+  '@/app/_components/workspace/project/create/project-emoji-icon-picker',
   () => ({
-    WorkspaceProjectEmojiIconPicker: () => (
-      <button type='button'>Escolher emoji</button>
-    ),
+    ProjectEmojiIconPicker: () => <button type='button'>Escolher emoji</button>,
   }),
 )
 vi.mock(
-  '@/app/_components/workspace/projects/modal/workspace-project-cover-image-picker',
+  '@/app/_components/workspace/project/create/project-cover-image-picker',
   () => ({
-    WorkspaceProjectCoverImagePicker: () => (
-      <button type='button'>Alterar capa</button>
-    ),
+    ProjectCoverImagePicker: () => <button type='button'>Alterar capa</button>,
   }),
 )
 

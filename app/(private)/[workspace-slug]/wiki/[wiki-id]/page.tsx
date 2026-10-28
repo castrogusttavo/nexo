@@ -1,7 +1,7 @@
 import type { Metadata } from 'next'
 import { notFound } from 'next/navigation'
 import { Suspense } from 'react'
-import { WikiPageEditor } from '@/app/_components/wiki/wiki-page-editor'
+import { WikiPageEditor } from '@/app/_components/workspace/wiki/wiki-page-editor'
 import { PageSkeleton } from '@/app/(private)/_components/page-skeleton'
 import { getWikiPageContext } from '@/src/lib/wiki-context'
 

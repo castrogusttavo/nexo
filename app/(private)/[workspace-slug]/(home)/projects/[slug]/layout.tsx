@@ -1,6 +1,6 @@
 import { notFound } from 'next/navigation'
 import { type ReactNode, Suspense } from 'react'
-import { ProjectTabs } from '@/app/_components/navigation/project-tabs/project-tabs'
+import { ProjectTabs } from '@/app/_components/workspace/project/project-tabs'
 import { getProjectContext } from '@/src/lib/project-context'
 
 type Params = Promise<{ 'workspace-slug': string; slug: string }>

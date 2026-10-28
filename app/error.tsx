@@ -1,8 +1,8 @@
 'use client'
 
 import { Alert01Icon } from '@hugeicons-pro/core-stroke-rounded'
+import { NexoIcon } from '@/components/icon/icon'
 import { Button } from '@/components/ui/button'
-import { NexoIcon } from '../components/icon/icon'
 
 export default function Page() {
   return (

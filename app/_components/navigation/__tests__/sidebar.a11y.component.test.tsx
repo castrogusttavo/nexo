@@ -15,6 +15,7 @@ import {
   renderWithProviders,
 } from '@/src/__tests__/helpers/component'
 import type { ProjectDTO } from '@/types/project'
+import { ProjectSidebar } from '../../workspace/project/project-sidebar'
 import {
   ContextHeader,
   ContextPrimaryAction,
@@ -24,7 +25,6 @@ import {
   NavItem,
 } from '../sidebar-context'
 import { NavigationSidebarGlobal } from '../sidebar-global'
-import { SidebarProjects } from '../sidebar-project/sidebar-projects'
 
 const { usePathname } = vi.hoisted(() => ({ usePathname: vi.fn() }))
 vi.mock('next/navigation', () => ({
@@ -96,7 +96,7 @@ function renderSidebars() {
             Projetos
           </NavItem>
         </NavGroupAccordion>
-        <SidebarProjects
+        <ProjectSidebar
           workspaceId={WORKSPACE_ID}
           base='/acme'
           userId='user-1'

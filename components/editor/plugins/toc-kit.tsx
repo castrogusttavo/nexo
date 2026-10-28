@@ -1,6 +1,6 @@
 'use client'
 
-import { TocElement } from "@/components/ui/toc-node"
+import { TocElement } from "@/components/editor/ui/toc-node"
 import { TocPlugin } from "@platejs/toc/react"
 
 export const TocKit = [

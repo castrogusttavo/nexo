@@ -2,11 +2,11 @@
 
 import { FilterMailIcon } from '@hugeicons-pro/core-stroke-rounded'
 import { useState } from 'react'
-import { IssueShowPropertiesDropdown } from '@/app/_components/issue/filter/issue-show-properties-dropdown'
-import { IssuesAnalyticsPanel } from '@/app/_components/issue/panel/issues-analytics-panel'
-import { activeIssueFilterCount } from '@/components/filters/apply-issue-filters'
-import { FilterContainer } from '@/components/filters/filter-container'
-import { useIssueFilters } from '@/components/filters/use-issue-filters'
+import { activeIssueFilterCount } from '@/app/_components/workspace/project/issue/filter/apply-issue-filters'
+import { IssueFilterContainer } from '@/app/_components/workspace/project/issue/filter/issue-filter-container'
+import { IssueShowPropertiesDropdown } from '@/app/_components/workspace/project/issue/filter/issue-show-properties-dropdown'
+import { useIssueFilters } from '@/app/_components/workspace/project/issue/filter/use-issue-filters'
+import { IssueAnalyticsPanel } from '@/app/_components/workspace/project/issue/issue-analytics-panel'
 import { NexoIcon } from '@/components/icon/icon'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
@@ -46,7 +46,7 @@ export function IssueFilters({ workspaceId, projectSlug }: IssueFiltersProps) {
           align='end'
           className='w-auto max-w-[calc(100vw-2rem)] p-0'
         >
-          <FilterContainer
+          <IssueFilterContainer
             workspaceId={workspaceId}
             projectSlug={projectSlug}
             onClose={() => setOpen(false)}
@@ -54,7 +54,7 @@ export function IssueFilters({ workspaceId, projectSlug }: IssueFiltersProps) {
         </PopoverContent>
       </Popover>
       <IssueShowPropertiesDropdown />
-      <IssuesAnalyticsPanel />
+      <IssueAnalyticsPanel />
     </>
   )
 }

@@ -1,18 +1,18 @@
 'use client'
 
 import { useState } from 'react'
-import { ColorSwatchPicker } from '@/app/_components/ui/color-swatch-picker'
+import { ColorSwatchPicker } from '@/components/color-swatch-picker'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { notify } from '@/lib/notify'
-import { cn } from '@/lib/utils'
-import { useCreateState, useUpdateState } from '@/src/hooks/use-state'
-import type { StateColorDTO, StateDTO, StateGroupDTO } from '@/types/state'
 import {
   colorToDot,
   STATE_COLORS,
   STATE_GROUP_DEFAULT_COLOR,
-} from '../../../../../../../lib/state-colors'
+} from '@/lib/state-colors'
+import { cn } from '@/lib/utils'
+import { useCreateState, useUpdateState } from '@/src/hooks/use-state'
+import type { StateColorDTO, StateDTO, StateGroupDTO } from '@/types/state'
 
 interface StateFormDialogProps {
   workspaceId: string

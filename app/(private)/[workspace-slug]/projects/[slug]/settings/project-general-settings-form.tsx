@@ -7,8 +7,8 @@ import {
 } from '@hugeicons-pro/core-stroke-rounded'
 import { useRouter } from 'next/navigation'
 import { useId, useState } from 'react'
-import { WorkspaceProjectCoverImagePicker } from '@/app/_components/workspace/projects/modal/workspace-project-cover-image-picker'
-import { WorkspaceProjectEmojiIconPicker } from '@/app/_components/workspace/projects/modal/workspace-project-emoji-icon-picker'
+import { ProjectCoverImagePicker } from '@/app/_components/workspace/project/create/project-cover-image-picker'
+import { ProjectEmojiIconPicker } from '@/app/_components/workspace/project/create/project-emoji-icon-picker'
 import { ConfirmDialog } from '@/components/confirm-dialog'
 import { NexoIcon } from '@/components/icon/icon'
 import { Muted } from '@/components/typography/text/muted'
@@ -126,17 +126,14 @@ export function ProjectGeneralSettingsForm({
           )}
           <div className='absolute inset-0 bg-linear-to-t from-black/50 to-transparent' />
           <div className='absolute right-2 bottom-2'>
-            <WorkspaceProjectCoverImagePicker
+            <ProjectCoverImagePicker
               workspaceId={workspaceId}
               currentImage={coverImage}
               onSelect={setCoverImage}
             />
           </div>
           <div className='absolute flex gap-3 bottom-2 left-2'>
-            <WorkspaceProjectEmojiIconPicker
-              currentEmoji={emoji}
-              onSelect={setEmoji}
-            />
+            <ProjectEmojiIconPicker currentEmoji={emoji} onSelect={setEmoji} />
             <div className='space-y-1'>
               <div className='font-medium'>{project.name}</div>
               <div className='text-xs text-muted-foreground'>

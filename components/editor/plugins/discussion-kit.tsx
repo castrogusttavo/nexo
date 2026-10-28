@@ -1,6 +1,6 @@
 'use client'
 
-import { DiscussionOverlay } from '@/components/ui/discussion-overlay'
+import { DiscussionOverlay } from '@/components/editor/ui/discussion-overlay'
 import { discussionPlugin } from './discussion-plugin'
 
 export const DiscussionKit = [

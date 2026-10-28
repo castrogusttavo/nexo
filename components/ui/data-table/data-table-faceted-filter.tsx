@@ -1,7 +1,7 @@
 'use client'
 
 import { ArrowDown01Icon } from '@hugeicons-pro/core-stroke-rounded'
-import { Combobox } from '@/app/_components/ui/combobox'
+import { Combobox } from '@/components/combobox'
 import { NexoIcon } from '@/components/icon/icon'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'

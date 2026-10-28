@@ -1,4 +1,4 @@
-import { ColumnElementStatic, ColumnGroupElementStatic } from '@/components/ui/column-node-static'
+import { ColumnElementStatic, ColumnGroupElementStatic } from '@/components/editor/ui/column-node-static'
 import { BaseColumnPlugin, BaseColumnItemPlugin } from '@platejs/layout'
 
 export const BaseColumnKit = [

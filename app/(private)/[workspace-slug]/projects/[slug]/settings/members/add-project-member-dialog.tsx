@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import { Combobox } from '@/app/_components/ui/combobox'
+import { Combobox } from '@/components/combobox'
 import { Muted } from '@/components/typography/text/muted'
 import { AvatarGroup, AvatarGroupCount } from '@/components/ui/avatar'
 import { Button } from '@/components/ui/button'

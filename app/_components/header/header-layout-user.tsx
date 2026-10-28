@@ -6,7 +6,7 @@ import { NexoIcon } from '@/components/icon/icon'
 import { ShortCutButton } from '@/components/shortcut-button'
 import { UserDropdownHelper } from '../user/user-dropdown-helper'
 import { UserDropdownProfile } from '../user/user-dropdown-profile'
-import { WorkspaceDropdownSelector } from '../workspace/workspace-dropdown/workspace-dropdown-selector'
+import { WorkspaceDropdownSelector } from '../workspace/workspace-dropdown-selector'
 
 export function HeaderLayoutUser({ slug }: { slug: string }) {
   return (

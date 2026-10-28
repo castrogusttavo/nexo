@@ -4,11 +4,11 @@ import { Suspense } from 'react'
 import {
   HeaderBreadcrumbCrumb,
   HeaderBreadcrumbList,
-} from '@/app/_components/header/breadcrumb-page'
+} from '@/app/_components/header/breadcrumb'
 import HeaderInternalNavigation from '@/app/_components/header/header-internal-navigation'
-import { WorkspaceArchivedProjectList } from '@/app/_components/workspace/projects/workspace-archived-project-list'
-import { WorkspaceProjectFilterButton } from '@/app/_components/workspace/projects/workspace-project-filter-button'
-import { WorkspaceProjectOrderButton } from '@/app/_components/workspace/projects/workspace-project-order-button'
+import { ProjectArchivedList } from '@/app/_components/workspace/project/project-archived-list'
+import { ProjectFilterButton } from '@/app/_components/workspace/project/project-filter-button'
+import { ProjectOrderButton } from '@/app/_components/workspace/project/project-order-button'
 import { PageSkeleton } from '@/app/(private)/_components/page-skeleton'
 import { NexoIcon } from '@/components/icon/icon'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
@@ -55,8 +55,8 @@ export default function ArchivesPage({ params }: { params: Params }) {
             </TabsTrigger>
           </div>
           <div className='flex items-center space-x-2'>
-            <WorkspaceProjectOrderButton />
-            <WorkspaceProjectFilterButton />
+            <ProjectOrderButton />
+            <ProjectFilterButton />
           </div>
         </TabsList>
         <TabsContent value='projects'>
@@ -72,5 +72,5 @@ export default function ArchivesPage({ params }: { params: Params }) {
 async function Archived({ params }: { params: Params }) {
   const { 'workspace-slug': slug } = await params
   const { membership } = await requireMembership(slug)
-  return <WorkspaceArchivedProjectList workspaceId={membership.workspaceId} />
+  return <ProjectArchivedList workspaceId={membership.workspaceId} />
 }

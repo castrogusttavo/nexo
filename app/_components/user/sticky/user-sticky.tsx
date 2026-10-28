@@ -18,7 +18,7 @@ import {
   useRef,
   useState,
 } from 'react'
-import { ColorSwatchPicker } from '@/app/_components/ui/color-swatch-picker'
+import { ColorSwatchPicker } from '@/components/color-swatch-picker'
 import { NexoIcon } from '@/components/icon/icon'
 import { Button } from '@/components/ui/button'
 import { notify } from '@/lib/notify'

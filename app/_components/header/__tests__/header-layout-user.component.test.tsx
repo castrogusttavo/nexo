@@ -5,14 +5,11 @@ import { HeaderLayoutUser } from '../header-layout-user'
 
 // The header is a composition: each dropdown has (or will have) a suite of
 // its own, so they are reduced to markers and only the wiring is asserted.
-vi.mock(
-  '@/app/_components/workspace/workspace-dropdown/workspace-dropdown-selector',
-  () => ({
-    WorkspaceDropdownSelector: ({ currentSlug }: { currentSlug: string }) => (
-      <div>{`Workspace ${currentSlug}`}</div>
-    ),
-  }),
-)
+vi.mock('@/app/_components/workspace/workspace-dropdown-selector', () => ({
+  WorkspaceDropdownSelector: ({ currentSlug }: { currentSlug: string }) => (
+    <div>{`Workspace ${currentSlug}`}</div>
+  ),
+}))
 vi.mock('@/app/_components/user/user-dropdown-helper', () => ({
   UserDropdownHelper: () => <div>Ajuda</div>,
 }))

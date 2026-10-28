@@ -24,7 +24,7 @@ vi.mock('sonner', () => ({
 
 // The real swatches are unlabeled color dots inside a popover; stub the
 // picker with one named button per color so a pick can be expressed.
-vi.mock('@/app/_components/ui/color-swatch-picker', () => ({
+vi.mock('@/components/color-swatch-picker', () => ({
   ColorSwatchPicker: ({
     colors,
     onChange,

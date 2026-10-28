@@ -1,7 +1,7 @@
 'use client'
 
 import { CheckIcon } from '@hugeicons-pro/core-stroke-rounded'
-import { Combobox } from '@/app/_components/ui/combobox'
+import { Combobox } from '@/components/combobox'
 import { NexoIcon } from '@/components/icon/icon'
 import { Muted } from '@/components/typography/text/muted'
 import { Button } from '@/components/ui/button'
