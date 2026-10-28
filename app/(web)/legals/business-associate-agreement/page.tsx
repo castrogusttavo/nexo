@@ -1,11 +1,6 @@
 import type { Metadata } from 'next'
-import { Muted } from '@/components/typography/text/muted'
-import { P } from '@/components/typography/text/p'
 import { brand } from '@/lib/brand'
-import { Title } from '../../_components/text/title'
-import { WebFooter } from '../../_components/web-footer'
-import { linkifyLegalText } from '../linkify-legal-text'
-import { SectionHeading } from '../section-heading'
+import { LegalDocument, type LegalSection } from '../legal-document'
 
 const TITLE = 'Acordo de Parceiro de Negócios | Nexo'
 const DESCRIPTION =
@@ -29,17 +24,6 @@ export const metadata: Metadata = {
     description: DESCRIPTION,
     images: ['/twitter-image'],
   },
-}
-
-interface Block {
-  heading?: string
-  paragraphs: string[]
-}
-
-interface LegalSection {
-  id: string
-  title: string
-  blocks: Block[]
 }
 
 const PREAMBLE = [
@@ -128,51 +112,11 @@ const SECTIONS: LegalSection[] = [
 
 export default function BusinessAssociateAgreementPage() {
   return (
-    <>
-      <main className='mx-auto flex w-full max-w-3xl flex-col gap-6 px-6 py-16 scroll-mt-24'>
-        <header className='flex flex-col gap-2 text-left pb-12'>
-          <Title className='text-left'>Acordo de Parceiro de Negócios</Title>
-          <Muted>Versão {VERSION}</Muted>
-        </header>
-
-        <section className='flex flex-col gap-4'>
-          {PREAMBLE.map((paragraph) => (
-            <P key={paragraph}>{linkifyLegalText(paragraph)}</P>
-          ))}
-        </section>
-
-        {SECTIONS.map((section) => (
-          <section
-            key={section.id}
-            id={section.id}
-            className='flex flex-col gap-4'
-          >
-            <SectionHeading as='h2' id={section.id} className='pt-12 pb-6'>
-              {section.title}
-            </SectionHeading>
-            {section.blocks.map((block) => (
-              <div
-                key={block.heading ?? block.paragraphs[0]}
-                className='flex flex-col gap-2'
-              >
-                {block.heading && (
-                  <SectionHeading
-                    as='h3'
-                    id={`${section.id}-${block.heading.split(' ')[0]}`}
-                    className='text-lg font-medium pb-3'
-                  >
-                    {block.heading}
-                  </SectionHeading>
-                )}
-                {block.paragraphs.map((paragraph) => (
-                  <P key={paragraph}>{linkifyLegalText(paragraph)}</P>
-                ))}
-              </div>
-            ))}
-          </section>
-        ))}
-      </main>
-      <WebFooter showBanner={false} />
-    </>
+    <LegalDocument
+      title='Acordo de Parceiro de Negócios'
+      version={VERSION}
+      preamble={PREAMBLE}
+      sections={SECTIONS}
+    />
   )
 }

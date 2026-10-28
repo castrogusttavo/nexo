@@ -1,9 +1,7 @@
 import type { Metadata } from 'next'
-import { Muted } from '@/components/typography/text/muted'
 import { P } from '@/components/typography/text/p'
 import { brand } from '@/lib/brand'
-import { Title } from '../../_components/text/title'
-import { WebFooter } from '../../_components/web-footer'
+import { LegalDocument } from '../legal-document'
 import { linkifyLegalText } from '../linkify-legal-text'
 import { SectionHeading } from '../section-heading'
 
@@ -97,80 +95,70 @@ const SUB_PROCESSORS: SubProcessor[] = [
 
 export default function SubProcessorsPage() {
   return (
-    <>
-      <main className='mx-auto flex w-full max-w-3xl flex-col gap-6 px-6 py-16 scroll-mt-24'>
-        <header className='flex flex-col gap-2 text-left pb-12'>
-          <Title className='text-left'>Sub-processadores</Title>
-          <Muted>Versão {VERSION}</Muted>
-        </header>
+    <LegalDocument
+      title='Sub-processadores'
+      version={VERSION}
+      preamble={PREAMBLE}
+    >
+      <section id='notificacao-de-mudancas' className='flex flex-col gap-4'>
+        <SectionHeading
+          as='h2'
+          id='notificacao-de-mudancas'
+          className='pt-12 pb-6'
+        >
+          1. Notificação de mudanças
+        </SectionHeading>
+        <P>
+          {linkifyLegalText(
+            'Notificamos o Cliente com pelo menos 30 dias de antecedência antes de contratar um novo sub-processador ou substituir um existente, conforme a Seção 4 do DPA. Para receber essas notificações por e-mail, entre em contato com juridico@nexopm.com.',
+          )}
+        </P>
+      </section>
 
-        <section className='flex flex-col gap-4'>
-          {PREAMBLE.map((paragraph) => (
-            <P key={paragraph}>{linkifyLegalText(paragraph)}</P>
-          ))}
-        </section>
-
-        <section id='notificacao-de-mudancas' className='flex flex-col gap-4'>
-          <SectionHeading
-            as='h2'
-            id='notificacao-de-mudancas'
-            className='pt-12 pb-6'
-          >
-            1. Notificação de mudanças
-          </SectionHeading>
-          <P>
-            {linkifyLegalText(
-              'Notificamos o Cliente com pelo menos 30 dias de antecedência antes de contratar um novo sub-processador ou substituir um existente, conforme a Seção 4 do DPA. Para receber essas notificações por e-mail, entre em contato com juridico@nexopm.com.',
-            )}
-          </P>
-        </section>
-
-        <section id='lista-atual' className='flex flex-col gap-4'>
-          <SectionHeading as='h2' id='lista-atual' className='pt-12 pb-6'>
-            2. Lista atual de sub-processadores
-          </SectionHeading>
-          <div className='overflow-x-auto rounded-md border border-border'>
-            <table className='w-full text-sm'>
-              <thead>
-                <tr className='border-b border-border bg-muted/30 text-left'>
-                  <th className='p-3 font-medium'>Empresa</th>
-                  <th className='p-3 font-medium'>Finalidade</th>
-                  <th className='p-3 font-medium'>Localização</th>
+      <section id='lista-atual' className='flex flex-col gap-4'>
+        <SectionHeading as='h2' id='lista-atual' className='pt-12 pb-6'>
+          2. Lista atual de sub-processadores
+        </SectionHeading>
+        <div className='overflow-x-auto rounded-md border border-border'>
+          <table className='w-full text-sm'>
+            <thead>
+              <tr className='border-b border-border bg-muted/30 text-left'>
+                <th className='p-3 font-medium'>Empresa</th>
+                <th className='p-3 font-medium'>Finalidade</th>
+                <th className='p-3 font-medium'>Localização</th>
+              </tr>
+            </thead>
+            <tbody>
+              {SUB_PROCESSORS.map((sp) => (
+                <tr
+                  key={sp.name}
+                  className='border-b border-border last:border-0'
+                >
+                  <td className='p-3'>{sp.name}</td>
+                  <td className='p-3'>{sp.purpose}</td>
+                  <td className='p-3'>{sp.location}</td>
                 </tr>
-              </thead>
-              <tbody>
-                {SUB_PROCESSORS.map((sp) => (
-                  <tr
-                    key={sp.name}
-                    className='border-b border-border last:border-0'
-                  >
-                    <td className='p-3'>{sp.name}</td>
-                    <td className='p-3'>{sp.purpose}</td>
-                    <td className='p-3'>{sp.location}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-          <P>
-            {linkifyLegalText(
-              'Essa lista é atualizada conforme novos sub-processadores são contratados. Provedores de IA usados pelo Nexo AI serão adicionados aqui assim que estiverem em produção.',
-            )}
-          </P>
-        </section>
+              ))}
+            </tbody>
+          </table>
+        </div>
+        <P>
+          {linkifyLegalText(
+            'Essa lista é atualizada conforme novos sub-processadores são contratados. Provedores de IA usados pelo Nexo AI serão adicionados aqui assim que estiverem em produção.',
+          )}
+        </P>
+      </section>
 
-        <section id='contato' className='flex flex-col gap-4'>
-          <SectionHeading as='h2' id='contato' className='pt-12 pb-6'>
-            3. Contato
-          </SectionHeading>
-          <P>
-            {linkifyLegalText(
-              `Dúvidas sobre esta lista: ${brand.tradeName} (CNPJ ${brand.cnpj}), e-mail juridico@nexopm.com.`,
-            )}
-          </P>
-        </section>
-      </main>
-      <WebFooter showBanner={false} />
-    </>
+      <section id='contato' className='flex flex-col gap-4'>
+        <SectionHeading as='h2' id='contato' className='pt-12 pb-6'>
+          3. Contato
+        </SectionHeading>
+        <P>
+          {linkifyLegalText(
+            `Dúvidas sobre esta lista: ${brand.tradeName} (CNPJ ${brand.cnpj}), e-mail juridico@nexopm.com.`,
+          )}
+        </P>
+      </section>
+    </LegalDocument>
   )
 }
