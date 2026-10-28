@@ -93,9 +93,9 @@ const USER: UserDTO = {
 
 // The tab seeds its inputs from `useUser()` on first render, as it does in
 // the app where the user query is already warm when the modal opens.
-function renderTab() {
+function renderTab(user: UserDTO = USER) {
   const queryClient = createTestQueryClient()
-  queryClient.setQueryData(['user', USER.id], USER)
+  queryClient.setQueryData(['user', USER.id], user)
   return renderWithProviders(
     <Tabs value='profile'>
       <UserModalProfileTab tab='profile' />
@@ -301,5 +301,55 @@ describe('<UserModalProfileTab /> account deactivation', () => {
     })
     expect(signOut).not.toHaveBeenCalled()
     expect(push).not.toHaveBeenCalled()
+  })
+})
+
+describe('<UserModalProfileTab /> scheduled deletion', () => {
+  const SCHEDULED: UserDTO = {
+    ...USER,
+    deletionScheduledAt: '2026-11-20T15:30:00.000Z',
+  }
+
+  it('offers to cancel instead of deactivating again', () => {
+    renderTab(SCHEDULED)
+
+    expect(screen.getByText('Exclusão agendada')).toBeInTheDocument()
+    expect(screen.getByText(/Sua conta será excluída em/)).toHaveTextContent(
+      new Date('2026-11-20T15:30:00.000Z').toLocaleString('pt-BR'),
+    )
+    expect(screen.queryByRole('button', { name: 'Desativar conta' })).toBeNull()
+  })
+
+  it('cancels the scheduled deletion', async () => {
+    const fetchSpy = mockFetch().mockResolvedValue(
+      apiSuccess({ canceled: true }),
+    )
+    const { user } = renderTab(SCHEDULED)
+
+    await user.click(screen.getByRole('button', { name: 'Cancelar exclusão' }))
+
+    await waitFor(() => expect(fetchSpy).toHaveBeenCalled())
+    expect(getFetchCall(fetchSpy)).toMatchObject({
+      url: '/api/users/me/deletion',
+      method: 'DELETE',
+    })
+    await expect(lastToastOutcome()).resolves.toEqual({
+      type: 'success',
+      message: 'Exclusão cancelada',
+    })
+    expect(signOut).not.toHaveBeenCalled()
+  })
+
+  it('reports a failed cancellation', async () => {
+    mockFetch().mockResolvedValueOnce(apiError(500, 'Falha ao cancelar'))
+    const { user } = renderTab(SCHEDULED)
+
+    await user.click(screen.getByRole('button', { name: 'Cancelar exclusão' }))
+
+    await waitFor(() => expect(toast.promise).toHaveBeenCalled())
+    await expect(lastToastOutcome()).resolves.toEqual({
+      type: 'error',
+      message: 'Falha ao cancelar',
+    })
   })
 })

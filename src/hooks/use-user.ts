@@ -92,3 +92,21 @@ export function useDeleteAccount() {
       ),
   })
 }
+
+// Lifts a scheduled deletion while the grace period is still running; the
+// refreshed user drops `deletionScheduledAt`.
+export function useCancelAccountDeletion() {
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationFn: () =>
+      apiFetch<{ canceled: boolean }>(
+        `${BASE_API_ROUTE}/deletion`,
+        { method: 'DELETE' },
+        'Erro ao cancelar a exclusão',
+      ),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: USER_KEY })
+    },
+  })
+}

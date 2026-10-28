@@ -9,6 +9,7 @@ import {
 } from '@/src/__tests__/helpers/component'
 import type { UserDTO } from '@/types/user'
 import {
+  useCancelAccountDeletion,
   useDeleteAccount,
   useUpdateUser,
   useUploadAvatar,
@@ -261,6 +262,37 @@ describe('useDeleteAccount', () => {
     await act(async () => {
       await expect(result.current.mutateAsync()).rejects.toThrow(
         'Erro ao desativar conta',
+      )
+    })
+  })
+})
+
+describe('useCancelAccountDeletion', () => {
+  it('DELETEs the scheduled deletion and refetches the user', async () => {
+    const fetchSpy = mockFetch().mockResolvedValueOnce(
+      apiSuccess({ canceled: true }),
+    )
+    const { result, queryClient } = renderHookWithProviders(() =>
+      useCancelAccountDeletion(),
+    )
+    const invalidate = vi.spyOn(queryClient, 'invalidateQueries')
+
+    await act(() => result.current.mutateAsync())
+
+    expect(getFetchCall(fetchSpy)).toMatchObject({
+      url: '/api/users/me/deletion',
+      method: 'DELETE',
+    })
+    expect(invalidate).toHaveBeenCalledWith({ queryKey: ['user'] })
+  })
+
+  it('falls back to the hook message when the error body has none', async () => {
+    mockFetch().mockResolvedValueOnce(apiError(500))
+    const { result } = renderHookWithProviders(() => useCancelAccountDeletion())
+
+    await act(async () => {
+      await expect(result.current.mutateAsync()).rejects.toThrow(
+        'Erro ao cancelar a exclusão',
       )
     })
   })

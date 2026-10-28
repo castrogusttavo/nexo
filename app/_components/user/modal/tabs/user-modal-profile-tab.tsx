@@ -30,6 +30,7 @@ import { notify } from '@/lib/notify'
 import { getInitials } from '@/lib/user-name-initials'
 import { useCacheUser } from '@/src/hooks/cache/use-user'
 import {
+  useCancelAccountDeletion,
   useDeleteAccount,
   useUpdateUser,
   useUploadAvatar,
@@ -62,47 +63,107 @@ export function UserModalProfileTab({ tab }: { tab: string }) {
     <TabsContent value={tab}>
       {/* Keyed by user id so the inputs re-seed once a cold user query loads. */}
       <UserModalProfileForm key={user?.id} user={user} />
-      <div className='w-full mt-10 bg-card rounded-lg border-border px-4 py-3 flex flex-col md:flex-row items-start md:items-center md:justify-between gap-4 md:gap-8'>
-        <div className='flex-1 flex flex-col gap-1.5'>
-          <H4 className='text-sm'>Desativar conta</H4>
-          <Muted className='text-xs'>
-            Ao desativar uma conta, todos os dados e recursos dessa conta serão
-            removidos permanentemente e não poderão ser recuperados.
-          </Muted>
-        </div>
-        <AlertDialog>
-          <AlertDialogTrigger
-            render={
-              <Button variant='destructive' className='w-fit'>
-                Desativar conta
-              </Button>
-            }
-          />
-          <AlertDialogContent>
-            <AlertDialogHeader>
-              <AlertDialogTitle>Desativar conta</AlertDialogTitle>
-              <AlertDialogDescription>
-                Todos os dados e recursos dessa conta serão removidos
-                permanentemente e não poderão ser recuperados. Você será
-                desconectado em seguida.
-              </AlertDialogDescription>
-            </AlertDialogHeader>
-            <AlertDialogFooter>
-              <AlertDialogCancel disabled={deleteAccount.isPending}>
-                Cancelar
-              </AlertDialogCancel>
-              <AlertDialogAction
-                variant='destructive'
-                onClick={handleDeleteAccount}
-                disabled={deleteAccount.isPending}
-              >
-                Desativar conta
-              </AlertDialogAction>
-            </AlertDialogFooter>
-          </AlertDialogContent>
-        </AlertDialog>
-      </div>
+      {user?.deletionScheduledAt ? (
+        <UserModalProfileScheduledDeletion
+          scheduledAt={user.deletionScheduledAt}
+        />
+      ) : (
+        <UserModalProfileDeleteAccount
+          pending={deleteAccount.isPending}
+          onConfirm={handleDeleteAccount}
+        />
+      )}
     </TabsContent>
+  )
+}
+
+function UserModalProfileScheduledDeletion({
+  scheduledAt,
+}: {
+  scheduledAt: string
+}) {
+  const cancelDeletion = useCancelAccountDeletion()
+
+  async function handleCancel() {
+    try {
+      await notify.mutate(cancelDeletion.mutateAsync(), {
+        loading: 'Cancelando a exclusão...',
+        success: 'Exclusão cancelada',
+        error: 'Erro ao cancelar a exclusão',
+      })
+    } catch {
+      //
+    }
+  }
+
+  return (
+    <div className='w-full mt-10 bg-card rounded-lg border-border px-4 py-3 flex flex-col md:flex-row items-start md:items-center md:justify-between gap-4 md:gap-8'>
+      <div className='flex-1 flex flex-col gap-1.5'>
+        <H4 className='text-sm'>Exclusão agendada</H4>
+        <Muted className='text-xs'>
+          Sua conta será excluída em{' '}
+          {new Date(scheduledAt).toLocaleString('pt-BR')}. Até lá, você pode
+          cancelar e manter todos os seus dados.
+        </Muted>
+      </div>
+      <Button
+        variant='outline'
+        className='w-fit'
+        onClick={handleCancel}
+        disabled={cancelDeletion.isPending}
+      >
+        Cancelar exclusão
+      </Button>
+    </div>
+  )
+}
+
+function UserModalProfileDeleteAccount({
+  pending,
+  onConfirm,
+}: {
+  pending: boolean
+  onConfirm: () => void
+}) {
+  return (
+    <div className='w-full mt-10 bg-card rounded-lg border-border px-4 py-3 flex flex-col md:flex-row items-start md:items-center md:justify-between gap-4 md:gap-8'>
+      <div className='flex-1 flex flex-col gap-1.5'>
+        <H4 className='text-sm'>Desativar conta</H4>
+        <Muted className='text-xs'>
+          Ao desativar uma conta, todos os dados e recursos dessa conta serão
+          removidos permanentemente e não poderão ser recuperados.
+        </Muted>
+      </div>
+      <AlertDialog>
+        <AlertDialogTrigger
+          render={
+            <Button variant='destructive' className='w-fit'>
+              Desativar conta
+            </Button>
+          }
+        />
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Desativar conta</AlertDialogTitle>
+            <AlertDialogDescription>
+              Todos os dados e recursos dessa conta serão removidos
+              permanentemente e não poderão ser recuperados. Você será
+              desconectado em seguida.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={pending}>Cancelar</AlertDialogCancel>
+            <AlertDialogAction
+              variant='destructive'
+              onClick={onConfirm}
+              disabled={pending}
+            >
+              Desativar conta
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+    </div>
   )
 }
 
