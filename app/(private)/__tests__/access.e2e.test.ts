@@ -85,6 +85,7 @@ beforeEach(async () => {
     `${base}/wiki`,
     `${base}/settings/members`,
     `${base}/settings/billing`,
+    `${base}/settings/project-configuration`,
     `${projectBase}/issues`,
     `${projectBase}/settings`,
     `${projectBase}/settings/labels`,
