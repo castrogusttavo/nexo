@@ -4,7 +4,9 @@ import { Children, memo, useEffect, useMemo, useRef, useState } from "react"
 import type { ReactNode } from "react"
 import {
   AnimatePresence,
-  motion,
+  domAnimation,
+  LazyMotion,
+  m,
   useInView,
   usePageInView,
   useReducedMotion,
@@ -80,30 +82,32 @@ export function LogosCarousel({
   }, [shouldPlay])
 
   return (
-    <div
-      ref={containerRef}
-      data-slot="logos-carousel"
-      className={cn("grid", className)}
-      style={{
-        gridTemplateColumns: `repeat(var(--column-count,${columns.length}), minmax(0, 1fr))`,
-      }}
-    >
-      {columns.map((columnLogos, columnIndex) => {
-        const waveIndex =
-          direction === "rtl" ? columns.length - 1 - columnIndex : columnIndex
+    <LazyMotion features={domAnimation}>
+      <div
+        ref={containerRef}
+        data-slot="logos-carousel"
+        className={cn("grid", className)}
+        style={{
+          gridTemplateColumns: `repeat(var(--column-count,${columns.length}), minmax(0, 1fr))`,
+        }}
+      >
+        {columns.map((columnLogos, columnIndex) => {
+          const waveIndex =
+            direction === "rtl" ? columns.length - 1 - columnIndex : columnIndex
 
-        return (
-          <LogoColumn
-            key={columnIndex}
-            logos={columnLogos}
-            columnIndex={columnIndex}
-            waveIndex={waveIndex}
-            activeIndex={step % columnLogos.length}
-            reduceMotion={reduceMotion}
-          />
-        )
-      })}
-    </div>
+          return (
+            <LogoColumn
+              key={columnIndex}
+              logos={columnLogos}
+              columnIndex={columnIndex}
+              waveIndex={waveIndex}
+              activeIndex={step % columnLogos.length}
+              reduceMotion={reduceMotion}
+            />
+          )
+        })}
+      </div>
+    </LazyMotion>
   )
 }
 
@@ -132,7 +136,7 @@ const LogoColumn = memo(function LogoColumn({
   const logo = getLogoVariants(reduceMotion, transition)
 
   return (
-    <motion.div
+    <m.div
       data-slot="logos-carousel-column"
       className="relative"
       initial={column.initial}
@@ -140,7 +144,7 @@ const LogoColumn = memo(function LogoColumn({
       transition={transition}
     >
       <AnimatePresence mode="popLayout">
-        <motion.div
+        <m.div
           key={`${columnIndex}-${activeIndex}`}
           data-slot="logos-carousel-logo"
           className="flex size-full items-center justify-center"
@@ -149,9 +153,9 @@ const LogoColumn = memo(function LogoColumn({
           exit={logo.exit}
         >
           {logos[activeIndex]}
-        </motion.div>
+        </m.div>
       </AnimatePresence>
-    </motion.div>
+    </m.div>
   )
 })
 

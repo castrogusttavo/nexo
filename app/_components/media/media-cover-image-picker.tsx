@@ -1,7 +1,7 @@
 'use client'
 
 import { Upload01Icon } from '@hugeicons-pro/core-stroke-rounded'
-import { useRef, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { NexoIcon } from '@/components/icon/icon'
 import { Button } from '@/components/ui/button'
 import {
@@ -115,8 +115,17 @@ function MediaCoverImageUpload({
   const [preview, setPreview] = useState<string | null>(null)
   const [dragging, setDragging] = useState(false)
 
+  // A blob URL pins the file in memory until revoked: release the previous
+  // preview when it changes and the last one on unmount.
+  useEffect(() => {
+    if (!preview) return
+    return () => URL.revokeObjectURL(preview)
+  }, [preview])
+
   async function handleFile(file: File) {
     if (!file.type.startsWith('image/')) return
+    // Revoked by the effect above when the preview changes or unmounts.
+    // react-doctor-disable-next-line react-doctor/no-create-object-url-without-revoke
     setPreview(URL.createObjectURL(file))
     try {
       await onUpload(file)

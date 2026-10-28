@@ -365,14 +365,16 @@ function SortableItem({
         children: props.children,
       }
 
+  const itemContext = useMemo(
+    () =>
+      isOverlay
+        ? { listeners: undefined, isDragging: true, disabled: false }
+        : { listeners, isDragging: isSortableDragging, disabled },
+    [isOverlay, listeners, isSortableDragging, disabled]
+  )
+
   return (
-    <SortableItemContext.Provider
-      value={
-        isOverlay
-          ? { listeners: undefined, isDragging: true, disabled: false }
-          : { listeners, isDragging: isSortableDragging, disabled }
-      }
-    >
+    <SortableItemContext.Provider value={itemContext}>
       {useRender({
         defaultTagName: "div",
         render,

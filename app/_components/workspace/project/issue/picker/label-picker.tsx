@@ -23,7 +23,8 @@ export function LabelPicker({
 }: LabelPickerProps) {
   const { data: labels } = useLabels(workspaceId, projectSlug)
   const options = labels ?? []
-  const selected = options.filter((label) => value?.includes(label.id))
+  const valueSet = new Set(value)
+  const selected = options.filter((label) => valueSet.has(label.id))
 
   return (
     <Combobox

@@ -89,7 +89,7 @@ export default function Page() {
             </h1>
           </div>
           <div className='grid grid-cols-1 gap-6 md:grid-cols-2'>
-            <div className='bg-card rounded-lg border border-border flex flex-col duration-300 hover:scale-101 cursor-pointer overflow-hidden'>
+            <div className='bg-card rounded-lg border border-border flex flex-col transition-transform duration-300 hover:scale-101 cursor-pointer overflow-hidden'>
               <div className='space-y-3 p-5 pt-4 md:p-8 md:pt-7'>
                 <div className='flex flex-col gap-3 text-start'>
                   <div className='uppercase text-cyan-500 text-sm md:whitespace-pre-line mb-4 font-medium'>
@@ -119,7 +119,7 @@ export default function Page() {
                 />
               </div>
             </div>
-            <div className='bg-card rounded-lg border border-border flex flex-col duration-300 hover:scale-101 cursor-pointer overflow-hidden'>
+            <div className='bg-card rounded-lg border border-border flex flex-col transition-transform duration-300 hover:scale-101 cursor-pointer overflow-hidden'>
               <div className='space-y-3 p-5 pt-4 md:p-8 md:pt-7'>
                 <div className='flex flex-col gap-3 text-start'>
                   <div className='uppercase text-cyan-500 text-sm md:whitespace-pre-line mb-4 font-medium'>
@@ -147,7 +147,7 @@ export default function Page() {
                 />
               </div>
             </div>
-            <div className='bg-card rounded-lg border border-border flex flex-col duration-300 hover:scale-101 cursor-pointer overflow-hidden'>
+            <div className='bg-card rounded-lg border border-border flex flex-col transition-transform duration-300 hover:scale-101 cursor-pointer overflow-hidden'>
               <div className='space-y-3 p-5 pt-4 md:p-8 md:pt-7'>
                 <div className='flex flex-col gap-3 text-start'>
                   <div className='uppercase text-cyan-500 text-sm md:whitespace-pre-line mb-4 font-medium'>
@@ -175,7 +175,7 @@ export default function Page() {
                 />
               </div>
             </div>
-            <div className='bg-card rounded-lg border border-border flex flex-col duration-300 hover:scale-101 cursor-pointer overflow-hidden'>
+            <div className='bg-card rounded-lg border border-border flex flex-col transition-transform duration-300 hover:scale-101 cursor-pointer overflow-hidden'>
               <div className='space-y-3 p-5 pt-4 md:p-8 md:pt-7'>
                 <div className='flex flex-col gap-3 text-start'>
                   <div className='uppercase text-cyan-500 text-sm md:whitespace-pre-line mb-4 font-medium'>
@@ -657,7 +657,7 @@ export default function Page() {
                   </ButtonLink>
                 </div>
               </div>
-              <div className='relative space-y-1.5 rounded-lg p-6 hover:scale-101 transition-all duration-300 bg-card text-start'>
+              <div className='relative space-y-1.5 rounded-lg p-6 hover:scale-101 transition-transform duration-300 bg-card text-start'>
                 <img
                   src='/web/home/api.svg'
                   alt=''
@@ -673,7 +673,7 @@ export default function Page() {
                   integrações, dashboards e automações sob medida.
                 </p>
               </div>
-              <div className='relative space-y-1.5 rounded-lg p-6 hover:scale-101 transition-all duration-300 bg-card text-start'>
+              <div className='relative space-y-1.5 rounded-lg p-6 hover:scale-101 transition-transform duration-300 bg-card text-start'>
                 <img
                   src='/web/home/ai.svg'
                   alt=''

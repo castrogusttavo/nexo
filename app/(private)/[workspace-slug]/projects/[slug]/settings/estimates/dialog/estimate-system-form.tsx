@@ -110,12 +110,16 @@ export function EstimateSystemForm({
       const created: string[] = []
       try {
         for (const value of preset) {
+          // In order: each value's position is its creation order.
+          // react-doctor-disable-next-line react-doctor/async-await-in-loop
           const result = await createValue.mutateAsync({ value })
           created.push(result.id)
         }
         await updateSettings.mutateAsync({ system, model: selectedModel })
       } catch (error) {
         for (const id of created.reverse()) {
+          // Undone one by one, newest first, so positions never interleave.
+          // react-doctor-disable-next-line react-doctor/async-await-in-loop
           await deleteValue.mutateAsync(id).catch(() => undefined)
         }
         throw error
@@ -136,6 +140,8 @@ export function EstimateSystemForm({
     // warning, not an error that suggests the change was lost.
     try {
       for (const old of oldValues) {
+        // One at a time: each delete re-packs the remaining positions.
+        // react-doctor-disable-next-line react-doctor/async-await-in-loop
         await deleteValue.mutateAsync(old.id)
       }
     } catch {

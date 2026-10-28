@@ -674,19 +674,21 @@ function KanbanColumn({
         children: props.children,
       }
 
+  const columnContext = React.useMemo(
+    () =>
+      isOverlay
+        ? {
+            attributes: {} as DraggableAttributes,
+            listeners: undefined,
+            isDragging: true,
+            disabled: false,
+          }
+        : { attributes, listeners, isDragging: isColumnDragging, disabled },
+    [isOverlay, attributes, listeners, isColumnDragging, disabled]
+  )
+
   return (
-    <ColumnContext.Provider
-      value={
-        isOverlay
-          ? {
-              attributes: {} as DraggableAttributes,
-              listeners: undefined,
-              isDragging: true,
-              disabled: false,
-            }
-          : { attributes, listeners, isDragging: isColumnDragging, disabled }
-      }
-    >
+    <ColumnContext.Provider value={columnContext}>
       {useRender({
         defaultTagName: "div",
         render,
@@ -801,14 +803,16 @@ function KanbanItem({
         children: props.children,
       }
 
+  const itemContext = React.useMemo(
+    () =>
+      isOverlay
+        ? { listeners: undefined, isDragging: true, disabled: false }
+        : { listeners, isDragging: isItemDragging, disabled },
+    [isOverlay, listeners, isItemDragging, disabled]
+  )
+
   return (
-    <ItemContext.Provider
-      value={
-        isOverlay
-          ? { listeners: undefined, isDragging: true, disabled: false }
-          : { listeners, isDragging: isItemDragging, disabled }
-      }
-    >
+    <ItemContext.Provider value={itemContext}>
       {useRender({
         defaultTagName: "div",
         render,

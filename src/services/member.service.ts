@@ -87,6 +87,9 @@ export const MemberService = {
 
     const rowsResult = []
     for (const [index, row] of rows.entries()) {
+      // Sequential on purpose: each invite checks the plan's seat limit, and
+      // concurrent ones could all pass it at once.
+      // react-doctor-disable-next-line react-doctor/async-await-in-loop
       const invited = await InvitationService.create(actorId, workspaceId, {
         email: row.email,
         role: row.role,

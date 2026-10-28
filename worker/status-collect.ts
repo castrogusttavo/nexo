@@ -36,6 +36,8 @@ let wakeUp: (() => void) | null = null
 async function collectOnce(): Promise<boolean> {
   const results: Array<CollectSummary | FailedCollect> = []
   for (const tier of TIERS) {
+    // One tier after the other, like the production cron.
+    // react-doctor-disable-next-line react-doctor/async-await-in-loop
     const result = await StatusService.collect(tier)
     results.push(
       result.ok

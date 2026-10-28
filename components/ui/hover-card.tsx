@@ -43,8 +43,13 @@ function HoverCard({ open: openProp, onOpenChange, openDelay = 300, closeDelay =
     [onOpenChange]
   )
 
+  const contextValue = React.useMemo(
+    () => ({ open, openDelay, closeDelay, timeoutRef, setOpen, anchorRef }),
+    [open, openDelay, closeDelay, setOpen]
+  )
+
   return (
-    <HoverCardContext.Provider value={{ open, openDelay, closeDelay, timeoutRef, setOpen, anchorRef }}>
+    <HoverCardContext.Provider value={contextValue}>
       <PopoverPrimitive.Root open={open} modal={false}>
         {children}
       </PopoverPrimitive.Root>

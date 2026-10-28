@@ -132,16 +132,18 @@ export function sanitizeAlertText(
   return `${cleaned.slice(0, maxLength - 1)}…`
 }
 
+const ALERT_TIME_FORMAT = new Intl.DateTimeFormat('pt-BR', {
+  timeZone: 'America/Sao_Paulo',
+  day: '2-digit',
+  month: '2-digit',
+  hour: '2-digit',
+  minute: '2-digit',
+  hour12: false,
+})
+
 /** "22/09 14:04" in the owner's timezone. */
 export function formatAlertTime(date: Date): string {
-  const parts = new Intl.DateTimeFormat('pt-BR', {
-    timeZone: 'America/Sao_Paulo',
-    day: '2-digit',
-    month: '2-digit',
-    hour: '2-digit',
-    minute: '2-digit',
-    hour12: false,
-  }).formatToParts(date)
+  const parts = ALERT_TIME_FORMAT.formatToParts(date)
   const get = (type: Intl.DateTimeFormatPartTypes) =>
     parts.find((p) => p.type === type)?.value ?? ''
   return `${get('day')}/${get('month')} ${get('hour')}:${get('minute')}`

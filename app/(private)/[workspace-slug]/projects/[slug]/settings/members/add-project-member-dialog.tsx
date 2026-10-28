@@ -43,8 +43,9 @@ export function AddProjectMemberDialog({
   })
   const addMember = useAddProjectMember(workspaceId, projectSlug)
 
+  const currentIds = new Set(currentMemberIds)
   const available = (data?.members ?? []).filter(
-    (m) => !currentMemberIds.includes(m.userId),
+    (m) => !currentIds.has(m.userId),
   )
   const membersById = new Map(available.map((m) => [m.userId, m]))
   const selectedMembers = selectedIds
@@ -57,10 +58,11 @@ export function AddProjectMemberDialog({
   }
 
   async function handleConfirm() {
+    // Each addition is independent of the others.
     async function run() {
-      for (const userId of selectedIds) {
-        await addMember.mutateAsync(userId)
-      }
+      await Promise.all(
+        selectedIds.map((userId) => addMember.mutateAsync(userId)),
+      )
     }
     const ok = await notify.run(run(), {
       loading: 'Adicionando membros...',

@@ -10,6 +10,8 @@ import * as React from 'react'
 export function useMounted() {
   const [mounted, setMounted] = React.useState(false)
 
+  // The first paint without the flag is the point: see above.
+  // react-doctor-disable-next-line react-doctor/rendering-hydration-no-flicker
   React.useEffect(() => {
     // Not useHydrated: this must wait for Strict Mode's mount-unmount-mount
     // to settle, which only a state set from an effect does.

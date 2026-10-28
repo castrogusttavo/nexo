@@ -1,6 +1,13 @@
 'use client'
 
-import { type MotionValue, motion, useScroll, useTransform } from 'motion/react'
+import {
+  domAnimation,
+  LazyMotion,
+  type MotionValue,
+  m,
+  useScroll,
+  useTransform,
+} from 'motion/react'
 import { useEffect, useRef, useState } from 'react'
 import { cn } from '@/lib/utils'
 
@@ -162,38 +169,40 @@ export function ManifestoPrinciples() {
   }, [])
 
   return (
-    <section className='mx-auto w-full px-4 sm:px-8 xl:px-11 xl:max-w-336 2xl:max-w-384 border-r border-l border-border py-16'>
-      <div className='w-full px-5 py-16 md:px-9 grid gap-12 lg:grid-cols-[240px_1fr]'>
-        <div className='space-y-6 lg:sticky lg:top-24 lg:self-start'>
-          <div className='text-muted-foreground text-xs uppercase whitespace-nowrap font-medium font-mono tracking-[0.3em]'>
-            princípios
+    <LazyMotion features={domAnimation}>
+      <section className='mx-auto w-full px-4 sm:px-8 xl:px-11 xl:max-w-336 2xl:max-w-384 border-r border-l border-border py-16'>
+        <div className='w-full px-5 py-16 md:px-9 grid gap-12 lg:grid-cols-[240px_1fr]'>
+          <div className='space-y-6 lg:sticky lg:top-24 lg:self-start'>
+            <div className='text-muted-foreground text-xs uppercase whitespace-nowrap font-medium font-mono tracking-[0.3em]'>
+              princípios
+            </div>
+            <div className='space-y-4 border-l border-border pl-4'>
+              {PRINCIPLES.map((principle) => (
+                <a
+                  key={principle.id}
+                  href={`#${principle.id}`}
+                  className={cn(
+                    'group relative flex items-center gap-3 text-sm text-muted-foreground transition-colors duration-300 ease-out before:absolute before:-left-[17px] before:top-0 before:h-full before:w-0.5 before:bg-brand-600 before:opacity-0 before:transition-opacity before:duration-300',
+                    activeId === principle.id &&
+                      'text-primary before:opacity-100',
+                  )}
+                >
+                  <span className='w-6 font-mono text-xs font-semibold text-branding-600'>
+                    {principle.number}
+                  </span>
+                  <span className='font-semibold'>{principle.title}</span>
+                </a>
+              ))}
+            </div>
           </div>
-          <div className='space-y-4 border-l border-border pl-4'>
+          <div className='space-y-16'>
             {PRINCIPLES.map((principle) => (
-              <a
-                key={principle.id}
-                href={`#${principle.id}`}
-                className={cn(
-                  'group relative flex items-center gap-3 text-sm text-muted-foreground transition-colors duration-300 ease-out before:absolute before:-left-[17px] before:top-0 before:h-full before:w-0.5 before:bg-brand-600 before:opacity-0 before:transition-opacity before:duration-300',
-                  activeId === principle.id &&
-                    'text-primary before:opacity-100',
-                )}
-              >
-                <span className='w-6 font-mono text-xs font-semibold text-branding-600'>
-                  {principle.number}
-                </span>
-                <span className='font-semibold'>{principle.title}</span>
-              </a>
+              <PrincipleItem key={principle.id} principle={principle} />
             ))}
           </div>
         </div>
-        <div className='space-y-16'>
-          {PRINCIPLES.map((principle) => (
-            <PrincipleItem key={principle.id} principle={principle} />
-          ))}
-        </div>
-      </div>
-    </section>
+      </section>
+    </LazyMotion>
   )
 }
 
@@ -266,7 +275,7 @@ function PrincipleTitleChar({
   )
 
   return (
-    <motion.span
+    <m.span
       style={
         {
           '--title-progress': charProgress,
@@ -276,6 +285,6 @@ function PrincipleTitleChar({
       }
     >
       {char}
-    </motion.span>
+    </m.span>
   )
 }

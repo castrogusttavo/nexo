@@ -70,6 +70,7 @@ export function ProjectMembersManager({
 
   const filteredMembers = useMemo(() => {
     const term = search.trim().toLowerCase()
+    const roleSet = new Set(roles)
     return (members ?? []).filter((member) => {
       const matchesSearch =
         !term ||
@@ -77,7 +78,7 @@ export function ProjectMembersManager({
         member.username.toLowerCase().includes(term) ||
         member.email.toLowerCase().includes(term)
       const matchesRole =
-        roles.length === 0 || roles.includes(member.isLead ? 'LEAD' : 'MEMBER')
+        roleSet.size === 0 || roleSet.has(member.isLead ? 'LEAD' : 'MEMBER')
       return matchesSearch && matchesRole
     })
   }, [members, search, roles])

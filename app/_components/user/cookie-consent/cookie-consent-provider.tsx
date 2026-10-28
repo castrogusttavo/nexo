@@ -6,6 +6,7 @@ import {
   use,
   useCallback,
   useEffect,
+  useMemo,
   useState,
 } from 'react'
 import { useLogger } from '@/lib/axiom/client'
@@ -120,16 +121,20 @@ export function CookieConsentProvider({
     [session.isAuthenticated, log],
   )
 
+  // Stable between renders, so consumers only redraw when a field changes.
+  const value = useMemo(
+    () => ({
+      consent,
+      ready,
+      isAuthenticated: session.isAuthenticated,
+      userId: session.userId,
+      setConsent,
+    }),
+    [consent, ready, session.isAuthenticated, session.userId, setConsent],
+  )
+
   return (
-    <Ctx.Provider
-      value={{
-        consent,
-        ready,
-        isAuthenticated: session.isAuthenticated,
-        userId: session.userId,
-        setConsent,
-      }}
-    >
+    <Ctx.Provider value={value}>
       {children}
       {isAuthenticated === undefined && <SessionBridge onChange={setSession} />}
     </Ctx.Provider>

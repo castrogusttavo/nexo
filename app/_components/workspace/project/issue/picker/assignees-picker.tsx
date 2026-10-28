@@ -25,7 +25,8 @@ export function AssigneesPicker({
 }: AssigneesPickerProps) {
   const { data: members } = useProjectMembers(workspaceId, projectSlug)
   const options = members ?? []
-  const selected = options.filter((member) => value?.includes(member.userId))
+  const valueSet = new Set(value)
+  const selected = options.filter((member) => valueSet.has(member.userId))
 
   return (
     <Combobox

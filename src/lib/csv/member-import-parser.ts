@@ -24,9 +24,9 @@ export async function parseMemberImportCsv(
 
   if (parsed.errors.length > 0) return err(memberImportInvalidFormat())
 
-  const headers = parsed.meta.fields ?? []
+  const headers = new Set(parsed.meta.fields ?? [])
   const missing = MemberImportRequiredColumns.filter(
-    (column) => !headers.includes(column),
+    (column) => !headers.has(column),
   )
   if (missing.length > 0) {
     return err(

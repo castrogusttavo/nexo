@@ -24,16 +24,18 @@ function normalizeSection<T extends string>(
   stored: unknown,
   ids: readonly T[],
 ): NavEntry<T>[] {
-  const known: readonly string[] = ids
+  const known = new Set<string>(ids)
+  const seen = new Set<string>()
   const kept = (Array.isArray(stored) ? stored : [])
     .filter(isNavEntry)
-    .filter((e) => known.includes(e.id))
-    .filter(
-      (e, i, all) => all.findIndex((o) => o.id === e.id) === i,
-    ) as NavEntry<T>[]
+    .filter((e) => {
+      if (!known.has(e.id) || seen.has(e.id)) return false
+      seen.add(e.id)
+      return true
+    }) as NavEntry<T>[]
 
   const missing = ids
-    .filter((id) => !kept.some((e) => e.id === id))
+    .filter((id) => !seen.has(id))
     .map((id) => ({ id, visible: true }))
 
   return [...kept, ...missing]

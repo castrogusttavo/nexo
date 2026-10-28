@@ -61,8 +61,10 @@ export function IssueCardList({
   const [detailsOpen, setDetailsOpen] = useState(false)
 
   async function handleLabelsChange(nextLabelIds: string[]) {
-    const added = nextLabelIds.filter((id) => !issue.labelIds.includes(id))
-    const removed = issue.labelIds.filter((id) => !nextLabelIds.includes(id))
+    const current = new Set(issue.labelIds)
+    const next = new Set(nextLabelIds)
+    const added = nextLabelIds.filter((id) => !current.has(id))
+    const removed = issue.labelIds.filter((id) => !next.has(id))
     await Promise.all([
       ...added.map((id) => addLabel.mutateAsync(id)),
       ...removed.map((id) => removeLabel.mutateAsync(id)),
@@ -73,8 +75,10 @@ export function IssueCardList({
   }
 
   async function handleAssigneesChange(nextUserIds: string[]) {
-    const added = nextUserIds.filter((id) => !issue.assigneeIds.includes(id))
-    const removed = issue.assigneeIds.filter((id) => !nextUserIds.includes(id))
+    const current = new Set(issue.assigneeIds)
+    const next = new Set(nextUserIds)
+    const added = nextUserIds.filter((id) => !current.has(id))
+    const removed = issue.assigneeIds.filter((id) => !next.has(id))
     await Promise.all([
       ...added.map((id) => assignIssue.mutateAsync(id)),
       ...removed.map((id) => unassignIssue.mutateAsync(id)),
