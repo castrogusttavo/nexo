@@ -11,17 +11,17 @@ import {
 import { UserAvatar } from '@/components/user-avatar'
 import { authClient } from '@/src/lib/auth-client'
 
-interface HeaderOnboardingUserButtonProps {
+interface HeaderWrongEmailMenuProps {
   name: string | null
   email: string
-  image: string | null
+  image?: string | null
 }
 
-export function HeaderOnboardingUserButton({
+export function HeaderWrongEmailMenu({
   name,
   email,
   image,
-}: HeaderOnboardingUserButtonProps) {
+}: HeaderWrongEmailMenuProps) {
   const { push } = useRouter()
 
   async function handleWrongEmail() {

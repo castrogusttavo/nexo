@@ -4,8 +4,8 @@ import {
   InformationCircleIcon,
   Search01Icon,
 } from '@hugeicons-pro/core-stroke-rounded'
-import { EmojiPicker as EmojiPickerPrimitive } from 'frimousse'
 import { useState } from 'react'
+import { EmojiSearchPicker } from '@/components/emoji-search-picker'
 import { NexoIcon } from '@/components/icon/icon'
 import { Smaller } from '@/components/typography/text/smaller'
 import { Button } from '@/components/ui/button'
@@ -14,7 +14,6 @@ import {
   DropdownMenuContent,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
-import { EmojiPicker, EmojiPickerContent } from '@/components/ui/emoji-picker'
 import {
   InputGroup,
   InputGroupAddon,
@@ -61,40 +60,11 @@ export function ProjectEmojiIconPicker({
 }
 
 function EmojiTab({ onSelect }: { onSelect?: (emoji: string) => void }) {
-  const [search, setSearch] = useState('')
-
   return (
-    <EmojiPicker
-      className='h-81.5 scrollbar-hidden overflow-visible w-full'
-      onEmojiSelect={({ emoji }) => {
-        onSelect?.(emoji)
-      }}
-    >
-      <div
-        onKeyDown={(e) => e.stopPropagation()}
-        className='flex items-center gap-2 z-50'
-      >
-        <InputGroup className='flex-1'>
-          <InputGroupInput
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            placeholder='Pesquisar'
-          />
-          <InputGroupAddon align='inline-start'>
-            <NexoIcon icon={Search01Icon} />
-          </InputGroupAddon>
-        </InputGroup>
-        <EmojiPickerPrimitive.SkinToneSelector className='flex size-9 items-center justify-center rounded-md text-lg transition-colors' />
-        <EmojiPickerPrimitive.Search
-          value={search}
-          onChange={(e) => setSearch(e.target.value)}
-          className='sr-only hidden'
-          tabIndex={-1}
-          aria-hidden='true'
-        />
-      </div>
-      <EmojiPickerContent className='scrollbar-hidden w-full justify-between' />
-    </EmojiPicker>
+    <EmojiSearchPicker
+      className='w-full'
+      onSelect={(emoji) => onSelect?.(emoji)}
+    />
   )
 }
 

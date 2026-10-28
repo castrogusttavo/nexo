@@ -4,9 +4,9 @@ import { Suspense } from 'react'
 import { Skeleton } from '@/components/ui/skeleton'
 import { getAuthSession } from '@/src/lib/auth-session'
 import { UserService } from '@/src/services/user.service'
+import { HeaderWrongEmailMenu } from '../header-wrong-email-menu'
 import { HeaderOnboardingBackButton } from './header-onboarding-back-button'
 import { HeaderOnboardingProgressBar } from './header-onboarding-progress-bar'
-import { HeaderOnboardingUserButton } from './header-onboarding-user-button'
 
 // Everything but the avatar is the same for everyone, so it renders at once;
 // only the user menu waits for the session. Reading the session here, outside
@@ -43,7 +43,7 @@ async function HeaderOnboardingUser() {
   const profile = await UserService.getProfile(session.value.user.id)
   const { name, email, image } = profile.ok ? profile.value : session.value.user
   return (
-    <HeaderOnboardingUserButton
+    <HeaderWrongEmailMenu
       name={name ?? null}
       email={email}
       image={image ?? null}

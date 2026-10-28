@@ -1,7 +1,7 @@
 import { screen, waitFor } from '@testing-library/react'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { renderWithProviders } from '@/src/__tests__/helpers/component'
-import { HeaderOnboardingUserButton } from '../header-onboarding-user-button'
+import { HeaderWrongEmailMenu } from '../header-wrong-email-menu'
 
 const { push, signOut } = vi.hoisted(() => ({
   push: vi.fn(),
@@ -11,10 +11,10 @@ vi.mock('next/navigation', () => ({ useRouter: () => ({ push }) }))
 vi.mock('@/src/lib/auth-client', () => ({ authClient: { signOut } }))
 
 function renderButton(
-  props: Partial<React.ComponentProps<typeof HeaderOnboardingUserButton>> = {},
+  props: Partial<React.ComponentProps<typeof HeaderWrongEmailMenu>> = {},
 ) {
   return renderWithProviders(
-    <HeaderOnboardingUserButton
+    <HeaderWrongEmailMenu
       name='Ana Souza'
       email='ana@nexo.dev'
       image={null}
@@ -27,7 +27,7 @@ beforeEach(() => {
   signOut.mockResolvedValue(undefined)
 })
 
-describe('<HeaderOnboardingUserButton />', () => {
+describe('<HeaderWrongEmailMenu />', () => {
   it('shows the name of the account being set up', () => {
     renderButton()
 
