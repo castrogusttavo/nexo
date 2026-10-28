@@ -21,12 +21,14 @@ import { DEFAULT_LABELS } from './label.repository'
 import { DEFAULT_STATES } from './state.repository'
 
 // @prisma/adapter-pg (driver adapters) doesn't populate the classic
-// error.meta.target on P2002 — the actual column list moved to
-// error.meta.driverAdapterError.cause.constraint.fields. Without this,
-// every unique-constraint conflict here silently fell through to the
-// "slug" branch, including real identifier collisions, and the
-// identifier-retry loop in ProjectService.create() never triggered
-// because it only retries on PROJECT_IDENTIFIER_CONFLICT.
+// error.meta.target on P2002, and where the constraint is reported moved
+// between releases: up to 7.8 it was the column list in
+// error.meta.driverAdapterError.cause.constraint.fields, from 7.9 only the
+// index name (constraint.index, e.g. "projects_workspace_id_identifier_key").
+// Without this, every unique-constraint conflict here silently fell through
+// to the "slug" branch, including real identifier collisions, and the
+// identifier-retry loop in ProjectService.create() never triggered because
+// it only retries on PROJECT_IDENTIFIER_CONFLICT.
 function uniqueConstraintFields(error: unknown): string[] | undefined {
   const meta = (error as { meta?: Record<string, unknown> } | undefined)?.meta
   if (!meta) return undefined
@@ -35,9 +37,20 @@ function uniqueConstraintFields(error: unknown): string[] | undefined {
   if (Array.isArray(target)) return target as string[]
 
   const driverAdapterError = meta.driverAdapterError as
-    | { cause?: { constraint?: { fields?: string[] } } }
+    | { cause?: { constraint?: { fields?: string[]; index?: string } } }
     | undefined
-  return driverAdapterError?.cause?.constraint?.fields
+  const constraint = driverAdapterError?.cause?.constraint
+  if (constraint?.fields) return constraint.fields
+  return constraint?.index ? [constraint.index] : undefined
+}
+
+// A column name ("identifier") or an index name that contains it.
+function isIdentifierConflict(error: unknown): boolean {
+  return (
+    uniqueConstraintFields(error)?.some((name) =>
+      name.includes('identifier'),
+    ) ?? false
+  )
 }
 
 // Every project handed to the mapper carries its label ids; leaving the
@@ -239,9 +252,7 @@ export const ProjectRepository = {
       return ok(project)
     } catch (error) {
       if (error instanceof Error && 'code' in error && error.code === 'P2002') {
-        const target = uniqueConstraintFields(error)
-        if (target?.includes('identifier'))
-          return err(projectIdentifierConflict())
+        if (isIdentifierConflict(error)) return err(projectIdentifierConflict())
         return err(projectSlugConflict())
       }
 
@@ -290,9 +301,7 @@ export const ProjectRepository = {
       return ok(project)
     } catch (error) {
       if (error instanceof Error && 'code' in error && error.code === 'P2002') {
-        const target = uniqueConstraintFields(error)
-        if (target?.includes('identifier'))
-          return err(projectIdentifierConflict())
+        if (isIdentifierConflict(error)) return err(projectIdentifierConflict())
         return err(projectSlugConflict())
       }
 

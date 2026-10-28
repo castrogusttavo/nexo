@@ -726,6 +726,40 @@ describe('ProjectRepository', () => {
       )
     })
 
+    // Prisma 7.8 reported the columns; 7.9 reports only the index name.
+    it.each([
+      [
+        'the column list (adapter-pg <= 7.8)',
+        { fields: ['workspace_id', 'identifier'] },
+      ],
+      [
+        'the index name (adapter-pg >= 7.9)',
+        { index: 'projects_workspace_id_identifier_key' },
+      ],
+    ])('should read the driver adapter constraint from %s', async (_, constraint) => {
+      vi.spyOn(prisma, '$transaction').mockRejectedValueOnce(
+        p2002({ driverAdapterError: { cause: { constraint } } }),
+      )
+      expectErr(
+        await ProjectRepository.create(createInput),
+        'PROJECT_IDENTIFIER_CONFLICT',
+      )
+    })
+
+    it('should map a slug index name to PROJECT_SLUG_CONFLICT', async () => {
+      vi.spyOn(prisma, '$transaction').mockRejectedValueOnce(
+        p2002({
+          driverAdapterError: {
+            cause: { constraint: { index: 'projects_workspace_id_slug_key' } },
+          },
+        }),
+      )
+      expectErr(
+        await ProjectRepository.create(createInput),
+        'PROJECT_SLUG_CONFLICT',
+      )
+    })
+
     it('should fall back to PROJECT_SLUG_CONFLICT when the error has no meta', async () => {
       vi.spyOn(prisma.project, 'update').mockRejectedValueOnce(p2002())
       expectErr(
