@@ -51,15 +51,13 @@ export function DialogEstimateEditOptions({
         }
       />
       <DialogContent
-        className='bg-app space-y-6 py-5 w-2xl min-w-2xl max-w-2xl flex flex-col'
+        className='space-y-6 py-5 w-2xl min-w-2xl max-w-2xl flex flex-col'
         showCloseButton={false}
       >
         {view === 'menu' && (
           <>
-            <DialogHeader className='w-full flex-row items-center justify-between h-fit p-0 m-0'>
-              <DialogTitle className='text-xl font-medium'>
-                Editar sistema de estimativas
-              </DialogTitle>
+            <DialogHeader>
+              <DialogTitle>Editar sistema de estimativas</DialogTitle>
             </DialogHeader>
             <div className='space-y-3'>
               <button

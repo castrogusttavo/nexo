@@ -1,7 +1,12 @@
 import type { ReactElement } from 'react'
-import { H4 } from '@/components/typography/heading/h4'
 import { Button } from '@/components/ui/button'
-import { Dialog, DialogContent, DialogTrigger } from '@/components/ui/dialog'
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from '@/components/ui/dialog'
 import { Field, FieldLabel } from '@/components/ui/field'
 import { Input } from '@/components/ui/input'
 import { Switch } from '@/components/ui/switch'
@@ -25,19 +30,19 @@ export function IssueModal({
     <Dialog>
       <DialogTrigger render={trigger} />
       <DialogContent
-        className='bg-card rounded-lg w-4xl min-w-4xl h-128'
+        className='rounded-lg w-4xl min-w-4xl h-128'
         showCloseButton={false}
       >
         <form className='w-full h-full'>
-          <div>
-            <H4>Criar nova issue</H4>
+          <DialogHeader>
+            <DialogTitle>Criar nova issue</DialogTitle>
             <IssueProjectSwitcher
               workspaceId={workspaceId}
               workspaceSlug={workspaceSlug}
               projectSlug={projectSlug}
               buttonVariant='outline'
             />
-          </div>
+          </DialogHeader>
           <div>
             <Input />
             <Textarea />

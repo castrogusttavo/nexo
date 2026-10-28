@@ -2,7 +2,7 @@
 
 import type { MouseEvent } from 'react'
 import { useState } from 'react'
-import { Dialog, DialogContent } from '@/components/ui/dialog'
+import { Dialog, DialogContent, DialogTitle } from '@/components/ui/dialog'
 
 interface BlogContentProps {
   html: string
@@ -34,6 +34,7 @@ export function BlogContent({ html }: BlogContentProps) {
           showCloseButton
           className='top-0 left-0 right-0 bottom-0 translate-x-0 translate-y-0 w-screen min-w-screen max-w-336 h-screen max-h-none rounded-none bg-transparent p-0 ring-0 flex items-center justify-center'
         >
+          <DialogTitle className='sr-only'>Imagem ampliada</DialogTitle>
           {lightboxSrc && (
             <img
               src={lightboxSrc}

@@ -24,6 +24,7 @@ import {
   AlertDialogDescription,
   AlertDialogFooter,
   AlertDialogHeader,
+  AlertDialogTitle,
   AlertDialogTrigger,
 } from '@/components/ui/alert-dialog'
 import { Button } from '@/components/ui/button'
@@ -236,13 +237,15 @@ export function ProjectStatesSettings({
                                 />
                                 <AlertDialogContent>
                                   <AlertDialogHeader>
-                                    Excluir state
+                                    <AlertDialogTitle>
+                                      Excluir state
+                                    </AlertDialogTitle>
+                                    <AlertDialogDescription>
+                                      Itens de trabalho neste state precisarão
+                                      ser movidos manualmente. Essa ação não
+                                      pode ser desfeita.
+                                    </AlertDialogDescription>
                                   </AlertDialogHeader>
-                                  <AlertDialogDescription>
-                                    Itens de trabalho neste state precisarão ser
-                                    movidos manualmente. Essa ação não pode ser
-                                    desfeita.
-                                  </AlertDialogDescription>
                                   <AlertDialogFooter>
                                     <AlertDialogCancel>
                                       Cancelar

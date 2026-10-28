@@ -174,9 +174,7 @@ export default async function CareerJobPage({ params }: Props) {
                 showCloseButton={false}
               >
                 <DialogHeader>
-                  <DialogTitle className='text-xl'>
-                    Candidatar-se pra {job.title}
-                  </DialogTitle>
+                  <DialogTitle>Candidatar-se pra {job.title}</DialogTitle>
                   <DialogDescription>
                     Preencha seus dados e a gente entra em contato pelo e-mail
                     informado.

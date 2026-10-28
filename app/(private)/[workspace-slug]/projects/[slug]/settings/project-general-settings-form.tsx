@@ -19,6 +19,7 @@ import {
   AlertDialogDescription,
   AlertDialogFooter,
   AlertDialogHeader,
+  AlertDialogTitle,
   AlertDialogTrigger,
 } from '@/components/ui/alert-dialog'
 import { Button } from '@/components/ui/button'
@@ -310,11 +311,13 @@ export function ProjectGeneralSettingsForm({
               }
             />
             <AlertDialogContent>
-              <AlertDialogHeader>Arquivar o projeto</AlertDialogHeader>
-              <AlertDialogDescription>
-                O projeto sai da navegação lateral, mas continua acessível pela
-                página de projetos. Pode ser restaurado depois.
-              </AlertDialogDescription>
+              <AlertDialogHeader>
+                <AlertDialogTitle>Arquivar o projeto</AlertDialogTitle>
+                <AlertDialogDescription>
+                  O projeto sai da navegação lateral, mas continua acessível
+                  pela página de projetos. Pode ser restaurado depois.
+                </AlertDialogDescription>
+              </AlertDialogHeader>
               <AlertDialogFooter>
                 <AlertDialogCancel disabled={archiveProject.isPending}>
                   Cancelar
@@ -346,11 +349,13 @@ export function ProjectGeneralSettingsForm({
               }
             />
             <AlertDialogContent>
-              <AlertDialogHeader>Excluir projeto</AlertDialogHeader>
-              <AlertDialogDescription>
-                Todos os dados e recursos desse projeto serão removidos
-                permanentemente e não poderão ser recuperados.
-              </AlertDialogDescription>
+              <AlertDialogHeader>
+                <AlertDialogTitle>Excluir projeto</AlertDialogTitle>
+                <AlertDialogDescription>
+                  Todos os dados e recursos desse projeto serão removidos
+                  permanentemente e não poderão ser recuperados.
+                </AlertDialogDescription>
+              </AlertDialogHeader>
               <AlertDialogFooter>
                 <AlertDialogCancel disabled={deleteProject.isPending}>
                   Cancelar

@@ -147,7 +147,7 @@ export function EstimateSystemForm({
 
   return (
     <div className='space-y-6'>
-      <DialogHeader className='w-full flex-row items-center h-fit'>
+      <DialogHeader className='flex-row items-center'>
         <Button
           type='button'
           variant='ghost'
@@ -157,9 +157,7 @@ export function EstimateSystemForm({
         >
           <NexoIcon icon={ArrowLeft01Icon} strokeWidth={2} />
         </Button>
-        <DialogTitle className='text-xl font-medium'>
-          Editar sistema de estimativas
-        </DialogTitle>
+        <DialogTitle>Editar sistema de estimativas</DialogTitle>
       </DialogHeader>
       <div className='space-y-1.5'>
         <Muted>Escolher um sistema de estimativa</Muted>

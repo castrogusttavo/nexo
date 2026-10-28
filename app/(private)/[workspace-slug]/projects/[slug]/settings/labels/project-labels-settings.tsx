@@ -17,6 +17,7 @@ import {
   AlertDialogDescription,
   AlertDialogFooter,
   AlertDialogHeader,
+  AlertDialogTitle,
   AlertDialogTrigger,
 } from '@/components/ui/alert-dialog'
 import { Button } from '@/components/ui/button'
@@ -119,11 +120,13 @@ export function ProjectLabelsSettings({
                   }
                 />
                 <AlertDialogContent>
-                  <AlertDialogHeader>Excluir etiqueta</AlertDialogHeader>
-                  <AlertDialogDescription>
-                    Essa etiqueta será removida de todas as issues que a
-                    utilizam. Essa ação não pode ser desfeita.
-                  </AlertDialogDescription>
+                  <AlertDialogHeader>
+                    <AlertDialogTitle>Excluir etiqueta</AlertDialogTitle>
+                    <AlertDialogDescription>
+                      Essa etiqueta será removida de todas as issues que a
+                      utilizam. Essa ação não pode ser desfeita.
+                    </AlertDialogDescription>
+                  </AlertDialogHeader>
                   <AlertDialogFooter>
                     <AlertDialogCancel>Cancelar</AlertDialogCancel>
                     <AlertDialogAction

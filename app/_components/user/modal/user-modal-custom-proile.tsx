@@ -11,7 +11,7 @@ import { NexoIcon } from '@/components/icon/icon'
 import { H4 } from '@/components/typography/heading/h4'
 import { Muted } from '@/components/typography/text/muted'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
-import { Dialog, DialogContent } from '@/components/ui/dialog'
+import { Dialog, DialogContent, DialogTitle } from '@/components/ui/dialog'
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { getInitials } from '@/lib/user-name-initials'
 import { useUser } from '@/src/hooks/use-user'
@@ -47,6 +47,7 @@ export function UserModalCustomProfile({
   return (
     <Dialog open={tab !== null} onOpenChange={onOpenChange}>
       <DialogContent className='flex p-0 m-0 h-183 max-h-[90vh] w-6xl min-w-6xl'>
+        <DialogTitle className='sr-only'>Configurações da conta</DialogTitle>
         {tab && (
           <Tabs
             key={tab}

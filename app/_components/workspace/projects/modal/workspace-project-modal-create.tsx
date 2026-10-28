@@ -14,6 +14,7 @@ import {
   Dialog,
   DialogClose,
   DialogContent,
+  DialogTitle,
   DialogTrigger,
 } from '@/components/ui/dialog'
 import {
@@ -186,6 +187,7 @@ export function WorkspaceProjectModal({
         }
       />
       <DialogContent className='p-3 w-full sm:max-w-4xl'>
+        <DialogTitle className='sr-only'>Criar projeto</DialogTitle>
         <form onSubmit={handleSubmit}>
           <div className='group relative h-44 w-full rounded-lg bg-muted'>
             <Image

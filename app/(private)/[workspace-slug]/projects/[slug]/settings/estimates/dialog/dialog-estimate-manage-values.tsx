@@ -16,6 +16,7 @@ import {
   AlertDialogDescription,
   AlertDialogFooter,
   AlertDialogHeader,
+  AlertDialogTitle,
   AlertDialogTrigger,
 } from '@/components/ui/alert-dialog'
 import { Button } from '@/components/ui/button'
@@ -109,7 +110,7 @@ export function EstimateValuesForm({
 
   return (
     <div className='space-y-6'>
-      <DialogHeader className='w-full flex-row items-center h-fit'>
+      <DialogHeader className='flex-row items-center'>
         <Button
           type='button'
           variant='ghost'
@@ -119,9 +120,7 @@ export function EstimateValuesForm({
         >
           <NexoIcon icon={ArrowLeft01Icon} strokeWidth={2} />
         </Button>
-        <DialogTitle className='text-xl font-medium'>
-          Editar sistema de estimativas
-        </DialogTitle>
+        <DialogTitle>Editar sistema de estimativas</DialogTitle>
       </DialogHeader>
       <Sortable
         value={settings?.values ?? []}
@@ -176,11 +175,13 @@ export function EstimateValuesForm({
                     }
                   />
                   <AlertDialogContent>
-                    <AlertDialogHeader>Excluir valor</AlertDialogHeader>
-                    <AlertDialogDescription>
-                      Esse valor deixará de estar disponível para novas
-                      estimativas. Essa ação não pode ser desfeita.
-                    </AlertDialogDescription>
+                    <AlertDialogHeader>
+                      <AlertDialogTitle>Excluir valor</AlertDialogTitle>
+                      <AlertDialogDescription>
+                        Esse valor deixará de estar disponível para novas
+                        estimativas. Essa ação não pode ser desfeita.
+                      </AlertDialogDescription>
+                    </AlertDialogHeader>
                     <AlertDialogFooter>
                       <AlertDialogCancel>Cancelar</AlertDialogCancel>
                       <AlertDialogAction
