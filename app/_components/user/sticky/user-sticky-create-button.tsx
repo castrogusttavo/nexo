@@ -27,7 +27,7 @@ export function UserStickyCreateButton({
       variant={variant}
       size={size}
       onClick={() =>
-        notify.mutate(create.mutateAsync(undefined), {
+        notify.run(create.mutateAsync(undefined), {
           loading: 'Criando sticky...',
           success: 'Sticky criado',
           error: 'Erro ao criar sticky',

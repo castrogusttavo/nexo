@@ -1,32 +1,17 @@
 'use client'
 
 import { Search01Icon } from '@hugeicons-pro/core-stroke-rounded'
-import {
-  flexRender,
-  getCoreRowModel,
-  getSortedRowModel,
-  type SortingState,
-  useReactTable,
-} from '@tanstack/react-table'
+import type { SortingState } from '@tanstack/react-table'
 import { useMemo, useState } from 'react'
+import { SettingsPage } from '@/app/(private)/_components/settings-page'
 import { NexoIcon } from '@/components/icon/icon'
-import { H3 } from '@/components/typography/heading/h3'
-import { Muted } from '@/components/typography/text/muted'
+import { DataTable } from '@/components/ui/data-table/data-table'
 import { DataTableFacetedFilter } from '@/components/ui/data-table/data-table-faceted-filter'
 import {
   InputGroup,
   InputGroupAddon,
   InputGroupInput,
 } from '@/components/ui/input-group'
-import { Skeleton } from '@/components/ui/skeleton'
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from '@/components/ui/table'
 import { notify } from '@/lib/notify'
 import {
   useProjectMembers,
@@ -63,7 +48,7 @@ export function ProjectMembersManager({
   const [sorting, setSorting] = useState<SortingState>([])
 
   function handleRemove(userId: string) {
-    notify.mutate(removeMember.mutateAsync(userId), {
+    notify.run(removeMember.mutateAsync(userId), {
       loading: 'Removendo membro...',
       success: 'Membro removido',
       error: 'Erro ao remover membro',
@@ -94,21 +79,12 @@ export function ProjectMembersManager({
     })
   }, [members, search, roles])
 
-  const table = useReactTable({
-    data: filteredMembers,
-    columns,
-    state: { sorting },
-    onSortingChange: setSorting,
-    getCoreRowModel: getCoreRowModel(),
-    getSortedRowModel: getSortedRowModel(),
-  })
-
   return (
-    <div className='w-full h-full p-6 flex-1 min-h-0 flex flex-col gap-6 overflow-hidden'>
-      <div className='flex items-center justify-between'>
-        <H3>Membros</H3>
-      </div>
-
+    <SettingsPage
+      title='Membros'
+      width='full'
+      className='h-full flex-1 min-h-0 overflow-hidden'
+    >
       <ProjectLeadSelect
         workspaceId={workspaceId}
         projectSlug={projectSlug}
@@ -150,60 +126,15 @@ export function ProjectMembersManager({
         </div>
       </div>
 
-      <div className='rounded-md border w-full h-full'>
-        <Table>
-          <TableHeader>
-            {table.getHeaderGroups().map((headerGroup) => (
-              <TableRow key={headerGroup.id}>
-                {headerGroup.headers.map((header) => (
-                  <TableHead key={header.id}>
-                    {header.isPlaceholder
-                      ? null
-                      : flexRender(
-                          header.column.columnDef.header,
-                          header.getContext(),
-                        )}
-                  </TableHead>
-                ))}
-              </TableRow>
-            ))}
-          </TableHeader>
-          <TableBody>
-            {isLoading ? (
-              Array.from({ length: 5 }).map((_, i) => (
-                <TableRow key={i}>
-                  {columns.map((_, colIndex) => (
-                    <TableCell key={colIndex}>
-                      <Skeleton className='h-4 w-full max-w-32' />
-                    </TableCell>
-                  ))}
-                </TableRow>
-              ))
-            ) : table.getRowModel().rows.length === 0 ? (
-              <TableRow>
-                <TableCell colSpan={columns.length}>
-                  <Muted className='py-4 text-center block'>
-                    Nenhum membro encontrado.
-                  </Muted>
-                </TableCell>
-              </TableRow>
-            ) : (
-              table.getRowModel().rows.map((row) => (
-                <TableRow key={row.id}>
-                  {row.getVisibleCells().map((cell) => (
-                    <TableCell key={cell.id}>
-                      {flexRender(
-                        cell.column.columnDef.cell,
-                        cell.getContext(),
-                      )}
-                    </TableCell>
-                  ))}
-                </TableRow>
-              ))
-            )}
-          </TableBody>
-        </Table>
-      </div>
-    </div>
+      <DataTable
+        columns={columns}
+        data={filteredMembers}
+        sorting={sorting}
+        onSortingChange={setSorting}
+        isLoading={isLoading}
+        loadingMessage='Carregando membros...'
+        emptyMessage='Nenhum membro encontrado.'
+      />
+    </SettingsPage>
   )
 }

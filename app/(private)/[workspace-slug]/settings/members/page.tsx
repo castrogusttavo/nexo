@@ -7,8 +7,8 @@ import {
 } from '@/app/_components/header/breadcrumb-page'
 import HeaderInternalNavigation from '@/app/_components/header/header-internal-navigation'
 import { PageSkeleton } from '@/app/(private)/_components/page-skeleton'
+import { SettingsPage } from '@/app/(private)/_components/settings-page'
 import { NexoIcon } from '@/components/icon/icon'
-import { H3 } from '@/components/typography/heading/h3'
 import { Muted } from '@/components/typography/text/muted'
 import { requireMembership } from '@/src/lib/dal'
 import { MembersManager } from './members-manager'
@@ -42,15 +42,16 @@ export default function SettingsMembersPage({ params }: { params: Params }) {
           </HeaderBreadcrumbCrumb>
         </HeaderBreadcrumbList>
       </HeaderInternalNavigation>
-      <div className='w-full p-6 flex-1 min-h-0 flex flex-col gap-6 overflow-hidden'>
-        <div>
-          <H3>Membros</H3>
-          <Muted>Gerencie o acesso a este workspace.</Muted>
-        </div>
+      <SettingsPage
+        title='Membros'
+        description='Gerencie o acesso a este workspace.'
+        width='full'
+        className='flex-1 min-h-0 overflow-hidden'
+      >
         <Suspense fallback={<PageSkeleton />}>
           <Members params={params} />
         </Suspense>
-      </div>
+      </SettingsPage>
     </div>
   )
 }

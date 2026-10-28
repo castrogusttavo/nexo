@@ -54,11 +54,14 @@ export function MembersManager({ workspaceId }: { workspaceId: string }) {
         data={data?.members ?? []}
         sorting={sorting}
         onSortingChange={setSorting}
-        page={page}
-        pageSize={PAGE_SIZE}
-        total={data?.total ?? 0}
-        onPageChange={setPage}
+        pagination={{
+          page,
+          pageSize: PAGE_SIZE,
+          total: data?.total ?? 0,
+          onPageChange: setPage,
+        }}
         isLoading={isLoading}
+        loadingMessage='Carregando membros...'
         emptyMessage='Nenhum membro encontrado.'
       />
       <PendingInvitationsList workspaceId={workspaceId} />

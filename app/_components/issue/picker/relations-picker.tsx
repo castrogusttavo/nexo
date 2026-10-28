@@ -69,7 +69,7 @@ export function RelationsPicker({
 
   function handleAdd() {
     if (!pendingType || !pendingTargetId) return
-    notify.mutate(
+    notify.run(
       createRelation.mutateAsync({
         targetId: pendingTargetId,
         type: pendingType,
@@ -85,7 +85,7 @@ export function RelationsPicker({
   }
 
   function handleRemove(relationId: string) {
-    notify.mutate(removeRelation.mutateAsync(relationId), {
+    notify.run(removeRelation.mutateAsync(relationId), {
       loading: 'Removendo relação...',
       success: 'Relação removida',
       error: 'Erro ao remover relação',

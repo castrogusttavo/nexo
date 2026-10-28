@@ -49,7 +49,7 @@ export function EstimateValuesForm({
   const [editingValue, setEditingValue] = useState('')
 
   function handleReorder(newOrder: EstimateValueDTO[]) {
-    notify.mutate(reorderValues.mutateAsync(newOrder.map((v) => v.id)), {
+    notify.run(reorderValues.mutateAsync(newOrder.map((v) => v.id)), {
       loading: 'Reordenando...',
       success: 'Ordem atualizada',
       error: 'Erro ao reordenar valores',
@@ -88,7 +88,7 @@ export function EstimateValuesForm({
   }
 
   function handleDelete(valueId: string) {
-    notify.mutate(deleteValue.mutateAsync(valueId), {
+    notify.run(deleteValue.mutateAsync(valueId), {
       loading: 'Excluindo valor...',
       success: 'Valor excluído',
       error: 'Erro ao excluir valor',

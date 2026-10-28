@@ -48,7 +48,7 @@ export function PendingInvitationsList({
   )
 
   function handleRevoke(invitationId: string) {
-    notify.mutate(revokeInvitation.mutateAsync(invitationId), {
+    notify.run(revokeInvitation.mutateAsync(invitationId), {
       loading: 'Excluindo convite...',
       success: 'Convite excluído',
       error: 'Não foi possível excluir o convite',
@@ -56,7 +56,7 @@ export function PendingInvitationsList({
   }
 
   function handleRoleChange(invitationId: string, role: string) {
-    notify.mutate(updateRole.mutateAsync({ invitationId, role }), {
+    notify.run(updateRole.mutateAsync({ invitationId, role }), {
       loading: 'Atualizando papel...',
       success: 'Papel do convite atualizado',
       error: 'Não foi possível atualizar o papel',

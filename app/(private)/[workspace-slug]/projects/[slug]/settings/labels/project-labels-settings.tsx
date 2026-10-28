@@ -6,10 +6,9 @@ import {
   PencilEdit01Icon,
 } from '@hugeicons-pro/core-stroke-rounded'
 import { useState } from 'react'
+import { SettingsPage } from '@/app/(private)/_components/settings-page'
 import { ConfirmDialog } from '@/components/confirm-dialog'
 import { NexoIcon } from '@/components/icon/icon'
-import { H3 } from '@/components/typography/heading/h3'
-import { Muted } from '@/components/typography/text/muted'
 import { Button } from '@/components/ui/button'
 import { Skeleton } from '@/components/ui/skeleton'
 import { notify } from '@/lib/notify'
@@ -36,7 +35,7 @@ export function ProjectLabelsSettings({
   const [formTarget, setFormTarget] = useState<FormTarget | null>(null)
 
   function handleDelete(labelId: string) {
-    notify.mutate(deleteLabel.mutateAsync(labelId), {
+    notify.run(deleteLabel.mutateAsync(labelId), {
       loading: 'Excluindo etiqueta...',
       success: 'Etiqueta excluída',
       error: 'Erro ao excluir etiqueta',
@@ -44,20 +43,17 @@ export function ProjectLabelsSettings({
   }
 
   return (
-    <div className='py-9 w-full max-w-225 mx-auto'>
-      <div className='w-full flex items-center justify-between'>
-        <div>
-          <H3>Etiquetas</H3>
-          <Muted>
-            Crie etiquetas personalizadas para categorizar suas issues.
-          </Muted>
-        </div>
-        {!formTarget && (
+    <SettingsPage
+      title='Etiquetas'
+      description='Crie etiquetas personalizadas para categorizar suas issues.'
+      action={
+        !formTarget && (
           <Button size='sm' onClick={() => setFormTarget({ mode: 'create' })}>
             Adicionar etiqueta
           </Button>
-        )}
-      </div>
+        )
+      }
+    >
       {formTarget && (
         <LabelForm
           key={formTarget.mode === 'edit' ? formTarget.label.id : 'create'}
@@ -68,7 +64,7 @@ export function ProjectLabelsSettings({
         />
       )}
       {isLoading ? (
-        <div className='space-y-2 mt-2'>
+        <div className='space-y-2'>
           {Array.from({ length: 4 }).map((_, i) => (
             <div
               key={i}
@@ -118,6 +114,6 @@ export function ProjectLabelsSettings({
           </div>
         ))
       )}
-    </div>
+    </SettingsPage>
   )
 }

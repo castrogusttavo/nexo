@@ -1,6 +1,6 @@
 'use client'
 
-import { H3 } from '@/components/typography/heading/h3'
+import { SettingsPage } from '@/app/(private)/_components/settings-page'
 import { Muted } from '@/components/typography/text/muted'
 import { Switch } from '@/components/ui/switch'
 import { notify } from '@/lib/notify'
@@ -29,7 +29,7 @@ export function FeatureToggleSettings({
   const updateProject = useUpdateProject(workspaceId, projectSlug)
 
   function handleToggle(checked: boolean) {
-    notify.mutate(updateProject.mutateAsync({ [field]: checked }), {
+    notify.run(updateProject.mutateAsync({ [field]: checked }), {
       loading: 'Atualizando...',
       success: 'Configuração atualizada',
       error: 'Erro ao atualizar',
@@ -37,13 +37,7 @@ export function FeatureToggleSettings({
   }
 
   return (
-    <div className='py-9 w-full max-w-225 mx-auto space-y-8'>
-      <div className='w-full flex items-center justify-between'>
-        <div>
-          <H3>{title}</H3>
-          <Muted>{description}</Muted>
-        </div>
-      </div>
+    <SettingsPage title={title} description={description}>
       <div className='border border-border rounded-lg w-full bg-card px-4 py-3 flex items-center justify-between gap-8'>
         <div className='space-y-1.5'>
           <span className='text-sm'>{toggleLabel}</span>
@@ -57,6 +51,6 @@ export function FeatureToggleSettings({
           />
         </div>
       </div>
-    </div>
+    </SettingsPage>
   )
 }

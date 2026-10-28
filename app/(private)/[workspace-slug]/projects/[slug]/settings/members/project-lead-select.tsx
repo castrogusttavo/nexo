@@ -35,7 +35,7 @@ export function ProjectLeadSelect({
 
   function handleSelect(userId: string) {
     if (userId === project?.leadId) return
-    notify.mutate(updateProject.mutateAsync({ leadId: userId }), {
+    notify.run(updateProject.mutateAsync({ leadId: userId }), {
       loading: 'Atualizando líder...',
       success: 'Líder do projeto atualizado',
       error: 'Erro ao atualizar líder',

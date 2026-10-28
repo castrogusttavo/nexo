@@ -1,6 +1,6 @@
 'use client'
 
-import { H3 } from '@/components/typography/heading/h3'
+import { SettingsPage } from '@/app/(private)/_components/settings-page'
 import { H4 } from '@/components/typography/heading/h4'
 import { Muted } from '@/components/typography/text/muted'
 import { Switch } from '@/components/ui/switch'
@@ -38,7 +38,7 @@ export function ProjectEstimatesSettings({
   const updateProject = useUpdateProject(workspaceId, projectSlug)
 
   function handleToggleEnabled(checked: boolean) {
-    notify.mutate(updateProject.mutateAsync({ estimatesEnabled: checked }), {
+    notify.run(updateProject.mutateAsync({ estimatesEnabled: checked }), {
       loading: 'Atualizando...',
       success: 'Estimativas atualizadas',
       error: 'Erro ao atualizar estimativas',
@@ -46,16 +46,10 @@ export function ProjectEstimatesSettings({
   }
 
   return (
-    <div className='py-9 w-full max-w-225 mx-auto space-y-8'>
-      <div className='w-full flex items-center justify-between'>
-        <div>
-          <H3>Estimativas</H3>
-          <Muted>
-            Elas ajudam você a comunicar a complexidade e a carga de trabalho da
-            equipe.
-          </Muted>
-        </div>
-      </div>
+    <SettingsPage
+      title='Estimativas'
+      description='Elas ajudam você a comunicar a complexidade e a carga de trabalho da equipe.'
+    >
       <div className='border border-border rounded-lg w-full bg-card px-4 py-3 flex items-center justify-between gap-8'>
         <div className='space-y-1.5'>
           <span className='text-sm'>
@@ -96,6 +90,6 @@ export function ProjectEstimatesSettings({
           )}
         </div>
       </div>
-    </div>
+    </SettingsPage>
   )
 }

@@ -7,9 +7,9 @@ import {
 } from '@hugeicons-pro/core-stroke-rounded'
 import { useMemo, useState } from 'react'
 import { issueStatesIcon } from '@/app/_components/issue/issue-icons'
+import { SettingsPage } from '@/app/(private)/_components/settings-page'
 import { ConfirmDialog } from '@/components/confirm-dialog'
 import { NexoIcon } from '@/components/icon/icon'
-import { H3 } from '@/components/typography/heading/h3'
 import { Muted } from '@/components/typography/text/muted'
 import {
   Accordion,
@@ -66,7 +66,7 @@ export function ProjectStatesSettings({
   }
 
   function handleSetDefault(stateId: string) {
-    notify.mutate(setDefaultState.mutateAsync(stateId), {
+    notify.run(setDefaultState.mutateAsync(stateId), {
       loading: 'Definindo padrão...',
       success: 'State definido como padrão',
       error: 'Erro ao definir state padrão',
@@ -74,7 +74,7 @@ export function ProjectStatesSettings({
   }
 
   function handleDelete(stateId: string) {
-    notify.mutate(deleteState.mutateAsync(stateId), {
+    notify.run(deleteState.mutateAsync(stateId), {
       loading: 'Excluindo state...',
       success: 'State excluído',
       error: 'Erro ao excluir state',
@@ -82,14 +82,12 @@ export function ProjectStatesSettings({
   }
 
   return (
-    <div className='py-9 w-full max-w-225 mx-auto'>
-      <H3>Estados</H3>
-      <Muted>
-        Defina e personalize os estados de fluxo de trabalho para acompanhar o
-        progresso das suas issues.
-      </Muted>
+    <SettingsPage
+      title='Estados'
+      description='Defina e personalize os estados de fluxo de trabalho para acompanhar o progresso das suas issues.'
+    >
       {isLoading ? (
-        <div className='mt-6 space-y-4'>
+        <div className='space-y-4'>
           {issueStatesIcon.map((group) => (
             <Card key={group.state} className='p-3 rounded-lg'>
               <CardContent className='p-0 h-fit space-y-2'>
@@ -103,7 +101,7 @@ export function ProjectStatesSettings({
           ))}
         </div>
       ) : (
-        <div className='mt-6 space-y-4'>
+        <div className='space-y-4'>
           {issueStatesIcon.map((group) => {
             const groupStates = grouped.get(group.state) ?? []
             const formOpen = isFormOpenForGroup(group.state)
@@ -242,6 +240,6 @@ export function ProjectStatesSettings({
           })}
         </div>
       )}
-    </div>
+    </SettingsPage>
   )
 }

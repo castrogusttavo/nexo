@@ -70,7 +70,7 @@ export function DependenciesPicker({
 
   function handleAdd() {
     if (!pendingType || !pendingTargetId) return
-    notify.mutate(
+    notify.run(
       createDependency.mutateAsync({
         targetId: pendingTargetId,
         type: ISSUE_DEPENDENCY_DISPLAY_TO_DB[pendingType],
@@ -86,7 +86,7 @@ export function DependenciesPicker({
   }
 
   function handleRemove(dependencyId: string) {
-    notify.mutate(removeDependency.mutateAsync(dependencyId), {
+    notify.run(removeDependency.mutateAsync(dependencyId), {
       loading: 'Removendo dependência...',
       success: 'Dependência removida',
       error: 'Erro ao remover dependência',

@@ -8,9 +8,9 @@ import {
 } from '@/app/_components/header/breadcrumb-page'
 import HeaderInternalNavigation from '@/app/_components/header/header-internal-navigation'
 import { PageSkeleton } from '@/app/(private)/_components/page-skeleton'
+import { SettingsPage } from '@/app/(private)/_components/settings-page'
 import { formatPlanName } from '@/app/(web)/_components/pricing/plans'
 import { NexoIcon } from '@/components/icon/icon'
-import { H3 } from '@/components/typography/heading/h3'
 import { Muted } from '@/components/typography/text/muted'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
@@ -60,18 +60,15 @@ export default function SettingsBillingPage({ params }: { params: Params }) {
           </HeaderBreadcrumbCrumb>
         </HeaderBreadcrumbList>
       </HeaderInternalNavigation>
-      <div className='w-full p-6 space-y-6'>
-        <div>
-          <H3>Assinatura e Planos</H3>
-          <Muted>
-            Escolha seu plano, gerencie assinaturas e faça upgrade facilmente
-            conforme suas necessidades crescem.
-          </Muted>
-        </div>
+      <SettingsPage
+        title='Assinatura e Planos'
+        description='Escolha seu plano, gerencie assinaturas e faça upgrade facilmente conforme suas necessidades crescem.'
+        width='full'
+      >
         <Suspense fallback={<PageSkeleton />}>
           <Billing params={params} />
         </Suspense>
-      </div>
+      </SettingsPage>
     </div>
   )
 }
