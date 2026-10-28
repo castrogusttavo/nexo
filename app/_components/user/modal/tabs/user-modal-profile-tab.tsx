@@ -4,6 +4,7 @@ import Image from 'next/image'
 import { useRouter } from 'next/navigation'
 import { useId, useRef, useState } from 'react'
 import { ConfirmDialog } from '@/components/confirm-dialog'
+import { LocalDate } from '@/components/local-date'
 import { H4 } from '@/components/typography/heading/h4'
 import { Muted } from '@/components/typography/text/muted'
 import { Button } from '@/components/ui/button'
@@ -84,8 +85,11 @@ function UserModalProfileScheduledDeletion({
         <H4 className='text-sm'>Exclusão agendada</H4>
         <Muted className='text-xs'>
           Sua conta será excluída em{' '}
-          {new Date(scheduledAt).toLocaleString('pt-BR')}. Até lá, você pode
-          cancelar e manter todos os seus dados.
+          <LocalDate
+            value={scheduledAt}
+            options={{ dateStyle: 'short', timeStyle: 'medium' }}
+          />
+          . Até lá, você pode cancelar e manter todos os seus dados.
         </Muted>
       </div>
       <Button

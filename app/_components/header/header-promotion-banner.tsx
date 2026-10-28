@@ -5,6 +5,7 @@ import {
   type PlanGrid,
 } from '@/app/(web)/_components/pricing/plans'
 import { ButtonLink } from '@/components/button-link'
+import { LocalDate } from '@/components/local-date'
 import { Muted } from '@/components/typography/text/muted'
 
 interface HeaderPromotionBannerProps {
@@ -15,10 +16,10 @@ interface HeaderPromotionBannerProps {
   now: number
 }
 
-const dateFormatter = new Intl.DateTimeFormat('pt-BR', {
+const DAY_MONTH: Intl.DateTimeFormatOptions = {
   day: '2-digit',
   month: '2-digit',
-})
+}
 
 export function HeaderPromotionBanner({
   endDate,
@@ -35,7 +36,8 @@ export function HeaderPromotionBanner({
     <div className='flex justify-center items-center py-3 px-5 gap-3 bg-branding-950'>
       <Muted className='text-primary text-xs font-medium'>
         Restam {dayLabel} do seu teste do plano {planName}. Depois de{' '}
-        {dateFormatter.format(end)}, você volta ao plano Free.
+        <LocalDate value={endDate} options={DAY_MONTH} />, você volta ao plano
+        Free.
       </Muted>
       <div className='flex items-center gap-2'>
         <ButtonLink href={`/upgrade?plan=${plan}&billing=yearly`} size='xs'>

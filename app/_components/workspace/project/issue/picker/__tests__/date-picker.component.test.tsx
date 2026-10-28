@@ -12,8 +12,8 @@ import {
 import { renderWithProviders } from '@/src/__tests__/helpers/component'
 import { DatePicker } from '../date-picker'
 
-// The trigger formats with `toLocaleDateString('pt-BR')`, which is timezone
-// dependent — pin the zone so the assertion holds wherever the suite runs.
+// Issue dates are calendar days stored as UTC midnight. Running west of UTC
+// (São Paulo) is where reading them as instants showed the day before.
 const originalTz = process.env.TZ
 beforeAll(() => {
   process.env.TZ = 'America/Sao_Paulo'
@@ -43,11 +43,11 @@ describe('<DatePicker />', () => {
     ).toBeInTheDocument()
   })
 
-  it('shows the stored date formatted for pt-BR', () => {
+  it('shows the stored day, not the day before, west of UTC', () => {
     renderWithProviders(
       <DatePicker
         label='Data de início'
-        value='2026-09-20T12:00:00.000Z'
+        value='2026-09-20T00:00:00.000Z'
         onChange={vi.fn()}
       />,
     )
@@ -57,7 +57,7 @@ describe('<DatePicker />', () => {
     ).toBeInTheDocument()
   })
 
-  it('reports the picked day as an ISO string', async () => {
+  it('reports the picked day as its UTC midnight', async () => {
     const onChange = vi.fn()
     const { user } = renderWithProviders(
       <DatePicker label='Data de início' value={null} onChange={onChange} />,
@@ -68,9 +68,7 @@ describe('<DatePicker />', () => {
       await screen.findByRole('button', { name: /September 20/i }),
     )
 
-    expect(onChange).toHaveBeenCalledExactlyOnceWith(
-      new Date(2026, 8, 20).toISOString(),
-    )
+    expect(onChange).toHaveBeenCalledExactlyOnceWith('2026-09-20T00:00:00.000Z')
   })
 
   it('clears the date when the selected day is picked again', async () => {
@@ -78,7 +76,7 @@ describe('<DatePicker />', () => {
     const { user } = renderWithProviders(
       <DatePicker
         label='Data de início'
-        value={new Date(2026, 8, 20).toISOString()}
+        value='2026-09-20T00:00:00.000Z'
         onChange={onChange}
       />,
     )

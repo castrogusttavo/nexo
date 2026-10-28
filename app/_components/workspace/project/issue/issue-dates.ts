@@ -23,3 +23,15 @@ export function parseIssueDate(iso: string): Date {
   const day = new Date(Math.round(Date.parse(iso) / DAY_MS) * DAY_MS)
   return new Date(day.getUTCFullYear(), day.getUTCMonth(), day.getUTCDate())
 }
+
+// A calendar day reads the same on the server and in every browser: the
+// date parts of parseIssueDate are formatted as UTC, so no timezone can
+// shift it (and server HTML matches the hydrated client).
+const dayFormatter = new Intl.DateTimeFormat('pt-BR', { timeZone: 'UTC' })
+
+/** dd/mm/aaaa for a day picked in the calendar (local midnight). */
+export function formatIssueDay(day: Date): string {
+  return dayFormatter.format(
+    Date.UTC(day.getFullYear(), day.getMonth(), day.getDate()),
+  )
+}

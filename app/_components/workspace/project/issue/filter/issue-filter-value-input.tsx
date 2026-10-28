@@ -1,6 +1,7 @@
 'use client'
 
 import {
+  formatIssueDay,
   parseIssueDate,
   toIssueDateISO,
 } from '@/app/_components/workspace/project/issue/issue-dates'
@@ -136,7 +137,7 @@ export function IssueFilterValueInput({
             render={
               <Button variant='outline' size='sm' className='h-8'>
                 {from && to
-                  ? `${from.toLocaleDateString('pt-BR')} - ${to.toLocaleDateString('pt-BR')}`
+                  ? `${formatIssueDay(from)} - ${formatIssueDay(to)}`
                   : 'Selecionar período'}
               </Button>
             }
@@ -163,7 +164,7 @@ export function IssueFilterValueInput({
         <PopoverTrigger
           render={
             <Button variant='outline' size='sm' className='h-8'>
-              {day ? day.toLocaleDateString('pt-BR') : 'Selecionar data'}
+              {day ? formatIssueDay(day) : 'Selecionar data'}
             </Button>
           }
         />

@@ -11,6 +11,7 @@ import { ProjectCoverImagePicker } from '@/app/_components/workspace/project/cre
 import { ProjectEmojiIconPicker } from '@/app/_components/workspace/project/create/project-emoji-icon-picker'
 import { ConfirmDialog } from '@/components/confirm-dialog'
 import { NexoIcon } from '@/components/icon/icon'
+import { LocalDate } from '@/components/local-date'
 import { Muted } from '@/components/typography/text/muted'
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
@@ -63,6 +64,8 @@ export function ProjectGeneralSettingsForm({
   const archiveProject = useArchiveProject(workspaceId, projectSlug)
   const deleteProject = useDeleteProject(workspaceId, projectSlug)
 
+  // Draft seeded from the saved project: edited locally until "Atualizar projeto".
+  // react-doctor-disable-next-line react-doctor/no-derived-useState
   const [name, setName] = useState(project.name)
   const [description, setDescription] = useState(project.description ?? '')
   const [identifier, setIdentifier] = useState(project.identifier ?? '')
@@ -267,8 +270,7 @@ export function ProjectGeneralSettingsForm({
               Atualizar projeto
             </Button>
             <Muted className='text-xs italic'>
-              Criado em{' '}
-              {new Date(project.createdAt).toLocaleDateString('pt-BR')}
+              Criado em <LocalDate value={project.createdAt} />
             </Muted>
           </Field>
         </FieldGroup>

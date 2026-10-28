@@ -49,11 +49,11 @@ describe('<HeaderPromotionBanner />', () => {
   it('counts the days left and names the day the trial ends', () => {
     renderBanner()
 
-    expect(
-      screen.getByText(
-        /Restam 7 dias do seu teste do plano Pro\. Depois de 17\/09, você volta ao plano Free\./,
-      ),
-    ).toBeInTheDocument()
+    // The end date is its own <time>, so read the whole sentence.
+    expect(screen.getByText(/Restam 7 dias/)).toHaveTextContent(
+      'Restam 7 dias do seu teste do plano Pro. Depois de 17/09, você volta ao plano Free.',
+    )
+    expect(screen.getByText('17/09').tagName).toBe('TIME')
   })
 
   it('uses the singular on the last day', () => {

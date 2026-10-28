@@ -7,6 +7,7 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from '@/components/ui/popover'
+import { formatIssueDay, parseIssueDate, toIssueDateISO } from '../issue-dates'
 
 interface DatePickerProps {
   label: string
@@ -14,21 +15,25 @@ interface DatePickerProps {
   onChange: (date: string | null) => void
 }
 
+// `value` is an issue date: a calendar day stored as UTC midnight. Reading
+// it with new Date() showed the day before west of UTC, and saving
+// date.toISOString() stored the picker's local midnight instead of the day.
 export function DatePicker({ label, value, onChange }: DatePickerProps) {
+  const day = value ? parseIssueDate(value) : undefined
   return (
     <Popover>
       <PopoverTrigger
         render={
           <Button variant='secondary' size='sm' className='h-8'>
-            {value ? new Date(value).toLocaleDateString('pt-BR') : label}
+            {day ? formatIssueDay(day) : label}
           </Button>
         }
       />
       <PopoverContent className='w-auto p-0'>
         <Calendar
           mode='single'
-          selected={value ? new Date(value) : undefined}
-          onSelect={(date) => onChange(date ? date.toISOString() : null)}
+          selected={day}
+          onSelect={(date) => onChange(date ? toIssueDateISO(date) : null)}
         />
       </PopoverContent>
     </Popover>
