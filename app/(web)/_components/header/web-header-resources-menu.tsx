@@ -9,7 +9,7 @@ import {
   CardTitle,
 } from '@/components/ui/card'
 import { NavigationMenuContent } from '@/components/ui/navigation-menu'
-import { WebHeaderListItem } from './web-header-list-item'
+import { WebHeaderMenuColumn } from './web-header-menu-column'
 import { discover, learn } from './web-header-nav-data'
 
 export function WebHeaderResourcesMenu() {
@@ -17,36 +17,8 @@ export function WebHeaderResourcesMenu() {
     <NavigationMenuContent className='w-screen py-8'>
       <div className='mx-auto w-full space-y-8 px-4 sm:px-8 xl:max-w-336 xl:px-11 2xl:max-w-384'>
         <div className='grid grid-cols-4 items-start gap-8'>
-          <div className='flex flex-col gap-1.5'>
-            <Muted className='px-2'>Descobrir</Muted>
-            <ul className='grid grid-cols-1 gap-4'>
-              {discover.map((item) => (
-                <WebHeaderListItem
-                  key={item.title}
-                  title={item.title}
-                  href={item.href}
-                  icon={item.icon}
-                >
-                  <span className='text-sm'>{item.description}</span>
-                </WebHeaderListItem>
-              ))}
-            </ul>
-          </div>
-          <div className='flex flex-col gap-1.5'>
-            <Muted className='px-2'>Aprender</Muted>
-            <ul className='grid grid-cols-1 gap-4'>
-              {learn.map((item) => (
-                <WebHeaderListItem
-                  key={item.title}
-                  title={item.title}
-                  href={item.href}
-                  icon={item.icon}
-                >
-                  <span className='text-sm'>{item.description}</span>
-                </WebHeaderListItem>
-              ))}
-            </ul>
-          </div>
+          <WebHeaderMenuColumn label='Descobrir' items={discover} />
+          <WebHeaderMenuColumn label='Aprender' items={learn} />
           <div className='col-span-2 flex gap-4 h-full'>
             <div className='flex-1 flex flex-col gap-1.5'>
               <Muted>Download</Muted>

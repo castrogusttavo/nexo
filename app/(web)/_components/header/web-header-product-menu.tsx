@@ -4,12 +4,8 @@ import {
   GitlabIcon,
   SlackIcon,
 } from '@hugeicons-pro/core-solid-rounded'
-import { ArrowUpRightIcon } from '@hugeicons-pro/core-stroke-rounded'
-import Link from 'next/link'
 import { ButtonLink } from '@/components/button-link'
 import { NexoIcon } from '@/components/icon/icon'
-import { Muted } from '@/components/typography/text/muted'
-import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import {
   Card,
@@ -18,7 +14,8 @@ import {
   CardTitle,
 } from '@/components/ui/card'
 import { NavigationMenuContent } from '@/components/ui/navigation-menu'
-import { WebHeaderListItem } from './web-header-list-item'
+import { WebHeaderMenuBadge } from './web-header-menu-badge'
+import { WebHeaderMenuColumn } from './web-header-menu-column'
 import { featureCapabilities, products } from './web-header-nav-data'
 
 export function WebHeaderProductMenu() {
@@ -26,72 +23,37 @@ export function WebHeaderProductMenu() {
     <NavigationMenuContent className='w-screen py-8'>
       <div className='mx-auto w-full space-y-8 px-4 sm:px-8 xl:max-w-336 xl:px-11 2xl:max-w-384'>
         <div className='grid grid-cols-4 items-start gap-8'>
-          <div className='flex flex-col gap-1.5'>
-            <Muted className='px-2'>Produtos</Muted>
-            <ul className='grid grid-cols-1 gap-4'>
-              {products.map((product) => (
-                <WebHeaderListItem
-                  key={product.title}
-                  title={product.title}
-                  href={product.href}
-                  icon={product.icon}
-                >
-                  <span className='text-sm'>{product.description}</span>
-                </WebHeaderListItem>
-              ))}
-            </ul>
-          </div>
-          <div className='col-span-2 flex flex-col gap-1.5'>
-            <Muted className='px-2'>Capacidades de Recursos</Muted>
-            <ul className='grid grid-cols-2 gap-4'>
-              {featureCapabilities.map((feature) => (
-                <WebHeaderListItem
-                  key={feature.title}
-                  title={feature.title}
-                  href={feature.href}
-                  icon={feature.icon}
-                >
-                  <span className='text-sm'>{feature.description}</span>
-                </WebHeaderListItem>
-              ))}
-            </ul>
-          </div>
+          <WebHeaderMenuColumn label='Produtos' items={products} />
+          <WebHeaderMenuColumn
+            label='Capacidades de Recursos'
+            items={featureCapabilities}
+            columns={2}
+            className='col-span-2'
+          />
           <div className='flex flex-col gap-4'>
             <Card className='bg-branding-950 border border-brand-500'>
               <CardContent className='space-y-2.5'>
                 <CardTitle>Funciona com sua stack</CardTitle>
                 <CardDescription>
                   <div className='flex gap-2'>
-                    <Badge
-                      className='py-3'
-                      render={
-                        <Link href='#'>
-                          <NexoIcon icon={SlackIcon} />
-                          Slack
-                          <NexoIcon icon={ArrowUpRightIcon} />
-                        </Link>
-                      }
-                    />
-                    <Badge
-                      className='py-3'
-                      render={
-                        <Link href='#'>
-                          <NexoIcon icon={Github01Icon} />
-                          GitHub
-                          <NexoIcon icon={ArrowUpRightIcon} />
-                        </Link>
-                      }
-                    />
-                    <Badge
-                      className='py-3'
-                      render={
-                        <Link href='#'>
-                          <NexoIcon icon={GitlabIcon} />
-                          GitLab
-                          <NexoIcon icon={ArrowUpRightIcon} />
-                        </Link>
-                      }
-                    />
+                    <WebHeaderMenuBadge
+                      href='#'
+                      icon={<NexoIcon icon={SlackIcon} />}
+                    >
+                      Slack
+                    </WebHeaderMenuBadge>
+                    <WebHeaderMenuBadge
+                      href='#'
+                      icon={<NexoIcon icon={Github01Icon} />}
+                    >
+                      GitHub
+                    </WebHeaderMenuBadge>
+                    <WebHeaderMenuBadge
+                      href='#'
+                      icon={<NexoIcon icon={GitlabIcon} />}
+                    >
+                      GitLab
+                    </WebHeaderMenuBadge>
                   </div>
                   <ButtonLink
                     href='/marketplace'
