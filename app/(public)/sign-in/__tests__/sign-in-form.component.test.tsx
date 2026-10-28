@@ -1,5 +1,5 @@
 import { screen, waitFor } from '@testing-library/react'
-import { beforeEach, describe, expect, it, vi } from 'vitest'
+import { afterAll, beforeEach, describe, expect, it, vi } from 'vitest'
 import { renderWithProviders } from '@/src/__tests__/helpers/component'
 import { SignInForm } from '../sign-in-form'
 
@@ -79,6 +79,11 @@ async function reachOtpStep(redirectTo?: string) {
   await screen.findByText('Confirme seu e-mail')
   return utils
 }
+
+// input-otp schedules timers up to 50ms after it mounts (password manager
+// detection). Let them run before jsdom is torn down, or one fires on a
+// missing `window` and fails the whole run.
+afterAll(() => new Promise((resolve) => setTimeout(resolve, 100)))
 
 beforeEach(() => {
   signInEmail.mockResolvedValue({ data: { user: { id: 'u1' } }, error: null })
