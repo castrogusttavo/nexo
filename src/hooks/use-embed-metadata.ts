@@ -7,6 +7,8 @@ interface EmbedMetadata extends EmbedMatch {
 }
 
 export function useResolveEmbed(workspaceId: string, projectSlug: string) {
+  // A lookup sent as POST: it reads metadata and changes no cached data.
+  // react-doctor-disable-next-line react-doctor/query-mutation-missing-invalidation
   return useMutation({
     mutationFn: (url: string) =>
       apiFetchJson<EmbedMetadata>(

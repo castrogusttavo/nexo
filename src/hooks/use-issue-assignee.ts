@@ -89,6 +89,9 @@ export function useSubscribeIssue(
   projectSlug: string,
   issueId: string,
 ) {
+  // No query holds the subscription state yet, so there is nothing to
+  // refresh; add the invalidation with the query that shows it.
+  // react-doctor-disable-next-line react-doctor/query-mutation-missing-invalidation
   return useMutation({
     mutationFn: () =>
       apiSend(
@@ -104,6 +107,9 @@ export function useUnsubscribeIssue(
   projectSlug: string,
   issueId: string,
 ) {
+  // No query holds the subscription state yet, so there is nothing to
+  // refresh; add the invalidation with the query that shows it.
+  // react-doctor-disable-next-line react-doctor/query-mutation-missing-invalidation
   return useMutation({
     mutationFn: () =>
       apiSend(

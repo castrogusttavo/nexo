@@ -278,6 +278,21 @@ describe('useAcceptInvitation', () => {
     })
   })
 
+  it('refreshes the memberships so the new workspace shows up', async () => {
+    mockFetch().mockResolvedValueOnce(
+      apiSuccess({ workspaceId: 'ws-1', slug: 'acme' }),
+    )
+    const { result, queryClient } = renderHookWithProviders(() =>
+      useAcceptInvitation(),
+    )
+    const invalidate = vi.spyOn(queryClient, 'invalidateQueries')
+
+    await act(() => result.current.mutateAsync('token-123'))
+
+    expect(invalidate).toHaveBeenCalledWith({ queryKey: ['user'] })
+    expect(invalidate).toHaveBeenCalledWith({ queryKey: ['workspace'] })
+  })
+
   it('surfaces the backend message when the token is rejected', async () => {
     mockFetch().mockResolvedValueOnce(apiError(410, 'Convite expirado'))
     const { result } = renderHookWithProviders(() => useAcceptInvitation())

@@ -83,6 +83,8 @@ export function useUploadCover() {
 }
 
 export function useDeleteAccount() {
+  const queryClient = useQueryClient()
+
   return useMutation({
     mutationFn: () =>
       apiFetch<{ scheduleAt: string }>(
@@ -90,6 +92,10 @@ export function useDeleteAccount() {
         { method: 'DELETE' },
         'Erro ao desativar conta',
       ),
+    // The cached user still says no deletion is scheduled.
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: USER_KEY })
+    },
   })
 }
 

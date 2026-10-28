@@ -238,6 +238,20 @@ describe.each([
 })
 
 describe('useDeleteAccount', () => {
+  it('refreshes the cached user once the deletion is scheduled', async () => {
+    mockFetch().mockResolvedValueOnce(
+      apiSuccess({ scheduleAt: '2026-02-01T00:00:00.000Z' }),
+    )
+    const { result, queryClient } = renderHookWithProviders(() =>
+      useDeleteAccount(),
+    )
+    const invalidate = vi.spyOn(queryClient, 'invalidateQueries')
+
+    await act(() => result.current.mutateAsync())
+
+    expect(invalidate).toHaveBeenCalledWith({ queryKey: ['user'] })
+  })
+
   it('DELETEs the account and returns the scheduled deletion date', async () => {
     const scheduled = { scheduleAt: '2026-02-01T00:00:00.000Z' }
     const fetchSpy = mockFetch().mockResolvedValueOnce(apiSuccess(scheduled))

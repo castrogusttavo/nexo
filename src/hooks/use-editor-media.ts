@@ -28,6 +28,8 @@ export function useEditorMediaUrl(
 }
 
 export function useUploadEditorMedia(workspaceId: string, projectSlug: string) {
+  // Hands the uploaded file's URL to the editor; no query caches uploads.
+  // react-doctor-disable-next-line react-doctor/query-mutation-missing-invalidation
   return useMutation({
     mutationFn: (file: File) => {
       const formData = new FormData()

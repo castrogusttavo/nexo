@@ -71,6 +71,8 @@ export function useResendInvitation(workspaceId: string) {
 }
 
 export function useAcceptInvitation() {
+  const queryClient = useQueryClient()
+
   return useMutation({
     mutationFn: (token: string) =>
       apiFetchJson<{ workspaceId: string; slug: string }>(
@@ -79,6 +81,12 @@ export function useAcceptInvitation() {
         { token },
         'Erro ao aceitar convite',
       ),
+    // The user is now a member: their memberships (the workspace switcher)
+    // and any cached workspace list would miss the new one for minutes.
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['user'] })
+      queryClient.invalidateQueries({ queryKey: ['workspace'] })
+    },
   })
 }
 

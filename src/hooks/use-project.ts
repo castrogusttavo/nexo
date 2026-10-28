@@ -13,6 +13,8 @@ function projectKey(workspaceId: string, slug: string) {
 }
 
 export function useUploadProjectCover(workspaceId: string) {
+  // Returns the cover URL for a project not saved yet; nothing cached changes.
+  // react-doctor-disable-next-line react-doctor/query-mutation-missing-invalidation
   return useMutation({
     mutationFn: async (file: File): Promise<string> => {
       const form = new FormData()
