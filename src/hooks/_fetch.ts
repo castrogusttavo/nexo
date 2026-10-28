@@ -5,9 +5,9 @@ import type { SuccessResponse } from '@/types/http-response'
 // unexpected runtime exceptions) whose `.message` is never meant for users.
 export class ApiError extends Error {}
 
-async function throwApiError(res: Response, fallback: string): Promise<never> {
+async function toApiError(res: Response, fallback: string): Promise<ApiError> {
   const body = await res.json().catch(() => null)
-  throw new ApiError(body?.message ?? fallback)
+  return new ApiError(body?.message ?? fallback)
 }
 
 // Fetches and return the `data` payload, throwing `Error(message)` on failure
@@ -17,7 +17,7 @@ export async function apiFetch<T>(
   fallbackError = 'Algo deu errado',
 ): Promise<T> {
   const res = await fetch(input, init)
-  if (!res.ok) await throwApiError(res, fallbackError)
+  if (!res.ok) throw await toApiError(res, fallbackError)
   const json: SuccessResponse<T> = await res.json()
   return json.data
 }
@@ -29,7 +29,7 @@ export async function apiSend(
   fallbackError = 'Algo deu errado',
 ): Promise<void> {
   const res = await fetch(input, init)
-  if (!res.ok) await throwApiError(res, fallbackError)
+  if (!res.ok) throw await toApiError(res, fallbackError)
 }
 
 // Like `apiFetch`, but for the common POST/PATCH-with-JSON-body case —

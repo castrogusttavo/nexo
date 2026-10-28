@@ -2,6 +2,7 @@ import { useQueryState } from 'nuqs'
 import { useState } from 'react'
 import { useLogger } from '@/lib/axiom/client'
 import { captureEvent } from '@/lib/posthog/client'
+import { ApiError, apiFetch, apiFetchJson } from '@/src/hooks/_fetch'
 import {
   PAID_PLAN_PRICES,
   yearlyDiscount,
@@ -10,6 +11,14 @@ import {
   billingParser,
   planParser,
 } from '../(web)/_components/pricing/plans-params'
+
+type AppliedCoupon = {
+  code: string
+  discount: number
+  discountKind: 'PERCENTAGE' | 'FIXED'
+}
+
+const CHECKOUT_FAILED = 'Não foi possível iniciar o pagamento'
 
 export function useUpgradeCheckout(workspaces: { id: string }[]) {
   const log = useLogger()
@@ -24,11 +33,7 @@ export function useUpgradeCheckout(workspaces: { id: string }[]) {
   const [error, setError] = useState<string | null>(null)
 
   const [couponInput, setCouponInput] = useState('')
-  const [appliedCoupon, setAppliedCoupon] = useState<{
-    code: string
-    discount: number
-    discountKind: 'PERCENTAGE' | 'FIXED'
-  } | null>(null)
+  const [appliedCoupon, setAppliedCoupon] = useState<AppliedCoupon | null>(null)
   const [couponError, setCouponError] = useState<string | null>(null)
   const [couponPending, setCouponPending] = useState(false)
 
@@ -58,19 +63,21 @@ export function useUpgradeCheckout(workspaces: { id: string }[]) {
     setCouponPending(true)
 
     try {
-      const response = await fetch(
+      const validated = await apiFetch<AppliedCoupon | null>(
         `/api/coupons/validate?code=${encodeURIComponent(code)}`,
+        undefined,
+        'Cupom inválido',
       )
-      const result = await response.json()
-
-      if (result.success && result.data) {
-        setAppliedCoupon(result.data)
-        setCouponInput(result.data.code)
-      } else {
-        setAppliedCoupon(null)
-        setCouponError(result.message ?? 'Cupom inválido')
-      }
+      if (!validated) throw new ApiError('Cupom inválido')
+      setAppliedCoupon(validated)
+      setCouponInput(validated.code)
     } catch (err) {
+      // The server refused the code: say why and drop the coupon.
+      if (err instanceof ApiError) {
+        setAppliedCoupon(null)
+        setCouponError(err.message)
+        return
+      }
       setCouponError('Não foi possível validar o cupom')
       log.error('upgrade.coupon_failed', {
         component: 'UpgradeForm',
@@ -100,26 +107,28 @@ export function useUpgradeCheckout(workspaces: { id: string }[]) {
     captureEvent('checkout_started', { plan, interval: billing, seats })
 
     try {
-      const response = await fetch('/api/payment/plan', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
+      const order = await apiFetchJson<{ paymentUrl?: string } | null>(
+        '/api/payment/plan',
+        'POST',
+        {
           plan,
           workspaceId,
           seats,
           interval: billing,
           ...(appliedCoupon ? { coupon: appliedCoupon.code } : {}),
-        }),
-      })
-      const result = await response.json()
-
-      if (result.success && result.data?.paymentUrl) {
-        window.location.href = result.data.paymentUrl
+        },
+        CHECKOUT_FAILED,
+      )
+      if (!order?.paymentUrl) throw new ApiError(CHECKOUT_FAILED)
+      window.location.href = order.paymentUrl
+    } catch (err) {
+      // A refused order carries the server's reason; only a failed request
+      // is worth a log.
+      if (err instanceof ApiError) {
+        setError(err.message)
         return
       }
-      setError(result.message ?? 'Não foi possível iniciar o pagamento')
-    } catch (err) {
-      setError('Não foi possível iniciar o pagamento')
+      setError(CHECKOUT_FAILED)
       log.error('upgrade.checkout_failed', {
         component: 'UpgradeForm',
         message: err instanceof Error ? err.message : String(err),

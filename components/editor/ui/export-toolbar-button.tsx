@@ -44,6 +44,8 @@ export function ExportToolbarButton(props: React.ComponentProps<typeof DropdownM
 
   const downloadFile = async (url: string, filename: string) => {
     const response = await fetch(url)
+    // An error page saved as the export would look like a broken file.
+    if (!response.ok) throw new Error(`Export download failed: ${response.status}`)
     const blob = await response.blob()
     const blobUrl = window.URL.createObjectURL(blob)
 
