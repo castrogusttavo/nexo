@@ -1,24 +1,11 @@
 import {
-  Analytics01Icon,
-  Archive03Icon,
-  Home03Icon,
   KeyframesMultipleAddIcon,
-  LayerMask01Icon,
-  Layers01Icon,
   PanelLeftIcon,
-  PencilEdit01Icon,
-  PresentationLineChart01Icon,
-  StickyNote02Icon,
-  UserLove01Icon,
-  WorkIcon,
 } from '@hugeicons-pro/core-stroke-rounded'
 import {
   ContextHeader,
   ContextPrimaryAction,
   ContextSidebar,
-  NavGroup,
-  NavGroupAccordion,
-  NavItem,
 } from '@/app/_components/navigation/sidebar-context'
 import { SidebarProjects } from '@/app/_components/navigation/sidebar-project/sidebar-projects'
 import { DialogCustomizeNavigation } from '@/app/_components/project/dialog-customize-navigation'
