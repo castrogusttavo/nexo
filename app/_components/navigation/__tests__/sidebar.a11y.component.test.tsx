@@ -20,6 +20,7 @@ import {
   ContextHeader,
   ContextPrimaryAction,
   ContextSidebar,
+  ContextSidebarSection,
   NavGroup,
   NavGroupAccordion,
   NavItem,
@@ -67,42 +68,44 @@ function renderSidebars() {
   return renderWithProviders(
     <div className='flex'>
       <NavigationSidebarGlobal slug='acme' />
-      <ContextSidebar>
-        <ContextHeader
-          title='Projetos'
-          actions={
-            <Button
-              variant='ghost'
-              size='icon-sm'
-              aria-label='Recolher barra lateral'
-            >
-              <NexoIcon icon={PanelLeftIcon} strokeWidth={2} />
-            </Button>
-          }
-          primaryAction={
-            <ContextPrimaryAction>Nova issue</ContextPrimaryAction>
-          }
-        />
-        <NavGroup>
-          <NavItem href='/acme' icon={Home03Icon}>
-            Página inicial
-          </NavItem>
-          <NavItem href='/acme/drafts' icon={PencilEdit01Icon}>
-            Rascunhos
-          </NavItem>
-        </NavGroup>
-        <NavGroupAccordion label='Espaço de trabalho'>
-          <NavItem href='/acme/projects' icon={WorkIcon}>
-            Projetos
-          </NavItem>
-        </NavGroupAccordion>
-        <ProjectSidebar
-          workspaceId={WORKSPACE_ID}
-          base='/acme'
-          userId='user-1'
-          isPrivileged={false}
-        />
-      </ContextSidebar>
+      <ContextSidebarSection id='projects'>
+        <ContextSidebar section='projects'>
+          <ContextHeader
+            title='Projetos'
+            actions={
+              <Button
+                variant='ghost'
+                size='icon-sm'
+                aria-label='Recolher barra lateral'
+              >
+                <NexoIcon icon={PanelLeftIcon} strokeWidth={2} />
+              </Button>
+            }
+            primaryAction={
+              <ContextPrimaryAction>Nova issue</ContextPrimaryAction>
+            }
+          />
+          <NavGroup>
+            <NavItem href='/acme' icon={Home03Icon}>
+              Página inicial
+            </NavItem>
+            <NavItem href='/acme/drafts' icon={PencilEdit01Icon}>
+              Rascunhos
+            </NavItem>
+          </NavGroup>
+          <NavGroupAccordion label='Espaço de trabalho'>
+            <NavItem href='/acme/projects' icon={WorkIcon}>
+              Projetos
+            </NavItem>
+          </NavGroupAccordion>
+          <ProjectSidebar
+            workspaceId={WORKSPACE_ID}
+            base='/acme'
+            userId='user-1'
+            isPrivileged={false}
+          />
+        </ContextSidebar>
+      </ContextSidebarSection>
     </div>,
     { queryClient },
   )

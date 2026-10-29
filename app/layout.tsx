@@ -9,6 +9,10 @@ import { Toaster } from '@/components/ui/sonner'
 import { TooltipProvider } from '@/components/ui/tooltip'
 import { NEXT_PUBLIC_URL } from '@/lib/env/env'
 import { cn } from '@/lib/utils'
+import {
+  CONTEXT_SIDEBAR_INIT_SCRIPT,
+  CONTEXT_SIDEBAR_STYLE,
+} from './_components/navigation/sidebar-context/context-sidebar-sections'
 import { Providers } from './_components/providers'
 import { ConsentedTrackers } from './_components/user/cookie-consent/consented-trackers'
 import { CookieConsentBanner } from './_components/user/cookie-consent/cookie-consent-banner'
@@ -65,6 +69,10 @@ export default function RootLayout({
     >
       <head>
         <script dangerouslySetInnerHTML={{ __html: THEME_INIT_SCRIPT }} />
+        <script
+          dangerouslySetInnerHTML={{ __html: CONTEXT_SIDEBAR_INIT_SCRIPT }}
+        />
+        <style dangerouslySetInnerHTML={{ __html: CONTEXT_SIDEBAR_STYLE }} />
         <JsonLd data={ORGANIZATION_SCHEMA} />
       </head>
       <body className='root antialiased bg-background text-primary h-screen'>

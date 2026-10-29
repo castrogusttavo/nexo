@@ -1,17 +1,14 @@
-import {
-  KeyframesMultipleAddIcon,
-  PanelLeftIcon,
-} from '@hugeicons-pro/core-stroke-rounded'
+import { KeyframesMultipleAddIcon } from '@hugeicons-pro/core-stroke-rounded'
 import { io } from 'next/cache'
 import { NavigationCustomizeDialog } from '@/app/_components/navigation/navigation-customize-dialog'
 import {
   ContextHeader,
   ContextPrimaryAction,
   ContextSidebar,
+  ContextSidebarCollapseButton,
 } from '@/app/_components/navigation/sidebar-context'
 import { ProjectSidebar } from '@/app/_components/workspace/project/project-sidebar'
 import { NexoIcon } from '@/components/icon/icon'
-import { Button } from '@/components/ui/button'
 import { requireMembership } from '@/src/lib/dal'
 import { DEFAULT_SIDEBAR_NAVIGATION } from '@/src/schemas/user-preference.schema'
 import { isPrivilegedRole } from '@/src/services/_authz'
@@ -51,19 +48,13 @@ export async function HomeSidebar({
   }
 
   return (
-    <ContextSidebar>
+    <ContextSidebar section='projects'>
       <ContextHeader
         title='Projetos'
         actions={
           <>
             <NavigationCustomizeDialog />
-            <Button
-              variant='ghost'
-              size='icon-sm'
-              aria-label='Recolher barra lateral'
-            >
-              <NexoIcon icon={PanelLeftIcon} strokeWidth={2} />
-            </Button>
+            <ContextSidebarCollapseButton />
           </>
         }
         primaryAction={

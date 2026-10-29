@@ -1,5 +1,8 @@
 import { type ReactNode, Suspense } from 'react'
-import { ContextSidebarSkeleton } from '@/app/_components/navigation/sidebar-context'
+import {
+  ContextSidebarSection,
+  ContextSidebarSkeleton,
+} from '@/app/_components/navigation/sidebar-context'
 import { HomeSidebar } from './home-sidebar'
 
 // The page renders beside the sidebar instead of waiting for it; the sidebar
@@ -12,11 +15,11 @@ export default function HomeLayout({
   params: Promise<{ 'workspace-slug': string }>
 }) {
   return (
-    <>
-      <Suspense fallback={<ContextSidebarSkeleton />}>
+    <ContextSidebarSection id='projects'>
+      <Suspense fallback={<ContextSidebarSkeleton section='projects' />}>
         <HomeSidebar params={params} />
       </Suspense>
       {children}
-    </>
+    </ContextSidebarSection>
   )
 }
