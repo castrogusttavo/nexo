@@ -14,7 +14,7 @@ export function HeaderLayoutUser({ slug }: { slug: string }) {
       <WorkspaceDropdownSelector currentSlug={slug} />
       <div className='flex items-center gap-1'>
         <ButtonLink href={`/${slug}/get-started`} size='xs' variant='outline'>
-          Comece agora
+          Começar
         </ButtonLink>
         <ShortCutButton href={`/${slug}/inbox`} label='Caixa de entrada'>
           <NexoIcon icon={InboxIcon} strokeWidth={2} size={20} />
