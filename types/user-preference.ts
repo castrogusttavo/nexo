@@ -1,4 +1,4 @@
-import { SidebarNavigation } from "@/src/schemas/user-preference.schema";
+import { HomeWidgets, SidebarNavigation } from "@/src/schemas/user-preference.schema";
 
 export type Theme = 'LIGHT' | 'DARK' | 'SYSTEM'
 export type QuickSendShortcut = 'ENTER' | 'CTRL_ENTER'
@@ -11,4 +11,5 @@ export interface UserPreferenceDTO {
   weekStartsOn: number,
   weekendDays: number[]
   navigation: SidebarNavigation
+  homeWidgets: HomeWidgets
 }

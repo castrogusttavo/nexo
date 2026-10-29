@@ -2,7 +2,10 @@ import { useQuery } from '@tanstack/react-query'
 import { render, screen, waitFor } from '@testing-library/react'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { apiSuccess, mockFetch } from '@/src/__tests__/helpers/component'
-import { DEFAULT_SIDEBAR_NAVIGATION } from '@/src/schemas/user-preference.schema'
+import {
+  DEFAULT_HOME_WIDGETS,
+  DEFAULT_SIDEBAR_NAVIGATION,
+} from '@/src/schemas/user-preference.schema'
 import type { UserPreferenceDTO } from '@/types/user-preference'
 import { Providers } from '../providers'
 
@@ -17,6 +20,7 @@ const PREFERENCES: UserPreferenceDTO = {
   weekStartsOn: 0,
   weekendDays: [0, 6],
   navigation: DEFAULT_SIDEBAR_NAVIGATION,
+  homeWidgets: DEFAULT_HOME_WIDGETS,
 }
 
 function Consumer() {

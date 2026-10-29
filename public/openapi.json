@@ -10925,6 +10925,32 @@
           }
         }
       },
+      "HomeWidgets": {
+        "type": "array",
+        "minItems": 3,
+        "maxItems": 3,
+        "description": "Todos os widgets da página inicial, uma vez cada, na ordem de exibição.",
+        "items": {
+          "type": "object",
+          "required": [
+            "id",
+            "visible"
+          ],
+          "properties": {
+            "id": {
+              "type": "string",
+              "enum": [
+                "quick-links",
+                "recents",
+                "stickies"
+              ]
+            },
+            "visible": {
+              "type": "boolean"
+            }
+          }
+        }
+      },
       "UserPreference": {
         "type": "object",
         "description": "Preferências do usuário autenticado.",
@@ -10978,6 +11004,9 @@
           },
           "navigation": {
             "$ref": "#/components/schemas/SidebarNavigation"
+          },
+          "homeWidgets": {
+            "$ref": "#/components/schemas/HomeWidgets"
           }
         }
       },
@@ -11050,6 +11079,9 @@
           },
           "navigation": {
             "$ref": "#/components/schemas/SidebarNavigation"
+          },
+          "homeWidgets": {
+            "$ref": "#/components/schemas/HomeWidgets"
           }
         }
       },

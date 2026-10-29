@@ -57,6 +57,18 @@ export const DEFAULT_SIDEBAR_NAVIGATION: SidebarNavigation = {
   projectsLimit: null,
 }
 
+export const HomeWidgetValues = ['quick-links', 'recents', 'stickies'] as const
+export type HomeWidget = (typeof HomeWidgetValues)[number]
+
+export const HomeWidgetsSchema = navSection(HomeWidgetValues)
+
+export type HomeWidgets = z.infer<typeof HomeWidgetsSchema>
+
+export const DEFAULT_HOME_WIDGETS: HomeWidgets = HomeWidgetValues.map((id) => ({
+  id,
+  visible: true,
+}))
+
 export const UpdateUserPreferenceSchema = z
   .object({
     theme: z.enum(ThemeValues).optional(),
@@ -76,6 +88,7 @@ export const UpdateUserPreferenceSchema = z
       )
       .optional(),
     navigation: SidebarNavigationSchema.optional(),
+    homeWidgets: HomeWidgetsSchema.optional(),
   })
   .refine((v) => Object.keys(v).length > 0, 'Nenhuma alteração informada')
 

@@ -1,6 +1,8 @@
 import type { Prisma, UserPreference } from '@prisma/client'
 import type { UserPreferenceDTO } from '@/types/user-preference'
 import {
+  type HomeWidgets,
+  HomeWidgetValues,
   PersonalNavItemValues,
   PROJECTS_LIMIT_MAX,
   type SidebarNavigation,
@@ -63,6 +65,10 @@ export function toSidebarNavigation(
   }
 }
 
+export function toHomeWidgets(stored: Prisma.JsonValue | null): HomeWidgets {
+  return normalizeSection(stored, HomeWidgetValues)
+}
+
 export function toUserPreferenceDTO(p: UserPreference): UserPreferenceDTO {
   return {
     theme: p.theme,
@@ -72,5 +78,6 @@ export function toUserPreferenceDTO(p: UserPreference): UserPreferenceDTO {
     weekStartsOn: p.weekStartsOn,
     weekendDays: p.weekendDays,
     navigation: toSidebarNavigation(p.navigation),
+    homeWidgets: toHomeWidgets(p.homeWidgets),
   }
 }

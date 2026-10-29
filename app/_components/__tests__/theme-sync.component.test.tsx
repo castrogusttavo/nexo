@@ -5,7 +5,10 @@ import {
   mockFetch,
   renderWithProviders,
 } from '@/src/__tests__/helpers/component'
-import { DEFAULT_SIDEBAR_NAVIGATION } from '@/src/schemas/user-preference.schema'
+import {
+  DEFAULT_HOME_WIDGETS,
+  DEFAULT_SIDEBAR_NAVIGATION,
+} from '@/src/schemas/user-preference.schema'
 import type { UserPreferenceDTO } from '@/types/user-preference'
 import { ThemeSync } from '../theme-sync'
 
@@ -23,6 +26,7 @@ function buildPreferences(
     weekStartsOn: 0,
     weekendDays: [0, 6],
     navigation: DEFAULT_SIDEBAR_NAVIGATION,
+    homeWidgets: DEFAULT_HOME_WIDGETS,
   }
 }
 

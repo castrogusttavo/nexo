@@ -176,3 +176,52 @@ describe('UpdateUserPreferenceSchema navigation', () => {
     ).toBe(false)
   })
 })
+
+describe('HomeWidgetsSchema', () => {
+  it('accepts every widget once, in any order', () => {
+    expect(
+      UpdateUserPreferenceSchema.safeParse({
+        homeWidgets: [
+          { id: 'stickies', visible: true },
+          { id: 'quick-links', visible: false },
+          { id: 'recents', visible: true },
+        ],
+      }).success,
+    ).toBe(true)
+  })
+
+  it('rejects a payload that drops a widget', () => {
+    expect(
+      UpdateUserPreferenceSchema.safeParse({
+        homeWidgets: [
+          { id: 'stickies', visible: true },
+          { id: 'recents', visible: true },
+        ],
+      }).success,
+    ).toBe(false)
+  })
+
+  it('rejects a repeated widget', () => {
+    expect(
+      UpdateUserPreferenceSchema.safeParse({
+        homeWidgets: [
+          { id: 'stickies', visible: true },
+          { id: 'stickies', visible: false },
+          { id: 'recents', visible: true },
+        ],
+      }).success,
+    ).toBe(false)
+  })
+
+  it('rejects an unknown widget', () => {
+    expect(
+      UpdateUserPreferenceSchema.safeParse({
+        homeWidgets: [
+          { id: 'stickies', visible: true },
+          { id: 'recents', visible: true },
+          { id: 'weather', visible: true },
+        ],
+      }).success,
+    ).toBe(false)
+  })
+})

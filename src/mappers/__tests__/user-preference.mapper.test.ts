@@ -1,10 +1,14 @@
 import { describe, expect, it } from 'vitest'
 import { createFakeUserPreference } from '@/src/__tests__/factories/user-preference.factory'
 import {
+  toHomeWidgets,
   toSidebarNavigation,
   toUserPreferenceDTO,
 } from '@/src/mappers/user-preference.mapper'
-import { DEFAULT_SIDEBAR_NAVIGATION } from '@/src/schemas/user-preference.schema'
+import {
+  DEFAULT_HOME_WIDGETS,
+  DEFAULT_SIDEBAR_NAVIGATION,
+} from '@/src/schemas/user-preference.schema'
 
 describe('toSidebarNavigation', () => {
   it('should fall back to the default when nothing is stored', () => {
@@ -126,5 +130,39 @@ describe('toUserPreferenceDTO', () => {
     expect(dto).not.toHaveProperty('id')
     expect(dto).not.toHaveProperty('userId')
     expect(dto).not.toHaveProperty('createdAt')
+  })
+})
+
+describe('toHomeWidgets', () => {
+  it('falls back to every widget, visible, when nothing was stored', () => {
+    expect(toHomeWidgets(null)).toEqual(DEFAULT_HOME_WIDGETS)
+  })
+
+  it('keeps the stored order and visibility', () => {
+    const stored = [
+      { id: 'stickies', visible: false },
+      { id: 'recents', visible: true },
+      { id: 'quick-links', visible: true },
+    ]
+
+    expect(toHomeWidgets(stored)).toEqual(stored)
+  })
+
+  it('drops unknown and repeated widgets and appends the missing ones', () => {
+    expect(
+      toHomeWidgets([
+        { id: 'weather', visible: true },
+        { id: 'stickies', visible: false },
+        { id: 'stickies', visible: true },
+      ]),
+    ).toEqual([
+      { id: 'stickies', visible: false },
+      { id: 'quick-links', visible: true },
+      { id: 'recents', visible: true },
+    ])
+  })
+
+  it('reads a malformed value as the default', () => {
+    expect(toHomeWidgets({ not: 'an array' })).toEqual(DEFAULT_HOME_WIDGETS)
   })
 })

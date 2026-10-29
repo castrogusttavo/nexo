@@ -11,7 +11,10 @@ vi.mock('@/lib/axiom/audit', () => ({ auditMutation: vi.fn() }))
 
 import { UserPreferenceCache } from '@/src/cache/user-preference.cache'
 import { UserPreferenceRepository } from '@/src/repositories/user-preference.repository'
-import { DEFAULT_SIDEBAR_NAVIGATION } from '@/src/schemas/user-preference.schema'
+import {
+  DEFAULT_HOME_WIDGETS,
+  DEFAULT_SIDEBAR_NAVIGATION,
+} from '@/src/schemas/user-preference.schema'
 
 const repo = vi.mocked(UserPreferenceRepository)
 const cache = vi.mocked(UserPreferenceCache)
@@ -34,6 +37,7 @@ describe('UserPreferenceService', () => {
         weekStartsOn: 0,
         weekendDays: [0, 6],
         navigation: DEFAULT_SIDEBAR_NAVIGATION,
+        homeWidgets: DEFAULT_HOME_WIDGETS,
       })
 
       const dto = expectOk(await UserPreferenceService.get('user_123'))

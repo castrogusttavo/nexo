@@ -3,7 +3,9 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import type { UserPreferenceDTO } from '@/types/user-preference'
 import { authClient } from '../lib/auth-client'
 import {
+  DEFAULT_HOME_WIDGETS,
   DEFAULT_SIDEBAR_NAVIGATION,
+  type HomeWidgets,
   type SidebarNavigation,
   type UpdateUserPreferenceDTO,
 } from '../schemas/user-preference.schema'
@@ -80,4 +82,9 @@ export function useSidebarNavigation(
 ): SidebarNavigation {
   const { data } = useUserPreferences()
   return data?.navigation ?? initial ?? DEFAULT_SIDEBAR_NAVIGATION
+}
+
+export function useHomeWidgets(initial?: HomeWidgets): HomeWidgets {
+  const { data } = useUserPreferences()
+  return data?.homeWidgets ?? initial ?? DEFAULT_HOME_WIDGETS
 }
