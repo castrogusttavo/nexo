@@ -23,7 +23,7 @@ const PUBLIC_ROUTES = [
   '/robots.txt', '/sitemap.xml', '/opengraph-image',
   '/twitter-image', '/icon', '/apple-icon', '/manifest.webmanifest',
   '/llms.txt', '/work-trials', '/security', '/about', '/manifesto', '/switch',
-  '/contact', '/customers',
+  '/contact', '/customers', '/changelog',
   // PostHog's reverse proxy (next.config.ts rewrites it straight to PostHog).
   // Analytics is collected on the marketing site too, where nobody has a
   // session, so the auth gate would answer every beacon with a redirect.

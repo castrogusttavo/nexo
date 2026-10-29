@@ -1,6 +1,7 @@
 import type { MetadataRoute } from 'next'
 import { NEXT_PUBLIC_URL } from '@/lib/env/env'
 import { getAllPostsMeta } from '@/src/lib/blog/post'
+import { getAllChangelogEntries } from '@/src/lib/changelog'
 import { CareerJobService } from '@/src/services/career-job.service'
 
 type ChangeFrequency = NonNullable<
@@ -21,6 +22,7 @@ const STATIC_ROUTES: StaticRoute[] = [
   { path: '/', priority: 1, changeFrequency: 'weekly' },
   { path: '/pricing', priority: 0.8, changeFrequency: 'monthly' },
   { path: '/blog', priority: 0.7, changeFrequency: 'daily' },
+  { path: '/changelog', priority: 0.6, changeFrequency: 'weekly' },
   { path: '/careers', priority: 0.6, changeFrequency: 'weekly' },
   { path: '/talk-to-sales', priority: 0.6, changeFrequency: 'monthly' },
   { path: '/docs', priority: 0.5, changeFrequency: 'weekly' },
@@ -66,8 +68,9 @@ const STATIC_ROUTES: StaticRoute[] = [
 ]
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
-  const [posts, careersResult] = await Promise.all([
+  const [posts, changelog, careersResult] = await Promise.all([
     getAllPostsMeta(),
+    getAllChangelogEntries(),
     CareerJobService.listPublic(),
   ])
   const careers = careersResult.ok ? careersResult.value : []
@@ -89,6 +92,12 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       lastModified: job.updatedAt,
       priority: 0.5,
       changeFrequency: 'weekly' as ChangeFrequency,
+    })),
+    ...changelog.map((entry) => ({
+      url: `${NEXT_PUBLIC_URL}/changelog/${entry.slug}`,
+      lastModified: entry.date,
+      priority: 0.5,
+      changeFrequency: 'yearly' as ChangeFrequency,
     })),
   ]
 }
