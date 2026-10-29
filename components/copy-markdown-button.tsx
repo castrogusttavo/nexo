@@ -1,15 +1,20 @@
 'use client'
 
 import { Copy01Icon } from '@hugeicons-pro/core-stroke-rounded'
+import type { ComponentProps } from 'react'
 import { NexoIcon } from '@/components/icon/icon'
 import { Button } from '@/components/ui/button'
 import { notify } from '@/lib/notify'
 
-interface CopyMarkdownButtonProps {
-  markdown: string
-}
+type CopyMarkdownButtonProps = { markdown: string } & Omit<
+  ComponentProps<typeof Button>,
+  'onClick' | 'children'
+>
 
-export function CopyMarkdownButton({ markdown }: CopyMarkdownButtonProps) {
+export function CopyMarkdownButton({
+  markdown,
+  ...props
+}: CopyMarkdownButtonProps) {
   async function handleCopy() {
     try {
       await navigator.clipboard.writeText(markdown)
@@ -20,13 +25,8 @@ export function CopyMarkdownButton({ markdown }: CopyMarkdownButtonProps) {
   }
 
   return (
-    <Button
-      variant='secondary'
-      size='sm'
-      className='w-full'
-      onClick={handleCopy}
-    >
-      <NexoIcon icon={Copy01Icon} />
+    <Button {...props} onClick={handleCopy}>
+      <NexoIcon icon={Copy01Icon} strokeWidth={2} />
       Copy as markdown
     </Button>
   )

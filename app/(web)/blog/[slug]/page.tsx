@@ -2,6 +2,7 @@ import type { Metadata } from 'next'
 import Image from 'next/image'
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
+import { CopyMarkdownButton } from '@/components/copy-markdown-button'
 import { JsonLd } from '@/components/seo/json-ld'
 import { Muted } from '@/components/typography/text/muted'
 import { Button } from '@/components/ui/button'
@@ -11,7 +12,6 @@ import { formatPostDate } from '@/src/lib/blog/format-ṕost-date'
 import { getAllPostsMeta, getPostBySlug } from '@/src/lib/blog/post'
 import { BlogContent } from './blog-content'
 import { BlogPostViewTracker } from './blog-post-view-tracker'
-import { CopyMarkdownButton } from './copy-markdown-button'
 import { TableOfContents } from './table-of-contents'
 
 interface Props {
@@ -141,7 +141,12 @@ export default async function BlogPostPage({ params }: Props) {
         </div>
         <div className='w-full flex justify-between'>
           <div className='space-y-6 w-full lg:sticky top-24 h-fit lg:w-80 shrink-0 pr-8 block lg:mb-4 mt-4.5'>
-            <CopyMarkdownButton markdown={post.content} />
+            <CopyMarkdownButton
+              markdown={post.content}
+              variant='secondary'
+              size='sm'
+              className='w-full'
+            />
             <TableOfContents headings={post.headings} />
             <Button variant='outline' size='lg' className='w-full'>
               Comece grátis
