@@ -42,7 +42,10 @@ for (const variant of VARIANTS) {
               !/^(Bom dia|Boa tarde|Boa noite)/.test(heading.textContent ?? '')
             )
               continue
-            if (heading.textContent !== 'Bom dia, Ana')
+            if (
+              heading.childNodes.length !== 1 ||
+              heading.textContent !== 'Bom dia, Ana'
+            )
               heading.textContent = 'Bom dia, Ana'
             const dateLine = heading.nextElementSibling
             if (dateLine && dateLine.textContent !== pinned)

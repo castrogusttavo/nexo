@@ -129,7 +129,7 @@ describe('UserPreferenceCache', () => {
       const dto = createFakeUserPreferenceDTO()
 
       await UserPreferenceCache.set('pref-user-ttl', dto)
-      const ttl = await redis.ttl('pref:v2:pref-user-ttl')
+      const ttl = await redis.ttl('pref:v3:pref-user-ttl')
 
       expect(ttl).toBeGreaterThan(895)
       expect(ttl).toBeLessThanOrEqual(900)

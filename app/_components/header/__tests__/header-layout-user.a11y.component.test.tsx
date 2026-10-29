@@ -110,7 +110,7 @@ describe('workspace header accessibility', () => {
   })
 
   it.each([
-    ['Comece agora', '/nexo/get-started'],
+    ['Começar', '/nexo/get-started'],
     ['Caixa de entrada', '/nexo/inbox'],
     ['Assinar Pro', '/upgrade?plan=PRO&billing=yearly'],
     ['Ver planos', '/nexo/settings/billing'],

@@ -27,7 +27,7 @@ describe('<HeaderLayoutUser />', () => {
   it('links the get-started and inbox shortcuts to the current workspace', () => {
     renderWithProviders(<HeaderLayoutUser slug='nexo' />)
 
-    expect(screen.getByRole('link', { name: 'Comece agora' })).toHaveAttribute(
+    expect(screen.getByRole('link', { name: 'Começar' })).toHaveAttribute(
       'href',
       '/nexo/get-started',
     )
@@ -47,7 +47,7 @@ describe('<HeaderLayoutUser />', () => {
   it('re-points every link when the workspace changes', () => {
     renderWithProviders(<HeaderLayoutUser slug='atlas' />)
 
-    expect(screen.getByRole('link', { name: 'Comece agora' })).toHaveAttribute(
+    expect(screen.getByRole('link', { name: 'Começar' })).toHaveAttribute(
       'href',
       '/atlas/get-started',
     )
