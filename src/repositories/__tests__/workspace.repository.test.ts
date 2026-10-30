@@ -208,6 +208,43 @@ describe('WorkspaceRepository', () => {
       expect(ws.name).toBe('New')
     })
 
+    it('should default the timezone to UTC and no logo', async () => {
+      const seeded = await seedWorkspace()
+
+      const ws = expectOk(await WorkspaceRepository.findById(seeded.id))
+
+      expect(ws.timezone).toBe('UTC')
+      expect(ws.image).toBeNull()
+    })
+
+    it('should persist timezone and team size', async () => {
+      const seeded = await seedWorkspace()
+
+      const result = await WorkspaceRepository.update(seeded.id, {
+        timezone: 'America/Sao_Paulo',
+        teamSize: '11-50',
+      })
+
+      const ws = expectOk(result)
+      expect(ws.timezone).toBe('America/Sao_Paulo')
+      expect(ws.teamSize).toBe('11-50')
+    })
+
+    it('should set and clear the logo url', async () => {
+      const seeded = await seedWorkspace()
+      const url = 'http://silo/workspace-logos/workspace/x/a.png'
+
+      const set = expectOk(
+        await WorkspaceRepository.update(seeded.id, { image: url }),
+      )
+      expect(set.image).toBe(url)
+
+      const cleared = expectOk(
+        await WorkspaceRepository.update(seeded.id, { image: null }),
+      )
+      expect(cleared.image).toBeNull()
+    })
+
     it('should return CONFLICT when updating to a taken slug', async () => {
       await seedWorkspace({ slug: 'taken' })
       const target = await seedWorkspace({ slug: 'movable' })

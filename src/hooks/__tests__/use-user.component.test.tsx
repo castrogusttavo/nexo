@@ -37,7 +37,13 @@ function buildUser(overrides: Partial<UserDTO> = {}): UserDTO {
     role: 'DEVELOPER',
     goals: ['SPRINTS'],
     memberships: [
-      { workspaceId: 'ws-1', slug: 'acme', name: 'Acme', role: 'OWNER' },
+      {
+        workspaceId: 'ws-1',
+        slug: 'acme',
+        name: 'Acme',
+        image: null,
+        role: 'OWNER',
+      },
     ],
     ...overrides,
   }

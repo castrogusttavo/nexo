@@ -21,6 +21,7 @@ export function toUserDTO(user: UserWithMemberships): UserDTO {
       workspaceId: m.workspaceId,
       slug: m.workspace.slug,
       name: m.workspace.name,
+      image: m.workspace.image,
       role: m.role,
     })),
   }

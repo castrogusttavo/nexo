@@ -186,3 +186,34 @@ describe('CreateWorkspaceSchema switches', () => {
     expect(result.success && 'projectLabelsEnabled' in result.data).toBe(false)
   })
 })
+
+describe('UpdateWorkspaceSchema timezone and image', () => {
+  it('should accept a timezone', () => {
+    const result = UpdateWorkspaceSchema.safeParse({
+      timezone: 'America/Sao_Paulo',
+    })
+
+    expect(result.success).toBe(true)
+  })
+
+  it('should reject an empty timezone', () => {
+    expect(UpdateWorkspaceSchema.safeParse({ timezone: '' }).success).toBe(
+      false,
+    )
+  })
+
+  it('should reject a timezone longer than 64 characters', () => {
+    expect(
+      UpdateWorkspaceSchema.safeParse({ timezone: 'x'.repeat(65) }).success,
+    ).toBe(false)
+  })
+
+  // The logo only changes through the upload routes, never through PATCH
+  it('should drop image so a url cannot be written through PATCH', () => {
+    const result = UpdateWorkspaceSchema.safeParse({
+      image: 'https://evil.example.com/x.png',
+    })
+
+    expect(result.success && 'image' in result.data).toBe(false)
+  })
+})

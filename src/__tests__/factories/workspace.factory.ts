@@ -13,6 +13,8 @@ export function createFakeWorkspace(overrides?: Partial<Workspace>): Workspace {
     activePlan: 'FREE' as Plan,
     trialEndsAt: null,
     teamSize: null,
+    image: null,
+    timezone: 'UTC',
     projectStatesEnabled: true,
     projectLabelsEnabled: true,
     createdAt: now,

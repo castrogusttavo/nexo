@@ -29,6 +29,7 @@ export const CreateWorkspaceSchema = z.object({
 export type CreateWorkspaceDTO = z.infer<typeof CreateWorkspaceSchema>
 
 export const UpdateWorkspaceSchema = CreateWorkspaceSchema.partial().extend({
+  timezone: z.string().min(1).max(64).optional(),
   projectStatesEnabled: z.boolean().optional(),
   projectLabelsEnabled: z.boolean().optional(),
 })

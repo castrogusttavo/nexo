@@ -8,6 +8,9 @@ export interface WorkspaceDTO {
   trialEndsAt: string | null
   projectStatesEnabled: boolean
   projectLabelsEnabled: boolean
+  image: string | null
+  teamSize: string | null
+  timezone: string
   createdAt: string
   updatedAt: string
 }

@@ -11,6 +11,9 @@ export function toWorkspaceDTO(workspace: Workspace): WorkspaceDTO {
     trialEndsAt: workspace.trialEndsAt?.toISOString() ?? null,
     projectStatesEnabled: workspace.projectStatesEnabled,
     projectLabelsEnabled: workspace.projectLabelsEnabled,
+    image: workspace.image,
+    teamSize: workspace.teamSize,
+    timezone: workspace.timezone,
     ...withTimestamps(workspace),
   }
 }

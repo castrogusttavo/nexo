@@ -90,7 +90,10 @@ export const WorkspaceRepository = {
       name?: string
       slug?: string
       teamSize?: string | null
+      timezone?: string
+      image?: string | null
       projectStatesEnabled?: boolean
+      projectLabelsEnabled?: boolean
     },
   ): Promise<Result<Workspace>> {
     try {

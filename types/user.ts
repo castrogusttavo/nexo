@@ -2,6 +2,7 @@ export interface MembershipDTO {
   workspaceId: string
   slug: string
   name: string
+  image: string | null
   role: string
 }
 

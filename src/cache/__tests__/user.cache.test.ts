@@ -59,6 +59,7 @@ describe('UserCache', () => {
             workspaceId: 'workspace-1',
             slug: 'workspace',
             name: 'Workspace',
+            image: null,
             role: 'ADMIN',
           },
         ],
@@ -133,7 +134,7 @@ describe('UserCache', () => {
       const dto = createFakeUserDTO({ id: 'cache-user-ttl' })
 
       await UserCache.set('cache-user-ttl', dto)
-      const ttl = await redis.ttl('user:v3:cache-user-ttl')
+      const ttl = await redis.ttl('user:v4:cache-user-ttl')
 
       expect(ttl).toBeGreaterThan(895)
       expect(ttl).toBeLessThanOrEqual(900)
@@ -145,7 +146,7 @@ describe('UserCache', () => {
       await UserCache.set('cache-user-expire', dto)
 
       // Override TTL to 1 second for testing expiration
-      await redis.expire('user:v3:cache-user-expire', 1)
+      await redis.expire('user:v4:cache-user-expire', 1)
 
       // Wait for expiration
       await new Promise((resolve) => setTimeout(resolve, 1100))

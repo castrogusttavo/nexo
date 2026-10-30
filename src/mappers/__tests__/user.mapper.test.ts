@@ -39,6 +39,8 @@ describe('toUserDTO()', () => {
             teamSize: null,
             projectStatesEnabled: true,
             projectLabelsEnabled: true,
+            image: null,
+            timezone: 'UTC',
             createdAt: new Date(),
             updatedAt: new Date(),
           },
@@ -68,10 +70,44 @@ describe('toUserDTO()', () => {
           workspaceId: 'ws-1',
           slug: 'acme',
           name: 'Acme',
+          image: null,
           role: 'ADMIN',
         },
       ],
     })
+  })
+
+  it('carries the workspace logo on each membership', () => {
+    const user = withMemberships(createFakeUser(), [
+      {
+        id: 'mem-1',
+        userId: 'user-1',
+        workspaceId: 'ws-1',
+        role: 'MEMBER',
+        createdAt: new Date(),
+        updatedAt: new Date(),
+        workspace: {
+          id: 'ws-1',
+          name: 'Acme',
+          slug: 'acme',
+          activePlan: 'FREE',
+          trialEndsAt: null,
+          teamSize: null,
+          projectStatesEnabled: true,
+          projectLabelsEnabled: true,
+          image: 'http://silo/workspace-logos/workspace/ws-1/a.png',
+          timezone: 'UTC',
+          createdAt: new Date(),
+          updatedAt: new Date(),
+        },
+      },
+    ])
+
+    const dto = toUserDTO(user)
+
+    expect(dto.memberships[0].image).toBe(
+      'http://silo/workspace-logos/workspace/ws-1/a.png',
+    )
   })
 
   it('maps acceptedTermsAt and acceptedPrivacyAt to ISO strings when set', () => {

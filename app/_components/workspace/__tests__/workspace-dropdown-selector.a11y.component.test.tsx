@@ -17,8 +17,20 @@ vi.mock('next/navigation', () => ({ useRouter: () => ({ push }) }))
 vi.mock('@/src/lib/auth-client', () => ({ authClient: { useSession } }))
 
 const MEMBERSHIPS: MembershipDTO[] = [
-  { workspaceId: 'ws-1', slug: 'acme', name: 'Acme', role: 'OWNER' },
-  { workspaceId: 'ws-2', slug: 'globex', name: 'Globex', role: 'MEMBER' },
+  {
+    workspaceId: 'ws-1',
+    slug: 'acme',
+    name: 'Acme',
+    image: null,
+    role: 'OWNER',
+  },
+  {
+    workspaceId: 'ws-2',
+    slug: 'globex',
+    name: 'Globex',
+    image: null,
+    role: 'MEMBER',
+  },
 ]
 
 async function openMenu() {

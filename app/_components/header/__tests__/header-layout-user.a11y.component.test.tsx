@@ -55,7 +55,13 @@ const USER: UserDTO = {
   role: null,
   goals: [],
   memberships: [
-    { workspaceId: 'ws-1', slug: 'nexo', name: 'Nexo', role: 'OWNER' },
+    {
+      workspaceId: 'ws-1',
+      slug: 'nexo',
+      name: 'Nexo',
+      image: null,
+      role: 'OWNER',
+    },
   ],
 }
 

@@ -21,6 +21,9 @@ describe('toWorkspaceDTO()', () => {
       trialEndsAt: null,
       projectStatesEnabled: true,
       projectLabelsEnabled: true,
+      image: null,
+      teamSize: null,
+      timezone: 'UTC',
       createdAt: ws.createdAt.toISOString(),
       updatedAt: ws.updatedAt.toISOString(),
     })
@@ -57,5 +60,19 @@ describe('toWorkspaceDTO()', () => {
     )
 
     expect(dto.projectLabelsEnabled).toBe(false)
+  })
+
+  it('should carry the logo url, team size and timezone', () => {
+    const dto = toWorkspaceDTO(
+      createFakeWorkspace({
+        image: 'http://silo/workspace-logos/workspace/ws-1/a.png',
+        teamSize: '11-50',
+        timezone: 'America/Sao_Paulo',
+      }),
+    )
+
+    expect(dto.image).toBe('http://silo/workspace-logos/workspace/ws-1/a.png')
+    expect(dto.teamSize).toBe('11-50')
+    expect(dto.timezone).toBe('America/Sao_Paulo')
   })
 })

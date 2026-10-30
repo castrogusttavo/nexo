@@ -238,6 +238,8 @@ model Workspace {
   projectStatesEnabled Boolean   @default(true) @map("project_states_enabled")
   // Same switch for project labels.
   projectLabelsEnabled Boolean   @default(true) @map("project_labels_enabled")
+  image String?
+  timezone String @default("UTC")
   createdAt            DateTime  @default(now()) @map("created_at")
   updatedAt            DateTime  @updatedAt @map("updated_at")
 
