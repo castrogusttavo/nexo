@@ -196,6 +196,7 @@ const JSON_BODIES_WITHOUT_SHARED_SCHEMA: Record<string, string> = {
 const NON_JSON_BODIES: Record<string, string> = {
   'POST /users/me/avatar': 'multipart avatar upload',
   'POST /users/me/cover': 'multipart cover upload',
+  'POST /workspaces/{id}/logo': 'multipart workspace logo upload',
   'POST /workspaces/{id}/members/import': 'multipart CSV member import',
   'POST /careers/{slug}/apply':
     'multipart application — fields plus the resume file',

@@ -2,7 +2,11 @@ import { logger } from '@/lib/axiom/logger'
 import { MINIO_ENDPOINT } from '@/lib/env/_server'
 import { storageError, validationError } from '@/src/errors'
 import { err, ok, type Result } from '@/src/lib/result'
-import { ensurePublicBucket, putObject } from '@/src/lib/storage/s3'
+import {
+  deleteObject,
+  ensurePublicBucket,
+  putObject,
+} from '@/src/lib/storage/s3'
 
 const MAX_BYTES = 5 * 1024 * 1024 // 5MB
 const ALLOWED_TYPES: Record<string, string> = {
@@ -55,4 +59,21 @@ export async function persistObject({
 
     return err(storageError('Falha ao armazena o arquivo'))
   }
+}
+
+// Best-effort removal of an object we stored: `url` is the public URL that
+// `persistObject` returned. An orphaned file costs less than failing the
+// request that already succeeded, so errors are swallowed.
+export async function dropObject(
+  bucket: string,
+  url: string | null,
+): Promise<void> {
+  if (!url) return
+  const marker = `/${bucket}/`
+  const at = url.indexOf(marker)
+  if (at === -1) return
+
+  await deleteObject({ bucket, key: url.slice(at + marker.length) }).catch(
+    () => undefined,
+  )
 }

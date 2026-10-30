@@ -38,7 +38,7 @@ export const PATCH = withAxiom(async (request: NextRequest, ctx: Params) => {
 
   const consent = await requireConsent(
     auth.value.user.id,
-    'POST /api/workspaces',
+    'PATCH /api/workspaces/[id]',
   )
   if (!consent.ok) return handleError(consent.error)
 
@@ -73,7 +73,7 @@ export const DELETE = withAxiom(async (_request: NextRequest, ctx: Params) => {
 
   const consent = await requireConsent(
     auth.value.user.id,
-    'POST /api/workspaces',
+    'DELETE /api/workspaces/[id]',
   )
   if (!consent.ok) return handleError(consent.error)
 

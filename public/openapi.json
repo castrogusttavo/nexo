@@ -1423,7 +1423,7 @@
           "Workspaces"
         ],
         "summary": "Atualizar workspace",
-        "description": "Atualiza nome e/ou slug do workspace. Exige papel OWNER ou ADMIN.",
+        "description": "Atualiza nome, slug, tamanho do time e/ou fuso horário do workspace. O logo não passa por aqui: use `/workspaces/{id}/logo`. Exige papel OWNER ou ADMIN.",
         "security": [
           {
             "cookieAuth": []
@@ -1472,7 +1472,7 @@
           "Workspaces"
         ],
         "summary": "Excluir workspace",
-        "description": "Exclui o workspace. Exige papel OWNER.",
+        "description": "Exclui o workspace e, em best-effort, o arquivo do logo. Exige papel OWNER. Falha com `WORKSPACE_HAS_ACTIVE_PLAN` (409) se o workspace estiver em um plano pago ou em período de teste: cancele a assinatura antes.",
         "security": [
           {
             "cookieAuth": []
@@ -1481,6 +1481,120 @@
         "responses": {
           "200": {
             "description": "Workspace excluído",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/EmptySuccessResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/UnauthorizedError"
+          },
+          "403": {
+            "$ref": "#/components/responses/ForbiddenError"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFoundError"
+          },
+          "409": {
+            "$ref": "#/components/responses/ConflictError"
+          },
+          "429": {
+            "$ref": "#/components/responses/RateLimitError"
+          }
+        }
+      }
+    },
+    "/workspaces/{id}/logo": {
+      "parameters": [
+        {
+          "name": "id",
+          "in": "path",
+          "required": true,
+          "description": "ID (CUID) do workspace",
+          "schema": {
+            "type": "string"
+          }
+        }
+      ],
+      "post": {
+        "tags": [
+          "Workspaces"
+        ],
+        "summary": "Enviar logo do workspace",
+        "description": "Faz upload do logo via `multipart/form-data` no campo `logo`. Aceita JPEG, PNG ou WebP, até 5 MB. A URL pública é gravada em `image` e o logo anterior é removido. Exige papel OWNER ou ADMIN. Rate limit dedicado de upload.",
+        "security": [
+          {
+            "cookieAuth": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "logo"
+                ],
+                "properties": {
+                  "logo": {
+                    "type": "string",
+                    "format": "binary",
+                    "description": "Arquivo de imagem (JPEG, PNG ou WebP), máximo 5 MB."
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Logo enviado com sucesso.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MediaUploadResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/UnauthorizedError"
+          },
+          "403": {
+            "$ref": "#/components/responses/ForbiddenError"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFoundError"
+          },
+          "422": {
+            "$ref": "#/components/responses/ValidationError"
+          },
+          "429": {
+            "$ref": "#/components/responses/RateLimitError"
+          },
+          "500": {
+            "$ref": "#/components/responses/StorageError"
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "Workspaces"
+        ],
+        "summary": "Remover logo do workspace",
+        "description": "Zera `image` e remove o arquivo do armazenamento. Exige papel OWNER ou ADMIN.",
+        "security": [
+          {
+            "cookieAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Logo removido",
             "content": {
               "application/json": {
                 "schema": {
@@ -10436,6 +10550,28 @@
             "type": "boolean",
             "description": "Quando false, as etiquetas de projeto ficam ocultas e não podem ser atribuídas.",
             "example": true
+          },
+          "image": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "format": "uri",
+            "description": "URL pública do logo do workspace; `null` quando não há logo. Alterada apenas por `POST`/`DELETE /workspaces/{id}/logo`.",
+            "example": null
+          },
+          "teamSize": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "description": "Faixa de tamanho do time informada no onboarding; `null` quando não informada.",
+            "example": "11-50"
+          },
+          "timezone": {
+            "type": "string",
+            "description": "Fuso horário IANA do workspace.",
+            "example": "America/Sao_Paulo"
           }
         }
       },
@@ -10503,6 +10639,13 @@
             ],
             "description": "Faixa de tamanho do time, informada no onboarding e usada para segmentação de plano.",
             "example": "51-200"
+          },
+          "timezone": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 64,
+            "description": "Fuso horário IANA do workspace.",
+            "example": "America/Sao_Paulo"
           },
           "projectStatesEnabled": {
             "type": "boolean",
@@ -10805,7 +10948,7 @@
       },
       "MediaUploadResponse": {
         "type": "object",
-        "description": "Resposta dos uploads de mídia (avatar, capa de perfil, capa de projeto).",
+        "description": "Resposta dos uploads de mídia (avatar, capa de perfil, capa de projeto, logo de workspace).",
         "allOf": [
           {
             "$ref": "#/components/schemas/SuccessResponse"

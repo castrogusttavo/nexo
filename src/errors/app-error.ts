@@ -36,6 +36,10 @@ export const usernameConflict = (
   message = 'Username já está em uso',
 ): AppError => appError('USERNAME_CONFLICT', message)
 
+export const workspaceHasActivePlan = (
+  message = 'Cancele a assinatura ou o período de teste antes de excluir o workspace',
+): AppError => appError('WORKSPACE_HAS_ACTIVE_PLAN', message)
+
 export const validationError = (message: string, details?: unknown): AppError =>
   appError('VALIDATION_ERROR', message, details)
 

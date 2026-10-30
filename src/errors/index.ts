@@ -99,4 +99,5 @@ export {
   wikiCommentNotFound,
   wikiPageForbidden,
   wikiPageNotFound,
+  workspaceHasActivePlan,
 } from './app-error'

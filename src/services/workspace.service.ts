@@ -2,7 +2,7 @@ import type { Plan } from '@prisma/client'
 import { auditMutation } from '@/lib/axiom/audit'
 import { UserCache } from '@/src/cache/user.cache'
 import { WorkspaceCache } from '@/src/cache/workspace.cache'
-import { forbidden } from '@/src/errors'
+import { forbidden, workspaceHasActivePlan } from '@/src/errors'
 import { err, ok, type Result } from '@/src/lib/result'
 import { toWorkspaceDTO } from '@/src/mappers/workspace.mapper'
 import { MembershipRepository } from '@/src/repositories/membership.repository'
@@ -14,6 +14,8 @@ import type {
 import type { WorkspaceDTO } from '@/types/workspace'
 import { TRIAL_PLAN, trialEndsAtFrom } from '../config/trial'
 import { assertMember } from './_authz'
+import { dropObject } from './media/_media'
+import { WORKSPACE_LOGO_BUCKET } from './media/workspace-media.service'
 
 export const WorkspaceService = {
   async getById(
@@ -144,10 +146,31 @@ export const WorkspaceService = {
       return err(forbidden('Apenas o OWNER pode deletar o workspace'))
     }
 
+    // A paid plan or a trial still has a subscription behind it; it has to be
+    // cancelled first so a delete never leaves billing running for a
+    // workspace that no longer exists.
+    const current = await WorkspaceRepository.findById(workspaceId)
+    if (!current.ok) return current
+
+    if (current.value.activePlan !== 'FREE') {
+      auditMutation({
+        entity: 'workspace',
+        action: 'delete',
+        actorId,
+        targetId: workspaceId,
+        outcome: 'failure',
+        reason: 'active_plan',
+        meta: { plan: current.value.activePlan },
+      })
+      return err(workspaceHasActivePlan())
+    }
+
     // Must be read before the delete: memberships are removed in cascade
     // along with the workspace.
     const memberIds =
       await MembershipRepository.listUserIdsByWorkspace(workspaceId)
+    // Same reason: the row (and its image URL) is gone after the delete.
+    const logo = current.value.image
 
     const result = await WorkspaceRepository.delete(workspaceId)
     if (!result.ok) {
@@ -162,6 +185,7 @@ export const WorkspaceService = {
       return result
     }
 
+    await dropObject(WORKSPACE_LOGO_BUCKET, logo)
     await WorkspaceCache.invalidate(workspaceId)
     await Promise.all(
       (memberIds.ok ? memberIds.value : [actorId]).map((id) =>

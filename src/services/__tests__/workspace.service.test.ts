@@ -1,4 +1,4 @@
-import { describe, expect, it, vi } from 'vitest'
+import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { createFakeMembership } from '@/src/__tests__/factories/membership.factory'
 import { createFakeWorkspace } from '@/src/__tests__/factories/workspace.factory'
 import { expectErr, expectOk } from '@/src/__tests__/helpers/result.helpers'
@@ -10,9 +10,11 @@ vi.mock('@/src/repositories/workspace.repository')
 vi.mock('@/src/repositories/membership.repository')
 vi.mock('@/src/cache/workspace.cache')
 vi.mock('@/src/cache/user.cache')
+vi.mock('@/src/lib/storage/s3')
 
 import { UserCache } from '@/src/cache/user.cache'
 import { WorkspaceCache } from '@/src/cache/workspace.cache'
+import { deleteObject } from '@/src/lib/storage/s3'
 import { MembershipRepository } from '@/src/repositories/membership.repository'
 import { WorkspaceRepository } from '@/src/repositories/workspace.repository'
 
@@ -383,6 +385,12 @@ describe('WorkspaceService', () => {
   })
 
   describe('delete()', () => {
+    beforeEach(() => {
+      mockedWorkspaceRepo.findById.mockResolvedValue(
+        ok(createFakeWorkspace({ id: 'ws1' })),
+      )
+    })
+
     it('should allow OWNER to delete and invalidate caches', async () => {
       const membership = createFakeMembership({
         userId: 'owner',
@@ -405,6 +413,180 @@ describe('WorkspaceService', () => {
       expectOk(result)
       expect(mockedWorkspaceCache.invalidate).toHaveBeenCalledWith('ws1')
       expect(mockedUserCache.invalidate).toHaveBeenCalledWith('owner')
+    })
+
+    it.each([
+      'PRO',
+      'BUSINESS',
+      'ENTERPRISE',
+    ] as const)('should refuse to delete a workspace on the %s plan', async (plan) => {
+      mockedMembershipRepo.findByUserAndWorkspace.mockResolvedValue(
+        ok(
+          createFakeMembership({
+            userId: 'owner',
+            workspaceId: 'ws1',
+            role: 'OWNER',
+          }),
+        ),
+      )
+      mockedWorkspaceRepo.findById.mockResolvedValue(
+        ok(createFakeWorkspace({ id: 'ws1', activePlan: plan })),
+      )
+
+      const result = await WorkspaceService.delete('owner', 'ws1')
+
+      expectErr(result, 'WORKSPACE_HAS_ACTIVE_PLAN')
+      expect(mockedWorkspaceRepo.delete).not.toHaveBeenCalled()
+      expect(mockedWorkspaceCache.invalidate).not.toHaveBeenCalled()
+      expect(deleteObject).not.toHaveBeenCalled()
+    })
+
+    it('should refuse a trial of a paid plan the same way', async () => {
+      mockedMembershipRepo.findByUserAndWorkspace.mockResolvedValue(
+        ok(
+          createFakeMembership({
+            userId: 'owner',
+            workspaceId: 'ws1',
+            role: 'OWNER',
+          }),
+        ),
+      )
+      mockedWorkspaceRepo.findById.mockResolvedValue(
+        ok(
+          createFakeWorkspace({
+            id: 'ws1',
+            activePlan: 'BUSINESS',
+            trialEndsAt: new Date(Date.now() + 86_400_000),
+          }),
+        ),
+      )
+
+      expectErr(
+        await WorkspaceService.delete('owner', 'ws1'),
+        'WORKSPACE_HAS_ACTIVE_PLAN',
+      )
+      expect(mockedWorkspaceRepo.delete).not.toHaveBeenCalled()
+    })
+
+    it('should delete once the plan is back on FREE', async () => {
+      mockedMembershipRepo.findByUserAndWorkspace.mockResolvedValue(
+        ok(
+          createFakeMembership({
+            userId: 'owner',
+            workspaceId: 'ws1',
+            role: 'OWNER',
+          }),
+        ),
+      )
+      mockedMembershipRepo.listUserIdsByWorkspace.mockResolvedValue(
+        ok(['owner']),
+      )
+      mockedWorkspaceRepo.findById.mockResolvedValue(
+        ok(createFakeWorkspace({ id: 'ws1', activePlan: 'FREE' })),
+      )
+      mockedWorkspaceRepo.delete.mockResolvedValue(ok(undefined))
+
+      expectOk(await WorkspaceService.delete('owner', 'ws1'))
+    })
+
+    it('should propagate a failure to load the workspace', async () => {
+      mockedMembershipRepo.findByUserAndWorkspace.mockResolvedValue(
+        ok(
+          createFakeMembership({
+            userId: 'owner',
+            workspaceId: 'ws1',
+            role: 'OWNER',
+          }),
+        ),
+      )
+      mockedWorkspaceRepo.findById.mockResolvedValue(err(databaseError()))
+
+      expectErr(await WorkspaceService.delete('owner', 'ws1'), 'DATABASE_ERROR')
+      expect(mockedWorkspaceRepo.delete).not.toHaveBeenCalled()
+    })
+
+    it('should remove the logo object once the workspace is deleted', async () => {
+      mockedMembershipRepo.findByUserAndWorkspace.mockResolvedValue(
+        ok(
+          createFakeMembership({
+            userId: 'owner',
+            workspaceId: 'ws1',
+            role: 'OWNER',
+          }),
+        ),
+      )
+      mockedMembershipRepo.listUserIdsByWorkspace.mockResolvedValue(
+        ok(['owner']),
+      )
+      mockedWorkspaceRepo.findById.mockResolvedValue(
+        ok(
+          createFakeWorkspace({
+            id: 'ws1',
+            image: 'http://silo/workspace-logos/workspace/ws1/logo.png',
+          }),
+        ),
+      )
+      mockedWorkspaceRepo.delete.mockResolvedValue(ok(undefined))
+      vi.mocked(deleteObject).mockResolvedValue()
+
+      expectOk(await WorkspaceService.delete('owner', 'ws1'))
+
+      expect(deleteObject).toHaveBeenCalledWith({
+        bucket: 'workspace-logos',
+        key: 'workspace/ws1/logo.png',
+      })
+    })
+
+    it('should keep the logo object when the delete fails', async () => {
+      mockedMembershipRepo.findByUserAndWorkspace.mockResolvedValue(
+        ok(
+          createFakeMembership({
+            userId: 'owner',
+            workspaceId: 'ws1',
+            role: 'OWNER',
+          }),
+        ),
+      )
+      mockedWorkspaceRepo.findById.mockResolvedValue(
+        ok(
+          createFakeWorkspace({
+            id: 'ws1',
+            image: 'http://silo/workspace-logos/workspace/ws1/logo.png',
+          }),
+        ),
+      )
+      mockedWorkspaceRepo.delete.mockResolvedValue(err(databaseError()))
+
+      expectErr(await WorkspaceService.delete('owner', 'ws1'), 'DATABASE_ERROR')
+
+      expect(deleteObject).not.toHaveBeenCalled()
+    })
+
+    it('should still succeed when removing the logo object fails', async () => {
+      mockedMembershipRepo.findByUserAndWorkspace.mockResolvedValue(
+        ok(
+          createFakeMembership({
+            userId: 'owner',
+            workspaceId: 'ws1',
+            role: 'OWNER',
+          }),
+        ),
+      )
+      mockedMembershipRepo.listUserIdsByWorkspace.mockResolvedValue(
+        ok(['owner']),
+      )
+      mockedWorkspaceRepo.findById.mockResolvedValue(
+        ok(
+          createFakeWorkspace({
+            id: 'ws1',
+            image: 'http://silo/workspace-logos/workspace/ws1/logo.png',
+          }),
+        ),
+      )
+      mockedWorkspaceRepo.delete.mockResolvedValue(ok(undefined))
+      vi.mocked(deleteObject).mockRejectedValue(new Error('silo down'))
+
+      expectOk(await WorkspaceService.delete('owner', 'ws1'))
     })
 
     it('should forbid ADMIN from deleting', async () => {
