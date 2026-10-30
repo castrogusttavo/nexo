@@ -1,4 +1,5 @@
-import { render, within } from '@testing-library/react'
+import { act, render, screen, within } from '@testing-library/react'
+import { Suspense } from 'react'
 import { describe, expect, it, vi } from 'vitest'
 import { appPageRoutes, hasAppPage } from '@/src/__tests__/helpers/app-routes'
 import { SettingsSidebar } from '../settings-sidebar'
@@ -7,11 +8,21 @@ vi.mock('next/navigation', () => ({
   usePathname: () => '/acme/settings',
 }))
 
+// The sidebar reads `params` with use(), so it suspends until the promise
+// settles, as it does under the layout's <Suspense>. The promise has to be
+// the same object on every render, or use() suspends again forever.
 async function renderLayout() {
-  const ui = await SettingsSidebar({
-    params: Promise.resolve({ 'workspace-slug': 'acme' }),
+  const params = Promise.resolve({ 'workspace-slug': 'acme' })
+  let view: ReturnType<typeof render> | undefined
+  await act(async () => {
+    view = render(
+      <Suspense fallback={null}>
+        <SettingsSidebar params={params} />
+      </Suspense>,
+    )
   })
-  return render(ui)
+  await screen.findByRole('link', { name: 'Geral' })
+  return view as ReturnType<typeof render>
 }
 
 describe('<SettingsLayout /> sidebar', () => {
