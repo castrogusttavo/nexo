@@ -113,15 +113,19 @@ describe('<WorkspaceSettingsDeleteDialog /> on the FREE plan', () => {
     })
   })
 
-  it('sends a single request even if the button is clicked twice', async () => {
+  it('locks the buttons and sends a single request while deleting', async () => {
     const pending = deferredResponse()
     const fetchSpy = mockFetch().mockReturnValueOnce(pending.promise)
     const { user } = await openDialog()
 
     await user.click(confirmButton())
-    await user.click(confirmButton())
 
+    const deleting = await screen.findByRole('button', { name: 'Excluindo...' })
+    expect(deleting).toBeDisabled()
+    expect(screen.getByRole('button', { name: 'Cancelar' })).toBeDisabled()
+    await user.click(deleting)
     expect(fetchSpy).toHaveBeenCalledTimes(1)
+
     pending.resolve(apiSuccess(null))
     await waitFor(() => expect(replace).toHaveBeenCalled())
   })
@@ -145,7 +149,7 @@ describe('<WorkspaceSettingsDeleteDialog /> on the FREE plan', () => {
     const fetchSpy = mockFetch()
     const { user } = await openDialog()
 
-    await user.click(screen.getByRole('button', { name: 'Dispensar' }))
+    await user.click(screen.getByRole('button', { name: 'Cancelar' }))
 
     expect(fetchSpy).not.toHaveBeenCalled()
     expect(replace).not.toHaveBeenCalled()
