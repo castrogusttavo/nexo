@@ -1,4 +1,4 @@
-import { screen, within } from '@testing-library/react'
+import { screen, waitFor, within } from '@testing-library/react'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import {
   apiSuccess,
@@ -18,6 +18,7 @@ const ACME: MembershipDTO = {
   workspaceId: 'ws-1',
   slug: 'acme',
   name: 'Acme',
+  image: null,
   role: 'OWNER',
 }
 
@@ -25,6 +26,7 @@ const GLOBEX: MembershipDTO = {
   workspaceId: 'ws-2',
   slug: 'globex',
   name: 'Globex',
+  image: null,
   role: 'MEMBER',
 }
 
@@ -196,5 +198,38 @@ describe('<WorkspaceDropdownSelector /> switching', () => {
     await user.click(settings)
 
     expect(push).not.toHaveBeenCalled()
+  })
+
+  it('shows the logo of the current workspace instead of its letter', async () => {
+    const logo = 'https://silo.example.com/workspace-logos/ws-1/logo.png'
+    const { container } = await renderDropdown([{ ...ACME, image: logo }])
+
+    await waitFor(() =>
+      expect(container.querySelector('img')).toHaveAttribute('src', logo),
+    )
+    expect(within(trigger()).queryByText('A')).not.toBeInTheDocument()
+  })
+
+  it('shows the letter when the workspace has no logo', async () => {
+    const { container } = await renderDropdown([ACME])
+
+    await waitFor(() =>
+      expect(within(trigger()).getByText('A')).toBeInTheDocument(),
+    )
+    expect(container.querySelector('img')).not.toBeInTheDocument()
+  })
+
+  it('shows each workspace logo in the list', async () => {
+    const logo = 'https://silo.example.com/workspace-logos/ws-2/logo.png'
+    const { user } = await renderDropdown([ACME, { ...GLOBEX, image: logo }])
+
+    const menu = await openMenu(user)
+
+    expect(
+      menu.getByText('Acme').closest('[role="menuitemradio"]'),
+    ).toBeInTheDocument()
+    const logos =
+      document.querySelectorAll<HTMLImageElement>('[role="menu"] img')
+    expect([...logos].map((img) => img.src)).toEqual([logo])
   })
 })

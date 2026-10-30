@@ -16,6 +16,7 @@ import {
 import { useUser } from '@/src/hooks/use-user'
 import type { MembershipDTO } from '@/types/user'
 import { WorkspaceDropdownCard } from './workspace-dropdown-card'
+import { WorkspaceLogo } from './workspace-logo'
 
 export function WorkspaceDropdownSelector({
   currentSlug,
@@ -27,7 +28,6 @@ export function WorkspaceDropdownSelector({
 
   const memberships: MembershipDTO[] = user?.memberships ?? []
   const current = memberships.find((m) => m.slug === currentSlug)
-  const initial = (current?.name ?? '?').charAt(0).toUpperCase()
 
   function handleSelect(slug: string) {
     if (slug !== currentSlug) push(`/${slug}`)
@@ -38,9 +38,11 @@ export function WorkspaceDropdownSelector({
       <DropdownMenuTrigger
         render={
           <Button variant='ghost'>
-            <div className='size-6 flex items-center justify-center rounded-sm bg-blue-400 text-xs font-semibold text-white'>
-              {initial}
-            </div>
+            <WorkspaceLogo
+              name={current?.name ?? '?'}
+              image={current?.image}
+              className='size-6 rounded-sm text-xs'
+            />
             {current?.name ?? 'Selecionar workspace'}
           </Button>
         }

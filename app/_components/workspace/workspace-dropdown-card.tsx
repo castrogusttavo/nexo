@@ -10,6 +10,7 @@ import {
   DropdownMenuRadioItem,
 } from '@/components/ui/dropdown-menu'
 import type { MembershipDTO } from '@/types/user'
+import { WorkspaceLogo } from './workspace-logo'
 
 // A menu item styled as a small outline button. `py-0` drops the item's
 // vertical padding, which would otherwise overflow the button's fixed `h-6`.
@@ -35,7 +36,6 @@ export function WorkspaceDropdownCard({
 }: {
   membership: MembershipDTO
 }) {
-  const initial = membership.name.charAt(0).toUpperCase()
   const roleLabel =
     membership.role.charAt(0) + membership.role.slice(1).toLowerCase()
 
@@ -43,9 +43,11 @@ export function WorkspaceDropdownCard({
     <div className='flex flex-col items-start gap-y-2.5 rounded-sm pb-1.5 has-data-checked:bg-accent'>
       <DropdownMenuRadioItem value={membership.slug} className='w-full'>
         <div className='w-full flex gap-1.5 items-center'>
-          <div className='size-6 flex items-center justify-center rounded-sm bg-blue-400 text-xs font-semibold text-white'>
-            {initial}
-          </div>
+          <WorkspaceLogo
+            name={membership.name}
+            image={membership.image}
+            className='size-6 rounded-sm text-xs'
+          />
           <div className='w-max'>
             <p>{membership.name}</p>
             <div className='text-xs text-muted-foreground flex gap-2 capitalize w-fit'>
