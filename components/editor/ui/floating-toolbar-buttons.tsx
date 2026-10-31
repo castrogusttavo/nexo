@@ -7,7 +7,7 @@ import { MarkToolbarButton } from './mark-toolbar-button'
 import { ToolbarGroup } from './toolbar'
 import { TurnIntoToolbarButton } from './turn-into-toolbar-button'
 
-export function FloatingToolbarButtons() {
+export function FloatingToolbarButtons({ comments = true }: { comments?: boolean }) {
   return (
     <>
       <ToolbarGroup>
@@ -36,9 +36,11 @@ export function FloatingToolbarButtons() {
           <PaintBucket />
         </FontColorToolbarButton>
       </ToolbarGroup>
-      <ToolbarGroup>
-        <CommentToolbarButton />
-      </ToolbarGroup>
+      {comments && (
+        <ToolbarGroup>
+          <CommentToolbarButton />
+        </ToolbarGroup>
+      )}
     </>
   )
 }

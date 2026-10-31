@@ -165,6 +165,12 @@ export default defineConfig({
             './src/__tests__/setup.component.ts',
           ],
           testTimeout: 5000,
+          // @platejs/math imports katex's stylesheet and @platejs/excalidraw
+          // takes named exports from CommonJS lodash. As external ESM packages
+          // Node loads them and fails on both; inlined, Vite handles the
+          // stylesheet and the interop. Without this no real Plate editor (the
+          // wiki's, TextEditor) can render under jsdom.
+          server: { deps: { inline: [/@platejs\/(math|excalidraw)/] } },
         },
       },
       {
