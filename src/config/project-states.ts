@@ -2,7 +2,8 @@ import type { ProjectState } from '@prisma/client'
 
 // The states every workspace starts with, one per group. The
 // 20261013122447_project_states migration seeds this same list into the
-// workspaces that existed before it: keep the two in step.
+// workspaces that existed before it, and 20261031120000_project_state_colors
+// moves their still-default colours to the ones below: keep them in step.
 export const DEFAULT_PROJECT_STATES: ReadonlyArray<
   Pick<ProjectState, 'name' | 'group' | 'color' | 'order' | 'isDefault'>
 > = [
@@ -16,7 +17,7 @@ export const DEFAULT_PROJECT_STATES: ReadonlyArray<
   {
     name: 'Planejamento',
     group: 'PLANNING',
-    color: 'BLUE',
+    color: 'ZINC',
     order: 0,
     isDefault: false,
   },
@@ -30,7 +31,7 @@ export const DEFAULT_PROJECT_STATES: ReadonlyArray<
   {
     name: 'Monitoramento',
     group: 'MONITORING',
-    color: 'PURPLE',
+    color: 'BLUE',
     order: 0,
     isDefault: false,
   },
@@ -44,7 +45,7 @@ export const DEFAULT_PROJECT_STATES: ReadonlyArray<
   {
     name: 'Cancelado',
     group: 'CANCELLED',
-    color: 'RED',
+    color: 'ZINC',
     order: 0,
     isDefault: false,
   },

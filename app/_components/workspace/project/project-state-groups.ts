@@ -1,10 +1,12 @@
 import {
-  CancelCircleIcon,
-  CheckmarkCircle02Icon,
-  CircleDotDashedIcon,
+  MultiplicationSignSquareIcon,
+  SquareCheckIcon,
+  SquareStopIcon,
+} from '@hugeicons-pro/core-solid-rounded'
+import {
+  BorderAll01Icon,
   type CircleDotIcon,
-  DashedLineCircleIcon,
-  Radar01Icon,
+  FullScreenIcon,
 } from '@hugeicons-pro/core-stroke-rounded'
 import type { ProjectStateGroupDTO } from '@/types/project-state'
 import type { StateColorDTO } from '@/types/state'
@@ -22,35 +24,41 @@ export const projectStateGroups: Array<{
   {
     group: 'DRAFT',
     label: 'Rascunho',
-    icon: DashedLineCircleIcon,
+    icon: FullScreenIcon,
     strokeWidth: 2,
     defaultColor: 'ZINC',
   },
   {
     group: 'PLANNING',
     label: 'Planejamento',
-    icon: CircleDotDashedIcon,
+    icon: BorderAll01Icon,
     strokeWidth: 2,
     defaultColor: 'ZINC',
   },
   {
+    group: 'EXECUTION',
+    label: 'Execução',
+    icon: BorderAll01Icon,
+    strokeWidth: 2,
+    defaultColor: 'YELLOW',
+  },
+  {
     group: 'MONITORING',
     label: 'Monitoramento',
-    icon: Radar01Icon,
-    strokeWidth: 2,
-    defaultColor: 'PURPLE',
+    icon: SquareStopIcon,
+    defaultColor: 'BLUE',
   },
   {
     group: 'COMPLETED',
     label: 'Concluído',
-    icon: CheckmarkCircle02Icon,
+    icon: SquareCheckIcon,
     defaultColor: 'GREEN',
   },
   {
     group: 'CANCELLED',
     label: 'Cancelado',
-    icon: CancelCircleIcon,
-    defaultColor: 'RED',
+    icon: MultiplicationSignSquareIcon,
+    defaultColor: 'ZINC',
   },
 ]
 
