@@ -10,6 +10,7 @@ import {
 import HeaderInternalNavigation from '@/app/_components/header/header-internal-navigation'
 import { NexoIcon } from '@/components/icon/icon'
 import { DetailsPanelToggle } from '@/components/layouts/details-panel'
+import { Muted } from '@/components/typography/text/muted'
 import { PROJECT_DETAILS_ID, ProjectDetails } from './project-details'
 
 // export const metadata: Metadata = {
@@ -39,7 +40,31 @@ export default function ProjectsPage() {
         />
       </HeaderInternalNavigation>
       <div className='w-full flex items-start justify-between h-full'>
-        <div className='flex-1'>nome</div>
+        <div className='flex-1'>
+          {/* Cover + emoji projeto */}
+          <div />
+          {/* Documento editável (estilo wiki) + reaction + link|anexo */}
+          <div />
+          <div />
+          <hr className='bg-muted' />
+          {/* Progresso bar for issues */}
+          <div>
+            <Muted>Progresso</Muted>
+            <div>
+              {/* line com divisão real com base na proporção */}
+              <div>
+                <div>
+                  <div />
+                  <span>Backlog</span>
+                </div>
+                <div>
+                  <span>3</span>
+                  <span>43%</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
         <ProjectDetails open={detailsOpen} />
       </div>
     </div>

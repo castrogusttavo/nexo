@@ -66,6 +66,14 @@ function ProjectDetailsProperties() {
   )
 }
 
+function ProjectDetailsUpdates() {
+  return <div>Atualizações</div>
+}
+
+function ProjectDetailsActivity() {
+  return <div>Atividade</div>
+}
+
 const PROJECT_DETAILS_TABS: DetailsPanelTab[] = [
   {
     value: 'properties',
@@ -77,9 +85,14 @@ const PROJECT_DETAILS_TABS: DetailsPanelTab[] = [
     value: 'updates',
     label: 'Atualizações',
     icon: PanelLeftIcon,
-    content: '…',
+    content: <ProjectDetailsUpdates />,
   },
-  { value: 'activity', label: 'Atividade', icon: PanelLeftIcon, content: '…' },
+  {
+    value: 'activity',
+    label: 'Atividade',
+    icon: PanelLeftIcon,
+    content: <ProjectDetailsActivity />,
+  },
 ]
 
 export function ProjectDetails({ open }: { open: boolean }) {
