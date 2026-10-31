@@ -195,7 +195,7 @@ export function WorkspaceSettingsGeneralForm({
       </div>
 
       {role === 'OWNER' && (
-        <div className='mt-10 w-full bg-app rounded-lg border border-border px-4 py-3 flex items-center gap-4 md:gap-8'>
+        <div className='mt-10 w-full bg-accent rounded-lg border border-border px-4 py-3 flex items-center gap-4 md:gap-8'>
           <div className='flex gap-1.5 flex-col'>
             <h5 className='text-base font-medium'>Excluir este workspace</h5>
             <Muted>

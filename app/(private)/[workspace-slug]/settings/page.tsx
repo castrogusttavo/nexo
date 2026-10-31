@@ -34,7 +34,7 @@ async function SettingsGeneral({ params }: { params: Params }) {
 
 export default function SettingsPage({ params }: { params: Params }) {
   return (
-    <div className='w-full overflow-y-auto'>
+    <div className='w-full h-full overflow-y-auto'>
       <HeaderInternalNavigation>
         <HeaderBreadcrumbList>
           <HeaderBreadcrumbCrumb title='Geral'>
