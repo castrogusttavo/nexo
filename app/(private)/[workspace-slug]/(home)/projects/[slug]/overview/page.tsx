@@ -1,72 +1,41 @@
-'use client'
+import type { Metadata } from 'next'
+import { notFound } from 'next/navigation'
+import { Suspense } from 'react'
+import { getProjectContext } from '@/src/lib/project-context'
+import { ProjectOverview } from './project-overview'
+import { ProjectOverviewSkeleton } from './project-overview-skeleton'
 
-import { Activity02Icon } from '@hugeicons-pro/core-stroke-rounded'
-import { useState } from 'react'
-// import type { Metadata } from 'next'
-import {
-  HeaderBreadcrumbCrumb,
-  HeaderBreadcrumbList,
-} from '@/app/_components/header/breadcrumb'
-import HeaderInternalNavigation from '@/app/_components/header/header-internal-navigation'
-import { NexoIcon } from '@/components/icon/icon'
-import { DetailsPanelToggle } from '@/components/layouts/details-panel'
-import { Muted } from '@/components/typography/text/muted'
-import { PROJECT_DETAILS_ID, ProjectDetails } from './project-details'
+// Navigations into this page are instant: a blocking read here is a
+// regression the dev overlay reports.
+export const instant = true
 
-// export const metadata: Metadata = {
-//   title: 'Overview - Project | Nexo',
-//   description: 'Gerencie os projetos do seu workspace.',
-// }
+type Params = Promise<{ 'workspace-slug': string; slug: string }>
 
-export default function ProjectsPage() {
-  const [detailsOpen, setDetailsOpen] = useState(true)
+export const metadata: Metadata = {
+  title: 'Overview - Project | Nexo',
+  description: 'Gerencie os projetos do seu workspace.',
+}
+
+export default function ProjectOverviewPage({ params }: { params: Params }) {
+  return (
+    <Suspense fallback={<ProjectOverviewSkeleton />}>
+      <Overview params={params} />
+    </Suspense>
+  )
+}
+
+async function Overview({ params }: { params: Params }) {
+  const { 'workspace-slug': workspaceSlug, slug } = await params
+  const context = await getProjectContext(workspaceSlug, slug)
+  if (!context) notFound()
 
   return (
-    <div className='w-full h-full overflow-y-scroll no-scrollbar'>
-      <HeaderInternalNavigation>
-        <HeaderBreadcrumbList>
-          <HeaderBreadcrumbCrumb title={'Visão geral'}>
-            <NexoIcon
-              icon={Activity02Icon}
-              strokeWidth={2}
-              className='text-primary'
-            />
-          </HeaderBreadcrumbCrumb>
-        </HeaderBreadcrumbList>
-        <DetailsPanelToggle
-          panelId={PROJECT_DETAILS_ID}
-          open={detailsOpen}
-          onToggle={() => setDetailsOpen((open) => !open)}
-        />
-      </HeaderInternalNavigation>
-      <div className='w-full flex items-start justify-between h-full'>
-        <div className='flex-1'>
-          {/* Cover + emoji projeto */}
-          <div />
-          {/* Documento editável (estilo wiki) + reaction + link|anexo */}
-          <div />
-          <div />
-          <hr className='bg-muted' />
-          {/* Progresso bar for issues */}
-          <div>
-            <Muted>Progresso</Muted>
-            <div>
-              {/* line com divisão real com base na proporção */}
-              <div>
-                <div>
-                  <div />
-                  <span>Backlog</span>
-                </div>
-                <div>
-                  <span>3</span>
-                  <span>43%</span>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-        <ProjectDetails open={detailsOpen} />
-      </div>
-    </div>
+    <ProjectOverview
+      workspaceId={context.workspaceId}
+      projectSlug={slug}
+      canManage={
+        context.isPrivileged || context.project.leadId === context.userId
+      }
+    />
   )
 }
