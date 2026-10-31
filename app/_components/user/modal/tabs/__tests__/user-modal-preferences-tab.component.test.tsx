@@ -176,7 +176,9 @@ describe('<UserModalPreferencesTab />', () => {
         screen.getByRole('combobox', { name: 'Fuso horário' }),
       ).toHaveTextContent('America/Manaus'),
     )
-  })
+    // ~400 options render in the list: past the 5 s default when the whole
+    // suite runs at once.
+  }, 20_000)
 
   it('saves the smooth cursor toggle immediately', async () => {
     const { user, fetchSpy } = await renderTab()

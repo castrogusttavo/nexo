@@ -51,11 +51,11 @@ function TabsList({
   )
 }
 
-function TabsTrigger({ className, ...props }: TabsPrimitive.Tab.Props) {
-  return (
-    <TabsPrimitive.Tab
-      data-slot="tabs-trigger"
-      className={cn(
+// Nexo: the look of a tab, exported so navigation made of links (ProjectTabs)
+// can wear it too. It reads `data-active` on the tab and `data-variant` /
+// `data-orientation` on its `group/tabs-list` and `group/tabs` ancestors.
+const tabsTriggerClassName = cn(
+
         "gap-1.5 rounded-md border border-transparent px-2 py-1 text-sm font-medium group-data-[variant=default]/tabs-list:data-active:shadow-sm group-data-[variant=line]/tabs-list:data-active:shadow-none [&_svg:not([class*='size-'])]:size-4 focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:outline-ring text-foreground/60 hover:text-foreground dark:text-muted-foreground dark:hover:text-foreground relative inline-flex h-[calc(100%-1px)] flex-1 items-center justify-center whitespace-nowrap transition-all group-data-vertical/tabs:w-full group-data-vertical/tabs:justify-start focus-visible:ring-[3px] focus-visible:outline-1 disabled:pointer-events-none disabled:opacity-50 aria-disabled:pointer-events-none aria-disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:shrink-0",
         // Nexo: the `line` variant fills the active tab (and a lighter fill on
         // hover) instead of leaving it transparent. A `shadcn add tabs`
@@ -63,8 +63,13 @@ function TabsTrigger({ className, ...props }: TabsPrimitive.Tab.Props) {
         "group-data-[variant=line]/tabs-list:bg-transparent group-data-[variant=line]/tabs-list:hover:bg-secondary/50 group-data-[variant=line]/tabs-list:data-active:bg-secondary group-data-[variant=line]/tabs-list:data-active:hover:bg-secondary group-data-[variant=line]/tabs-list:data-active:text-secondary-foreground dark:group-data-[variant=line]/tabs-list:data-active:border-transparent dark:group-data-[variant=line]/tabs-list:data-active:bg-secondary dark:group-data-[variant=line]/tabs-list:data-active:hover:bg-secondary",
         "data-active:bg-background dark:data-active:text-foreground dark:data-active:border-input dark:data-active:bg-input/30 data-active:text-foreground",
         "after:bg-foreground after:absolute after:opacity-0 after:transition-opacity group-data-horizontal/tabs:after:inset-x-0 group-data-horizontal/tabs:after:bottom-[-8px] group-data-horizontal/tabs:after:h-0.5 group-data-vertical/tabs:after:inset-y-0 group-data-vertical/tabs:after:-right-1 group-data-vertical/tabs:after:w-0.5 group-data-[variant=line]/tabs-list:hover:after:opacity-100 group-data-[variant=line]/tabs-list:data-active:after:opacity-100",
-        className
-      )}
+)
+
+function TabsTrigger({ className, ...props }: TabsPrimitive.Tab.Props) {
+  return (
+    <TabsPrimitive.Tab
+      data-slot="tabs-trigger"
+      className={cn(tabsTriggerClassName, className)}
       {...props}
     />
   )
@@ -83,4 +88,11 @@ function TabsContent({ className, ...props }: TabsPrimitive.Panel.Props) {
 // shadcn/ui API: the variants ship with the component, as upstream does,
 // so a `shadcn add` can overwrite this file cleanly.
 // react-doctor-disable-next-line react-doctor/only-export-components
-export { Tabs, TabsList, TabsTrigger, TabsContent, tabsListVariants }
+export {
+  Tabs,
+  TabsList,
+  TabsTrigger,
+  TabsContent,
+  tabsListVariants,
+  tabsTriggerClassName,
+}

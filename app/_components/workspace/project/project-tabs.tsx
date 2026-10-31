@@ -22,6 +22,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
+import { tabsTriggerClassName } from '@/components/ui/tabs'
 import { cn } from '@/lib/utils'
 import { useProject } from '@/src/hooks/use-project'
 import { useProjectActions } from '@/src/hooks/use-project-actions'
@@ -55,8 +56,15 @@ const PROJECT_TABS: readonly ProjectTab[] = [
   { label: 'Páginas', segment: 'pages', comingSoon: true },
 ]
 
-const TAB_CLASS =
-  'relative inline-flex items-center px-2 text-sm font-medium text-muted-foreground transition-colors rounded-md'
+// The same look as the line <Tabs> (components/ui/tabs.tsx). These are links,
+// not a tablist, so the active one is flagged with `data-active` for that
+// styling and `aria-current` for assistive tech. The nav carries the
+// `group/tabs` and `group/tabs-list` hooks the styles read. The underline
+// sits on the bar's own bottom border instead of hanging below it.
+const TAB_CLASS = cn(
+  tabsTriggerClassName,
+  'flex-none group-data-horizontal/tabs:after:bottom-[-5px]',
+)
 
 type ProjectTabsProps = {
   workspaceId: string
@@ -182,15 +190,24 @@ export function ProjectTabs({
       {/* Route navigation, not Base UI <Tabs>: each tab is its own page, so
           these are links marked with aria-current, not a tablist. The picker
           and menu stay outside the <nav>, which holds only the sections. */}
-      <nav aria-label='Seções do projeto' className='flex items-stretch gap-1'>
+      <nav
+        aria-label='Seções do projeto'
+        data-variant='line'
+        data-orientation='horizontal'
+        className='group/tabs group/tabs-list self-center h-8 flex items-center gap-1 text-muted-foreground'
+      >
         {tabs.map((tab) =>
           tab.comingSoon ? (
-            // Not a link: there is no page to land on yet.
+            // Not a link: there is no page to land on yet. It keeps the tooltip
+            // and the not-allowed cursor, so pointer events stay on.
             <span
               key={tab.segment}
               aria-disabled='true'
               title='Em breve'
-              className={cn(TAB_CLASS, 'opacity-50 cursor-not-allowed')}
+              className={cn(
+                TAB_CLASS,
+                'cursor-not-allowed aria-disabled:pointer-events-auto group-data-[variant=line]/tabs-list:hover:bg-transparent group-data-[variant=line]/tabs-list:hover:after:opacity-0',
+              )}
             >
               {tab.label}
             </span>
@@ -199,12 +216,8 @@ export function ProjectTabs({
               key={tab.segment}
               href={`${projectBase}/${tab.segment}`}
               aria-current={isActive(tab.segment) ? 'page' : undefined}
-              className={cn(
-                TAB_CLASS,
-                'hover:text-foreground outline-none focus-visible:ring-[3px] focus-visible:ring-ring/50',
-                'after:absolute after:inset-x-0 after:-bottom-px after:h-0.5 after:bg-foreground after:opacity-0 after:transition-opacity',
-                'aria-[current=page]:text-foreground aria-[current=page]:after:opacity-100',
-              )}
+              data-active={isActive(tab.segment) ? '' : undefined}
+              className={TAB_CLASS}
             >
               {tab.label}
             </Link>
