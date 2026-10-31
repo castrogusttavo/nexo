@@ -80,7 +80,7 @@ export function Combobox<T>(
       <PopoverTrigger render={trigger} />
       <PopoverContent
         align={align}
-        className={cn('w-64 p-0', contentClassName)}
+        className={cn('p-0', contentClassName)}
       >
         <Command>
           <CommandInput className='px-3 py-2' placeholder={searchPlaceholder} />

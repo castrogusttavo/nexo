@@ -91,18 +91,18 @@ export function DetailsPanel({
       id={id}
       aria-label={label}
       hidden={!open}
-      className='w-80 h-full shrink-0 overflow-y-auto no-scrollbar border-l border-secondary'
+      className='min-w-90 w-full sm:w-1/2 md:w-1/3 lg:min-w-80 xl:min-w-96 h-full shrink-0 overflow-y-auto no-scrollbar border-l border-secondary'
     >
       <div className='p-6'>
         {tabs && tabs.length > 0 ? (
-          <Tabs defaultValue={defaultTab ?? tabs[0].value}>
-            <TabsList variant='line' className='w-full'>
+          <Tabs defaultValue={defaultTab ?? tabs[0].value} className='space-y-3'>
+            <TabsList className='w-full'>
               {tabs.map((tab) => (
                 <Tooltip key={tab.value}>
                   <TooltipTrigger
                     render={
                       <TabsTrigger value={tab.value} aria-label={tab.label}>
-                        <NexoIcon icon={tab.icon} strokeWidth={2} />
+                        <NexoIcon icon={tab.icon} strokeWidth={0} />
                       </TabsTrigger>
                     }
                   />
@@ -111,7 +111,7 @@ export function DetailsPanel({
               ))}
             </TabsList>
             {tabs.map((tab) => (
-              <TabsContent key={tab.value} value={tab.value}>
+              <TabsContent key={tab.value} value={tab.value} className='pt-4'>
                 {tab.content}
               </TabsContent>
             ))}
