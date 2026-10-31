@@ -1,5 +1,5 @@
 import type { ProjectMember } from '@prisma/client'
-import { describe, expect, it, vi } from 'vitest'
+import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { createFakeMembership } from '@/src/__tests__/factories/membership.factory'
 import { createFakeProject } from '@/src/__tests__/factories/project.factory'
 import { createFakeProjectState } from '@/src/__tests__/factories/project-state.factory'
@@ -246,6 +246,12 @@ describe('ProjectService', () => {
   })
 
   describe('create()', () => {
+    beforeEach(() => {
+      mockedWorkspace.findById.mockResolvedValue(
+        ok(createFakeWorkspace({ id: 'ws1', membersCanCreateProjects: true })),
+      )
+    })
+
     it('should create project with actor as lead', async () => {
       const project = createFakeProject({ leadId: 'actor', workspaceId: 'ws1' })
       mockedMembership.findByUserAndWorkspace.mockResolvedValue(
@@ -268,6 +274,76 @@ describe('ProjectService', () => {
       expect(mockedProject.create).toHaveBeenCalledWith(
         expect.objectContaining({ leadId: 'actor', workspaceId: 'ws1' }),
       )
+    })
+
+    describe('when members cannot create projects', () => {
+      const dto = {
+        name: 'New Project',
+        slug: 'new-project',
+        isPublic: false,
+        issueTypesEnabled: true,
+        modulesEnabled: true,
+        cyclesEnabled: true,
+        estimatesEnabled: true,
+      }
+
+      beforeEach(() => {
+        mockedWorkspace.findById.mockResolvedValue(
+          ok(
+            createFakeWorkspace({
+              id: 'ws1',
+              membersCanCreateProjects: false,
+            }),
+          ),
+        )
+      })
+
+      it.each([
+        'MEMBER',
+        'VIEWER',
+      ] as const)('should refuse a %s without touching the database', async (role) => {
+        mockedMembership.findByUserAndWorkspace.mockResolvedValue(
+          ok(
+            createFakeMembership({ userId: 'actor', workspaceId: 'ws1', role }),
+          ),
+        )
+
+        const result = await ProjectService.create('actor', 'ws1', dto)
+
+        expectErr(result, 'PROJECT_FORBIDDEN')
+        expect(mockedProject.create).not.toHaveBeenCalled()
+      })
+
+      it.each([
+        'OWNER',
+        'ADMIN',
+      ] as const)('should still let an %s create, without reading the workspace', async (role) => {
+        mockedMembership.findByUserAndWorkspace.mockResolvedValue(
+          ok(
+            createFakeMembership({ userId: 'actor', workspaceId: 'ws1', role }),
+          ),
+        )
+        mockedProject.create.mockResolvedValue(
+          ok(createFakeProject({ leadId: 'actor', workspaceId: 'ws1' })),
+        )
+
+        expectOk(await ProjectService.create('actor', 'ws1', dto))
+
+        expect(mockedWorkspace.findById).not.toHaveBeenCalled()
+      })
+
+      it('should propagate a failure to read the workspace', async () => {
+        mockedMembership.findByUserAndWorkspace.mockResolvedValue(
+          ok(memberMembership),
+        )
+        mockedWorkspace.findById.mockResolvedValue(err(databaseError()))
+
+        expectErr(
+          await ProjectService.create('actor', 'ws1', dto),
+          'DATABASE_ERROR',
+        )
+        expect(mockedProject.create).not.toHaveBeenCalled()
+      })
     })
 
     it('should derive the identifier from the name: uppercase, alphanumeric, 6 chars', async () => {

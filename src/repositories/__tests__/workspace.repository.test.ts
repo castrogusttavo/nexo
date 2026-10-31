@@ -230,6 +230,20 @@ describe('WorkspaceRepository', () => {
       expect(ws.teamSize).toBe('11-50')
     })
 
+    it('should default to letting members create projects and persist the switch', async () => {
+      const seeded = await seedWorkspace()
+
+      const initial = expectOk(await WorkspaceRepository.findById(seeded.id))
+      expect(initial.membersCanCreateProjects).toBe(true)
+
+      const off = expectOk(
+        await WorkspaceRepository.update(seeded.id, {
+          membersCanCreateProjects: false,
+        }),
+      )
+      expect(off.membersCanCreateProjects).toBe(false)
+    })
+
     it('should set and clear the logo url', async () => {
       const seeded = await seedWorkspace()
       const url = 'http://silo/workspace-logos/workspace/x/a.png'

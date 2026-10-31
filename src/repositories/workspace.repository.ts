@@ -94,6 +94,7 @@ export const WorkspaceRepository = {
       image?: string | null
       projectStatesEnabled?: boolean
       projectLabelsEnabled?: boolean
+      membersCanCreateProjects?: boolean
     },
   ): Promise<Result<Workspace>> {
     try {

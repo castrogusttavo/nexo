@@ -217,6 +217,50 @@ describe('PATCH /api/workspaces/[id] project labels switch', () => {
   })
 })
 
+describe('PATCH /api/workspaces/[id] members-can-create-projects switch', () => {
+  it('should let the OWNER turn it off and store it', async () => {
+    const { user, workspace } = await authenticatedOwner()
+
+    const res = await patchJson(
+      `/api/workspaces/${workspace.id}`,
+      { membersCanCreateProjects: false },
+      user.cookie,
+    )
+
+    expect(res.status).toBe(200)
+    expect((await res.json()).data.membersCanCreateProjects).toBe(false)
+    const stored = await prisma.workspace.findUniqueOrThrow({
+      where: { id: workspace.id },
+    })
+    expect(stored.membersCanCreateProjects).toBe(false)
+  })
+
+  it('should not let a MEMBER flip it', async () => {
+    const { workspace } = await authenticatedOwner()
+    const member = await addMember(workspace.id, 'MEMBER')
+
+    const res = await patchJson(
+      `/api/workspaces/${workspace.id}`,
+      { membersCanCreateProjects: false },
+      member.cookie,
+    )
+
+    expect(res.status).toBe(403)
+  })
+
+  it('should reject a non-boolean with 422', async () => {
+    const { user, workspace } = await authenticatedOwner()
+
+    const res = await patchJson(
+      `/api/workspaces/${workspace.id}`,
+      { membersCanCreateProjects: 'no' },
+      user.cookie,
+    )
+
+    expect(res.status).toBe(422)
+  })
+})
+
 describe('DELETE /api/workspaces/[id]', () => {
   it('should return 401 via middleware when unauthenticated', async () => {
     const res = await deleteJson('/api/workspaces/some-id')

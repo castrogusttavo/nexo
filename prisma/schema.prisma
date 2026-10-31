@@ -117,8 +117,8 @@ model UserPreference {
   timezone          String            @default("UTC")
   weekStartsOn      Int               @default(1) @map("week_starts_on")
   weekendDays       Int[]             @default([0, 6]) @map("weekend_days")
-  navigation Json? 
-  homeWidgets Json? @map("home_widgets")
+  navigation        Json?
+  homeWidgets       Json?             @map("home_widgets")
   createdAt         DateTime          @default(now()) @map("created_at")
   updatedAt         DateTime          @updatedAt @map("updated_at")
 
@@ -227,21 +227,23 @@ model Verification {
 }
 
 model Workspace {
-  id                   String    @id @default(cuid())
-  name                 String
-  slug                 String    @unique
-  activePlan           Plan      @default(FREE) @map("active_plan")
-  trialEndsAt          DateTime? @map("trial_ends_at")
+  id                       String    @id @default(cuid())
+  name                     String
+  slug                     String    @unique
+  activePlan               Plan      @default(FREE) @map("active_plan")
+  trialEndsAt              DateTime? @map("trial_ends_at")
   // Onboarding team-size bucket (TEAM_SIZES in workspace.schema.ts).
-  teamSize             String?   @map("team_size")
+  teamSize                 String?   @map("team_size")
   // Settings switch: off hides the state and refuses setting it on a project.
-  projectStatesEnabled Boolean   @default(true) @map("project_states_enabled")
+  projectStatesEnabled     Boolean   @default(true) @map("project_states_enabled")
   // Same switch for project labels.
-  projectLabelsEnabled Boolean   @default(true) @map("project_labels_enabled")
-  image String?
-  timezone String @default("UTC")
-  createdAt            DateTime  @default(now()) @map("created_at")
-  updatedAt            DateTime  @updatedAt @map("updated_at")
+  projectLabelsEnabled     Boolean   @default(true) @map("project_labels_enabled")
+  image                    String?
+  timezone                 String    @default("UTC")
+  // Settings switch: off leaves creating projects to OWNER and ADMIN.
+  membersCanCreateProjects Boolean   @default(true) @map("members_can_create_projects")
+  createdAt                DateTime  @default(now()) @map("created_at")
+  updatedAt                DateTime  @updatedAt @map("updated_at")
 
   memberships   Membership[]
   subscriptions Subscription[]

@@ -217,3 +217,34 @@ describe('UpdateWorkspaceSchema timezone and image', () => {
     expect(result.success && 'image' in result.data).toBe(false)
   })
 })
+
+describe('UpdateWorkspaceSchema membersCanCreateProjects', () => {
+  it('should accept the switch on and off', () => {
+    for (const value of [true, false]) {
+      const result = UpdateWorkspaceSchema.safeParse({
+        membersCanCreateProjects: value,
+      })
+
+      expect(result.success && result.data.membersCanCreateProjects).toBe(value)
+    }
+  })
+
+  it('should reject a non-boolean', () => {
+    expect(
+      UpdateWorkspaceSchema.safeParse({ membersCanCreateProjects: 'no' })
+        .success,
+    ).toBe(false)
+  })
+
+  it('should drop the switch on create', () => {
+    const result = CreateWorkspaceSchema.safeParse({
+      name: 'Acme',
+      slug: 'acme',
+      membersCanCreateProjects: false,
+    })
+
+    expect(result.success && 'membersCanCreateProjects' in result.data).toBe(
+      false,
+    )
+  })
+})

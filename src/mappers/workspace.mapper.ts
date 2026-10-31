@@ -14,6 +14,7 @@ export function toWorkspaceDTO(workspace: Workspace): WorkspaceDTO {
     image: workspace.image,
     teamSize: workspace.teamSize,
     timezone: workspace.timezone,
+    membersCanCreateProjects: workspace.membersCanCreateProjects,
     ...withTimestamps(workspace),
   }
 }

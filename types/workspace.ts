@@ -11,6 +11,7 @@ export interface WorkspaceDTO {
   image: string | null
   teamSize: string | null
   timezone: string
+  membersCanCreateProjects: boolean
   createdAt: string
   updatedAt: string
 }

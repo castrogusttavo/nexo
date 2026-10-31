@@ -256,6 +256,27 @@ export const ProjectService = {
     const membership = await assertMember(actorId, workspaceId)
     if (!membership.ok) return membership
 
+    // OWNER and ADMIN always create; for everyone else it is a workspace
+    // setting, so the workspace is only read when it can matter.
+    if (!membership.value.isPrivileged) {
+      const workspace = await WorkspaceRepository.findById(workspaceId)
+      if (!workspace.ok) return workspace
+      if (!workspace.value.membersCanCreateProjects) {
+        auditMutation({
+          entity: 'project',
+          action: 'create',
+          actorId,
+          outcome: 'failure',
+          reason: 'members_cannot_create',
+        })
+        return err(
+          projectForbidden(
+            'Apenas OWNER ou ADMIN podem criar projetos neste workspace',
+          ),
+        )
+      }
+    }
+
     const userProvidedIdentifier = dto.identifier
     const base = baseIdentifierFrom(dto.name)
     let identifier = userProvidedIdentifier ?? base

@@ -24,6 +24,7 @@ describe('toWorkspaceDTO()', () => {
       image: null,
       teamSize: null,
       timezone: 'UTC',
+      membersCanCreateProjects: true,
       createdAt: ws.createdAt.toISOString(),
       updatedAt: ws.updatedAt.toISOString(),
     })
@@ -74,5 +75,13 @@ describe('toWorkspaceDTO()', () => {
     expect(dto.image).toBe('http://silo/workspace-logos/workspace/ws-1/a.png')
     expect(dto.teamSize).toBe('11-50')
     expect(dto.timezone).toBe('America/Sao_Paulo')
+  })
+
+  it('should carry the members-can-create-projects switch', () => {
+    const dto = toWorkspaceDTO(
+      createFakeWorkspace({ membersCanCreateProjects: false }),
+    )
+
+    expect(dto.membersCanCreateProjects).toBe(false)
   })
 })

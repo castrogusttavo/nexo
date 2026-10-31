@@ -10572,6 +10572,11 @@
             "type": "string",
             "description": "Fuso horário IANA do workspace.",
             "example": "America/Sao_Paulo"
+          },
+          "membersCanCreateProjects": {
+            "type": "boolean",
+            "description": "Quando false, apenas OWNER e ADMIN criam projetos no workspace; os demais recebem `PROJECT_FORBIDDEN` (403).",
+            "example": true
           }
         }
       },
@@ -10654,6 +10659,10 @@
           "projectLabelsEnabled": {
             "type": "boolean",
             "description": "Liga ou desliga as etiquetas de projeto no workspace."
+          },
+          "membersCanCreateProjects": {
+            "type": "boolean",
+            "description": "Permite que membros (e não só OWNER e ADMIN) criem projetos. Apenas OWNER/ADMIN."
           }
         }
       },

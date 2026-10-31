@@ -7,7 +7,8 @@ export const WorkspaceCache = createKeyedCache<WorkspaceDTO>({
   // and left to expire.
   // v3 -> v4: the DTO gained image, teamSize and timezone; a v3 entry would
   // read them as undefined for up to the TTL (a blank timezone in settings).
-  prefix: 'workspace:v4:',
+  // v4 -> v5: the DTO gained membersCanCreateProjects.
+  prefix: 'workspace:v5:',
   ttl: 15 * 60, // 15 min
   name: 'workspace',
 })

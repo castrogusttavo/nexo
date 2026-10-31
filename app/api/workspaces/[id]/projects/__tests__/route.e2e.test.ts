@@ -188,3 +188,40 @@ describe('POST /api/workspaces/[workspaceId]/projects', () => {
     expect(res.status).toBe(201)
   })
 })
+
+describe('POST /api/workspaces/[workspaceId]/projects when members cannot create', () => {
+  async function workspaceWithMembersLocked() {
+    const { user, workspace } = await authenticatedOwner()
+    await prisma.workspace.update({
+      where: { id: workspace.id },
+      data: { membersCanCreateProjects: false },
+    })
+    return { owner: user, workspace }
+  }
+
+  it('should return 403 for a MEMBER', async () => {
+    const { workspace } = await workspaceWithMembersLocked()
+    const member = await addMember(workspace.id, 'MEMBER')
+
+    const res = await postJson(
+      `/api/workspaces/${workspace.id}/projects`,
+      { name: 'Blocked', slug: 'blocked' },
+      member.cookie,
+    )
+
+    expect(res.status).toBe(403)
+    expect((await res.json()).error.code).toBe('PROJECT_FORBIDDEN')
+  })
+
+  it('should still let the OWNER create', async () => {
+    const { owner, workspace } = await workspaceWithMembersLocked()
+
+    const res = await postJson(
+      `/api/workspaces/${workspace.id}/projects`,
+      { name: 'Allowed', slug: 'allowed' },
+      owner.cookie,
+    )
+
+    expect(res.status).toBe(201)
+  })
+})

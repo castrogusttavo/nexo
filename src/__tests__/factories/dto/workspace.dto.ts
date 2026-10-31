@@ -13,6 +13,7 @@ export function buildWorkspaceDTO(
     image: null,
     teamSize: null,
     timezone: 'UTC',
+    membersCanCreateProjects: true,
     projectStatesEnabled: true,
     projectLabelsEnabled: true,
     createdAt: '2025-01-01T00:00:00.000Z',

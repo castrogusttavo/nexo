@@ -15,6 +15,7 @@ export function createFakeWorkspace(overrides?: Partial<Workspace>): Workspace {
     teamSize: null,
     image: null,
     timezone: 'UTC',
+    membersCanCreateProjects: true,
     projectStatesEnabled: true,
     projectLabelsEnabled: true,
     createdAt: now,
