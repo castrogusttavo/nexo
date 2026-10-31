@@ -10,7 +10,7 @@ import {
 // while it slides instead of reflowing on every frame. shrink-0 holds 214px
 // on every page: without it the flex row squeezed the sidebar by whatever the
 // main area's w-full asked for, so its width changed with the page.
-const FRAME = 'w-53.5 h-full p-3 border-r border-border space-y-4'
+const FRAME = 'w-60 h-full p-3 border-r border-border space-y-4'
 
 export function ContextSidebar({
   section,
@@ -23,7 +23,7 @@ export function ContextSidebar({
     <aside
       id={section && contextSidebarId(section)}
       data-context-sidebar={section}
-      className='w-53.5 h-full shrink-0 overflow-x-clip'
+      className='w-60 h-full shrink-0 overflow-x-clip'
     >
       <div className={FRAME}>{children}</div>
     </aside>
@@ -41,7 +41,7 @@ export function ContextSidebarSkeleton({
     <aside
       aria-hidden
       data-context-sidebar={section}
-      className='w-53.5 h-full shrink-0 overflow-x-clip'
+      className='w-60 h-full shrink-0 overflow-x-clip'
     >
       <div className='space-y-4'>
         <Skeleton className='h-8 w-full' />
