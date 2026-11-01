@@ -1,6 +1,12 @@
 import { type Job, Worker } from 'bullmq'
 import { processTrialLifecycle } from '@/src/lib/queue/processors/trial-lifecycle'
 import { logger } from '../lib/axiom/logger'
+import {
+  AXIOM_TRACES_DATASET,
+  AXIOM_TRACES_TOKEN,
+  TRACES_SAMPLE_RATE,
+} from '../lib/env/server'
+import { createJobTracing, installJobContext } from '../lib/otel/job-tracing'
 import { getQueueConnection } from '../src/lib/queue/connection'
 import { createJobFailureAlarm } from '../src/lib/queue/failure-alarm'
 import {
@@ -23,10 +29,19 @@ const workers: Worker[] = []
 const failureAlarm = createJobFailureAlarm()
 let failureListener: JobFailureListener | null = null
 
+// One span per job, shipped to the Axiom traces dataset. A no-op without
+// AXIOM_TRACES_TOKEN.
+installJobContext()
+const tracing = createJobTracing({
+  token: AXIOM_TRACES_TOKEN,
+  dataset: AXIOM_TRACES_DATASET,
+  sampleRate: TRACES_SAMPLE_RATE,
+})
+
 type Processor = (job: Job) => Promise<unknown>
 
 function registerWorker(name: QueueName, processor: Processor): Worker {
-  const worker = new Worker(name, processor, {
+  const worker = new Worker(name, tracing.wrap(name, processor), {
     connection: getQueueConnection(),
   })
 
@@ -91,6 +106,7 @@ async function shutdown(signal: NodeJS.Signals): Promise<void> {
     process.exit(1)
   }
 
+  await tracing.shutdown()
   process.exit(0)
 }
 
