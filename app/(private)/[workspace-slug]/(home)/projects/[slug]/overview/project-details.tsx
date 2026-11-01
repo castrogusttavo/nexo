@@ -8,6 +8,7 @@ import {
   type DetailsPanelTab,
 } from '@/components/layouts/details-panel'
 import { ProjectDetailsProperties } from './properties/project-details-properties'
+import { ProjectDetailsUpdates } from './updates/project-details-updates'
 
 export const PROJECT_DETAILS_ID = 'project-details'
 
@@ -16,11 +17,13 @@ export function ProjectDetails({
   workspaceId,
   projectSlug,
   canManage,
+  projectStatesEnabled,
 }: {
   open: boolean
   workspaceId: string
   projectSlug: string
   canManage: boolean
+  projectStatesEnabled: boolean
 }) {
   const tabs: DetailsPanelTab[] = [
     {
@@ -32,6 +35,7 @@ export function ProjectDetails({
           workspaceId={workspaceId}
           projectSlug={projectSlug}
           canManage={canManage}
+          projectStatesEnabled={projectStatesEnabled}
         />
       ),
     },
@@ -39,7 +43,9 @@ export function ProjectDetails({
       value: 'updates',
       label: 'Atualizações',
       icon: ZapIcon,
-      content: '...',
+      content: (
+        <ProjectDetailsUpdates projectStatesEnabled={projectStatesEnabled} />
+      ),
     },
     {
       value: 'activity',

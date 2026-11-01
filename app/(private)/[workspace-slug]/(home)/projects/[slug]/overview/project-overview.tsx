@@ -16,10 +16,12 @@ export function ProjectOverview({
   workspaceId,
   projectSlug,
   canManage,
+  projectStatesEnabled,
 }: {
   workspaceId: string
   projectSlug: string
   canManage: boolean
+  projectStatesEnabled: boolean
 }) {
   const [detailsOpen, setDetailsOpen] = useState(true)
 
@@ -72,6 +74,7 @@ export function ProjectOverview({
           workspaceId={workspaceId}
           projectSlug={projectSlug}
           canManage={canManage}
+          projectStatesEnabled={projectStatesEnabled}
         />
       </div>
     </div>

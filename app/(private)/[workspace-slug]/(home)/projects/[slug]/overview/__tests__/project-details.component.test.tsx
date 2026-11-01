@@ -1,5 +1,5 @@
 import { screen } from '@testing-library/react'
-import { describe, expect, it } from 'vitest'
+import { describe, expect, it, vi } from 'vitest'
 import { buildProjectDTO } from '@/src/__tests__/factories/dto/project.dto'
 import { buildDefaultProjectStateDTOs } from '@/src/__tests__/factories/dto/project-state.dto'
 import {
@@ -8,6 +8,11 @@ import {
 } from '@/src/__tests__/helpers/component'
 import { requests, routeFetch } from '@/src/__tests__/helpers/route-fetch'
 import { ProjectDetails } from '../project-details'
+
+// The disabled block builds its link from the workspace in the URL.
+vi.mock('next/navigation', () => ({
+  useParams: () => ({ 'workspace-slug': 'acme' }),
+}))
 
 const WS = '/api/workspaces/ws-1'
 
@@ -25,7 +30,13 @@ describe('<ProjectDetails />', () => {
     })
 
     renderWithProviders(
-      <ProjectDetails open workspaceId='ws-1' projectSlug='alpha' canManage />,
+      <ProjectDetails
+        open
+        workspaceId='ws-1'
+        projectSlug='alpha'
+        canManage
+        projectStatesEnabled
+      />,
     )
 
     // The tab used to come up empty when these never reached it.
@@ -44,7 +55,13 @@ describe('<ProjectDetails />', () => {
     })
 
     renderWithProviders(
-      <ProjectDetails open workspaceId='ws-1' projectSlug='alpha' canManage />,
+      <ProjectDetails
+        open
+        workspaceId='ws-1'
+        projectSlug='alpha'
+        canManage
+        projectStatesEnabled
+      />,
     )
 
     for (const name of ['Propriedades', 'Atualizações', 'Atividade']) {

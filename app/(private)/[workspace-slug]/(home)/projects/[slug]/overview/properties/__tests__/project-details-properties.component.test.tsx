@@ -29,6 +29,11 @@ vi.mock('sonner', () => ({
   },
 }))
 
+// The disabled block builds its link from the workspace in the URL.
+vi.mock('next/navigation', () => ({
+  useParams: () => ({ 'workspace-slug': 'acme' }),
+}))
+
 const WS = '/api/workspaces/ws-1'
 const PROJECT_URL = `${WS}/projects/alpha`
 const MEMBERS_URL = `${PROJECT_URL}/members`
@@ -82,6 +87,7 @@ interface Setup {
   project?: Partial<ProjectDTO>
   projectMembers?: ProjectMemberDTO[]
   canManage?: boolean
+  projectStatesEnabled?: boolean
   extra?: Parameters<typeof routeFetch>[0]
 }
 
@@ -89,6 +95,7 @@ function setup({
   project = {},
   projectMembers = [ANA, BRUNO],
   canManage = true,
+  projectStatesEnabled = true,
   extra = {},
 }: Setup = {}) {
   const current = buildProjectDTO({ slug: 'alpha', ...project })
@@ -116,6 +123,7 @@ function setup({
       workspaceId='ws-1'
       projectSlug='alpha'
       canManage={canManage}
+      projectStatesEnabled={projectStatesEnabled}
     />,
   )
   return { ...view, spy }
@@ -529,5 +537,61 @@ describe('<ProjectDetailsProperties /> without permission', () => {
     }
 
     expect(patches(spy)).toHaveLength(0)
+  })
+})
+
+// With the workspace's project states off the whole panel gives way to one
+// explanation: the properties read as a set, so none is offered alone.
+describe('<ProjectDetailsProperties /> with project states off', () => {
+  const PROPERTY_LABELS = [
+    'Estado',
+    'Prioridade',
+    'Líder',
+    'Membros',
+    'Etiquetas',
+    'Data de início',
+    'Data de conclusão',
+  ]
+
+  it('explains the feature instead of listing the properties', async () => {
+    setup({ projectStatesEnabled: false })
+
+    expect(
+      await screen.findByText('Ativar estado do projeto'),
+    ).toBeInTheDocument()
+    expect(
+      screen.getByText(/Ative os estados do projeto para visualizar/),
+    ).toBeInTheDocument()
+    for (const label of PROPERTY_LABELS) {
+      expect(screen.queryByText(label)).not.toBeInTheDocument()
+    }
+  })
+
+  it('offers a way to enable them', async () => {
+    setup({ projectStatesEnabled: false })
+
+    expect(
+      await screen.findByRole('link', { name: 'Habilitar' }),
+    ).toHaveAttribute('href', '/acme/settings/resources/project-configuration')
+  })
+
+  it('loads nothing the hidden properties would need', async () => {
+    const { spy } = setup({ projectStatesEnabled: false })
+    await screen.findByText('Ativar estado do projeto')
+
+    const urls = requests(spy).map((r) => r.url)
+    expect(urls).toEqual([PROJECT_URL])
+  })
+
+  it('shows the properties as soon as the states are on', async () => {
+    setup({ projectStatesEnabled: true })
+    await ready()
+
+    expect(
+      screen.queryByText('Ativar estado do projeto'),
+    ).not.toBeInTheDocument()
+    for (const label of PROPERTY_LABELS) {
+      expect(screen.getByText(label)).toBeInTheDocument()
+    }
   })
 })

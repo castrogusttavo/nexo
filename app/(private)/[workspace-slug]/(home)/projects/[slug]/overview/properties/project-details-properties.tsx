@@ -1,8 +1,10 @@
 'use client'
 
+import { CircleDotIcon } from '@hugeicons-pro/core-stroke-rounded'
 import { H4 } from '@/components/typography/heading/h4'
 import { notify } from '@/lib/notify'
 import { useProject, useUpdateProject } from '@/src/hooks/use-project'
+import { ProjectDisabledField } from '../project-disabled-field'
 import { ProjectDetailsDatesField } from './project-details-dates-field'
 import { ProjectDetailsLabelsField } from './project-details-labels-field'
 import { ProjectDetailsLeadField } from './project-details-lead-field'
@@ -21,6 +23,7 @@ export function ProjectDetailsProperties({
   workspaceId,
   projectSlug,
   canManage,
+  projectStatesEnabled,
 }: ProjectDetailsPropertiesProps) {
   const { data: project } = useProject(workspaceId, projectSlug)
   const update = useUpdateProject(workspaceId, projectSlug)
@@ -47,12 +50,22 @@ export function ProjectDetailsProperties({
     <>
       <H4 className='text-lg'>Propriedades</H4>
       <div className='space-y-2'>
-        <ProjectDetailsStateField {...field} />
-        <ProjectDetailsPriorityField {...field} />
-        <ProjectDetailsLeadField {...field} />
-        <ProjectDetailsMembersField {...field} />
-        <ProjectDetailsLabelsField {...field} />
-        <ProjectDetailsDatesField {...field} />
+        {projectStatesEnabled ? (
+          <>
+            <ProjectDetailsStateField {...field} />
+            <ProjectDetailsPriorityField {...field} />
+            <ProjectDetailsLeadField {...field} />
+            <ProjectDetailsMembersField {...field} />
+            <ProjectDetailsLabelsField {...field} />
+            <ProjectDetailsDatesField {...field} />
+          </>
+        ) : (
+          <ProjectDisabledField
+            icon={CircleDotIcon}
+            title='Ativar estado do projeto'
+            description='Ative os estados do projeto para visualizar e gerenciar propriedades como estado, prioridade, datas de vencimento e mais.'
+          />
+        )}
       </div>
     </>
   )

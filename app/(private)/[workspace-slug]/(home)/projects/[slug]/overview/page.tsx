@@ -36,6 +36,7 @@ async function Overview({ params }: { params: Params }) {
       canManage={
         context.isPrivileged || context.project.leadId === context.userId
       }
+      projectStatesEnabled={context.projectStatesEnabled}
     />
   )
 }

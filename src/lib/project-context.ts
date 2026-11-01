@@ -12,6 +12,8 @@ export interface ProjectContext {
   /** Workspace OWNER/ADMIN — may manage a project they do not lead. */
   isPrivileged: boolean
   project: ProjectDTO
+  projectStatesEnabled: boolean
+  projectLabelsEnabled: boolean
 }
 
 // Session, consent (STR-61 and membership come from the DAL, which redirects
@@ -39,6 +41,8 @@ export const getProjectContext = cache(
       workspaceSlug,
       isPrivileged: isPrivilegedRole(membership.role),
       project: project.value,
+      projectStatesEnabled: membership.workspace.projectStatesEnabled,
+      projectLabelsEnabled: membership.workspace.projectLabelsEnabled,
     }
   },
 )

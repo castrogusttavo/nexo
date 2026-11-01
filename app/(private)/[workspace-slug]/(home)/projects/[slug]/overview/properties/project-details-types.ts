@@ -13,6 +13,7 @@ export interface ProjectDetailsPropertiesProps {
   projectSlug: string
   /** Workspace OWNER/ADMIN or the project's lead (the ProjectService.update rule). */
   canManage: boolean
+  projectStatesEnabled: boolean
 }
 
 // What every field receives from the panel. `project` is already loaded: the
