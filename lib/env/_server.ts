@@ -34,6 +34,9 @@ const serverEnv = {
   AUTH_VERIFY_QUEUE_WAIT_MS: process.env.AUTH_VERIFY_QUEUE_WAIT_MS,
   REALTIME_PORT: process.env.REALTIME_PORT,
   SLACK_ALERTS_WEBHOOK_URL: process.env.SLACK_ALERTS_WEBHOOK_URL,
+  AXIOM_TRACES_TOKEN: process.env.AXIOM_TRACES_TOKEN,
+  AXIOM_TRACES_DATASET: process.env.AXIOM_TRACES_DATASET,
+  TRACES_SAMPLE_RATE: process.env.TRACES_SAMPLE_RATE,
   TRUSTED_PROXIES: process.env.TRUSTED_PROXIES
 }
 
@@ -131,6 +134,28 @@ const serverEnvSchema = z.object({
     .string()
     .optional()
     .transform((v) => (v?.trim() ? v.trim() : undefined)),
+  // Request traces shipped to Axiom (lib/otel/axiom-traces.ts). Optional: unset
+  // or blank means no exporter and the app boots exactly as before. The token
+  // is ingest-only and scoped to the traces dataset.
+  AXIOM_TRACES_TOKEN: z
+    .string()
+    .optional()
+    .transform((v) => (v?.trim() ? v.trim() : undefined)),
+  AXIOM_TRACES_DATASET: z
+    .string()
+    .optional()
+    .transform((v) => (v?.trim() ? v.trim() : 'nexo-traces')),
+  // Share of requests that produce a trace, 0 to 1. Defaults to 0.9: a trace
+  // you can open for the slow request is the point, so the floor is high.
+  // An out-of-range or non-numeric value falls back to the default instead of
+  // stopping the boot.
+  TRACES_SAMPLE_RATE: z
+    .string()
+    .optional()
+    .transform((v) => {
+      const rate = v === undefined || v.trim() === '' ? Number.NaN : Number(v)
+      return rate >= 0 && rate <= 1 ? rate : 0.9
+    }),
   // Proxies whose X-Forwarded-For entries are stripped when resolving the
   // client IP (comma-separated IPs or CIDRs). nginx appends the real client
   // address and never itself, so loopback only switches multi-entry parsing
@@ -205,5 +230,8 @@ export const {
   DB_POOL_MAX,
   REALTIME_PORT,
   SLACK_ALERTS_WEBHOOK_URL,
+  AXIOM_TRACES_TOKEN,
+  AXIOM_TRACES_DATASET,
+  TRACES_SAMPLE_RATE,
   TRUSTED_PROXIES
 } = validatedServerEnv

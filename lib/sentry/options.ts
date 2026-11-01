@@ -24,9 +24,12 @@ import { scrubBreadcrumb, scrubEvent } from './scrub'
  *   mapped by `handleError` never becomes a Sentry issue, which is exactly
  *   the point: Sentry's issue list stays a list of bugs.
  *
- * Tracing samples 10% in production and is off everywhere else. Request
- * timing and web vitals already live in
- * Axiom, and paying for a second copy of it buys nothing.
+ * Tracing samples 10% in production and is off everywhere else, unless an
+ * Axiom traces token is configured: then the server samples
+ * `TRACES_SAMPLE_RATE` of requests and ships every span to Axiom
+ * (`lib/otel/axiom-traces.ts`), while the transactions themselves are dropped
+ * before Sentry sees them. Request timing lives in Axiom; paying for a second
+ * copy of it buys nothing.
  */
 function baseOptions(dsn: string) {
   return {
