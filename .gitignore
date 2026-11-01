@@ -92,3 +92,6 @@ CLAUDE.md
 /playwright-report-visual/
 # The visual baselines under e2e/visual/__screenshots__/ are NOT ignored:
 # they are the expected output and are meant to be reviewed in the diff.
+
+# CI test report inputs (scripts/test-report.ts reads them, the workflow uploads them)
+/reports/

@@ -84,7 +84,16 @@ jobs:
         run: pnpm install --frozen-lockfile
 
       - name: Run contract tests
-        run: pnpm test:contract --run
+        run: pnpm test:contract --run --reporter=default --reporter=json --outputFile.json=reports/vitest-contract.json
+
+      - name: Upload test report
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        if: ${{ !cancelled() }}
+        with:
+          name: test-report-contract
+          path: reports/
+          retention-days: 3
+          if-no-files-found: ignore
 
   # Two suites share this job's definition (services, env, build) and run on
   # separate runners: the HTTP e2e suite against `next start`, and the
@@ -257,7 +266,7 @@ jobs:
 
       - name: Run e2e tests
         if: ${{ matrix.suite == 'api' }}
-        run: pnpm test:e2e
+        run: pnpm test:e2e --reporter=default --reporter=json --outputFile.json=reports/vitest-e2e.json
 
       # The browser suite boots its own server (the standalone artifact
       # production runs) from this job's build.
@@ -283,6 +292,7 @@ jobs:
         run: pnpm test:browser
         env:
           PLAYWRIGHT_SKIP_BUILD: 'true'
+          PLAYWRIGHT_JSON_OUTPUT_FILE: reports/playwright-browser.json
           NODE_OPTIONS: ''
 
       - name: Upload Playwright report
@@ -304,6 +314,15 @@ jobs:
           PLAYWRIGHT_SKIP_BUILD: 'true'
           PLAYWRIGHT_HTML_OUTPUT_DIR: playwright-report-visual
           NODE_OPTIONS: ''
+
+      - name: Upload test report
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        if: ${{ !cancelled() }}
+        with:
+          name: test-report-e2e-${{ matrix.suite }}
+          path: reports/
+          retention-days: 3
+          if-no-files-found: ignore
 
       - name: Upload visual diff report
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
@@ -373,7 +392,20 @@ jobs:
         run: pnpm prisma db push
 
       - name: Run unit + integration tests with coverage
-        run: pnpm test:coverage
+        run: pnpm test:coverage --reporter=default --reporter=json --outputFile.json=reports/vitest-backend.json
+
+      - name: Keep the coverage summary for the report
+        if: ${{ !cancelled() }}
+        run: mkdir -p reports && cp coverage/coverage-summary.json reports/coverage-backend.json
+
+      - name: Upload test report
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        if: ${{ !cancelled() }}
+        with:
+          name: test-report-backend
+          path: reports/
+          retention-days: 3
+          if-no-files-found: ignore
 
       # The frontend flag is uploaded by the component-tests shards; separate
       # flags keep that number from dragging the backend's down (codecov.yml).
@@ -426,7 +458,16 @@ jobs:
         run: pnpm prisma:generate
 
       - name: Run component tests with coverage
-        run: pnpm test:coverage:component --shard=${{ matrix.shard }}/3
+        run: pnpm test:coverage:component --shard=${{ matrix.shard }}/3 --reporter=default --reporter=json --outputFile.json=reports/vitest-component-${{ matrix.shard }}.json
+
+      - name: Upload test report
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        if: ${{ !cancelled() }}
+        with:
+          name: test-report-component-${{ matrix.shard }}
+          path: reports/
+          retention-days: 3
+          if-no-files-found: ignore
 
       - name: Upload frontend coverage to Codecov
         uses: codecov/codecov-action@0fb7174895f61a3b6b78fc075e0cd60383518dac # v5
@@ -754,10 +795,67 @@ jobs:
       - name: All required checks passed
         run: echo "CI gate green."
 
+  # Reads the JSON the test jobs left behind, sends one summary per run (and
+  # the failed, flaky and slow tests) to the Axiom `ci-runs` dataset and posts
+  # the result to Slack, green or red. It never fails the build: it runs after
+  # the tests and a broken report must not turn a good CI red.
+  test-report:
+    name: Test Report
+    needs:
+      - lint
+      - contract-tests
+      - e2e-tests
+      - coverage-tests
+      - component-tests
+      - semgrep
+      - gitleaks
+      - redis-tls-smoke
+    if: always()
+    runs-on: avrea-ubuntu-latest-2-vcpu
+    permissions:
+      contents: read
+      actions: read
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+
+      - name: Setup Node.js
+        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7
+        with:
+          node-version: 24
+
+      - name: Download test reports
+        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4
+        continue-on-error: true
+        with:
+          pattern: test-report-*
+          merge-multiple: true
+          path: reports
+
+      - name: Read the run start time
+        id: run
+        continue-on-error: true
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: echo "started_at=$(gh api "repos/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}" --jq .run_started_at)" >> "$GITHUB_OUTPUT"
+
+      - name: Report
+        continue-on-error: true
+        env:
+          AXIOM_CI_TOKEN: ${{ secrets.AXIOM_CI_TOKEN }}
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+          JOBS_JSON: ${{ toJSON(needs) }}
+          COMMIT_MESSAGE: ${{ github.event.head_commit.message || github.event.pull_request.title || '' }}
+          REPORT_BRANCH: ${{ github.head_ref || github.ref_name }}
+          RUN_STARTED_AT: ${{ steps.run.outputs.started_at }}
+        run: node --disable-warning=MODULE_TYPELESS_PACKAGE_JSON scripts/test-report.ts reports
+
+  # Fallback only: test-report already posts the failure with the details. This
+  # fires when the gate is red and the report itself did not make it.
   notify-slack:
     name: Notify Slack on Failure
-    needs: [gate]
-    if: failure()
+    needs: [gate, test-report]
+    if: ${{ always() && needs.gate.result == 'failure' && needs.test-report.result != 'success' }}
     runs-on: avrea-ubuntu-latest-2-vcpu
     steps:
       - name: Prepare notification context

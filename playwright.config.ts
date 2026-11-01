@@ -68,7 +68,20 @@ export default defineConfig({
   retries: IS_CI ? 1 : 0,
   workers: IS_CI ? 2 : undefined,
   reporter: IS_CI
-    ? [['github'], ['html', { open: 'never' }]]
+    ? [
+        ['github'],
+        ['html', { open: 'never' }],
+        // Read by scripts/test-report.ts; the path comes from the workflow so
+        // the browser and visual runs do not overwrite each other.
+        [
+          'json',
+          {
+            outputFile:
+              process.env.PLAYWRIGHT_JSON_OUTPUT_FILE ??
+              'reports/playwright.json',
+          },
+        ],
+      ]
     : [['list'], ['html', { open: 'never' }]],
   timeout: 90_000,
   globalTimeout: 20 * 60_000,
