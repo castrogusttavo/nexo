@@ -107,6 +107,9 @@ importers:
       '@hugeicons-pro/core-bulk-rounded':
         specifier: ^4.3.0
         version: 4.3.0
+      '@hugeicons-pro/core-duotone-rounded':
+        specifier: ^4.3.4
+        version: 4.3.4
       '@hugeicons-pro/core-solid-rounded':
         specifier: ^4.3.0
         version: 4.3.0
@@ -1826,6 +1829,9 @@ packages:
 
   '@hugeicons-pro/core-bulk-rounded@4.3.0':
     resolution: {integrity: sha512-niGNgCCv7L9axwKqP84qSthnW7L5bbAwhC0niMkqpUgIshEMcMUZUl77RDv3bwGrqZ0ZRW5CVkclLzNUsVYicQ==}
+
+  '@hugeicons-pro/core-duotone-rounded@4.3.4':
+    resolution: {integrity: sha512-/yCUCqcQghPia7MtuI/oiekFmUKgIdsCtmp8AHrM9LY1wUUylG3rG0hiWyS0EqobOobzZGmoV1JHBEcGZ8m3nA==}
 
   '@hugeicons-pro/core-solid-rounded@4.3.0':
     resolution: {integrity: sha512-CGmWz2Yw10nIvOFzbmL1zqpJuRQplKeZfLQgzfsc2Tl4Xh80VGulTue0DPI2l9IeNS9pRQxqFqFyGmf916KG1Q==}
@@ -11277,6 +11283,8 @@ snapshots:
       hono: 4.13.13
 
   '@hugeicons-pro/core-bulk-rounded@4.3.0': {}
+
+  '@hugeicons-pro/core-duotone-rounded@4.3.4': {}
 
   '@hugeicons-pro/core-solid-rounded@4.3.0': {}
 
