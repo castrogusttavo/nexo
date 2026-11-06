@@ -259,3 +259,21 @@ export async function createInvite(
     cookie,
   )
 }
+
+export async function putJson(
+  path: string,
+  body?: unknown,
+  cookieOrOpts?: string | RequestOpts,
+) {
+  const opts: RequestOpts =
+    typeof cookieOrOpts === 'string'
+      ? { cookie: cookieOrOpts }
+      : (cookieOrOpts ?? {})
+
+  return fetch(`${BASE_URL}${path}`, {
+    method: 'PUT',
+    headers: buildHeaders(opts.cookie, opts.extraHeaders),
+    body: body === undefined ? undefined : JSON.stringify(body),
+    redirect: opts.redirect ?? 'manual',
+  })
+}
