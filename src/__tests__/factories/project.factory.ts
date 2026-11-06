@@ -37,6 +37,7 @@ export function createFakeProject(
     createdAt: now,
     updatedAt: now,
     labelAssignments: [],
+    updatesEnabled: false,
     ...overrides,
   }
 }
@@ -74,6 +75,7 @@ export async function seedProject(
       | 'isPublic'
       | 'archivedAt'
       | 'stateId'
+      | 'updatesEnabled'
     >
   >,
 ) {

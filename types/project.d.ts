@@ -11,6 +11,7 @@ export interface ProjectDTO {
   modulesEnabled: boolean
   cyclesEnabled: boolean
   estimatesEnabled: boolean,
+  updatesEnabled: boolean,
   isFavorited: boolean
   leadId: string | null
   stateId: string

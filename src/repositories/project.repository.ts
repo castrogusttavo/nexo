@@ -274,6 +274,7 @@ export const ProjectRepository = {
       modulesEnabled?: boolean
       cyclesEnabled?: boolean
       estimatesEnabled?: boolean
+      updatesEnabled?: boolean
       leadId?: string
       stateId?: string
       /** Replaces the whole label set; [] clears it. */

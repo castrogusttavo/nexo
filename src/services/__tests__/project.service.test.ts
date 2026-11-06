@@ -624,6 +624,64 @@ describe('ProjectService', () => {
     })
   })
 
+  describe('update() updatesEnabled', () => {
+    const project = createFakeProject({
+      id: 'proj-1',
+      leadId: 'actor',
+      workspaceId: 'ws1',
+    })
+
+    function arrange(leadId: string) {
+      mockedMembership.findByUserAndWorkspace.mockResolvedValue(
+        ok(memberMembership),
+      )
+      mockedProject.findByWorkspaceAndSlug.mockResolvedValue(
+        ok({ ...project, leadId, members: [], favourites: [] as [] }),
+      )
+      mockedProject.update.mockResolvedValue(
+        ok({ ...project, updatesEnabled: true }),
+      )
+    }
+
+    it('lets the lead switch updates on and hands it to the repository', async () => {
+      arrange('actor')
+
+      const dto = expectOk(
+        await ProjectService.update('actor', 'ws1', project.slug, {
+          updatesEnabled: true,
+        }),
+      )
+
+      expect(mockedProject.update).toHaveBeenCalledWith(
+        'proj-1',
+        expect.objectContaining({ updatesEnabled: true }),
+      )
+      expect(dto.updatesEnabled).toBe(true)
+    })
+
+    it('is a project switch: it does not read the workspace', async () => {
+      arrange('actor')
+
+      await ProjectService.update('actor', 'ws1', project.slug, {
+        updatesEnabled: true,
+      })
+
+      expect(mockedWorkspace.findById).not.toHaveBeenCalled()
+    })
+
+    it('refuses a plain member who does not lead', async () => {
+      arrange('someone-else')
+
+      expectErr(
+        await ProjectService.update('actor', 'ws1', project.slug, {
+          updatesEnabled: true,
+        }),
+        'PROJECT_FORBIDDEN',
+      )
+      expect(mockedProject.update).not.toHaveBeenCalled()
+    })
+  })
+
   describe('update() stateId', () => {
     const project = createFakeProject({
       id: 'proj-1',

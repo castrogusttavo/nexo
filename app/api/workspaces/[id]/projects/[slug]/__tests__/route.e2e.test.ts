@@ -175,6 +175,50 @@ describe('PATCH /api/workspaces/[workspaceId]/projects/[slug]', () => {
   })
 })
 
+describe('PATCH /api/workspaces/[workspaceId]/projects/[slug] updatesEnabled', () => {
+  it('lets the OWNER turn updates on and exposes it in the DTO', async () => {
+    const { user, workspace } = await authenticatedOwner()
+    const project = await seedProject(workspace.id, user.id)
+
+    const res = await patchJson(
+      `/api/workspaces/${workspace.id}/projects/${project.slug}`,
+      { updatesEnabled: true },
+      user.cookie,
+    )
+
+    expect(res.status).toBe(200)
+    expect((await res.json()).data.updatesEnabled).toBe(true)
+  })
+
+  it('starts off for a new project', async () => {
+    const { user, workspace } = await authenticatedOwner()
+    const project = await seedProject(workspace.id, user.id)
+
+    const res = await getJson(
+      `/api/workspaces/${workspace.id}/projects/${project.slug}`,
+      user.cookie,
+    )
+
+    expect((await res.json()).data.updatesEnabled).toBe(false)
+  })
+
+  it('lets the lead flip it, and refuses a plain member', async () => {
+    const { workspace } = await authenticatedOwner()
+    const lead = await addMember(workspace.id, 'MEMBER')
+    const bystander = await addMember(workspace.id, 'MEMBER')
+    const project = await seedProject(workspace.id, lead.id, { isPublic: true })
+    const path = `/api/workspaces/${workspace.id}/projects/${project.slug}`
+
+    expect(
+      (await patchJson(path, { updatesEnabled: true }, bystander.cookie))
+        .status,
+    ).toBe(403)
+    expect(
+      (await patchJson(path, { updatesEnabled: true }, lead.cookie)).status,
+    ).toBe(200)
+  })
+})
+
 describe('DELETE /api/workspaces/[workspaceId]/projects/[slug]', () => {
   it('should return 401 via middleware when unauthenticated', async () => {
     const res = await deleteJson('/api/workspaces/ws/projects/slug')

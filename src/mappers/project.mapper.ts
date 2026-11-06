@@ -22,6 +22,7 @@ export function toProjectDTO(
     modulesEnabled: project.modulesEnabled,
     cyclesEnabled: project.cyclesEnabled,
     estimatesEnabled: project.estimatesEnabled,
+    updatesEnabled: project.updatesEnabled,
     isFavorited,
     leadId: project.leadId,
     stateId: project.stateId,

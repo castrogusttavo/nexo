@@ -21,6 +21,7 @@ export function buildProjectDTO(
     modulesEnabled: true,
     cyclesEnabled: true,
     estimatesEnabled: true,
+    updatesEnabled: false,
     isFavorited: false,
     leadId: 'user-1',
     stateId: 'pstate-1',

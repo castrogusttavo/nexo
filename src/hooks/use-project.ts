@@ -97,6 +97,7 @@ export function useUpdateProject(workspaceId: string, slug: string) {
       modulesEnabled?: boolean
       cyclesEnabled?: boolean
       estimatesEnabled?: boolean
+      updatesEnabled?: boolean
       leadId?: string
       stateId?: string
       // Replaces the whole set; [] clears it.

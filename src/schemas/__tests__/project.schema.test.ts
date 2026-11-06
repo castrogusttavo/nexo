@@ -190,6 +190,26 @@ describe('ListProjectsSchema', () => {
   })
 })
 
+describe('UpdateProjectSchema updatesEnabled', () => {
+  it.each([true, false])('accepts %s', (value) => {
+    const result = UpdateProjectSchema.safeParse({ updatesEnabled: value })
+
+    expect(result.success && result.data.updatesEnabled).toBe(value)
+  })
+
+  it('is optional, so other edits do not touch it', () => {
+    const result = UpdateProjectSchema.safeParse({ name: 'Alpha' })
+
+    expect(result.success && 'updatesEnabled' in result.data).toBe(false)
+  })
+
+  it.each(['yes', 1, null])('rejects %j', (value) => {
+    expect(
+      UpdateProjectSchema.safeParse({ updatesEnabled: value }).success,
+    ).toBe(false)
+  })
+})
+
 describe('UpdateProjectSchema stateId', () => {
   it('accepts a state id', () => {
     expect(

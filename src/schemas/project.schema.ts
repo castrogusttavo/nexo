@@ -74,6 +74,7 @@ export const UpdateProjectSchema = z
     modulesEnabled: z.boolean().optional(),
     cyclesEnabled: z.boolean().optional(),
     estimatesEnabled: z.boolean().optional(),
+    updatesEnabled: z.boolean().optional(),
     identifier: projectIdentifier.optional(),
     leadId: z.cuid2('ID de usuário inválido').optional(),
     stateId: z.cuid2('Estado inválido').optional(),
