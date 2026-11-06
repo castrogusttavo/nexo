@@ -310,13 +310,6 @@ export const commentNestingTooDeep = (
   message = 'Não é possível responder a uma resposta',
 ): AppError => appError('COMMENT_NESTING_TOO_DEEP', message)
 
-export const issueUpdateNotFound = (): AppError =>
-  appError('ISSUE_UPDATE_NOT_FOUND', 'Issue update not found')
-
-export const issueUpdateForbidden = (
-  message = 'Você só pode editar ou excluir os seus próprios updates',
-): AppError => appError('ISSUE_UPDATE_FORBIDDEN', message)
-
 export const wikiPageNotFound = (): AppError =>
   appError('WIKI_PAGE_NOT_FOUND', 'Wiki page not found')
 
@@ -390,3 +383,19 @@ export const projectLabelsDisabled = (
 export const projectDateRangeInvalid = (
   message = 'A data de conclusão não pode ser anterior à de início',
 ): AppError => appError('PROJECT_DATE_RANGE_INVALID', message)
+
+export const updateNotFound = (
+  message = 'Atualização não encontrada',
+): AppError => appError('UPDATE_NOT_FOUND', message)
+
+export const updateReplyNotFound = (
+  message = 'Resposta não encontrada',
+): AppError => appError('UPDATE_REPLY_NOT_FOUND', message)
+
+export const updateForbidden = (
+  message = 'Sem permissão neste atualização',
+): AppError => appError('UPDATE_FORBIDDEN', message)
+
+export const updateDisabled = (
+  message = 'As atualizações estão desativadas neste projeto',
+): AppError => appError('UPDATE_DISABLED', message)

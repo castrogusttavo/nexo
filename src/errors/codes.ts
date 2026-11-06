@@ -158,8 +158,6 @@ export const ERROR_CODES = {
   COMMENT_NOT_FOUND: { code: 'COMMENT_NOT_FOUND', status: 404 },
   COMMENT_FORBIDDEN: { code: 'COMMENT_FORBIDDEN', status: 403 },
   COMMENT_NESTING_TOO_DEEP: { code: 'COMMENT_NESTING_TOO_DEEP', status: 422 },
-  ISSUE_UPDATE_NOT_FOUND: { code: 'ISSUE_UPDATE_NOT_FOUND', status: 404 },
-  ISSUE_UPDATE_FORBIDDEN: { code: 'ISSUE_UPDATE_FORBIDDEN', status: 403 },
   WIKI_PAGE_FORBIDDEN: { code: 'WIKI_PAGE_FORBIDDEN', status: 403 },
   WIKI_PAGE_NOT_FOUND: { code: 'WIKI_PAGE_NOT_FOUND', status: 404 },
   WIKI_COMMENT_NOT_FOUND: { code: 'WIKI_COMMENT_NOT_FOUND', status: 404 },
@@ -168,6 +166,10 @@ export const ERROR_CODES = {
     code: 'WIKI_COMMENT_NESTING_TOO_DEEP',
     status: 422,
   },
+  UPDATE_NOT_FOUND: { code: 'UPDATE_NOT_FOUND', status: 404 },
+  UPDATE_REPLY_NOT_FOUND: { code: 'UPDATE_REPLY_NOT_FOUND', status: 404 },
+  UPDATE_FORBIDDEN: { code: 'UPDATE_FORBIDDEN', status: 403 },
+  UPDATE_DISABLED: { code: 'UPDATE_DISABLED', status: 409 },
 
   // Server Errors (500)
   INTERNAL_SERVER_ERROR: { code: 'INTERNAL_SERVER_ERROR', status: 500 },
