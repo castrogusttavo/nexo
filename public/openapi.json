@@ -123,6 +123,10 @@
     {
       "name": "Atividades",
       "description": "Histórico de alterações (activity log) de issues, ciclos e módulos de um projeto"
+    },
+    {
+      "name": "Atualizações",
+      "description": "Relatos de status de um projeto, com respostas em texto e reações em emoji."
     }
   ],
   "paths": {
@@ -8187,247 +8191,6 @@
         }
       }
     },
-    "/workspaces/{id}/projects/{slug}/issues/{issueId}/updates": {
-      "parameters": [
-        {
-          "name": "id",
-          "in": "path",
-          "required": true,
-          "description": "ID do workspace (cuid2).",
-          "schema": {
-            "type": "string"
-          }
-        },
-        {
-          "name": "slug",
-          "in": "path",
-          "required": true,
-          "description": "Slug do projeto.",
-          "schema": {
-            "type": "string"
-          }
-        },
-        {
-          "name": "issueId",
-          "in": "path",
-          "required": true,
-          "description": "ID da issue (cuid2).",
-          "schema": {
-            "type": "string"
-          }
-        }
-      ],
-      "get": {
-        "tags": [
-          "Issues"
-        ],
-        "summary": "Listar atualizações de status da issue",
-        "description": "Retorna o histórico de atualizações de status (`ON_TRACK`, `AT_RISK`, `OFF_TRACK`) postadas na issue.",
-        "security": [
-          {
-            "cookieAuth": []
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "Lista de atualizações retornada com sucesso.",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/IssueUpdateListResponse"
-                }
-              }
-            }
-          },
-          "401": {
-            "$ref": "#/components/responses/UnauthorizedError"
-          },
-          "403": {
-            "$ref": "#/components/responses/ForbiddenError"
-          },
-          "404": {
-            "$ref": "#/components/responses/NotFoundError"
-          },
-          "429": {
-            "$ref": "#/components/responses/RateLimitError"
-          }
-        }
-      },
-      "post": {
-        "tags": [
-          "Issues"
-        ],
-        "summary": "Postar atualização de status na issue",
-        "description": "Cria uma nova atualização de status na issue. Requer consentimento de cookies aceito.",
-        "security": [
-          {
-            "cookieAuth": []
-          }
-        ],
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/CreateIssueUpdateInput"
-              }
-            }
-          }
-        },
-        "responses": {
-          "201": {
-            "description": "Atualização criada com sucesso.",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/IssueUpdateResponse"
-                }
-              }
-            }
-          },
-          "401": {
-            "$ref": "#/components/responses/UnauthorizedError"
-          },
-          "403": {
-            "$ref": "#/components/responses/ForbiddenError"
-          },
-          "404": {
-            "$ref": "#/components/responses/NotFoundError"
-          },
-          "422": {
-            "$ref": "#/components/responses/ValidationError"
-          },
-          "429": {
-            "$ref": "#/components/responses/RateLimitError"
-          }
-        }
-      }
-    },
-    "/workspaces/{id}/projects/{slug}/issues/{issueId}/updates/{updateId}": {
-      "parameters": [
-        {
-          "name": "id",
-          "in": "path",
-          "required": true,
-          "description": "ID do workspace (cuid2).",
-          "schema": {
-            "type": "string"
-          }
-        },
-        {
-          "name": "slug",
-          "in": "path",
-          "required": true,
-          "description": "Slug do projeto.",
-          "schema": {
-            "type": "string"
-          }
-        },
-        {
-          "name": "issueId",
-          "in": "path",
-          "required": true,
-          "description": "ID da issue (cuid2).",
-          "schema": {
-            "type": "string"
-          }
-        },
-        {
-          "name": "updateId",
-          "in": "path",
-          "required": true,
-          "description": "ID da atualização (cuid2).",
-          "schema": {
-            "type": "string"
-          }
-        }
-      ],
-      "patch": {
-        "tags": [
-          "Issues"
-        ],
-        "summary": "Editar atualização de status",
-        "description": "Atualiza uma atualização de status própria. Requer consentimento de cookies aceito.",
-        "security": [
-          {
-            "cookieAuth": []
-          }
-        ],
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/UpdateIssueUpdateInput"
-              }
-            }
-          }
-        },
-        "responses": {
-          "200": {
-            "description": "Atualização editada com sucesso.",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/IssueUpdateResponse"
-                }
-              }
-            }
-          },
-          "401": {
-            "$ref": "#/components/responses/UnauthorizedError"
-          },
-          "403": {
-            "$ref": "#/components/responses/ForbiddenError"
-          },
-          "404": {
-            "$ref": "#/components/responses/NotFoundError"
-          },
-          "422": {
-            "$ref": "#/components/responses/ValidationError"
-          },
-          "429": {
-            "$ref": "#/components/responses/RateLimitError"
-          }
-        }
-      },
-      "delete": {
-        "tags": [
-          "Issues"
-        ],
-        "summary": "Excluir atualização de status",
-        "description": "Remove uma atualização de status da issue. Requer consentimento de cookies aceito.",
-        "security": [
-          {
-            "cookieAuth": []
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "Atualização excluída com sucesso.",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/EmptySuccessResponse"
-                }
-              }
-            }
-          },
-          "401": {
-            "$ref": "#/components/responses/UnauthorizedError"
-          },
-          "403": {
-            "$ref": "#/components/responses/ForbiddenError"
-          },
-          "404": {
-            "$ref": "#/components/responses/NotFoundError"
-          },
-          "429": {
-            "$ref": "#/components/responses/RateLimitError"
-          }
-        }
-      }
-    },
     "/workspaces/{id}/projects/{slug}/issues/{issueId}/votes": {
       "parameters": [
         {
@@ -10153,6 +9916,644 @@
           }
         }
       }
+    },
+    "/workspaces/{id}/projects/{slug}/updates": {
+      "parameters": [
+        {
+          "name": "id",
+          "in": "path",
+          "required": true,
+          "description": "ID do workspace (cuid2).",
+          "schema": {
+            "type": "string"
+          }
+        },
+        {
+          "name": "slug",
+          "in": "path",
+          "required": true,
+          "description": "Slug do projeto.",
+          "schema": {
+            "type": "string"
+          }
+        }
+      ],
+      "get": {
+        "tags": [
+          "Atualizações"
+        ],
+        "summary": "Listar atualizações do projeto",
+        "description": "Lista as atualizações do projeto, da mais recente para a mais antiga, com paginação por cursor. Quem enxerga o projeto lê. Falha com `UPDATE_DISABLED` (409) se o projeto tem as atualizações desativadas.",
+        "security": [
+          {
+            "cookieAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "description": "Quantidade por página (1 a 50).",
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 50,
+              "default": 20
+            }
+          },
+          {
+            "name": "cursor",
+            "in": "query",
+            "required": false,
+            "description": "O `nextCursor` da página anterior.",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Página de atualizações.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UpdatesPageResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/UnauthorizedError"
+          },
+          "403": {
+            "$ref": "#/components/responses/ForbiddenError"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFoundError"
+          },
+          "409": {
+            "$ref": "#/components/responses/ConflictError"
+          },
+          "429": {
+            "$ref": "#/components/responses/RateLimitError"
+          },
+          "422": {
+            "$ref": "#/components/responses/ValidationError"
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "Atualizações"
+        ],
+        "summary": "Publicar atualização",
+        "description": "Publica uma atualização de status no projeto. Apenas OWNER, ADMIN e o líder do projeto: os demais recebem `UPDATE_FORBIDDEN` (403). Falha com `UPDATE_DISABLED` (409) se o projeto tem as atualizações desativadas. Requer consentimento de cookies.",
+        "security": [
+          {
+            "cookieAuth": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateUpdateInput"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Atualização publicada.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UpdateResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/UnauthorizedError"
+          },
+          "403": {
+            "$ref": "#/components/responses/ForbiddenError"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFoundError"
+          },
+          "409": {
+            "$ref": "#/components/responses/ConflictError"
+          },
+          "429": {
+            "$ref": "#/components/responses/RateLimitError"
+          },
+          "422": {
+            "$ref": "#/components/responses/ValidationError"
+          }
+        }
+      }
+    },
+    "/workspaces/{id}/projects/{slug}/updates/{updateId}": {
+      "parameters": [
+        {
+          "name": "id",
+          "in": "path",
+          "required": true,
+          "description": "ID do workspace (cuid2).",
+          "schema": {
+            "type": "string"
+          }
+        },
+        {
+          "name": "slug",
+          "in": "path",
+          "required": true,
+          "description": "Slug do projeto.",
+          "schema": {
+            "type": "string"
+          }
+        },
+        {
+          "name": "updateId",
+          "in": "path",
+          "required": true,
+          "description": "ID da atualização (cuid2).",
+          "schema": {
+            "type": "string"
+          }
+        }
+      ],
+      "patch": {
+        "tags": [
+          "Atualizações"
+        ],
+        "summary": "Editar atualização",
+        "description": "Reenvia o status e o texto da atualização. Apenas OWNER, ADMIN e o líder do projeto (`UPDATE_FORBIDDEN`, 403). Falha com `UPDATE_DISABLED` (409) se o projeto tem as atualizações desativadas. Requer consentimento de cookies.",
+        "security": [
+          {
+            "cookieAuth": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/EditUpdateInput"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Atualização editada.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UpdateResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/UnauthorizedError"
+          },
+          "403": {
+            "$ref": "#/components/responses/ForbiddenError"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFoundError"
+          },
+          "409": {
+            "$ref": "#/components/responses/ConflictError"
+          },
+          "429": {
+            "$ref": "#/components/responses/RateLimitError"
+          },
+          "422": {
+            "$ref": "#/components/responses/ValidationError"
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "Atualizações"
+        ],
+        "summary": "Excluir atualização",
+        "description": "Remove a atualização com suas respostas e reações. Apenas OWNER, ADMIN e o líder do projeto (`UPDATE_FORBIDDEN`, 403). Falha com `UPDATE_DISABLED` (409) se o projeto tem as atualizações desativadas. Requer consentimento de cookies.",
+        "security": [
+          {
+            "cookieAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Atualização excluída.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/EmptySuccessResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/UnauthorizedError"
+          },
+          "403": {
+            "$ref": "#/components/responses/ForbiddenError"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFoundError"
+          },
+          "409": {
+            "$ref": "#/components/responses/ConflictError"
+          },
+          "429": {
+            "$ref": "#/components/responses/RateLimitError"
+          }
+        }
+      }
+    },
+    "/workspaces/{id}/projects/{slug}/updates/{updateId}/replies": {
+      "parameters": [
+        {
+          "name": "id",
+          "in": "path",
+          "required": true,
+          "description": "ID do workspace (cuid2).",
+          "schema": {
+            "type": "string"
+          }
+        },
+        {
+          "name": "slug",
+          "in": "path",
+          "required": true,
+          "description": "Slug do projeto.",
+          "schema": {
+            "type": "string"
+          }
+        },
+        {
+          "name": "updateId",
+          "in": "path",
+          "required": true,
+          "description": "ID da atualização (cuid2).",
+          "schema": {
+            "type": "string"
+          }
+        }
+      ],
+      "get": {
+        "tags": [
+          "Atualizações"
+        ],
+        "summary": "Listar respostas de uma atualização",
+        "description": "Lista as respostas, da mais antiga para a mais recente. Quem enxerga o projeto lê. Falha com `UPDATE_DISABLED` (409) se o projeto tem as atualizações desativadas.",
+        "security": [
+          {
+            "cookieAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Respostas da atualização.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UpdateReplyListResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/UnauthorizedError"
+          },
+          "403": {
+            "$ref": "#/components/responses/ForbiddenError"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFoundError"
+          },
+          "409": {
+            "$ref": "#/components/responses/ConflictError"
+          },
+          "429": {
+            "$ref": "#/components/responses/RateLimitError"
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "Atualizações"
+        ],
+        "summary": "Responder a uma atualização",
+        "description": "Qualquer pessoa que enxerga o projeto pode responder, com texto simples (1 a 2000 caracteres). Uma resposta não responde a outra. Falha com `UPDATE_DISABLED` (409) se o projeto tem as atualizações desativadas. Requer consentimento de cookies.",
+        "security": [
+          {
+            "cookieAuth": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateUpdateReplyInput"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Resposta publicada.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UpdateReplyResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/UnauthorizedError"
+          },
+          "403": {
+            "$ref": "#/components/responses/ForbiddenError"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFoundError"
+          },
+          "409": {
+            "$ref": "#/components/responses/ConflictError"
+          },
+          "429": {
+            "$ref": "#/components/responses/RateLimitError"
+          },
+          "422": {
+            "$ref": "#/components/responses/ValidationError"
+          }
+        }
+      }
+    },
+    "/workspaces/{id}/projects/{slug}/updates/{updateId}/replies/{replyId}": {
+      "parameters": [
+        {
+          "name": "id",
+          "in": "path",
+          "required": true,
+          "description": "ID do workspace (cuid2).",
+          "schema": {
+            "type": "string"
+          }
+        },
+        {
+          "name": "slug",
+          "in": "path",
+          "required": true,
+          "description": "Slug do projeto.",
+          "schema": {
+            "type": "string"
+          }
+        },
+        {
+          "name": "updateId",
+          "in": "path",
+          "required": true,
+          "description": "ID da atualização (cuid2).",
+          "schema": {
+            "type": "string"
+          }
+        },
+        {
+          "name": "replyId",
+          "in": "path",
+          "required": true,
+          "description": "ID da resposta (cuid2).",
+          "schema": {
+            "type": "string"
+          }
+        }
+      ],
+      "patch": {
+        "tags": [
+          "Atualizações"
+        ],
+        "summary": "Editar resposta",
+        "description": "Apenas o autor edita a própria resposta (`UPDATE_FORBIDDEN`, 403): nem mesmo um OWNER reescreve o texto de outra pessoa. Falha com `UPDATE_DISABLED` (409) se o projeto tem as atualizações desativadas. Requer consentimento de cookies.",
+        "security": [
+          {
+            "cookieAuth": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/EditUpdateReplyInput"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Resposta editada.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UpdateReplyResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/UnauthorizedError"
+          },
+          "403": {
+            "$ref": "#/components/responses/ForbiddenError"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFoundError"
+          },
+          "409": {
+            "$ref": "#/components/responses/ConflictError"
+          },
+          "429": {
+            "$ref": "#/components/responses/RateLimitError"
+          },
+          "422": {
+            "$ref": "#/components/responses/ValidationError"
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "Atualizações"
+        ],
+        "summary": "Excluir resposta",
+        "description": "O autor, o líder do projeto, ou um OWNER/ADMIN do workspace excluem a resposta (`UPDATE_FORBIDDEN`, 403, para os demais). Falha com `UPDATE_DISABLED` (409) se o projeto tem as atualizações desativadas. Requer consentimento de cookies.",
+        "security": [
+          {
+            "cookieAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Resposta excluída.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/EmptySuccessResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/UnauthorizedError"
+          },
+          "403": {
+            "$ref": "#/components/responses/ForbiddenError"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFoundError"
+          },
+          "409": {
+            "$ref": "#/components/responses/ConflictError"
+          },
+          "429": {
+            "$ref": "#/components/responses/RateLimitError"
+          }
+        }
+      }
+    },
+    "/workspaces/{id}/projects/{slug}/updates/{updateId}/reactions/{emoji}": {
+      "parameters": [
+        {
+          "name": "id",
+          "in": "path",
+          "required": true,
+          "description": "ID do workspace (cuid2).",
+          "schema": {
+            "type": "string"
+          }
+        },
+        {
+          "name": "slug",
+          "in": "path",
+          "required": true,
+          "description": "Slug do projeto.",
+          "schema": {
+            "type": "string"
+          }
+        },
+        {
+          "name": "updateId",
+          "in": "path",
+          "required": true,
+          "description": "ID da atualização (cuid2).",
+          "schema": {
+            "type": "string"
+          }
+        },
+        {
+          "name": "emoji",
+          "in": "path",
+          "required": true,
+          "description": "O emoji, codificado na URL (por exemplo `%F0%9F%91%8D` para 👍).",
+          "schema": {
+            "type": "string"
+          }
+        }
+      ],
+      "put": {
+        "tags": [
+          "Atualizações"
+        ],
+        "summary": "Reagir a uma atualização",
+        "description": "Registra a reação da pessoa autenticada com o emoji do caminho. É idempotente: repetir a chamada não conta duas vezes. O emoji precisa ser um só (`422` caso contrário). Falha com `UPDATE_DISABLED` (409) se o projeto tem as atualizações desativadas. Requer consentimento de cookies.",
+        "security": [
+          {
+            "cookieAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Reação registrada.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/EmptySuccessResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/UnauthorizedError"
+          },
+          "403": {
+            "$ref": "#/components/responses/ForbiddenError"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFoundError"
+          },
+          "409": {
+            "$ref": "#/components/responses/ConflictError"
+          },
+          "429": {
+            "$ref": "#/components/responses/RateLimitError"
+          },
+          "422": {
+            "$ref": "#/components/responses/ValidationError"
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "Atualizações"
+        ],
+        "summary": "Remover a própria reação",
+        "description": "Remove apenas a reação da pessoa autenticada com aquele emoji. É idempotente: remover o que não existe também responde 200. Falha com `UPDATE_DISABLED` (409) se o projeto tem as atualizações desativadas. Requer consentimento de cookies.",
+        "security": [
+          {
+            "cookieAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Reação removida.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/EmptySuccessResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/UnauthorizedError"
+          },
+          "403": {
+            "$ref": "#/components/responses/ForbiddenError"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFoundError"
+          },
+          "409": {
+            "$ref": "#/components/responses/ConflictError"
+          },
+          "429": {
+            "$ref": "#/components/responses/RateLimitError"
+          },
+          "422": {
+            "$ref": "#/components/responses/ValidationError"
+          }
+        }
+      }
     }
   },
   "components": {
@@ -11692,6 +12093,10 @@
             "type": "boolean",
             "example": true
           },
+          "updatesEnabled": {
+            "type": "boolean",
+            "description": "Liga as atualizações do projeto. Nasce desligado; desligar guarda o histórico e apenas esconde."
+          },
           "stateId": {
             "type": "string",
             "description": "Estado do projeto (cuid2), sempre de um estado do mesmo workspace.",
@@ -11842,6 +12247,10 @@
           "estimatesEnabled": {
             "type": "boolean",
             "description": "Habilita estimativas no projeto."
+          },
+          "updatesEnabled": {
+            "type": "boolean",
+            "description": "Liga as atualizações do projeto. Nasce desligado; desligar guarda o histórico e apenas esconde."
           },
           "identifier": {
             "type": "string",
@@ -14755,155 +15164,6 @@
           }
         ]
       },
-      "IssueUpdateStatus": {
-        "type": "string",
-        "enum": [
-          "ON_TRACK",
-          "AT_RISK",
-          "OFF_TRACK"
-        ]
-      },
-      "IssueUpdateAuthor": {
-        "type": "object",
-        "properties": {
-          "id": {
-            "type": "string"
-          },
-          "name": {
-            "type": "string"
-          },
-          "username": {
-            "type": "string"
-          },
-          "image": {
-            "oneOf": [
-              {
-                "type": "string",
-                "format": "uri"
-              },
-              {
-                "type": "null"
-              }
-            ]
-          }
-        }
-      },
-      "IssueUpdate": {
-        "type": "object",
-        "properties": {
-          "id": {
-            "type": "string"
-          },
-          "status": {
-            "$ref": "#/components/schemas/IssueUpdateStatus"
-          },
-          "content": {
-            "oneOf": [
-              {
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ]
-          },
-          "issueId": {
-            "type": "string"
-          },
-          "author": {
-            "oneOf": [
-              {
-                "$ref": "#/components/schemas/IssueUpdateAuthor"
-              },
-              {
-                "type": "null"
-              }
-            ]
-          },
-          "editedAt": {
-            "oneOf": [
-              {
-                "type": "string",
-                "format": "date-time"
-              },
-              {
-                "type": "null"
-              }
-            ]
-          },
-          "createdAt": {
-            "type": "string",
-            "format": "date-time"
-          },
-          "updatedAt": {
-            "type": "string",
-            "format": "date-time"
-          }
-        }
-      },
-      "CreateIssueUpdateInput": {
-        "type": "object",
-        "required": [
-          "status"
-        ],
-        "properties": {
-          "status": {
-            "$ref": "#/components/schemas/IssueUpdateStatus"
-          },
-          "content": {
-            "type": "string",
-            "description": "Texto livre, até 2000 caracteres."
-          }
-        }
-      },
-      "UpdateIssueUpdateInput": {
-        "type": "object",
-        "required": [
-          "status"
-        ],
-        "properties": {
-          "status": {
-            "$ref": "#/components/schemas/IssueUpdateStatus"
-          },
-          "content": {
-            "type": "string",
-            "description": "Texto livre, até 2000 caracteres."
-          }
-        }
-      },
-      "IssueUpdateResponse": {
-        "allOf": [
-          {
-            "$ref": "#/components/schemas/SuccessResponse"
-          },
-          {
-            "type": "object",
-            "properties": {
-              "data": {
-                "$ref": "#/components/schemas/IssueUpdate"
-              }
-            }
-          }
-        ]
-      },
-      "IssueUpdateListResponse": {
-        "allOf": [
-          {
-            "$ref": "#/components/schemas/SuccessResponse"
-          },
-          {
-            "type": "object",
-            "properties": {
-              "data": {
-                "type": "array",
-                "items": {
-                  "$ref": "#/components/schemas/IssueUpdate"
-                }
-              }
-            }
-          }
-        ]
-      },
       "ActivityEntityType": {
         "type": "string",
         "enum": [
@@ -15751,6 +16011,295 @@
           "URGENT"
         ],
         "description": "Prioridade do projeto."
+      },
+      "UpdateStatus": {
+        "type": "string",
+        "enum": [
+          "ON_TRACK",
+          "AT_RISK",
+          "OFF_TRACK"
+        ],
+        "example": "ON_TRACK"
+      },
+      "UpdateAuthor": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "username": {
+            "type": "string"
+          },
+          "image": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "format": "uri"
+          }
+        }
+      },
+      "UpdateReactionSummary": {
+        "type": "object",
+        "description": "Quantas pessoas usaram o emoji. Nunca diz quem.",
+        "properties": {
+          "emoji": {
+            "type": "string",
+            "example": "👍"
+          },
+          "count": {
+            "type": "integer",
+            "example": 3
+          },
+          "reactedByMe": {
+            "type": "boolean",
+            "description": "A pessoa autenticada usou este emoji."
+          }
+        }
+      },
+      "Update": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "projectId": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "issueId": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "status": {
+            "$ref": "#/components/schemas/UpdateStatus"
+          },
+          "content": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "author": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/UpdateAuthor"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "`null` quando o autor foi removido."
+          },
+          "editedAt": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "format": "date-time"
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "replyCount": {
+            "type": "integer"
+          },
+          "reactions": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/UpdateReactionSummary"
+            }
+          }
+        }
+      },
+      "UpdateReply": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "updateId": {
+            "type": "string"
+          },
+          "content": {
+            "type": "string"
+          },
+          "author": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/UpdateAuthor"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "`null` quando o autor foi removido."
+          },
+          "editedAt": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "format": "date-time"
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          }
+        }
+      },
+      "UpdatesPage": {
+        "type": "object",
+        "properties": {
+          "updates": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Update"
+            }
+          },
+          "nextCursor": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "description": "Envie como `cursor` para a próxima página; `null` na última."
+          }
+        }
+      },
+      "CreateUpdateInput": {
+        "type": "object",
+        "required": [
+          "status"
+        ],
+        "properties": {
+          "status": {
+            "$ref": "#/components/schemas/UpdateStatus"
+          },
+          "content": {
+            "type": "string",
+            "maxLength": 2000
+          }
+        }
+      },
+      "EditUpdateInput": {
+        "type": "object",
+        "required": [
+          "status"
+        ],
+        "properties": {
+          "status": {
+            "$ref": "#/components/schemas/UpdateStatus"
+          },
+          "content": {
+            "type": "string",
+            "maxLength": 2000
+          }
+        }
+      },
+      "CreateUpdateReplyInput": {
+        "type": "object",
+        "required": [
+          "content"
+        ],
+        "properties": {
+          "content": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 2000
+          }
+        }
+      },
+      "EditUpdateReplyInput": {
+        "type": "object",
+        "required": [
+          "content"
+        ],
+        "properties": {
+          "content": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 2000
+          }
+        }
+      },
+      "UpdateResponse": {
+        "type": "object",
+        "description": "Uma atualização.",
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/SuccessResponse"
+          },
+          {
+            "type": "object",
+            "properties": {
+              "data": {
+                "$ref": "#/components/schemas/Update"
+              }
+            }
+          }
+        ]
+      },
+      "UpdatesPageResponse": {
+        "type": "object",
+        "description": "Uma página de atualizações.",
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/SuccessResponse"
+          },
+          {
+            "type": "object",
+            "properties": {
+              "data": {
+                "$ref": "#/components/schemas/UpdatesPage"
+              }
+            }
+          }
+        ]
+      },
+      "UpdateReplyResponse": {
+        "type": "object",
+        "description": "Uma resposta.",
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/SuccessResponse"
+          },
+          {
+            "type": "object",
+            "properties": {
+              "data": {
+                "$ref": "#/components/schemas/UpdateReply"
+              }
+            }
+          }
+        ]
+      },
+      "UpdateReplyListResponse": {
+        "type": "object",
+        "description": "Respostas de uma atualização.",
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/SuccessResponse"
+          },
+          {
+            "type": "object",
+            "properties": {
+              "data": {
+                "type": "array",
+                "items": {
+                  "$ref": "#/components/schemas/UpdateReply"
+                }
+              }
+            }
+          }
+        ]
       }
     },
     "responses": {

@@ -40,10 +40,6 @@ import {
   ReorderIssueTypesSchema,
   UpdateIssueTypeSchema,
 } from '@/src/schemas/issue-type.schema'
-import {
-  CreateIssueUpdateSchema,
-  UpdateIssueUpdateSchema,
-} from '@/src/schemas/issue-update.schema'
 import { CastIssueVoteSchema } from '@/src/schemas/issue-vote.schema'
 import {
   CreateLabelSchema,
@@ -82,6 +78,12 @@ import {
 } from '@/src/schemas/sticky-note.schema'
 import { CreateSubscriptionSchema } from '@/src/schemas/subscription.schema'
 import { TalkToSalesSchema } from '@/src/schemas/talk-to-sales.schema'
+import {
+  CreateUpdateReplySchema,
+  CreateUpdateSchema,
+  EditUpdateReplySchema,
+  EditUpdateSchema,
+} from '@/src/schemas/update.schema'
 import { UpdateUserSchema } from '@/src/schemas/user.schema'
 import { UpdateUserPreferenceSchema } from '@/src/schemas/user-preference.schema'
 import {
@@ -130,7 +132,6 @@ const SPEC_BODY_TO_ZOD: Record<string, ZodType> = {
   CreateIssueInput: CreateIssueSchema,
   CreateIssueRelationInput: CreateIssueRelationSchema,
   CreateIssueTypeInput: CreateIssueTypeSchema,
-  CreateIssueUpdateInput: CreateIssueUpdateSchema,
   CreateLabelInput: CreateLabelSchema,
   CreateModuleInput: CreateModuleSchema,
   CreateProjectInput: CreateProjectSchema,
@@ -140,6 +141,10 @@ const SPEC_BODY_TO_ZOD: Record<string, ZodType> = {
   CreateProjectLabelInput: CreateProjectLabelSchema,
   CreateStickyNoteInput: CreateStickyNoteSchema,
   CreateSubscriptionInput: CreateSubscriptionSchema,
+  CreateUpdateInput: CreateUpdateSchema,
+  CreateUpdateReplyInput: CreateUpdateReplySchema,
+  EditUpdateInput: EditUpdateSchema,
+  EditUpdateReplyInput: EditUpdateReplySchema,
   CreateWikiCommentInput: CreateWikiCommentSchema,
   CreateWikiPageInput: CreateWikiPageSchema,
   CreateWorkspaceInput: CreateWorkspaceSchema,
@@ -157,7 +162,6 @@ const SPEC_BODY_TO_ZOD: Record<string, ZodType> = {
   UpdateInvitationRoleInput: UpdateInvitationRoleSchema,
   UpdateIssueInput: UpdateIssueSchema,
   UpdateIssueTypeInput: UpdateIssueTypeSchema,
-  UpdateIssueUpdateInput: UpdateIssueUpdateSchema,
   UpdateLabelInput: UpdateLabelSchema,
   UpdateModuleInput: UpdateModuleSchema,
   UpdateNotificationSettingInput: UpdateNotificationSettingSchema,
