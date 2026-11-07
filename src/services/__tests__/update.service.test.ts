@@ -216,19 +216,16 @@ describe('UpdateService.create()', () => {
     )
   })
 
-  it('lets the project lead post even as a plain MEMBER of the workspace', async () => {
-    arrange({ role: 'MEMBER', leadId: ACTOR })
+  it('lets a plain MEMBER who does not lead post', async () => {
+    arrange({ role: 'MEMBER', leadId: 'someone-else' })
 
     expectOk(
       await UpdateService.create(ACTOR, WS, SLUG, { status: 'ON_TRACK' }),
     )
   })
 
-  it.each([
-    'MEMBER',
-    'VIEWER',
-  ] as const)('refuses a %s who does not lead', async (role) => {
-    arrange({ role, members: [{ userId: ACTOR }] })
+  it('refuses a VIEWER, who can read but not write', async () => {
+    arrange({ role: 'VIEWER', members: [{ userId: ACTOR }] })
 
     expectErr(
       await UpdateService.create(ACTOR, WS, SLUG, { status: 'ON_TRACK' }),
@@ -267,7 +264,7 @@ describe('UpdateService.edit()', () => {
     expect(updates.update).toHaveBeenCalledWith('update-1', dto)
   })
 
-  it('lets an ADMIN edit what someone else wrote', async () => {
+  it('refuses even an ADMIN who is not the author', async () => {
     arrange({ role: 'ADMIN' })
     updates.findById.mockResolvedValue(
       ok(
@@ -279,7 +276,20 @@ describe('UpdateService.edit()', () => {
       ),
     )
 
-    expectOk(await UpdateService.edit(ACTOR, WS, SLUG, 'update-1', dto))
+    expectErr(
+      await UpdateService.edit(ACTOR, WS, SLUG, 'update-1', dto),
+      'UPDATE_FORBIDDEN',
+    )
+    expect(updates.update).not.toHaveBeenCalled()
+  })
+
+  it('refuses a VIEWER', async () => {
+    arrange({ role: 'VIEWER' })
+
+    expectErr(
+      await UpdateService.edit(ACTOR, WS, SLUG, 'update-1', dto),
+      'UPDATE_FORBIDDEN',
+    )
   })
 
   it('refuses a plain member who is not the author', async () => {
@@ -409,7 +419,6 @@ describe('UpdateService replies', () => {
       'OWNER',
       'ADMIN',
       'MEMBER',
-      'VIEWER',
     ] as const)('lets a %s who can see the project answer', async (role) => {
       arrange({ role, isPublic: true, leadId: 'someone-else', members: [] })
 
@@ -418,6 +427,18 @@ describe('UpdateService replies', () => {
           content: 'Oi',
         }),
       )
+    })
+
+    it('refuses a VIEWER, who can read but not answer', async () => {
+      arrange({ role: 'VIEWER', isPublic: true, members: [] })
+
+      expectErr(
+        await UpdateService.reply(ACTOR, WS, SLUG, 'update-1', {
+          content: 'Oi',
+        }),
+        'UPDATE_FORBIDDEN',
+      )
+      expect(replies.create).not.toHaveBeenCalled()
     })
 
     it('record the actor as the author', async () => {
@@ -457,7 +478,7 @@ describe('UpdateService replies', () => {
   })
 
   describe('editReply()', () => {
-    it('lets the auhtor edit', async () => {
+    it('lets the author edit', async () => {
       expectOk(
         await UpdateService.editReply(ACTOR, WS, SLUG, 'update-1', 'reply-1', {
           content: 'Corrigido',
@@ -539,7 +560,7 @@ describe('UpdateService replies', () => {
       )
     })
 
-    it("lets the porject lead delete anyone's reply", async () => {
+    it("lets the project lead delete anyone's reply", async () => {
       arrange({ role: 'MEMBER', leadId: ACTOR })
       replies.findById.mockResolvedValue(
         ok(
@@ -626,6 +647,20 @@ describe('UpdateService reactions', () => {
     )
   })
 
+  it.each([
+    'react',
+    'unreact',
+  ] as const)('%s refuses a VIEWER', async (method) => {
+    arrange({ role: 'VIEWER' })
+
+    expectErr(
+      await UpdateService[method](ACTOR, WS, SLUG, 'update-1', '👍'),
+      'UPDATE_FORBIDDEN',
+    )
+    expect(reactions.add).not.toHaveBeenCalled()
+    expect(reactions.remove).not.toHaveBeenCalled()
+  })
+
   it('does not audit a reaction: it is not worth a record', async () => {
     await UpdateService.react(ACTOR, WS, SLUG, 'update-1', '👍')
 
@@ -634,7 +669,7 @@ describe('UpdateService reactions', () => {
 })
 
 // The same gate every project service repeats. Reading and answering open to
-// anyone who can see the project; posting only to the lead and admins.
+// anyone who can see the project; writing needs a non-VIEWER role too.
 // `arrange` mocks everything past the gate so an admitted actor reaches ok().
 function arrangePastGate() {
   updates.findById.mockResolvedValue(
@@ -705,8 +740,9 @@ describeProjectAccessGate('UpdateService', [
   },
   {
     name: 'create()',
-    grants: 'lead',
-    forbiddenCode: 'UPDATE_FORBIDDEN',
+    grants: 'member',
+    publicGrants: true,
+    forbiddenCode: 'PROJECT_FORBIDDEN',
     project: { updatesEnabled: true },
     arrange: arrangePastGate,
     call: (actorId) =>
@@ -715,8 +751,9 @@ describeProjectAccessGate('UpdateService', [
   },
   {
     name: 'edit()',
-    grants: 'lead',
-    forbiddenCode: 'UPDATE_FORBIDDEN',
+    grants: 'member',
+    publicGrants: true,
+    forbiddenCode: 'PROJECT_FORBIDDEN',
     project: { updatesEnabled: true },
     arrange: arrangePastGate,
     call: (actorId) =>
@@ -727,8 +764,9 @@ describeProjectAccessGate('UpdateService', [
   },
   {
     name: 'delete()',
-    grants: 'lead',
-    forbiddenCode: 'UPDATE_FORBIDDEN',
+    grants: 'member',
+    publicGrants: true,
+    forbiddenCode: 'PROJECT_FORBIDDEN',
     project: { updatesEnabled: true },
     arrange: arrangePastGate,
     call: (actorId) =>

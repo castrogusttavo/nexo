@@ -631,20 +631,23 @@ describe('ProjectService', () => {
       workspaceId: 'ws1',
     })
 
-    function arrange(leadId: string) {
+    function arrange(role: 'OWNER' | 'ADMIN' | 'MEMBER') {
       mockedMembership.findByUserAndWorkspace.mockResolvedValue(
-        ok(memberMembership),
+        ok({ ...memberMembership, role }),
       )
       mockedProject.findByWorkspaceAndSlug.mockResolvedValue(
-        ok({ ...project, leadId, members: [], favourites: [] as [] }),
+        ok({ ...project, members: [], favourites: [] as [] }),
       )
       mockedProject.update.mockResolvedValue(
         ok({ ...project, updatesEnabled: true }),
       )
     }
 
-    it('lets the lead switch updates on and hands it to the repository', async () => {
-      arrange('actor')
+    it.each([
+      'OWNER',
+      'ADMIN',
+    ] as const)('lets a workspace %s switch updates on and hands it to the repository', async (role) => {
+      arrange(role)
 
       const dto = expectOk(
         await ProjectService.update('actor', 'ws1', project.slug, {
@@ -660,7 +663,7 @@ describe('ProjectService', () => {
     })
 
     it('is a project switch: it does not read the workspace', async () => {
-      arrange('actor')
+      arrange('ADMIN')
 
       await ProjectService.update('actor', 'ws1', project.slug, {
         updatesEnabled: true,
@@ -669,16 +672,26 @@ describe('ProjectService', () => {
       expect(mockedWorkspace.findById).not.toHaveBeenCalled()
     })
 
-    it('refuses a plain member who does not lead', async () => {
-      arrange('someone-else')
+    it('refuses the project lead, who edits the project but not this switch', async () => {
+      arrange('MEMBER')
 
       expectErr(
         await ProjectService.update('actor', 'ws1', project.slug, {
-          updatesEnabled: true,
+          updatesEnabled: false,
         }),
         'PROJECT_FORBIDDEN',
       )
       expect(mockedProject.update).not.toHaveBeenCalled()
+    })
+
+    it('still lets the lead edit other fields', async () => {
+      arrange('MEMBER')
+
+      expectOk(
+        await ProjectService.update('actor', 'ws1', project.slug, {
+          name: 'Beta',
+        }),
+      )
     })
   })
 

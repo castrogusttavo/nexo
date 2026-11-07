@@ -25,31 +25,32 @@ import { resolveProject } from './_project-scope'
 
 interface Access {
   project: ProjectWithDetails
-  canPost: boolean
+  // OWNER, ADMIN or the project lead: may remove what others wrote.
+  canModerate: boolean
 }
 
 async function authorize(
   actorId: string,
   workspaceId: string,
   projectSlug: string,
-  need: 'see' | 'post',
+  need: 'see' | 'write',
 ): Promise<Result<Access>> {
   const resolved = await resolveProject(actorId, workspaceId, projectSlug)
   if (!resolved.ok) return err(resolved.error)
 
   const { membership, project } = resolved
-  const isLead = project.leadId === actorId
-  const canPost = membership.isPrivileged || isLead
+  const canModerate = membership.isPrivileged || project.leadId === actorId
   const canSee =
-    canPost ||
+    canModerate ||
     project.isPublic ||
     project.members.some((m) => m.userId === actorId)
 
-  if (need === 'post' && !canPost) return err(updateForbidden())
-  if (need === 'see' && !canSee) return err(projectForbidden())
+  if (!canSee) return err(projectForbidden())
+  if (need === 'write' && membership.role === 'VIEWER')
+    return err(updateForbidden())
   if (!project.updatesEnabled) return err(updateDisabled())
 
-  return ok({ project, canPost })
+  return ok({ project, canModerate })
 }
 
 async function findUpdateOf(
@@ -90,7 +91,7 @@ export const UpdateService = {
     projectSlug: string,
     dto: CreateUpdateDTO,
   ): Promise<Result<UpdateDTO>> {
-    const access = await authorize(actorId, workspaceId, projectSlug, 'post')
+    const access = await authorize(actorId, workspaceId, projectSlug, 'write')
     if (!access.ok) return access
 
     const created = await UpdateRepository.createForProject({
@@ -120,11 +121,12 @@ export const UpdateService = {
     updateId: string,
     dto: EditUpdateDTO,
   ): Promise<Result<UpdateDTO>> {
-    const access = await authorize(actorId, workspaceId, projectSlug, 'post')
+    const access = await authorize(actorId, workspaceId, projectSlug, 'write')
     if (!access.ok) return access
 
     const existing = await findUpdateOf(access.value.project, updateId)
     if (!existing.ok) return existing
+    if (existing.value.authorId !== actorId) return err(updateForbidden())
 
     const edited = await UpdateRepository.update(updateId, dto)
     if (!edited.ok) return edited
@@ -147,11 +149,13 @@ export const UpdateService = {
     projectSlug: string,
     updateId: string,
   ): Promise<Result<void>> {
-    const access = await authorize(actorId, workspaceId, projectSlug, 'post')
+    const access = await authorize(actorId, workspaceId, projectSlug, 'write')
     if (!access.ok) return access
 
     const existing = await findUpdateOf(access.value.project, updateId)
     if (!existing.ok) return existing
+    if (existing.value.authorId !== actorId && !access.value.canModerate)
+      return err(updateForbidden())
 
     const deleted = await UpdateRepository.delete(updateId)
     if (!deleted.ok) return deleted
@@ -192,7 +196,7 @@ export const UpdateService = {
     updateId: string,
     dto: CreateUpdateReplyDTO,
   ): Promise<Result<UpdateReplyDTO>> {
-    const access = await authorize(actorId, workspaceId, projectSlug, 'see')
+    const access = await authorize(actorId, workspaceId, projectSlug, 'write')
     if (!access.ok) return access
 
     const update = await findUpdateOf(access.value.project, updateId)
@@ -216,7 +220,7 @@ export const UpdateService = {
     replyId: string,
     dto: EditUpdateReplyDTO,
   ): Promise<Result<UpdateReplyDTO>> {
-    const access = await authorize(actorId, workspaceId, projectSlug, 'see')
+    const access = await authorize(actorId, workspaceId, projectSlug, 'write')
     if (!access.ok) return access
 
     const update = await findUpdateOf(access.value.project, updateId)
@@ -240,7 +244,7 @@ export const UpdateService = {
     updateId: string,
     replyId: string,
   ): Promise<Result<void>> {
-    const access = await authorize(actorId, workspaceId, projectSlug, 'see')
+    const access = await authorize(actorId, workspaceId, projectSlug, 'write')
     if (!access.ok) return access
 
     const update = await findUpdateOf(access.value.project, updateId)
@@ -249,7 +253,7 @@ export const UpdateService = {
     const reply = await UpdateReplyRepository.findById(replyId)
     if (!reply.ok) return reply
     if (reply.value.updateId !== updateId) return err(updateReplyNotFound())
-    if (reply.value.authorId !== actorId && !access.value.canPost)
+    if (reply.value.authorId !== actorId && !access.value.canModerate)
       return err(updateForbidden())
 
     return UpdateReplyRepository.delete(replyId)
@@ -262,7 +266,7 @@ export const UpdateService = {
     updateId: string,
     emoji: string,
   ): Promise<Result<void>> {
-    const access = await authorize(actorId, workspaceId, projectSlug, 'see')
+    const access = await authorize(actorId, workspaceId, projectSlug, 'write')
     if (!access.ok) return access
 
     const update = await findUpdateOf(access.value.project, updateId)
@@ -278,7 +282,7 @@ export const UpdateService = {
     updateId: string,
     emoji: string,
   ): Promise<Result<void>> {
-    const access = await authorize(actorId, workspaceId, projectSlug, 'see')
+    const access = await authorize(actorId, workspaceId, projectSlug, 'write')
     if (!access.ok) return access
 
     const update = await findUpdateOf(access.value.project, updateId)

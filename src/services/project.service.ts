@@ -356,6 +356,23 @@ export const ProjectService = {
       )
     }
 
+    // The lead edits the project, but only ADMIN/OWNER switch updates on or off.
+    if (dto.updatesEnabled !== undefined && !membership.value.isPrivileged) {
+      auditMutation({
+        entity: 'project',
+        action: 'update',
+        actorId,
+        targetId: project.id,
+        outcome: 'failure',
+        reason: 'insufficient_role',
+      })
+      return err(
+        projectForbidden(
+          'Apenas ADMIN/OWNER podem ativar ou desativar as atualizações',
+        ),
+      )
+    }
+
     if (dto.leadId && !project.members.some((m) => m.userId === dto.leadId)) {
       return err(projectMemberNotFound())
     }
