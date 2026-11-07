@@ -10008,7 +10008,7 @@
           "Atualizações"
         ],
         "summary": "Publicar atualização",
-        "description": "Publica uma atualização de status no projeto. Apenas OWNER, ADMIN e o líder do projeto: os demais recebem `UPDATE_FORBIDDEN` (403). Falha com `UPDATE_DISABLED` (409) se o projeto tem as atualizações desativadas. Requer consentimento de cookies.",
+        "description": "Publica uma atualização de status no projeto. Qualquer pessoa que enxerga o projeto publica, exceto a role VIEWER (`UPDATE_FORBIDDEN`, 403). Falha com `UPDATE_DISABLED` (409) se o projeto tem as atualizações desativadas. Requer consentimento de cookies.",
         "security": [
           {
             "cookieAuth": []
@@ -10091,7 +10091,7 @@
           "Atualizações"
         ],
         "summary": "Editar atualização",
-        "description": "Reenvia o status e o texto da atualização. Apenas OWNER, ADMIN e o líder do projeto (`UPDATE_FORBIDDEN`, 403). Falha com `UPDATE_DISABLED` (409) se o projeto tem as atualizações desativadas. Requer consentimento de cookies.",
+        "description": "Reenvia o status e o texto da atualização. Apenas o autor edita (`UPDATE_FORBIDDEN`, 403, para os demais e para a role VIEWER). Falha com `UPDATE_DISABLED` (409) se o projeto tem as atualizações desativadas. Requer consentimento de cookies.",
         "security": [
           {
             "cookieAuth": []
@@ -10143,7 +10143,7 @@
           "Atualizações"
         ],
         "summary": "Excluir atualização",
-        "description": "Remove a atualização com suas respostas e reações. Apenas OWNER, ADMIN e o líder do projeto (`UPDATE_FORBIDDEN`, 403). Falha com `UPDATE_DISABLED` (409) se o projeto tem as atualizações desativadas. Requer consentimento de cookies.",
+        "description": "Remove a atualização com suas respostas e reações. O autor, o líder do projeto ou um OWNER/ADMIN do workspace removem (`UPDATE_FORBIDDEN`, 403, para os demais). Falha com `UPDATE_DISABLED` (409) se o projeto tem as atualizações desativadas. Requer consentimento de cookies.",
         "security": [
           {
             "cookieAuth": []
@@ -10252,7 +10252,7 @@
           "Atualizações"
         ],
         "summary": "Responder a uma atualização",
-        "description": "Qualquer pessoa que enxerga o projeto pode responder, com texto simples (1 a 2000 caracteres). Uma resposta não responde a outra. Falha com `UPDATE_DISABLED` (409) se o projeto tem as atualizações desativadas. Requer consentimento de cookies.",
+        "description": "Qualquer pessoa que enxerga o projeto pode responder, exceto a role VIEWER (`UPDATE_FORBIDDEN`, 403), com texto simples (1 a 2000 caracteres). Uma resposta não responde a outra. Falha com `UPDATE_DISABLED` (409) se o projeto tem as atualizações desativadas. Requer consentimento de cookies.",
         "security": [
           {
             "cookieAuth": []
@@ -10344,7 +10344,7 @@
           "Atualizações"
         ],
         "summary": "Editar resposta",
-        "description": "Apenas o autor edita a própria resposta (`UPDATE_FORBIDDEN`, 403): nem mesmo um OWNER reescreve o texto de outra pessoa. Falha com `UPDATE_DISABLED` (409) se o projeto tem as atualizações desativadas. Requer consentimento de cookies.",
+        "description": "Apenas o autor edita a própria resposta (`UPDATE_FORBIDDEN`, 403): nem mesmo um OWNER reescreve o texto de outra pessoa, e a role VIEWER não escreve. Falha com `UPDATE_DISABLED` (409) se o projeto tem as atualizações desativadas. Requer consentimento de cookies.",
         "security": [
           {
             "cookieAuth": []
@@ -10475,7 +10475,7 @@
           "Atualizações"
         ],
         "summary": "Reagir a uma atualização",
-        "description": "Registra a reação da pessoa autenticada com o emoji do caminho. É idempotente: repetir a chamada não conta duas vezes. O emoji precisa ser um só (`422` caso contrário). Falha com `UPDATE_DISABLED` (409) se o projeto tem as atualizações desativadas. Requer consentimento de cookies.",
+        "description": "Registra a reação da pessoa autenticada com o emoji do caminho, exceto a role VIEWER (`UPDATE_FORBIDDEN`, 403). É idempotente: repetir a chamada não conta duas vezes. O emoji precisa ser um só (`422` caso contrário). Falha com `UPDATE_DISABLED` (409) se o projeto tem as atualizações desativadas. Requer consentimento de cookies.",
         "security": [
           {
             "cookieAuth": []
@@ -10517,7 +10517,7 @@
           "Atualizações"
         ],
         "summary": "Remover a própria reação",
-        "description": "Remove apenas a reação da pessoa autenticada com aquele emoji. É idempotente: remover o que não existe também responde 200. Falha com `UPDATE_DISABLED` (409) se o projeto tem as atualizações desativadas. Requer consentimento de cookies.",
+        "description": "Remove apenas a reação da pessoa autenticada com aquele emoji, exceto a role VIEWER (`UPDATE_FORBIDDEN`, 403). É idempotente: remover o que não existe também responde 200. Falha com `UPDATE_DISABLED` (409) se o projeto tem as atualizações desativadas. Requer consentimento de cookies.",
         "security": [
           {
             "cookieAuth": []
@@ -12095,7 +12095,7 @@
           },
           "updatesEnabled": {
             "type": "boolean",
-            "description": "Liga as atualizações do projeto. Nasce desligado; desligar guarda o histórico e apenas esconde."
+            "description": "Liga as atualizações do projeto. Nasce desligado; desligar guarda o histórico e apenas esconde. Apenas OWNER/ADMIN alteram (`PROJECT_FORBIDDEN`, 403): nem o líder."
           },
           "stateId": {
             "type": "string",
@@ -12250,7 +12250,7 @@
           },
           "updatesEnabled": {
             "type": "boolean",
-            "description": "Liga as atualizações do projeto. Nasce desligado; desligar guarda o histórico e apenas esconde."
+            "description": "Liga as atualizações do projeto. Nasce desligado; desligar guarda o histórico e apenas esconde. Apenas OWNER/ADMIN alteram (`PROJECT_FORBIDDEN`, 403): nem o líder."
           },
           "identifier": {
             "type": "string",

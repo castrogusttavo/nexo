@@ -202,10 +202,11 @@ describe('PATCH /api/workspaces/[workspaceId]/projects/[slug] updatesEnabled', (
     expect((await res.json()).data.updatesEnabled).toBe(false)
   })
 
-  it('lets the lead flip it, and refuses a plain member', async () => {
+  it('lets an ADMIN flip it, and refuses the lead and a plain member', async () => {
     const { workspace } = await authenticatedOwner()
     const lead = await addMember(workspace.id, 'MEMBER')
     const bystander = await addMember(workspace.id, 'MEMBER')
+    const admin = await addMember(workspace.id, 'ADMIN')
     const project = await seedProject(workspace.id, lead.id, { isPublic: true })
     const path = `/api/workspaces/${workspace.id}/projects/${project.slug}`
 
@@ -215,7 +216,24 @@ describe('PATCH /api/workspaces/[workspaceId]/projects/[slug] updatesEnabled', (
     ).toBe(403)
     expect(
       (await patchJson(path, { updatesEnabled: true }, lead.cookie)).status,
+    ).toBe(403)
+    expect(
+      (await patchJson(path, { updatesEnabled: true }, admin.cookie)).status,
     ).toBe(200)
+  })
+
+  it('still lets the lead edit other fields', async () => {
+    const { workspace } = await authenticatedOwner()
+    const lead = await addMember(workspace.id, 'MEMBER')
+    const project = await seedProject(workspace.id, lead.id)
+
+    const res = await patchJson(
+      `/api/workspaces/${workspace.id}/projects/${project.slug}`,
+      { name: 'Renomeado' },
+      lead.cookie,
+    )
+
+    expect(res.status).toBe(200)
   })
 })
 

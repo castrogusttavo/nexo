@@ -38,12 +38,22 @@ describe('POST /api/workspaces/[id]/projects/[slug]/updates/[updateId]/replies',
     ).toBe(401)
   })
 
-  it.each([
-    'MEMBER',
-    'VIEWER',
-  ] as const)('lets a workspace %s reply', async (role) => {
+  it('returns 403 UPDATE_FORBIDDEN to a workspace VIEWER', async () => {
     const { workspace, project, update } = await setup()
-    const member = await addMember(workspace.id, role)
+    const viewer = await addMember(workspace.id, 'VIEWER')
+
+    const res = await postJson(
+      url(workspace.id, project.slug, update.id),
+      { content: 'Valeu' },
+      viewer.cookie,
+    )
+
+    expect(res.status).toBe(403)
+  })
+
+  it('lets a workspace MEMBER reply', async () => {
+    const { workspace, project, update } = await setup()
+    const member = await addMember(workspace.id, 'MEMBER')
 
     const res = await postJson(
       url(workspace.id, project.slug, update.id),

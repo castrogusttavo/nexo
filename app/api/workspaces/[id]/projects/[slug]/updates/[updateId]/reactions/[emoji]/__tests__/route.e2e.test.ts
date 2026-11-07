@@ -74,7 +74,7 @@ describe('PUT /api/workspaces/[id]/projects/[slug]/updates/[updateId]/reactions/
 
   it('counts several people, and each sees only their own as reactedByMe', async () => {
     const { owner, workspace, project, update } = await setup()
-    const member = await addMember(workspace.id, 'VIEWER')
+    const member = await addMember(workspace.id, 'MEMBER')
     const path = url(workspace.id, project.slug, update.id, '👍')
 
     await putJson(path, undefined, owner.cookie)
@@ -100,6 +100,19 @@ describe('PUT /api/workspaces/[id]/projects/[slug]/updates/[updateId]/reactions/
       )
       expect(res.status).toBe(422)
     }
+  })
+
+  it('returns 403 UPDATE_FORBIDDEN to a workspace VIEWER', async () => {
+    const { workspace, project, update } = await setup()
+    const viewer = await addMember(workspace.id, 'VIEWER')
+
+    const res = await putJson(
+      url(workspace.id, project.slug, update.id, '👍'),
+      undefined,
+      viewer.cookie,
+    )
+
+    expect(res.status).toBe(403)
   })
 
   it('returns 403 to someone outside the workspace', async () => {

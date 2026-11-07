@@ -179,17 +179,27 @@ describe('POST /api/workspaces/[id]/projects/[slug]/updates', () => {
     ).toBe(422)
   })
 
-  it.each([
-    'MEMBER',
-    'VIEWER',
-  ] as const)('returns 403 UPDATE_FORBIDDEN to a workspace %s who does not lead', async (role) => {
+  it('lets a plain MEMBER who does not lead post', async () => {
     const { workspace, project } = await setup()
-    const member = await addMember(workspace.id, role)
+    const member = await addMember(workspace.id, 'MEMBER')
 
     const res = await postJson(
       url(workspace.id, project.slug),
       { status: 'ON_TRACK' },
       member.cookie,
+    )
+
+    expect(res.status).toBe(201)
+  })
+
+  it('returns 403 UPDATE_FORBIDDEN to a workspace VIEWER', async () => {
+    const { workspace, project } = await setup()
+    const viewer = await addMember(workspace.id, 'VIEWER')
+
+    const res = await postJson(
+      url(workspace.id, project.slug),
+      { status: 'ON_TRACK' },
+      viewer.cookie,
     )
 
     expect(res.status).toBe(403)
