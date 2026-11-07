@@ -6,6 +6,7 @@ import {
   StatusIcon,
   Tag01Icon,
   UserMultipleIcon,
+  ZapIcon,
 } from '@hugeicons-pro/core-stroke-rounded'
 import { notFound } from 'next/navigation'
 import {
@@ -32,7 +33,7 @@ export async function ProjectSettingsSidebar({
     <ContextSidebar>
       <ContextHeader title={`Configurações · ${context.project.name}`} />
       <NavGroup>
-        <Muted>Geral</Muted>
+        <Muted className='font-medium py-2'>Geral</Muted>
         <NavItem href={base} icon={Settings01Icon}>
           Geral
         </NavItem>
@@ -41,16 +42,19 @@ export async function ProjectSettingsSidebar({
         </NavItem>
       </NavGroup>
       <NavGroup>
-        <Muted>Funcionalidades</Muted>
+        <Muted className='font-medium py-2'>Funcionalidades</Muted>
         <NavItem href={`${base}/features/cycles`} icon={Progress03Icon}>
           Ciclos
         </NavItem>
         <NavItem href={`${base}/features/modules`} icon={BlocksIcon}>
           Módulos
         </NavItem>
+        <NavItem href={`${base}/project-updates`} icon={ZapIcon}>
+          Atualizações do projeto
+        </NavItem>
       </NavGroup>
       <NavGroup>
-        <Muted>Estrutura de trabalho</Muted>
+        <Muted className='font-medium py-2'>Estrutura de trabalho</Muted>
         <NavItem href={`${base}/states`} icon={StatusIcon}>
           Estados
         </NavItem>
