@@ -80,7 +80,8 @@
 			},
 			"correctness": {
 				"useExhaustiveDependencies": "off",
-				"useUniqueElementIds": "off"
+				"useUniqueElementIds": "off",
+				"noUnusedImports": { "level": "warn", "fix": "safe" }
 			},
 			"security": {
 				"noDangerouslySetInnerHtml": "off"
