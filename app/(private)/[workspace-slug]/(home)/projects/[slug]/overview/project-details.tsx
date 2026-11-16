@@ -44,7 +44,11 @@ export function ProjectDetails({
       label: 'Atualizações',
       icon: ZapIcon,
       content: (
-        <ProjectDetailsUpdates projectStatesEnabled={projectStatesEnabled} />
+        <ProjectDetailsUpdates
+          workspaceId={workspaceId}
+          projectSlug={projectSlug}
+          canManage={canManage}
+        />
       ),
     },
     {

@@ -13,14 +13,22 @@ export function ProjectDisabledField({
   icon,
   title,
   description,
+  href,
 }: {
   icon: ComponentProps<typeof NexoIcon>['icon']
   title: string
   description: string
+  /** WHere "Habilitar" goes; without it, the default (workspace project configuration) */
+  href?: string | null
 }) {
   const { 'workspace-slug': workspaceSlug } = useParams<{
     'workspace-slug': string
   }>()
+
+  const destination =
+    href === undefined
+      ? `/${workspaceSlug}/settings/resources/project-configuration`
+      : href
 
   return (
     <div className='w-full max-w-100 mx-auto px-10 rounded-lg py-6 flex flex-col items-center justify-center gap-3 text-center'>
@@ -31,13 +39,11 @@ export function ProjectDisabledField({
         <p className='text-base font-semibold'>{title}</p>
         <Muted className='text-sm'>{description}</Muted>
       </div>
-      <ButtonLink
-        href={`/${workspaceSlug}/settings/resources/project-configuration`}
-        size='sm'
-        className='mt-6'
-      >
-        Habilitar
-      </ButtonLink>
+      {destination && (
+        <ButtonLink href={destination} size='sm' className='mt-6'>
+          Habilitar
+        </ButtonLink>
+      )}
     </div>
   )
 }
