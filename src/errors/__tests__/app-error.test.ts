@@ -277,12 +277,12 @@ describe('every factory without required arguments', () => {
 
 describe('update factories', () => {
   it.each([
-    ['updateNotFound', 'UPDATE_NOT_FOUND', 404],
-    ['updateReplyNotFound', 'UPDATE_REPLY_NOT_FOUND', 404],
-    ['updateForbidden', 'UPDATE_FORBIDDEN', 403],
-    ['updateDisabled', 'UPDATE_DISABLED', 409],
-  ] as const)('%s answers with its own code', (name, code, status) => {
-    expect(factories[name]().code).toBe(code)
+    [factories.updateNotFound, 'UPDATE_NOT_FOUND', 404],
+    [factories.updateReplyNotFound, 'UPDATE_REPLY_NOT_FOUND', 404],
+    [factories.updateForbidden, 'UPDATE_FORBIDDEN', 403],
+    [factories.updateDisabled, 'UPDATE_DISABLED', 409],
+  ] as const)('%# answers with its own code', (factory, code, status) => {
+    expect(factory().code).toBe(code)
     expect(ERROR_CODES[code].status).toBe(status)
   })
 })

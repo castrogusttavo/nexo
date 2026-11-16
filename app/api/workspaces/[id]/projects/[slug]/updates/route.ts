@@ -1,4 +1,3 @@
-import { upsertLink } from '@platejs/link'
 import type { NextRequest } from 'next/server'
 import { withAxiom } from '@/lib/axiom/server'
 import { getAuthSession } from '@/src/lib/auth-session'
