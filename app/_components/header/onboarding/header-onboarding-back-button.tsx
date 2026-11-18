@@ -3,7 +3,7 @@
 import { ArrowLeft01Icon } from '@hugeicons-pro/core-stroke-rounded'
 import { usePathname, useRouter } from 'next/navigation'
 import { useTransition } from 'react'
-import { goBackOnboarding } from '@/app/onboarding/actions'
+import { goBackOnboarding } from '@/app/onboarding/_actions/onboarding'
 import { NexoIcon } from '@/components/icon/icon'
 import { Button } from '@/components/ui/button'
 

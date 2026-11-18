@@ -4,7 +4,7 @@ import { redirect } from 'next/navigation'
 import { Suspense } from 'react'
 import { auth } from '@/src/lib/auth'
 import { SIGNED_IN_HOME, safeRedirectPath } from '@/src/lib/safe-redirect'
-import { SignInForm } from './sign-in-form'
+import { SignInForm } from './_components/sign-in-form'
 
 export const metadata: Metadata = {
   title: 'Entrar | Nexo',

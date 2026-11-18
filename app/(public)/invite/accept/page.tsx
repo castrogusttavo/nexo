@@ -2,7 +2,7 @@ import type { Metadata } from 'next'
 import { redirect } from 'next/navigation'
 import { Suspense } from 'react'
 import { getAuthSession } from '@/src/lib/auth-session'
-import { AcceptInvitation } from './accept-invitation'
+import { AcceptInvitation } from './_components/accept-invitation'
 
 export const metadata: Metadata = {
   title: 'Aceitar convite | Nexo',

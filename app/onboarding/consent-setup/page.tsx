@@ -8,8 +8,8 @@ import { getAuthSession } from '@/src/lib/auth-session'
 import { UserService } from '@/src/services/user.service'
 import { OnboardingFormSkeleton } from '../_components/onboarding-form-skeleton'
 import { onboardingDestination } from '../_lib/destination'
-import { ConsentForm } from './consent-form'
-import { ConsentRefresh } from './consent-refresh'
+import { ConsentForm } from './_components/consent-form'
+import { ConsentRefresh } from './_components/consent-refresh'
 
 export const metadata: Metadata = {
   title: 'Aceite de termos | Nexo',

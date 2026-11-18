@@ -7,7 +7,7 @@ import { getAuthSession } from '@/src/lib/auth-session'
 import { UserService } from '@/src/services/user.service'
 import { OnboardingFormSkeleton } from '../_components/onboarding-form-skeleton'
 import { onboardingDestination } from '../_lib/destination'
-import { RoleForm } from './role-form'
+import { RoleForm } from './_components/role-form'
 
 export const metadata: Metadata = { title: 'Sua função | Nexo' }
 

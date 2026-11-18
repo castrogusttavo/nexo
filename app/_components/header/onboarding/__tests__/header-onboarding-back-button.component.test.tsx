@@ -15,7 +15,7 @@ vi.mock('next/navigation', () => ({
   useRouter: () => ({ push }),
   usePathname,
 }))
-vi.mock('@/app/onboarding/actions', () => ({ goBackOnboarding }))
+vi.mock('@/app/onboarding/_actions/onboarding', () => ({ goBackOnboarding }))
 
 function renderButton(pathname: string) {
   usePathname.mockReturnValue(pathname)

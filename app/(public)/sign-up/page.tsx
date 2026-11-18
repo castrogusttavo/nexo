@@ -4,7 +4,7 @@ import { redirect } from 'next/navigation'
 import { Suspense } from 'react'
 import { auth } from '@/src/lib/auth'
 import { SIGNED_IN_HOME, safeRedirectPath } from '@/src/lib/safe-redirect'
-import { SignUpForm } from './sign-up-form'
+import { SignUpForm } from './_components/sign-up-form'
 
 export const metadata: Metadata = {
   title: 'Criar conta | Nexo',

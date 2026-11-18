@@ -1,6 +1,6 @@
 import type { Metadata } from 'next'
 import { Suspense } from 'react'
-import { ResetPasswordForm } from './reset-password-form'
+import { ResetPasswordForm } from './_components/reset-password-form'
 
 export const metadata: Metadata = {
   title: 'Nova senha | Nexo',

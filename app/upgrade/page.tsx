@@ -2,7 +2,7 @@ import { redirect } from 'next/navigation'
 import { Suspense } from 'react'
 import { getAuthSession } from '@/src/lib/auth-session'
 import { MembershipService } from '@/src/services/membership.service'
-import { UpgradeForm } from './upgrade-form'
+import { UpgradeForm } from './_components/upgrade-form'
 
 const BILLING_ROLES = ['OWNER', 'ADMIN'] as const
 

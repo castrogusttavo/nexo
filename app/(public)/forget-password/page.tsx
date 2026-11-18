@@ -3,7 +3,7 @@ import { headers } from 'next/headers'
 import { redirect } from 'next/navigation'
 import { auth } from '@/src/lib/auth'
 import { SIGNED_IN_HOME } from '@/src/lib/safe-redirect'
-import { ForgetPasswordForm } from './forget-password-form'
+import { ForgetPasswordForm } from './_components/forget-password-form'
 
 export const metadata: Metadata = {
   title: 'Redefinir senha | Nexo',

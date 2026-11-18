@@ -7,7 +7,7 @@ import { getAuthSession } from '@/src/lib/auth-session'
 import { UserService } from '@/src/services/user.service'
 import { OnboardingFormSkeleton } from '../_components/onboarding-form-skeleton'
 import { onboardingDestination } from '../_lib/destination'
-import { WorkspaceForm } from './workspace-form'
+import { WorkspaceForm } from './_components/workspace-form'
 
 export const metadata: Metadata = { title: 'Criar workspace | Nexo' }
 

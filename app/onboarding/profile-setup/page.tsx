@@ -7,7 +7,7 @@ import { getAuthSession } from '@/src/lib/auth-session'
 import { OnboardingService } from '@/src/services/onboarding.service'
 import { OnboardingFormSkeleton } from '../_components/onboarding-form-skeleton'
 import { onboardingDestination } from '../_lib/destination'
-import { ProfileForm } from './profile-form'
+import { ProfileForm } from './_components/profile-form'
 
 export const metadata: Metadata = {
   title: 'Seu perfil | Nexo',

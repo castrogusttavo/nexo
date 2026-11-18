@@ -7,7 +7,7 @@ import { getAuthSession } from '@/src/lib/auth-session'
 import { UserService } from '@/src/services/user.service'
 import { OnboardingFormSkeleton } from '../_components/onboarding-form-skeleton'
 import { onboardingDestination } from '../_lib/destination'
-import { GoalsForm } from './goals-form'
+import { GoalsForm } from './_components/goals-form'
 
 export const metadata: Metadata = { title: 'Seus objetivos | Nexo' }
 
