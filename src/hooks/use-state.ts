@@ -1,6 +1,7 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import type { StateColorDTO, StateDTO, StateGroupDTO } from '@/types/state'
 import { apiFetch, apiFetchJson, apiSend } from './_fetch'
+import { projectProgressKey } from './use-project-progress'
 
 const STATES_KEY = ['states']
 
@@ -72,6 +73,10 @@ export function useUpdateState(workspaceId: string, projectSlug: string) {
       queryClient.invalidateQueries({
         queryKey: statesKey(workspaceId, projectSlug),
       })
+      // A state can change group, which moves its issues between buckets.
+      queryClient.invalidateQueries({
+        queryKey: projectProgressKey(workspaceId, projectSlug),
+      })
     },
   })
 }
@@ -89,6 +94,9 @@ export function useDeleteState(workspaceId: string, projectSlug: string) {
     onSuccess: () => {
       queryClient.invalidateQueries({
         queryKey: statesKey(workspaceId, projectSlug),
+      })
+      queryClient.invalidateQueries({
+        queryKey: projectProgressKey(workspaceId, projectSlug),
       })
     },
   })

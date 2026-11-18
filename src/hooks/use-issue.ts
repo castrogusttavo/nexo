@@ -11,6 +11,7 @@ import { useEffect, useMemo } from 'react'
 import { captureEvent } from '@/lib/posthog/client'
 import type { IssueDTO, IssuePriorityDTO } from '@/types/issue'
 import { apiFetch, apiFetchJson, apiSend } from './_fetch'
+import { projectProgressKey } from './use-project-progress'
 
 const ISSUES_KEY = ['issues']
 const ISSUES_PAGE_LIMIT = 1000
@@ -83,6 +84,9 @@ export function useCreateIssue(workspaceId: string, projectSlug: string) {
       queryClient.invalidateQueries({
         queryKey: issuesKey(workspaceId, projectSlug),
       })
+      queryClient.invalidateQueries({
+        queryKey: projectProgressKey(workspaceId, projectSlug),
+      })
     },
   })
 }
@@ -120,6 +124,9 @@ export function useUpdateIssue(workspaceId: string, projectSlug: string) {
       queryClient.invalidateQueries({
         queryKey: issuesKey(workspaceId, projectSlug),
       })
+      queryClient.invalidateQueries({
+        queryKey: projectProgressKey(workspaceId, projectSlug),
+      })
     },
   })
 }
@@ -137,6 +144,9 @@ export function useDeleteIssue(workspaceId: string, projectSlug: string) {
     onSuccess: () => {
       queryClient.invalidateQueries({
         queryKey: issuesKey(workspaceId, projectSlug),
+      })
+      queryClient.invalidateQueries({
+        queryKey: projectProgressKey(workspaceId, projectSlug),
       })
     },
   })

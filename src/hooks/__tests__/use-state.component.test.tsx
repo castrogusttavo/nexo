@@ -8,6 +8,7 @@ import {
   renderHookWithProviders,
 } from '@/src/__tests__/helpers/component'
 import type { StateDTO } from '@/types/state'
+import { projectProgressKey } from '../use-project-progress'
 import {
   useCreateState,
   useDeleteState,
@@ -18,6 +19,11 @@ import {
 
 const statesKey = (workspaceId = 'ws-1', projectSlug = 'alpha') =>
   [['states'], workspaceId, projectSlug] as const
+
+const progressKey = (workspaceId = 'ws-1', projectSlug = 'alpha') =>
+  projectProgressKey(workspaceId, projectSlug)
+
+const EMPTY_PROGRESS = { total: 0, completionPercentage: 0, groups: [] }
 
 const BASE_URL = '/api/workspaces/ws-1/projects/alpha/states'
 
@@ -140,6 +146,8 @@ describe('useUpdateState', () => {
       useUpdateState('ws-1', 'alpha'),
     )
     queryClient.setQueryData(statesKey(), [buildState()])
+    queryClient.setQueryData(progressKey(), EMPTY_PROGRESS)
+    queryClient.setQueryData(progressKey('ws-1', 'other'), EMPTY_PROGRESS)
 
     await act(() =>
       result.current.mutateAsync({
@@ -154,6 +162,11 @@ describe('useUpdateState', () => {
       body: { name: 'Renamed', order: 3 },
     })
     expect(queryClient.getQueryState(statesKey())?.isInvalidated).toBe(true)
+    // A state can change group, which moves its issues between buckets.
+    expect(queryClient.getQueryState(progressKey())?.isInvalidated).toBe(true)
+    expect(
+      queryClient.getQueryState(progressKey('ws-1', 'other'))?.isInvalidated,
+    ).toBe(false)
   })
 
   it('falls back to the hook message when the error body has none', async () => {
@@ -179,6 +192,7 @@ describe('useDeleteState', () => {
       useDeleteState('ws-1', 'alpha'),
     )
     queryClient.setQueryData(statesKey(), [buildState()])
+    queryClient.setQueryData(progressKey(), EMPTY_PROGRESS)
 
     await act(() => result.current.mutateAsync('state-1'))
 
@@ -187,6 +201,7 @@ describe('useDeleteState', () => {
       method: 'DELETE',
     })
     expect(queryClient.getQueryState(statesKey())?.isInvalidated).toBe(true)
+    expect(queryClient.getQueryState(progressKey())?.isInvalidated).toBe(true)
   })
 
   it('surfaces the backend message when the delete is refused', async () => {

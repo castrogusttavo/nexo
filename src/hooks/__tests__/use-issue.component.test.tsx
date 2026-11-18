@@ -21,9 +21,11 @@ import {
   useIssues,
   useUpdateIssue,
 } from '../use-issue'
+import { projectProgressKey } from '../use-project-progress'
 
 const WORKSPACE_ID = 'ws-1'
 const PROJECT_SLUG = 'nexo'
+const EMPTY_PROGRESS = { total: 0, completionPercentage: 0, groups: [] }
 const ISSUES_URL = `/api/workspaces/${WORKSPACE_ID}/projects/${PROJECT_SLUG}/issues`
 
 function buildIssue(overrides: Partial<IssueDTO> = {}): IssueDTO {
@@ -179,6 +181,10 @@ describe('useCreateIssue', () => {
     queryClient.setQueryData(listKey, { pages: [], pageParams: [] })
     queryClient.setQueryData(childrenKey, [])
     queryClient.setQueryData(otherProjectKey, { pages: [], pageParams: [] })
+    const progressKey = projectProgressKey(WORKSPACE_ID, PROJECT_SLUG)
+    const otherProgressKey = projectProgressKey(WORKSPACE_ID, 'other')
+    queryClient.setQueryData(progressKey, EMPTY_PROGRESS)
+    queryClient.setQueryData(otherProgressKey, EMPTY_PROGRESS)
 
     const input = {
       title: 'Fix login',
@@ -200,6 +206,11 @@ describe('useCreateIssue', () => {
     expect(queryClient.getQueryState(listKey)?.isInvalidated).toBe(true)
     expect(queryClient.getQueryState(childrenKey)?.isInvalidated).toBe(true)
     expect(queryClient.getQueryState(otherProjectKey)?.isInvalidated).toBe(
+      false,
+    )
+    // The new issue lands in a state group, so the progress ring moves.
+    expect(queryClient.getQueryState(progressKey)?.isInvalidated).toBe(true)
+    expect(queryClient.getQueryState(otherProgressKey)?.isInvalidated).toBe(
       false,
     )
   })
@@ -236,6 +247,8 @@ describe('useUpdateIssue', () => {
     )
     const listKey = issuesKey(WORKSPACE_ID, PROJECT_SLUG)
     queryClient.setQueryData(listKey, { pages: [], pageParams: [] })
+    const progressKey = projectProgressKey(WORKSPACE_ID, PROJECT_SLUG)
+    queryClient.setQueryData(progressKey, EMPTY_PROGRESS)
 
     await act(() =>
       result.current.mutateAsync({
@@ -250,6 +263,8 @@ describe('useUpdateIssue', () => {
       body: { dueDate: null, cycleId: 'cycle-1' },
     })
     expect(queryClient.getQueryState(listKey)?.isInvalidated).toBe(true)
+    // Moving an issue to another state is an update, so it has to refresh too.
+    expect(queryClient.getQueryState(progressKey)?.isInvalidated).toBe(true)
   })
 
   it('surfaces the backend message when the update fails', async () => {
@@ -276,6 +291,8 @@ describe('useDeleteIssue', () => {
     )
     const listKey = issuesKey(WORKSPACE_ID, PROJECT_SLUG)
     queryClient.setQueryData(listKey, { pages: [], pageParams: [] })
+    const progressKey = projectProgressKey(WORKSPACE_ID, PROJECT_SLUG)
+    queryClient.setQueryData(progressKey, EMPTY_PROGRESS)
 
     await act(() => result.current.mutateAsync('issue-1'))
 
@@ -284,6 +301,7 @@ describe('useDeleteIssue', () => {
       method: 'DELETE',
     })
     expect(queryClient.getQueryState(listKey)?.isInvalidated).toBe(true)
+    expect(queryClient.getQueryState(progressKey)?.isInvalidated).toBe(true)
   })
 
   it('rejects with the fallback message when the delete fails', async () => {
