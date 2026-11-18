@@ -11,17 +11,17 @@ import {
   DropdownMenuContent,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
-import type { UpdateReactionSummaryDTO } from '@/types/updates'
+import type { ProjectReactionSummaryDTO } from '@/types/project-reaction'
 
-type ProjectUpdateReactionPickerProps = {
-  reactions: UpdateReactionSummaryDTO[]
+type ProjectReactionPickerProps = {
+  reactions: ProjectReactionSummaryDTO[]
   onToggle: (emoji: string, reacted: boolean) => void
 }
 
-export function ProjectUpdateReactionPicker({
+export function ProjectReactionPicker({
   reactions,
   onToggle,
-}: ProjectUpdateReactionPickerProps) {
+}: ProjectReactionPickerProps) {
   const [open, setOpen] = useState(false)
 
   function handleSelect(emoji: string) {

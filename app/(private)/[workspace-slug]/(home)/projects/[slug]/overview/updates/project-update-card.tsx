@@ -1,6 +1,7 @@
 'use client'
 
 import { useState } from 'react'
+import { ProjectReactionPicker } from '@/app/_components/workspace/project/project-reaction-picker'
 import { NexoIcon } from '@/components/icon/icon'
 import { Muted } from '@/components/typography/text/muted'
 import { Button } from '@/components/ui/button'
@@ -21,7 +22,6 @@ import type { UpdateDTO } from '@/types/updates'
 import { ProjectUpdateForm } from './project-update-form'
 import { PROJECT_UPDATE_HEALTH } from './project-update-health'
 import { ProjectUpdateMenu } from './project-update-menu'
-import { ProjectUpdateReactionPicker } from './project-update-reaction-picker'
 import { ProjectUpdateReplyForm } from './project-update-reply-form'
 import { ProjectUpdateReplyList } from './project-update-reply-list'
 
@@ -176,7 +176,7 @@ export function ProjectUpdateCard({
             )}
           </div>
           <div className='h-4 rounded-full w-0.5 bg-muted-foreground/30 mx-1.5' />
-          <ProjectUpdateReactionPicker
+          <ProjectReactionPicker
             reactions={update.reactions}
             onToggle={(emoji, reacted) =>
               react.mutate(
