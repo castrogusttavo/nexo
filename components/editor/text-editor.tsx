@@ -31,7 +31,7 @@ import { TocKit } from './plugins/toc-kit'
 import { ToggleKit } from './plugins/toggle-kit'
 import { Editor, EditorContainer } from './ui/editor'
 
-const TEXT_EDITOR_PLUGINS = [
+export const TEXT_EDITOR_PLUGINS = [
   ...BasicNodesKit,
   ...ListKit,
   ...CodeBlockKit,
