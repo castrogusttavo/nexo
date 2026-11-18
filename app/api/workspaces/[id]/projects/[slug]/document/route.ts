@@ -1,0 +1,63 @@
+import type { NextRequest } from 'next/server'
+import { withAxiom } from '@/lib/axiom/server'
+import { getAuthSession } from '@/src/lib/auth-session'
+import { requireConsent } from '@/src/lib/consent'
+import { apiLimiter, consume } from '@/src/lib/rate-limit'
+import { UpdateProjectDocumentSchema } from '@/src/schemas/project-document.schema'
+import { ProjectDocumentService } from '@/src/services/project-document.service'
+import {
+  handleError,
+  standardError,
+  successResponse,
+} from '@/utils/http-response'
+
+type Params = { params: Promise<{ id: string; slug: string }> }
+
+export const GET = withAxiom(async (_request: NextRequest, ctx: Params) => {
+  const auth = await getAuthSession()
+  if (!auth.ok) return handleError(auth.error)
+
+  const limit = await consume(apiLimiter, `user:${auth.value.user.id}`)
+  if (!limit.ok) return handleError(limit.error)
+
+  const { id, slug } = await ctx.params
+
+  const result = await ProjectDocumentService.get(auth.value.user.id, id, slug)
+  if (!result.ok) return handleError(result.error)
+
+  return successResponse(result.value)
+})
+
+export const PUT = withAxiom(async (request: NextRequest, ctx: Params) => {
+  const auth = await getAuthSession()
+  if (!auth.ok) return handleError(auth.error)
+
+  const limit = await consume(apiLimiter, `user:${auth.value.user.id}`)
+  if (!limit.ok) return handleError(limit.error)
+
+  const consent = await requireConsent(
+    auth.value.user.id,
+    'PUT /api/workspaces/[id]/projects/[slug]/document',
+  )
+  if (!consent.ok) return handleError(consent.error)
+
+  const [{ id, slug }, body] = await Promise.all([ctx.params, request.json()])
+  const parsed = UpdateProjectDocumentSchema.safeParse(body)
+  if (!parsed.success) {
+    return standardError(
+      'VALIDATION_ERROR',
+      'Dados inválidos',
+      parsed.error.issues,
+    )
+  }
+
+  const result = await ProjectDocumentService.update(
+    auth.value.user.id,
+    id,
+    slug,
+    parsed.data,
+  )
+  if (!result.ok) return handleError(result.error)
+
+  return successResponse(result.value)
+})

@@ -8,12 +8,25 @@ import {
 } from '@/lib/env/_server'
 import { Server } from '@hocuspocus/server'
 import { Redis } from '@hocuspocus/extension-redis'
+import { ProjectDocumentRepository } from '@/src/repositories/project-document.repository'
 import { WikiPageRepository } from '@/src/repositories/wiki-page.repository'
 import { auth } from '@/src/lib/auth'
 import { assertMember } from '@/src/services/_authz'
+import { ProjectDocumentService } from '@/src/services/project-document.service'
 import * as Y from 'yjs'
 
 const redisUrl = new URL(REDIS_URL)
+
+const PROJECT_DOC_PREFIX = 'project:'
+
+// Wiki documents are the bare page id; project documents are prefixed.
+function parseDocumentName(
+  documentName: string
+): { kind: 'project' | 'wiki'; id: string } {
+  return documentName.startsWith(PROJECT_DOC_PREFIX)
+    ? { kind: 'project', id: documentName.slice(PROJECT_DOC_PREFIX.length) }
+    : { kind: 'wiki', id: documentName }
+}
 
 const server = new Server({
   port: REALTIME_PORT,
@@ -33,7 +46,7 @@ const server = new Server({
     })
   ],
 
-  async onAuthenticate({ documentName, requestHeaders }) {
+  async onAuthenticate({ documentName, requestHeaders, connectionConfig }) {
     const cookie = requestHeaders.cookie
     if (!cookie) {
       logger.warn('realtime.authenticate.failed', {
@@ -56,7 +69,35 @@ const server = new Server({
       throw new Error('Not authenticated')
     }
 
-    const page = await WikiPageRepository.findById(documentName)
+    const target = parseDocumentName(documentName)
+
+    if (target.kind === 'project') {
+      const access = await ProjectDocumentService.authorizeRealtime(
+        session.user.id,
+        target.id
+      )
+      if (!access.ok) {
+        logger.warn('realtime.authenticate.failed', {
+          component: 'Realtime',
+          documentName,
+          userId: session.user.id,
+          reason: access.error.code
+        })
+        throw new Error('Forbidden')
+      }
+      // Readers watch the document live but cannot change it.
+      connectionConfig.readOnly = !access.value.canWrite
+
+      logger.info('realtime.authenticate.success', {
+        component: 'Realtime',
+        documentName,
+        userId: session.user.id,
+        readOnly: !access.value.canWrite
+      })
+      return { userId: session.user.id }
+    }
+
+    const page = await WikiPageRepository.findById(target.id)
     if (!page.ok) {
       logger.warn('realtime.authenticate.failed', {
         component: 'Realtime',
@@ -99,7 +140,27 @@ const server = new Server({
   },
 
   async onLoadDocument({ documentName, document }) {
-    const page = await WikiPageRepository.findById(documentName)
+    const target = parseDocumentName(documentName)
+
+    if (target.kind === 'project') {
+      const project = await ProjectDocumentRepository.findAccessById(target.id)
+      if (!project.ok) {
+        logger.error('realtime.load_document.failed', {
+          component: 'Realtime',
+          documentName,
+          reason: project.error.code
+        })
+        // Refuse the connection: handing back an empty doc would let the next
+        // store overwrite the real state with nothing.
+        throw new Error('Project document unavailable')
+      }
+      if (project.value.documentYjsState) {
+        Y.applyUpdate(document, project.value.documentYjsState)
+      }
+      return document
+    }
+
+    const page = await WikiPageRepository.findById(target.id)
     if (!page.ok) {
       logger.error('realtime.load_document.failed', {
         component: 'Realtime',
@@ -116,7 +177,24 @@ const server = new Server({
 
   async onStoreDocument({ documentName, document, context }) {
     const update = Y.encodeStateAsUpdate(document)
-    const result = await WikiPageRepository.updateYjsState(documentName, {
+    const target = parseDocumentName(documentName)
+
+    if (target.kind === 'project') {
+      const stored = await ProjectDocumentRepository.updateYjsState(
+        target.id,
+        update
+      )
+      if (!stored.ok) {
+        logger.error('realtime.store_document.failed', {
+          component: 'Realtime',
+          documentName,
+          reason: stored.error.code
+        })
+      }
+      return
+    }
+
+    const result = await WikiPageRepository.updateYjsState(target.id, {
       yjsState: update,
       updatedById: (context as { userId: string }).userId
     })
