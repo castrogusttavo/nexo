@@ -5,8 +5,8 @@ import {
   CalendarClockIcon,
 } from '@hugeicons-pro/core-stroke-rounded'
 import { DatePicker } from '@/app/_components/workspace/project/issue/picker/date-picker'
+import type { ProjectDetailsFieldProps } from '../../_lib/project-details-types'
 import { ProjectDetailsFieldRow } from './project-details-field-row'
-import type { ProjectDetailsFieldProps } from './project-details-types'
 
 // Start and due date. The API refuses a due date before the start (the toast
 // shows its message); `null` clears a date.

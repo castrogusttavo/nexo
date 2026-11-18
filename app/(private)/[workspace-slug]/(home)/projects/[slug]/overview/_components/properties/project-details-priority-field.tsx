@@ -12,8 +12,8 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
 import type { ProjectDTO } from '@/types/project'
+import type { ProjectDetailsFieldProps } from '../../_lib/project-details-types'
 import { ProjectDetailsFieldRow } from './project-details-field-row'
-import type { ProjectDetailsFieldProps } from './project-details-types'
 
 // Five fixed options: a plain menu, with no search.
 export function ProjectDetailsPriorityField({

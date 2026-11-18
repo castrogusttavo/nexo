@@ -3,7 +3,7 @@ import { resolvePlatformAdmin } from '@/src/lib/admin-access'
 import { adminMetadata } from '@/src/lib/admin-metadata'
 import { CareerJobService } from '@/src/services/career-job.service'
 import { CareerJobForm } from '../../_components/career-job-form'
-import { StatusControl } from './status-control'
+import { StatusControl } from './_components/status-control'
 
 export const generateMetadata = adminMetadata('Editar vaga | Admin Nexo')
 

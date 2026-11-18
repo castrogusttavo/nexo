@@ -19,8 +19,8 @@ import { Skeleton } from '@/components/ui/skeleton'
 import { getCurrentUser } from '@/src/lib/dal'
 import { DEFAULT_HOME_WIDGETS } from '@/src/schemas/user-preference.schema'
 import { UserPreferenceService } from '@/src/services/user-preference.service'
-import { HomeWidgetList } from './home-widget-list'
-import { HomeWidgetsDialog } from './home-widgets-dialog'
+import { HomeWidgetList } from './_components/home-widget-list'
+import { HomeWidgetsDialog } from './_components/home-widgets-dialog'
 
 export const metadata: Metadata = {
   title: 'Página inicial | Nexo',

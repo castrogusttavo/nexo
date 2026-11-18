@@ -2,7 +2,7 @@ import { notFound } from 'next/navigation'
 import { Suspense } from 'react'
 import { PageSkeleton } from '@/app/(private)/_components/page-skeleton'
 import { getProjectContext } from '@/src/lib/project-context'
-import { ProjectGeneralSettingsForm } from './project-general-settings-form'
+import { ProjectGeneralSettingsForm } from './_components/project-general-settings-form'
 
 // Navigations into this page are instant: a blocking read here is a
 // regression the dev overlay reports.

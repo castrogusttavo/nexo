@@ -11,7 +11,7 @@ import { SettingsPage } from '@/app/(private)/_components/settings-page'
 import { NexoIcon } from '@/components/icon/icon'
 import { Muted } from '@/components/typography/text/muted'
 import { requireMembership } from '@/src/lib/dal'
-import { MembersManager } from './members-manager'
+import { MembersManager } from './_components/members-manager'
 
 export const metadata: Metadata = {
   title: 'Membros | Nexo',

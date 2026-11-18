@@ -18,8 +18,8 @@ import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { getProjectContext } from '@/src/lib/project-context'
 import { IssueService } from '@/src/services/issue.service'
-import { IssueFilters } from './issue-filters'
-import { IssueLayoutToggle } from './issue-layout-toggle'
+import { IssueFilters } from './_components/issue-filters'
+import { IssueLayoutToggle } from './_components/issue-layout-toggle'
 
 export const metadata: Metadata = {
   title: 'Issues | Nexo',

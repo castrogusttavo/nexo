@@ -9,7 +9,7 @@ import HeaderInternalNavigation from '@/app/_components/header/header-internal-n
 import { PageSkeleton } from '@/app/(private)/_components/page-skeleton'
 import { NexoIcon } from '@/components/icon/icon'
 import { getProjectContext } from '@/src/lib/project-context'
-import { ProjectMembersManager } from './project-members-manager'
+import { ProjectMembersManager } from './_components/project-members-manager'
 
 // Navigations into this page are instant: a blocking read here is a
 // regression the dev overlay reports.

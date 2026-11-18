@@ -19,8 +19,8 @@ import {
   useUpdateReplies,
 } from '@/src/hooks/use-update'
 import type { UpdateDTO } from '@/types/updates'
+import { PROJECT_UPDATE_HEALTH } from '../../_lib/project-update-health'
 import { ProjectUpdateForm } from './project-update-form'
-import { PROJECT_UPDATE_HEALTH } from './project-update-health'
 import { ProjectUpdateMenu } from './project-update-menu'
 import { ProjectUpdateReplyForm } from './project-update-reply-form'
 import { ProjectUpdateReplyList } from './project-update-reply-list'

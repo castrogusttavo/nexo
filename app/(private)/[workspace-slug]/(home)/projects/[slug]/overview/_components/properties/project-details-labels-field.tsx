@@ -8,8 +8,8 @@ import { Button } from '@/components/ui/button'
 import { colorToText } from '@/lib/state-colors'
 import { cn } from '@/lib/utils'
 import { useProjectLabels } from '@/src/hooks/use-project-label'
+import type { ProjectDetailsFieldProps } from '../../_lib/project-details-types'
 import { ProjectDetailsFieldRow } from './project-details-field-row'
-import type { ProjectDetailsFieldProps } from './project-details-types'
 
 // `labelIds` replaces the whole set, so the combobox hands back the new list.
 export function ProjectDetailsLabelsField({

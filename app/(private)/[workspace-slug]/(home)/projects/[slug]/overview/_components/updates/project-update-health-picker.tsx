@@ -14,7 +14,7 @@ import {
 import {
   PROJECT_UPDATE_HEALTH,
   type ProjectUpdateHealth,
-} from './project-update-health'
+} from '../../_lib/project-update-health'
 
 type ProjectUpdateHealthPickerProps = {
   value: ProjectUpdateHealth

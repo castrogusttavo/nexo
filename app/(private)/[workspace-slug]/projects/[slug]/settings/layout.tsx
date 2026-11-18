@@ -1,6 +1,6 @@
 import { type ReactNode, Suspense } from 'react'
 import { ContextSidebarSkeleton } from '@/app/_components/navigation/sidebar-context'
-import { ProjectSettingsSidebar } from './project-settings-sidebar'
+import { ProjectSettingsSidebar } from './_components/project-settings-sidebar'
 
 // The page renders beside the sidebar instead of waiting for it; the sidebar
 // needs the slug or the viewer, so it streams into its own boundary.

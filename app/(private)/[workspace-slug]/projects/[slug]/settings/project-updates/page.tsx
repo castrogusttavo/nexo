@@ -11,7 +11,7 @@ import { NexoIcon } from '@/components/icon/icon'
 import { H3 } from '@/components/typography/heading/h3'
 import { Muted } from '@/components/typography/text/muted'
 import { getProjectContext } from '@/src/lib/project-context'
-import { ProjectUpdatesToggle } from './project-updates-toggle'
+import { ProjectUpdatesToggle } from './_components/project-updates-toggle'
 
 // Navigation into this page are instant: a blocking read here is a
 // regression the dev overlay reports.

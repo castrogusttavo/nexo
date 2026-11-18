@@ -19,7 +19,7 @@ import { requireMembership } from '@/src/lib/dal'
 import { limitOf } from '@/src/lib/plans'
 import { MembershipService } from '@/src/services/membership.service'
 import { SubscriptionService } from '@/src/services/subscription.service'
-import { BillingUpgrade } from './billing-upgrade'
+import { BillingUpgrade } from './_components/billing-upgrade'
 
 export const metadata: Metadata = {
   title: 'Assinatura & Planos | Nexo',

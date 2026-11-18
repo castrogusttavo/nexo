@@ -3,7 +3,7 @@ import {
   ContextSidebarSection,
   ContextSidebarSkeleton,
 } from '@/app/_components/navigation/sidebar-context'
-import { HomeSidebar } from './home-sidebar'
+import { HomeSidebar } from './_components/home-sidebar'
 
 // The page renders beside the sidebar instead of waiting for it; the sidebar
 // needs the slug or the viewer, so it streams into its own boundary.

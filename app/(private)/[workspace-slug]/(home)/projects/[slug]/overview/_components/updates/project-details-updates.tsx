@@ -11,10 +11,10 @@ import { notify } from '@/lib/notify'
 import { useProject } from '@/src/hooks/use-project'
 import { useCreateUpdate, useUpdates } from '@/src/hooks/use-update'
 import { useUser } from '@/src/hooks/use-user'
+import type { ProjectUpdateHealth } from '../../_lib/project-update-health'
 import { ProjectDisabledField } from '../project-disabled-field'
 import { ProjectUpdateCard } from './project-update-card'
 import { ProjectUpdateForm } from './project-update-form'
-import type { ProjectUpdateHealth } from './project-update-health'
 
 export function ProjectDetailsUpdates({
   workspaceId,

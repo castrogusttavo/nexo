@@ -8,8 +8,8 @@ import { Button } from '@/components/ui/button'
 import { colorToText } from '@/lib/state-colors'
 import { cn } from '@/lib/utils'
 import { useProjectStates } from '@/src/hooks/use-project-state'
+import type { ProjectDetailsFieldProps } from '../../_lib/project-details-types'
 import { ProjectDetailsFieldRow } from './project-details-field-row'
-import type { ProjectDetailsFieldProps } from './project-details-types'
 
 export function ProjectDetailsStateField({
   workspaceId,

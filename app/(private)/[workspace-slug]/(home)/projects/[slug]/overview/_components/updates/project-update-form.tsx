@@ -3,7 +3,7 @@
 import { useState } from 'react'
 import { Button } from '@/components/ui/button'
 import { Textarea } from '@/components/ui/textarea'
-import type { ProjectUpdateHealth } from './project-update-health'
+import type { ProjectUpdateHealth } from '../../_lib/project-update-health'
 import { ProjectUpdateHealthPicker } from './project-update-health-picker'
 
 type Values = { status: ProjectUpdateHealth; content: string }

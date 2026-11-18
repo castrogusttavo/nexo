@@ -25,7 +25,7 @@ import {
   useUserPreferences,
 } from '@/src/hooks/use-user-preferences'
 import type { HomeWidgets } from '@/src/schemas/user-preference.schema'
-import { HOME_WIDGET_LABELS } from './home-widgets'
+import { HOME_WIDGET_LABELS } from '../_lib/home-widgets'
 
 export function HomeWidgetsDialog() {
   const { data } = useUserPreferences()

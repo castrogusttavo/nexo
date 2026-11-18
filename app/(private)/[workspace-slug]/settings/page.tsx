@@ -9,7 +9,7 @@ import HeaderInternalNavigation from '@/app/_components/header/header-internal-n
 import { NexoIcon } from '@/components/icon/icon'
 import { requireMembership } from '@/src/lib/dal'
 import { PageSkeleton } from '../../_components/page-skeleton'
-import { WorkspaceSettingsGeneralForm } from './workspace-settings-general-form'
+import { WorkspaceSettingsGeneralForm } from './_components/workspace-settings-general-form'
 
 export const metadata: Metadata = {
   title: 'Geral | Nexo',

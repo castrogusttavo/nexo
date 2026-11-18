@@ -14,8 +14,8 @@ import {
   useProjectMembers,
   useRemoveProjectMember,
 } from '@/src/hooks/use-project-member'
+import type { ProjectDetailsFieldProps } from '../../_lib/project-details-types'
 import { ProjectDetailsFieldRow } from './project-details-field-row'
-import type { ProjectDetailsFieldProps } from './project-details-types'
 
 const MAX_VISIBLE = 3
 

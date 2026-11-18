@@ -2,8 +2,8 @@ import type { Metadata } from 'next'
 import { notFound } from 'next/navigation'
 import { Suspense } from 'react'
 import { getProjectContext } from '@/src/lib/project-context'
-import { ProjectOverview } from './project-overview'
-import { ProjectOverviewSkeleton } from './project-overview-skeleton'
+import { ProjectOverview } from './_components/project-overview'
+import { ProjectOverviewSkeleton } from './_components/project-overview-skeleton'
 
 // Navigations into this page are instant: a blocking read here is a
 // regression the dev overlay reports.

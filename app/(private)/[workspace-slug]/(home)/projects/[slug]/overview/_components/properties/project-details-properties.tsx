@@ -4,6 +4,10 @@ import { CircleDotIcon } from '@hugeicons-pro/core-stroke-rounded'
 import { H4 } from '@/components/typography/heading/h4'
 import { notify } from '@/lib/notify'
 import { useProject, useUpdateProject } from '@/src/hooks/use-project'
+import type {
+  ProjectDetailsPropertiesProps,
+  ProjectUpdate,
+} from '../../_lib/project-details-types'
 import { ProjectDisabledField } from '../project-disabled-field'
 import { ProjectDetailsDatesField } from './project-details-dates-field'
 import { ProjectDetailsLabelsField } from './project-details-labels-field'
@@ -11,10 +15,6 @@ import { ProjectDetailsLeadField } from './project-details-lead-field'
 import { ProjectDetailsMembersField } from './project-details-members-field'
 import { ProjectDetailsPriorityField } from './project-details-priority-field'
 import { ProjectDetailsStateField } from './project-details-state-field'
-import type {
-  ProjectDetailsPropertiesProps,
-  ProjectUpdate,
-} from './project-details-types'
 
 // Loads the project and owns the one PATCH every field goes through. Each
 // field reads what only it needs (states, members, labels) in its own

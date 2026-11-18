@@ -9,7 +9,7 @@ import HeaderInternalNavigation from '@/app/_components/header/header-internal-n
 import { PageSkeleton } from '@/app/(private)/_components/page-skeleton'
 import { NexoIcon } from '@/components/icon/icon'
 import { requireMembership } from '@/src/lib/dal'
-import { WorkspaceSettingsProjectConfiguration } from './workspace-settings-project-configuration'
+import { WorkspaceSettingsProjectConfiguration } from './_components/workspace-settings-project-configuration'
 
 export const metadata: Metadata = {
   title: 'Projetos | Nexo',
