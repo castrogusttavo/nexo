@@ -43,17 +43,19 @@ interface PersistAttachmentInput {
   key: string
   body: Buffer
   contentType: string
+  bucket?: string
 }
 
 export async function persistAttachment({
   key,
   body,
   contentType,
+  bucket = ISSUE_ATTACHMENTS_BUCKET,
 }: PersistAttachmentInput): Promise<Result<void>> {
   try {
-    await ensureBucket(ISSUE_ATTACHMENTS_BUCKET)
+    await ensureBucket(bucket)
     await putObject({
-      bucket: ISSUE_ATTACHMENTS_BUCKET,
+      bucket,
       key,
       body,
       contentType,
@@ -65,6 +67,7 @@ export async function persistAttachment({
       component: 'AttachmentService',
       key,
       message,
+      bucket,
     })
     return err(storageError('Falha ao armazenar o anexo'))
   }
