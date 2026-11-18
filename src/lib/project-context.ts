@@ -7,6 +7,7 @@ import { requireMembership } from './dal'
 
 export interface ProjectContext {
   userId: string
+  userName: string
   workspaceId: string
   workspaceSlug: string
   /** Workspace OWNER/ADMIN — may manage a project they do not lead. */
@@ -37,6 +38,7 @@ export const getProjectContext = cache(
 
     return {
       userId: user.id,
+      userName: user.name,
       workspaceId: membership.workspaceId,
       workspaceSlug,
       isPrivileged: isPrivilegedRole(membership.role),

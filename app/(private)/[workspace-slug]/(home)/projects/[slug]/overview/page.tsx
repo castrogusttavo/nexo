@@ -33,6 +33,9 @@ async function Overview({ params }: { params: Params }) {
     <ProjectOverview
       workspaceId={context.workspaceId}
       projectSlug={slug}
+      projectId={context.project.id}
+      userId={context.userId}
+      userName={context.userName}
       canManage={
         context.isPrivileged || context.project.leadId === context.userId
       }
