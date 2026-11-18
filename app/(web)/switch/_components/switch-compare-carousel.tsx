@@ -10,8 +10,8 @@ import { useRef } from 'react'
 import { NexoIcon } from '@/components/icon/icon'
 import { Muted } from '@/components/typography/text/muted'
 import { Button } from '@/components/ui/button'
-import { SubTitle } from '../_components/text/sub-title'
-import { Title } from '../_components/text/title'
+import { SubTitle } from '../../_components/text/sub-title'
+import { Title } from '../../_components/text/title'
 
 interface CompareCard {
   slug: string

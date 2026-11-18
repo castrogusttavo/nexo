@@ -2,7 +2,7 @@ import type { Metadata } from 'next'
 import Image from 'next/image'
 import Link from 'next/link'
 import { Muted } from '@/components/typography/text/muted'
-import { TalkToSalesForm } from './talk-to-sales-form'
+import { TalkToSalesForm } from './_components/talk-to-sales-form'
 
 const TITLE = 'Falar com vendas | Nexo'
 const DESCRIPTION = 'Converse com nosso time sobre o plano Enterprise do Nexo.'

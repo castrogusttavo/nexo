@@ -1,7 +1,7 @@
 import type { Metadata } from 'next'
 import { brand } from '@/lib/brand'
 import { TERMS_VERSION } from '@/lib/legal/versions'
-import { LegalDocument, type LegalSection } from '../legal-document'
+import { LegalDocument, type LegalSection } from '../_components/legal-document'
 
 const TITLE = 'Termos de Serviço | Nexo'
 const DESCRIPTION = 'Os termos que regem o uso do Nexo.'

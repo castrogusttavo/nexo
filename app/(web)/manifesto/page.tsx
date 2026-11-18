@@ -2,8 +2,8 @@ import type { Metadata } from 'next'
 import { SubTitle } from '../_components/text/sub-title'
 import { Title } from '../_components/text/title'
 import { WebFooter } from '../_components/web-footer'
-import { ManifestoHeroImage } from './manifesto-hero-image'
-import { ManifestoPrinciples } from './manifesto-principles'
+import { ManifestoHeroImage } from './_components/manifesto-hero-image'
+import { ManifestoPrinciples } from './_components/manifesto-principles'
 
 const TITLE = 'Manifesto | Nexo'
 const DESCRIPTION =

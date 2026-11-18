@@ -1,9 +1,9 @@
 import type { Metadata } from 'next'
 import { P } from '@/components/typography/text/p'
 import { brand } from '@/lib/brand'
-import { LegalDocument } from '../legal-document'
-import { linkifyLegalText } from '../linkify-legal-text'
-import { SectionHeading } from '../section-heading'
+import { LegalDocument } from '../_components/legal-document'
+import { linkifyLegalText } from '../_components/linkify-legal-text'
+import { SectionHeading } from '../_components/section-heading'
 
 const TITLE = 'Sub-processadores | Nexo'
 const DESCRIPTION =

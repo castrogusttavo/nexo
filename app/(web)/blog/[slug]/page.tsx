@@ -10,9 +10,9 @@ import { NEXT_PUBLIC_URL } from '@/lib/env/env'
 import { BLOG_POST_TAG_LABELS } from '@/src/lib/blog/blog-labels'
 import { formatPostDate } from '@/src/lib/blog/format-ṕost-date'
 import { getAllPostsMeta, getPostBySlug } from '@/src/lib/blog/post'
-import { BlogContent } from './blog-content'
-import { BlogPostViewTracker } from './blog-post-view-tracker'
-import { TableOfContents } from './table-of-contents'
+import { BlogContent } from './_components/blog-content'
+import { BlogPostViewTracker } from './_components/blog-post-view-tracker'
+import { TableOfContents } from './_components/table-of-contents'
 
 interface Props {
   params: Promise<{ slug: string }>

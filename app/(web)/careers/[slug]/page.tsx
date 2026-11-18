@@ -18,7 +18,7 @@ import { CareerJobService } from '@/src/services/career-job.service'
 import type { CareerJobDTO } from '@/types/career-job'
 import { Title } from '../../_components/text/title'
 import { WebFooter } from '../../_components/web-footer'
-import { CareerApplicationForm } from './career-application-form'
+import { CareerApplicationForm } from './_components/career-application-form'
 
 // Blocking on purpose: the page is the record itself, and an unknown id must
 // answer a real 404 (a streamed one is a 200 to crawlers).

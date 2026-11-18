@@ -1,7 +1,7 @@
 import type { Metadata } from 'next'
 import { getAllPostsMeta } from '@/src/lib/blog/post'
-import { BlogFeatured } from './blog-featured'
-import { BlogList } from './blog-list'
+import { BlogFeatured } from './_components/blog-featured'
+import { BlogList } from './_components/blog-list'
 
 const TITLE = 'Blog | Nexo'
 const DESCRIPTION = 'Novidades, bastidores e aprendizados do Nexo.'

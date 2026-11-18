@@ -1,4 +1,7 @@
-import { type WebFaqItem, WebFaqSection } from '../_components/web-faq-section'
+import {
+  type WebFaqItem,
+  WebFaqSection,
+} from '../../_components/web-faq-section'
 
 const PRICING_FAQ_ITEMS: WebFaqItem[] = [
   {

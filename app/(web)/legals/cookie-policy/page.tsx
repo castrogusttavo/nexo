@@ -1,7 +1,7 @@
 import type { Metadata } from 'next'
 import { brand } from '@/lib/brand'
 import { COOKIES_VERSION } from '@/lib/legal/versions'
-import { LegalDocument, type LegalSection } from '../legal-document'
+import { LegalDocument, type LegalSection } from '../_components/legal-document'
 
 const TITLE = 'Política de Cookies | Nexo'
 const DESCRIPTION = 'Quais cookies o Nexo usa e como você controla eles.'

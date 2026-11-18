@@ -1,5 +1,5 @@
 import type { Metadata } from 'next'
-import { LegalDocument, type LegalSection } from '../legal-document'
+import { LegalDocument, type LegalSection } from '../_components/legal-document'
 
 const TITLE = 'Acordo de Nível de Serviço | Nexo'
 const DESCRIPTION =

@@ -1,6 +1,6 @@
 import type { Metadata } from 'next'
 import { brand } from '@/lib/brand'
-import { LegalDocument, type LegalSection } from '../legal-document'
+import { LegalDocument, type LegalSection } from '../_components/legal-document'
 
 const TITLE = 'Acordo de Parceiro de Negócios | Nexo'
 const DESCRIPTION =

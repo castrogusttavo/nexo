@@ -17,7 +17,7 @@ import { PricingTableDetailsPlan } from '../_components/pricing/table/pricing-ta
 import { SubTitle } from '../_components/text/sub-title'
 import { Title } from '../_components/text/title'
 import { WebFooter } from '../_components/web-footer'
-import { PricingFaq } from './pricing-faq'
+import { PricingFaq } from './_components/pricing-faq'
 
 // Prices in cents (source: src/config/plan-prices.ts) converted to
 // decimal units (schema.org price expects a string with no currency symbol).

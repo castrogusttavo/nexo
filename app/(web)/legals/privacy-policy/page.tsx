@@ -1,7 +1,7 @@
 import type { Metadata } from 'next'
 import { brand } from '@/lib/brand'
 import { PRIVACY_VERSION } from '@/lib/legal/versions'
-import { LegalDocument, type LegalSection } from '../legal-document'
+import { LegalDocument, type LegalSection } from '../_components/legal-document'
 
 const TITLE = 'Política de Privacidade | Nexo'
 const DESCRIPTION = 'Como o Nexo coleta, usa e protege seus dados.'

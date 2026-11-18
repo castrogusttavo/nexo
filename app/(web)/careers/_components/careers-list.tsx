@@ -22,7 +22,7 @@ import {
   careerLocationTypeParser,
 } from '@/src/lib/career-params'
 import type { CareerJobDTO } from '@/types/career-job'
-import { Title } from '../_components/text/title'
+import { Title } from '../../_components/text/title'
 
 const UNSPECIFIED_DEPARTMENT = 'Outras vagas'
 

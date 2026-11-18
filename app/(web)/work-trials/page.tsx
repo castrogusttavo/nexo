@@ -5,7 +5,7 @@ import { ButtonLink } from '@/components/button-link'
 import { SubTitle } from '../_components/text/sub-title'
 import { Title } from '../_components/text/title'
 import { WebFooter } from '../_components/web-footer'
-import { WorkTrialsFaq } from './work-trials-faq'
+import { WorkTrialsFaq } from './_components/work-trials-faq'
 
 const TITLE = 'Work trials | Nexo'
 const DESCRIPTION = 'Como funciona o work trial remunerado do Nexo.'
