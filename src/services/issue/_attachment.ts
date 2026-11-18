@@ -1,38 +1,25 @@
 import { logger } from '@/lib/axiom/logger'
 import { storageError, validationError } from '@/src/errors'
+import {
+  ALLOWED_ATTACHMENT_TYPES,
+  MAX_ATTACHMENT_BYTES,
+} from '@/src/lib/attachment-limits'
 import { err, ok, type Result } from '@/src/lib/result'
 import { deleteObject, ensureBucket, putObject } from '@/src/lib/storage/s3'
 
 export const ISSUE_ATTACHMENTS_BUCKET = 'issue-attachments'
 
-const MAX_BYTES = 25 * 1024 * 1024 // 25MB
-
-const ALLOWED_CONTENT_TYPES = new Set([
-  'image/png',
-  'image/jpeg',
-  'image/gif',
-  'image/webp',
-  'image/svg+xml',
-  'video/mp4',
-  'video/webm',
-  'video/quicktime',
-  'application/pdf',
-  'application/zip',
-  'text/plain',
-  'text/csv',
-])
-
 export function validateAttachment(
   contentType: string,
   bytes: Buffer,
 ): Result<void> {
-  if (!ALLOWED_CONTENT_TYPES.has(contentType)) {
+  if (!ALLOWED_ATTACHMENT_TYPES.has(contentType)) {
     return err(validationError('Tipo de arquivo não permitido'))
   }
   if (bytes.byteLength === 0) {
     return err(validationError('Arquivo vazio'))
   }
-  if (bytes.byteLength > MAX_BYTES) {
+  if (bytes.byteLength > MAX_ATTACHMENT_BYTES) {
     return err(validationError('Arquivo muito grande. Máximo 25MB'))
   }
 
