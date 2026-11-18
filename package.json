@@ -206,7 +206,7 @@
     "@commitlint/cli": "^20.5.3",
     "@commitlint/config-conventional": "^20.5.3",
     "@faker-js/faker": "^10.6.0",
-    "@playwright/test": "^1.65.0",
+    "@playwright/test": "1.63.0",
     "@react-email/ui": "6.6.5",
     "@stryker-mutator/core": "^10.1.1",
     "@stryker-mutator/vitest-runner": "^10.1.1",
