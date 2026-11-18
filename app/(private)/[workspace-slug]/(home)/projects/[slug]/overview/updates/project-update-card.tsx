@@ -158,7 +158,7 @@ export function ProjectUpdateCard({
         <div className='flex flex-wrap items-center gap-1.5'>
           <div className='flex items-center gap-3'>
             <Button
-              size='xs'
+              size='sm'
               variant='ghost'
               aria-expanded={repliesOpen}
               onClick={() => setRepliesOpen((open) => !open)}
@@ -168,7 +168,7 @@ export function ProjectUpdateCard({
             {repliesOpen && (
               <Button
                 variant='ghost'
-                size='xs'
+                size='sm'
                 onClick={() => openReplies(true)}
               >
                 Responder
