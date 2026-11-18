@@ -55,10 +55,15 @@ import {
   CreateProjectSchema,
   UpdateProjectSchema,
 } from '@/src/schemas/project.schema'
+import { UpdateProjectDocumentSchema } from '@/src/schemas/project-document.schema'
 import {
   CreateProjectLabelSchema,
   UpdateProjectLabelSchema,
 } from '@/src/schemas/project-label.schema'
+import {
+  CreateProjectLinkSchema,
+  UpdateProjectLinkSchema,
+} from '@/src/schemas/project-link.schema'
 import { AddProjectMemberSchema } from '@/src/schemas/project-member.schema'
 import {
   CreateProjectStateSchema,
@@ -166,6 +171,9 @@ const SPEC_BODY_TO_ZOD: Record<string, ZodType> = {
   UpdateModuleInput: UpdateModuleSchema,
   UpdateNotificationSettingInput: UpdateNotificationSettingSchema,
   UpdateProjectInput: UpdateProjectSchema,
+  UpdateProjectDocumentInput: UpdateProjectDocumentSchema,
+  CreateProjectLinkInput: CreateProjectLinkSchema,
+  UpdateProjectLinkInput: UpdateProjectLinkSchema,
   UpdateShortLinkInput: UpdateShortLinkSchema,
   UpdateStateInput: UpdateStateSchema,
   UpdateProjectStateInput: UpdateProjectStateSchema,
@@ -208,6 +216,8 @@ const NON_JSON_BODIES: Record<string, string> = {
     'multipart project cover upload',
   'POST /workspaces/{id}/projects/{slug}/issues/{issueId}/attachments':
     'multipart issue attachment upload',
+  'POST /workspaces/{id}/projects/{slug}/attachments':
+    'multipart project attachment upload',
   'POST /workspaces/{id}/projects/{slug}/editor-media':
     'multipart editor media upload',
   'POST /workspaces/{id}/wiki/media': 'multipart wiki media upload',

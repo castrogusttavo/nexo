@@ -3912,6 +3912,113 @@
         }
       }
     },
+    "/workspaces/{id}/projects/{slug}/document": {
+      "parameters": [
+        {
+          "name": "id",
+          "in": "path",
+          "required": true,
+          "description": "ID do workspace (cuid2).",
+          "schema": {
+            "type": "string"
+          }
+        },
+        {
+          "name": "slug",
+          "in": "path",
+          "required": true,
+          "description": "Slug do projeto.",
+          "schema": {
+            "type": "string"
+          }
+        }
+      ],
+      "get": {
+        "tags": [
+          "Projetos"
+        ],
+        "summary": "Obter documento do projeto",
+        "description": "Retorna o snapshot JSON (Plate) do documento do projeto. A edição ao vivo acontece pelo servidor realtime; este snapshot serve leituras que não abrem o socket. Visível para quem enxerga o projeto (público, OWNER/ADMIN, lead ou membro).",
+        "security": [
+          {
+            "cookieAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Documento retornado com sucesso.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProjectDocumentResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/UnauthorizedError"
+          },
+          "403": {
+            "$ref": "#/components/responses/ForbiddenError"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFoundError"
+          },
+          "429": {
+            "$ref": "#/components/responses/RateLimitError"
+          }
+        }
+      },
+      "put": {
+        "tags": [
+          "Projetos"
+        ],
+        "summary": "Salvar snapshot do documento do projeto",
+        "description": "Substitui o snapshot JSON do documento. Requer role OWNER/ADMIN ou ser o lead do projeto. Requer consentimento de cookies.",
+        "security": [
+          {
+            "cookieAuth": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateProjectDocumentInput"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Snapshot salvo com sucesso.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProjectDocumentResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/UnauthorizedError"
+          },
+          "403": {
+            "$ref": "#/components/responses/ForbiddenError"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFoundError"
+          },
+          "422": {
+            "$ref": "#/components/responses/ValidationError"
+          },
+          "429": {
+            "$ref": "#/components/responses/RateLimitError"
+          }
+        }
+      }
+    },
     "/workspaces/{id}/projects/{slug}/members": {
       "parameters": [
         {
@@ -10554,6 +10661,627 @@
           }
         }
       }
+    },
+    "/workspaces/{id}/projects/{slug}/reactions": {
+      "parameters": [
+        {
+          "name": "id",
+          "in": "path",
+          "required": true,
+          "description": "ID do workspace (cuid2).",
+          "schema": {
+            "type": "string"
+          }
+        },
+        {
+          "name": "slug",
+          "in": "path",
+          "required": true,
+          "description": "Slug do projeto.",
+          "schema": {
+            "type": "string"
+          }
+        }
+      ],
+      "get": {
+        "tags": [
+          "Projetos"
+        ],
+        "summary": "Listar reações do projeto",
+        "description": "Retorna, por emoji, quantas pessoas reagiram e se a pessoa autenticada está entre elas. Nunca diz quem. Visível para quem enxerga o projeto.",
+        "security": [
+          {
+            "cookieAuth": []
+          }
+        ],
+        "responses": {
+          "401": {
+            "$ref": "#/components/responses/UnauthorizedError"
+          },
+          "403": {
+            "$ref": "#/components/responses/ForbiddenError"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFoundError"
+          },
+          "429": {
+            "$ref": "#/components/responses/RateLimitError"
+          },
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ProjectReactionListResponse"
+              }
+            }
+          },
+          "description": "Reações agrupadas por emoji."
+        }
+      }
+    },
+    "/workspaces/{id}/projects/{slug}/reactions/{emoji}": {
+      "parameters": [
+        {
+          "name": "id",
+          "in": "path",
+          "required": true,
+          "description": "ID do workspace (cuid2).",
+          "schema": {
+            "type": "string"
+          }
+        },
+        {
+          "name": "slug",
+          "in": "path",
+          "required": true,
+          "description": "Slug do projeto.",
+          "schema": {
+            "type": "string"
+          }
+        },
+        {
+          "name": "emoji",
+          "in": "path",
+          "required": true,
+          "description": "O emoji, codificado na URL (por exemplo `%F0%9F%91%8D` para 👍).",
+          "schema": {
+            "type": "string"
+          }
+        }
+      ],
+      "put": {
+        "tags": [
+          "Projetos"
+        ],
+        "summary": "Reagir ao projeto",
+        "description": "Registra a reação da pessoa autenticada com o emoji do caminho, exceto a role VIEWER (`PROJECT_FORBIDDEN`, 403). É idempotente. O emoji precisa ser um só (`422` caso contrário). Requer consentimento de cookies.",
+        "security": [
+          {
+            "cookieAuth": []
+          }
+        ],
+        "responses": {
+          "401": {
+            "$ref": "#/components/responses/UnauthorizedError"
+          },
+          "403": {
+            "$ref": "#/components/responses/ForbiddenError"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFoundError"
+          },
+          "422": {
+            "$ref": "#/components/responses/ValidationError"
+          },
+          "429": {
+            "$ref": "#/components/responses/RateLimitError"
+          },
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/EmptySuccessResponse"
+              }
+            }
+          },
+          "description": "Reação registrada."
+        }
+      },
+      "delete": {
+        "tags": [
+          "Projetos"
+        ],
+        "summary": "Remover a própria reação",
+        "description": "Remove apenas a reação da pessoa autenticada com aquele emoji, exceto a role VIEWER. É idempotente: remover o que não existe também responde 200. Requer consentimento de cookies.",
+        "security": [
+          {
+            "cookieAuth": []
+          }
+        ],
+        "responses": {
+          "401": {
+            "$ref": "#/components/responses/UnauthorizedError"
+          },
+          "403": {
+            "$ref": "#/components/responses/ForbiddenError"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFoundError"
+          },
+          "422": {
+            "$ref": "#/components/responses/ValidationError"
+          },
+          "429": {
+            "$ref": "#/components/responses/RateLimitError"
+          },
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/EmptySuccessResponse"
+              }
+            }
+          },
+          "description": "Reação removida."
+        }
+      }
+    },
+    "/workspaces/{id}/projects/{slug}/links": {
+      "parameters": [
+        {
+          "name": "id",
+          "in": "path",
+          "required": true,
+          "description": "ID do workspace (cuid2).",
+          "schema": {
+            "type": "string"
+          }
+        },
+        {
+          "name": "slug",
+          "in": "path",
+          "required": true,
+          "description": "Slug do projeto.",
+          "schema": {
+            "type": "string"
+          }
+        }
+      ],
+      "get": {
+        "tags": [
+          "Projetos"
+        ],
+        "summary": "Listar links do projeto",
+        "description": "Retorna os links do projeto, do mais antigo ao mais novo. Visível para quem enxerga o projeto.",
+        "security": [
+          {
+            "cookieAuth": []
+          }
+        ],
+        "responses": {
+          "401": {
+            "$ref": "#/components/responses/UnauthorizedError"
+          },
+          "403": {
+            "$ref": "#/components/responses/ForbiddenError"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFoundError"
+          },
+          "429": {
+            "$ref": "#/components/responses/RateLimitError"
+          },
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ProjectLinkListResponse"
+              }
+            }
+          },
+          "description": "Links do projeto."
+        }
+      },
+      "post": {
+        "tags": [
+          "Projetos"
+        ],
+        "summary": "Adicionar link ao projeto",
+        "description": "Adiciona um link `http(s)`. Requer role OWNER/ADMIN ou ser o lead do projeto (`PROJECT_FORBIDDEN`, 403). Máximo de 20 por projeto (`PROJECT_LINK_LIMIT_REACHED`, 409). Requer consentimento de cookies.",
+        "security": [
+          {
+            "cookieAuth": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateProjectLinkInput"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Link criado.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProjectLinkResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/UnauthorizedError"
+          },
+          "403": {
+            "$ref": "#/components/responses/ForbiddenError"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFoundError"
+          },
+          "409": {
+            "$ref": "#/components/responses/ConflictError"
+          },
+          "422": {
+            "$ref": "#/components/responses/ValidationError"
+          },
+          "429": {
+            "$ref": "#/components/responses/RateLimitError"
+          }
+        }
+      }
+    },
+    "/workspaces/{id}/projects/{slug}/links/{linkId}": {
+      "parameters": [
+        {
+          "name": "id",
+          "in": "path",
+          "required": true,
+          "description": "ID do workspace (cuid2).",
+          "schema": {
+            "type": "string"
+          }
+        },
+        {
+          "name": "slug",
+          "in": "path",
+          "required": true,
+          "description": "Slug do projeto.",
+          "schema": {
+            "type": "string"
+          }
+        },
+        {
+          "name": "linkId",
+          "in": "path",
+          "required": true,
+          "description": "ID do link (cuid2).",
+          "schema": {
+            "type": "string"
+          }
+        }
+      ],
+      "patch": {
+        "tags": [
+          "Projetos"
+        ],
+        "summary": "Editar link do projeto",
+        "description": "Altera a URL e/ou o título (`null` limpa o título). Requer role OWNER/ADMIN ou ser o lead do projeto (`PROJECT_FORBIDDEN`, 403). Requer consentimento de cookies.",
+        "security": [
+          {
+            "cookieAuth": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateProjectLinkInput"
+              }
+            }
+          }
+        },
+        "responses": {
+          "401": {
+            "$ref": "#/components/responses/UnauthorizedError"
+          },
+          "403": {
+            "$ref": "#/components/responses/ForbiddenError"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFoundError"
+          },
+          "422": {
+            "$ref": "#/components/responses/ValidationError"
+          },
+          "429": {
+            "$ref": "#/components/responses/RateLimitError"
+          },
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ProjectLinkResponse"
+              }
+            }
+          },
+          "description": "Link atualizado."
+        }
+      },
+      "delete": {
+        "tags": [
+          "Projetos"
+        ],
+        "summary": "Remover link do projeto",
+        "description": "Remove o link. Requer role OWNER/ADMIN ou ser o lead do projeto (`PROJECT_FORBIDDEN`, 403). Requer consentimento de cookies.",
+        "security": [
+          {
+            "cookieAuth": []
+          }
+        ],
+        "responses": {
+          "401": {
+            "$ref": "#/components/responses/UnauthorizedError"
+          },
+          "403": {
+            "$ref": "#/components/responses/ForbiddenError"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFoundError"
+          },
+          "429": {
+            "$ref": "#/components/responses/RateLimitError"
+          },
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/EmptySuccessResponse"
+              }
+            }
+          },
+          "description": "Link removido."
+        }
+      }
+    },
+    "/workspaces/{id}/projects/{slug}/attachments": {
+      "parameters": [
+        {
+          "name": "id",
+          "in": "path",
+          "required": true,
+          "description": "ID do workspace (cuid2).",
+          "schema": {
+            "type": "string"
+          }
+        },
+        {
+          "name": "slug",
+          "in": "path",
+          "required": true,
+          "description": "Slug do projeto.",
+          "schema": {
+            "type": "string"
+          }
+        }
+      ],
+      "get": {
+        "tags": [
+          "Projetos"
+        ],
+        "summary": "Listar anexos do projeto",
+        "description": "Retorna os arquivos do projeto com URL assinada de download (válida por 1 hora). Visível para quem enxerga o projeto.",
+        "security": [
+          {
+            "cookieAuth": []
+          }
+        ],
+        "responses": {
+          "401": {
+            "$ref": "#/components/responses/UnauthorizedError"
+          },
+          "403": {
+            "$ref": "#/components/responses/ForbiddenError"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFoundError"
+          },
+          "429": {
+            "$ref": "#/components/responses/RateLimitError"
+          },
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ProjectAttachmentListResponse"
+              }
+            }
+          },
+          "description": "Anexos do projeto."
+        }
+      },
+      "post": {
+        "tags": [
+          "Projetos"
+        ],
+        "summary": "Enviar anexo ao projeto",
+        "description": "Envia um arquivo (`multipart/form-data`, campo `file`) de até 25 MB, nos mesmos tipos aceitos nas issues. Requer role OWNER/ADMIN ou ser o lead do projeto (`PROJECT_FORBIDDEN`, 403). Máximo de 20 por projeto (`PROJECT_ATTACHMENT_LIMIT_REACHED`, 409). Requer consentimento de cookies.",
+        "security": [
+          {
+            "cookieAuth": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "file"
+                ],
+                "properties": {
+                  "file": {
+                    "type": "string",
+                    "format": "binary"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Anexo enviado.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProjectAttachmentResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/UnauthorizedError"
+          },
+          "403": {
+            "$ref": "#/components/responses/ForbiddenError"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFoundError"
+          },
+          "409": {
+            "$ref": "#/components/responses/ConflictError"
+          },
+          "422": {
+            "$ref": "#/components/responses/ValidationError"
+          },
+          "429": {
+            "$ref": "#/components/responses/RateLimitError"
+          }
+        }
+      }
+    },
+    "/workspaces/{id}/projects/{slug}/attachments/{attachmentId}": {
+      "parameters": [
+        {
+          "name": "id",
+          "in": "path",
+          "required": true,
+          "description": "ID do workspace (cuid2).",
+          "schema": {
+            "type": "string"
+          }
+        },
+        {
+          "name": "slug",
+          "in": "path",
+          "required": true,
+          "description": "Slug do projeto.",
+          "schema": {
+            "type": "string"
+          }
+        },
+        {
+          "name": "attachmentId",
+          "in": "path",
+          "required": true,
+          "description": "ID do anexo (cuid2).",
+          "schema": {
+            "type": "string"
+          }
+        }
+      ],
+      "delete": {
+        "tags": [
+          "Projetos"
+        ],
+        "summary": "Remover anexo do projeto",
+        "description": "Remove o registro e o arquivo. Requer role OWNER/ADMIN ou ser o lead do projeto (`PROJECT_FORBIDDEN`, 403). Requer consentimento de cookies.",
+        "security": [
+          {
+            "cookieAuth": []
+          }
+        ],
+        "responses": {
+          "401": {
+            "$ref": "#/components/responses/UnauthorizedError"
+          },
+          "403": {
+            "$ref": "#/components/responses/ForbiddenError"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFoundError"
+          },
+          "429": {
+            "$ref": "#/components/responses/RateLimitError"
+          },
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/EmptySuccessResponse"
+              }
+            }
+          },
+          "description": "Anexo removido."
+        }
+      }
+    },
+    "/workspaces/{id}/projects/{slug}/progress": {
+      "parameters": [
+        {
+          "name": "id",
+          "in": "path",
+          "required": true,
+          "description": "ID do workspace (cuid2).",
+          "schema": {
+            "type": "string"
+          }
+        },
+        {
+          "name": "slug",
+          "in": "path",
+          "required": true,
+          "description": "Slug do projeto.",
+          "schema": {
+            "type": "string"
+          }
+        }
+      ],
+      "get": {
+        "tags": [
+          "Projetos"
+        ],
+        "summary": "Progresso das issues do projeto",
+        "description": "Contagem e percentual de issues por grupo de estado (BACKLOG, UNSTARTED, STARTED, COMPLETED, CANCELLED), sempre os cinco, em ordem fixa. `percentage` é count/total. `completionPercentage` é COMPLETED/(total − CANCELLED). Issues excluídas não entram. Visível para quem enxerga o projeto.",
+        "security": [
+          {
+            "cookieAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Progresso do projeto.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProjectProgressResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/UnauthorizedError"
+          },
+          "403": {
+            "$ref": "#/components/responses/ForbiddenError"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFoundError"
+          },
+          "429": {
+            "$ref": "#/components/responses/RateLimitError"
+          }
+        }
+      }
     }
   },
   "components": {
@@ -12313,6 +13041,61 @@
             }
           }
         ]
+      },
+      "ProjectDocument": {
+        "type": "object",
+        "description": "Snapshot do documento do projeto.",
+        "properties": {
+          "content": {
+            "type": "array",
+            "description": "Valor do editor Plate.",
+            "items": {
+              "type": "object"
+            }
+          },
+          "updatedAt": {
+            "oneOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Última gravação do documento; null se nunca foi salvo."
+          }
+        }
+      },
+      "ProjectDocumentResponse": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/SuccessResponse"
+          },
+          {
+            "type": "object",
+            "properties": {
+              "data": {
+                "$ref": "#/components/schemas/ProjectDocument"
+              }
+            }
+          }
+        ]
+      },
+      "UpdateProjectDocumentInput": {
+        "type": "object",
+        "required": [
+          "content"
+        ],
+        "properties": {
+          "content": {
+            "type": "array",
+            "description": "Valor do editor Plate (até 100.000 caracteres serializado).",
+            "items": {
+              "type": "object"
+            }
+          }
+        }
       },
       "ProjectListResponse": {
         "allOf": [
@@ -16296,6 +17079,268 @@
                 "items": {
                   "$ref": "#/components/schemas/UpdateReply"
                 }
+              }
+            }
+          }
+        ]
+      },
+      "ProjectReactionSummary": {
+        "type": "object",
+        "description": "Quantas pessoas usaram o emoji. Nunca diz quem.",
+        "properties": {
+          "emoji": {
+            "type": "string",
+            "example": "👍"
+          },
+          "count": {
+            "type": "integer",
+            "example": 3
+          },
+          "reactedByMe": {
+            "type": "boolean",
+            "description": "A pessoa autenticada usou este emoji."
+          }
+        }
+      },
+      "ProjectLink": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "projectId": {
+            "type": "string"
+          },
+          "title": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "url": {
+            "type": "string"
+          },
+          "createdById": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          }
+        }
+      },
+      "ProjectAttachment": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "projectId": {
+            "type": "string"
+          },
+          "fileName": {
+            "type": "string"
+          },
+          "contentType": {
+            "type": "string"
+          },
+          "size": {
+            "type": "integer",
+            "description": "Tamanho em bytes."
+          },
+          "url": {
+            "type": "string",
+            "description": "URL assinada de download, válida por 1 hora."
+          },
+          "uploadedById": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          }
+        }
+      },
+      "CreateProjectLinkInput": {
+        "type": "object",
+        "required": [
+          "url"
+        ],
+        "properties": {
+          "url": {
+            "type": "string",
+            "maxLength": 2048,
+            "description": "URL http(s)."
+          },
+          "title": {
+            "type": "string",
+            "maxLength": 100
+          }
+        }
+      },
+      "UpdateProjectLinkInput": {
+        "type": "object",
+        "properties": {
+          "url": {
+            "type": "string",
+            "maxLength": 2048
+          },
+          "title": {
+            "oneOf": [
+              {
+                "type": "string",
+                "maxLength": 100
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        }
+      },
+      "ProjectReactionListResponse": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/SuccessResponse"
+          },
+          {
+            "type": "object",
+            "properties": {
+              "data": {
+                "type": "array",
+                "items": {
+                  "$ref": "#/components/schemas/ProjectReactionSummary"
+                }
+              }
+            }
+          }
+        ]
+      },
+      "ProjectLinkResponse": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/SuccessResponse"
+          },
+          {
+            "type": "object",
+            "properties": {
+              "data": {
+                "$ref": "#/components/schemas/ProjectLink"
+              }
+            }
+          }
+        ]
+      },
+      "ProjectLinkListResponse": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/SuccessResponse"
+          },
+          {
+            "type": "object",
+            "properties": {
+              "data": {
+                "type": "array",
+                "items": {
+                  "$ref": "#/components/schemas/ProjectLink"
+                }
+              }
+            }
+          }
+        ]
+      },
+      "ProjectAttachmentResponse": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/SuccessResponse"
+          },
+          {
+            "type": "object",
+            "properties": {
+              "data": {
+                "$ref": "#/components/schemas/ProjectAttachment"
+              }
+            }
+          }
+        ]
+      },
+      "ProjectAttachmentListResponse": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/SuccessResponse"
+          },
+          {
+            "type": "object",
+            "properties": {
+              "data": {
+                "type": "array",
+                "items": {
+                  "$ref": "#/components/schemas/ProjectAttachment"
+                }
+              }
+            }
+          }
+        ]
+      },
+      "ProjectProgressGroup": {
+        "type": "object",
+        "properties": {
+          "group": {
+            "type": "string",
+            "enum": [
+              "BACKLOG",
+              "UNSTARTED",
+              "STARTED",
+              "COMPLETED",
+              "CANCELLED"
+            ]
+          },
+          "count": {
+            "type": "integer",
+            "example": 3
+          },
+          "percentage": {
+            "type": "integer",
+            "description": "count / total, de 0 a 100.",
+            "example": 43
+          }
+        }
+      },
+      "ProjectProgress": {
+        "type": "object",
+        "properties": {
+          "total": {
+            "type": "integer",
+            "example": 7
+          },
+          "completionPercentage": {
+            "type": "integer",
+            "description": "COMPLETED / (total − CANCELLED), de 0 a 100."
+          },
+          "groups": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ProjectProgressGroup"
+            }
+          }
+        }
+      },
+      "ProjectProgressResponse": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/SuccessResponse"
+          },
+          {
+            "type": "object",
+            "properties": {
+              "data": {
+                "$ref": "#/components/schemas/ProjectProgress"
               }
             }
           }
