@@ -189,8 +189,11 @@ jobs:
       - name: Generate Prisma Client
         run: pnpm prisma:generate
 
-      - name: Push database schema
-        run: pnpm prisma db push
+      # `prisma db push` builds the schema from schema.prisma alone, so it skips
+      # what the migrations add by hand (the CHECK on updates, among others):
+      # tests that rely on those guarantees passed locally and failed here.
+      - name: Apply database migrations
+        run: pnpm prisma migrate deploy
 
       # services: can't pass a custom command to the minio/minio image
       # (it needs `server /data` or it exits immediately), so it's started
@@ -388,8 +391,11 @@ jobs:
       - name: Generate Prisma Client
         run: pnpm prisma:generate
 
-      - name: Push database schema
-        run: pnpm prisma db push
+      # `prisma db push` builds the schema from schema.prisma alone, so it skips
+      # what the migrations add by hand (the CHECK on updates, among others):
+      # tests that rely on those guarantees passed locally and failed here.
+      - name: Apply database migrations
+        run: pnpm prisma migrate deploy
 
       - name: Run unit + integration tests with coverage
         run: pnpm test:coverage --reporter=default --reporter=json --outputFile.json=reports/vitest-backend.json
