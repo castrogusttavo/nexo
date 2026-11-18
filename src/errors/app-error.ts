@@ -399,3 +399,17 @@ export const updateForbidden = (
 export const updateDisabled = (
   message = 'As atualizações estão desativadas neste projeto',
 ): AppError => appError('UPDATE_DISABLED', message)
+
+export const projectLinkNotFound = (): AppError =>
+  appError('PROJECT_LINK_NOT_FOUND', 'Project link not found')
+
+export const projectLinkLimitReached = (
+  message = 'Um projeto pode ter no máximo 20 links',
+): AppError => appError('PROJECT_LINK_LIMIT_REACHED', message)
+
+export const projectAttachmentNotFound = (): AppError =>
+  appError('PROJECT_ATTACHMENT_NOT_FOUND', 'Project attachment not found')
+
+export const projectAttachmentLimitReached = (
+  message = 'Um projeto pode ter no máximo 20 anexos',
+): AppError => appError('PROJECT_ATTACHMENT_LIMIT_REACHED', message)
