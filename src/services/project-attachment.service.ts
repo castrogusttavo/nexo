@@ -49,6 +49,7 @@ export const ProjectAttachmentService = {
             bucket: row.bucket,
             key: row.key,
             expiresInSeconds: DOWNLOAD_TTL_SECONDS,
+            downloadFileName: row.fileName,
           }),
         ),
       ),
@@ -112,6 +113,7 @@ export const ProjectAttachmentService = {
       bucket: created.value.bucket,
       key: created.value.key,
       expiresInSeconds: DOWNLOAD_TTL_SECONDS,
+      downloadFileName: created.value.fileName,
     })
 
     return ok(toProjectAttachmentDTO(created.value, url))

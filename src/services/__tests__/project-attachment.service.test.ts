@@ -3,6 +3,7 @@ import { createFakeMembership } from '@/src/__tests__/factories/membership.facto
 import { expectErr, expectOk } from '@/src/__tests__/helpers/result.helpers'
 import { databaseError } from '@/src/errors'
 import { err, ok } from '@/src/lib/result'
+import { getPresignedDownloadUrl } from '@/src/lib/storage/s3'
 import { MembershipRepository } from '@/src/repositories/membership.repository'
 import { ProjectRepository } from '@/src/repositories/project.repository'
 import { ProjectAttachmentRepository } from '@/src/repositories/project-attachment.repository'
@@ -74,6 +75,10 @@ describe('ProjectAttachmentService', () => {
     const result = await ProjectAttachmentService.list('actor', 'ws1', 'slug')
 
     expect(expectOk(result)[0].url).toBe('https://signed')
+    // The signed url must make the browser download, not open, the file.
+    expect(getPresignedDownloadUrl).toHaveBeenCalledWith(
+      expect.objectContaining({ downloadFileName: 'plano.pdf' }),
+    )
   })
 
   it('should upload, persist the object and create the row', async () => {
@@ -89,6 +94,9 @@ describe('ProjectAttachmentService', () => {
     )
 
     expect(expectOk(result).fileName).toBe('plano.pdf')
+    expect(getPresignedDownloadUrl).toHaveBeenCalledWith(
+      expect.objectContaining({ downloadFileName: 'plano.pdf' }),
+    )
     expect(persistAttachment).toHaveBeenCalledWith(
       expect.objectContaining({ bucket: 'project-attachments' }),
     )

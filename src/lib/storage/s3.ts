@@ -84,6 +84,24 @@ export interface PresignedDownloadInput {
   bucket: string
   key: string
   expiresInSeconds: number
+  /**
+   * Makes the browser save the file under this name instead of showing it.
+   * The `download` attribute of an <a> is ignored across origins, so the
+   * signed URL itself has to ask for `Content-Disposition: attachment`.
+   */
+  downloadFileName?: string
+}
+
+// RFC 6266: a quoted ASCII fallback plus the exact name as RFC 5987
+// `filename*`, so accents and spaces survive and header injection (quotes,
+// CR/LF) cannot.
+export function attachmentContentDisposition(fileName: string): string {
+  const ascii = fileName.replace(/[^\x20-\x7e]|["\\]/g, '_')
+  const encoded = encodeURIComponent(fileName).replace(
+    /['()*]/g,
+    (char) => `%${char.charCodeAt(0).toString(16).toUpperCase()}`,
+  )
+  return `attachment; filename="${ascii}"; filename*=UTF-8''${encoded}`
 }
 
 export async function getPresignedDownloadUrl(
@@ -92,7 +110,15 @@ export async function getPresignedDownloadUrl(
   const s3 = getS3Client()
   return getSignedUrl(
     s3,
-    new GetObjectCommand({ Bucket: input.bucket, Key: input.key }),
+    new GetObjectCommand({
+      Bucket: input.bucket,
+      Key: input.key,
+      ...(input.downloadFileName && {
+        ResponseContentDisposition: attachmentContentDisposition(
+          input.downloadFileName,
+        ),
+      }),
+    }),
     { expiresIn: input.expiresInSeconds },
   )
 }
