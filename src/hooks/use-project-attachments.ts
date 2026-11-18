@@ -3,7 +3,7 @@ import type { ProjectAttachmentDTO } from '@/types/project-attachment'
 import { apiFetch, apiSend } from './_fetch'
 
 export function projectAttachmentsKey(workspaceId: string, slug: string) {
-  return ['project-links', workspaceId, slug] as const
+  return ['project-attachments', workspaceId, slug] as const
 }
 
 const baseUrl = (workspaceId: string, slug: string) =>
