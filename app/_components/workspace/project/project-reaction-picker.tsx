@@ -16,11 +16,21 @@ import type { ProjectReactionSummaryDTO } from '@/types/project-reaction'
 type ProjectReactionPickerProps = {
   reactions: ProjectReactionSummaryDTO[]
   onToggle: (emoji: string, reacted: boolean) => void
+  variant?:
+    | 'default'
+    | 'destructive'
+    | 'ghost'
+    | 'link'
+    | 'outline'
+    | 'secondary'
+    | null
+    | undefined
 }
 
 export function ProjectReactionPicker({
   reactions,
   onToggle,
+  variant,
 }: ProjectReactionPickerProps) {
   const [open, setOpen] = useState(false)
 
@@ -49,7 +59,11 @@ export function ProjectReactionPicker({
       <DropdownMenu open={open} onOpenChange={setOpen}>
         <DropdownMenuTrigger
           render={
-            <Button variant='secondary' size='icon-xs' aria-label='Reagir'>
+            <Button
+              variant={variant ?? 'secondary'}
+              size='icon-sm'
+              aria-label='Reagir'
+            >
               <NexoIcon icon={LaughIcon} strokeWidth={2} />
             </Button>
           }
