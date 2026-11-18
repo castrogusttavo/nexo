@@ -58,6 +58,9 @@ model User {
   updatedWikiPages     WikiPage[]            @relation("WikiPageEditor")
   wikiComments         WikiComment[]         @relation("WikiCommentAuthor")
   resolvedWikiComments WikiComment[]         @relation("WikiCommentResolver")
+  projectReactions     ProjectReaction[]
+  projectLinks         ProjectLink[]
+  projectAttachments   ProjectAttachment[]
 
   @@index([deletionScheduledAt])
   @@map("users")
@@ -479,6 +482,9 @@ model Project {
   dueDate           DateTime?       @map("due_date")
   workspaceId       String          @map("workspace_id")
   archivedAt        DateTime?       @map("archived_at")
+  document          Json            @default("[]")
+  documentYjsState  Bytes?          @map("document_yjs_state")
+  documentUpdatedAt DateTime?       @map("document_updated_at")
   createdAt         DateTime        @default(now()) @map("created_at")
   updatedAt         DateTime        @updatedAt @map("updated_at")
 
@@ -500,6 +506,9 @@ model Project {
   issueTypes       IssueType[]
   issues           Issue[]
   updates          Update[]
+  reactions        ProjectReaction[]
+  links            ProjectLink[]
+  attachments      ProjectAttachment[]
 
   @@unique([workspaceId, slug])
   @@unique([workspaceId, identifier])
@@ -507,6 +516,54 @@ model Project {
   @@index([leadId])
   @@index([stateId])
   @@map("projects")
+}
+
+model ProjectReaction {
+  projectId String   @map("project_id")
+  userId    String   @map("user_id")
+  emoji     String
+  createdAt DateTime @default(now()) @map("created_at")
+
+  project Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  user    User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@id([projectId, userId, emoji])
+  @@index([projectId])
+  @@map("project_reactions")
+}
+
+model ProjectLink {
+  id          String   @id @default(cuid())
+  projectId   String   @map("project_id")
+  title       String?
+  url         String
+  createdById String?  @map("created_by_id")
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  project   Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  createdBy User?   @relation(fields: [createdById], references: [id], onDelete: SetNull)
+
+  @@index([projectId, createdAt])
+  @@map("project_links")
+}
+
+model ProjectAttachment {
+  id           String   @id @default(cuid())
+  fileName     String   @map("file_name")
+  contentType  String   @map("content_type")
+  size         Int
+  bucket       String
+  key          String
+  projectId    String   @map("project_id")
+  uploadedById String?  @map("uploaded_by_id")
+  createdAt    DateTime @default(now()) @map("created_at")
+
+  project    Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  uploadedBy User?   @relation(fields: [uploadedById], references: [id], onDelete: Cascade)
+
+  @@index([projectId, createdAt])
+  @@map("project_attachments")
 }
 
 model ProjectMember {
