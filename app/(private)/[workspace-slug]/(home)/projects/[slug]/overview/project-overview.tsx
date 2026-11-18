@@ -1,6 +1,6 @@
 'use client'
 
-import { Activity02Icon } from '@hugeicons-pro/core-stroke-rounded'
+import { Activity02Icon, Link04Icon } from '@hugeicons-pro/core-stroke-rounded'
 import { useState } from 'react'
 import {
   HeaderBreadcrumbCrumb,
@@ -12,9 +12,21 @@ import { ProjectEmojiIconPicker } from '@/app/_components/workspace/project/crea
 import { ProjectDocumentEditor } from '@/app/_components/workspace/project/document/project-document-editor'
 import { NexoIcon } from '@/components/icon/icon'
 import { DetailsPanelToggle } from '@/components/layouts/details-panel'
+import { Button } from '@/components/ui/button'
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from '@/components/ui/tooltip'
 import { notify } from '@/lib/notify'
 import { useProject, useUpdateProject } from '@/src/hooks/use-project'
+import { ProjectAttachmentButton } from './project-attachment-button'
+import { ProjectAttachmentsView } from './project-attachments-view'
 import { PROJECT_DETAILS_ID, ProjectDetails } from './project-details'
+import { ProjectLinkDialog } from './project-link-dialog'
+import { ProjectLinksView } from './project-links-view'
+import { ProjectProgressView } from './project-progress-view'
+import { ProjectReactionList } from './project-reaction-list'
 
 function ProjectOverviewHero({
   workspaceId,
@@ -92,6 +104,7 @@ export function ProjectOverview({
   projectStatesEnabled: boolean
 }) {
   const [detailsOpen, setDetailsOpen] = useState(true)
+  const [open, setOpen] = useState(false)
 
   return (
     <div className='w-full h-full flex flex-col overflow-hidden'>
@@ -111,7 +124,7 @@ export function ProjectOverview({
           onToggle={() => setDetailsOpen((open) => !open)}
         />
       </HeaderInternalNavigation>
-      <div className='w-full flex items-start justify-between h-full '>
+      <div className='flex min-h-0 w-full flex-1 items-start justify-between'>
         <div className='h-full flex-1 overflow-y-scroll no-scrollbar'>
           <ProjectOverviewHero
             workspaceId={workspaceId}
@@ -127,20 +140,60 @@ export function ProjectOverview({
               userName={userName}
               canManage={canManage}
             />
-            {/** emoji + link + file */}
-            <div>
-              {/** Dropdown emoji */}
-              <div />
-              {/** Dialog Link + Attachment */}
-              <div />
+            <div className='px-10'>
+              <div className='flex items-center justify-between border-b border-border pb-6'>
+                <ProjectReactionList
+                  workspaceId={workspaceId}
+                  projectSlug={projectSlug}
+                />
+                {canManage && (
+                  <div className='bg-primary-foreground border border-border rounded-lg flex w-fit gap-1 p-0.5'>
+                    <Tooltip>
+                      <TooltipTrigger
+                        render={
+                          <Button
+                            variant='ghost'
+                            size='icon'
+                            aria-label='Adicionar link'
+                            onClick={() => setOpen(true)}
+                          >
+                            <NexoIcon icon={Link04Icon} strokeWidth={2} />
+                          </Button>
+                        }
+                      />
+                      <TooltipContent>Adicionar link</TooltipContent>
+                    </Tooltip>
+                    <ProjectAttachmentButton
+                      workspaceId={workspaceId}
+                      projectSlug={projectSlug}
+                    />
+                    <ProjectLinkDialog
+                      workspaceId={workspaceId}
+                      projectSlug={projectSlug}
+                      open={open}
+                      onOpenChange={setOpen}
+                    />
+                  </div>
+                )}
+              </div>
             </div>
           </div>
-          <hr />
-          {/** progress */}
-          <div />
-          <hr />
-          {/** Links & Attachments */}
-          <div />
+          <div className='px-10 py-8'>
+            <ProjectProgressView
+              workspaceId={workspaceId}
+              projectSlug={projectSlug}
+            />
+            <ProjectLinksView
+              workspaceId={workspaceId}
+              projectSlug={projectSlug}
+              canManage={canManage}
+            />
+            <ProjectAttachmentsView
+              workspaceId={workspaceId}
+              projectSlug={projectSlug}
+              canManage={canManage}
+            />
+          </div>
         </div>
         <ProjectDetails
           open={detailsOpen}
