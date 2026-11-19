@@ -29,6 +29,7 @@ Language: English. User-facing product copy stays in pt-BR, but this folder is d
 | [postmortems/](postmortems/README.md) | Five incidents, with timelines and what changed |
 | [changelog/](changelog/README.md) | Where release notes live |
 | [diagrams/](diagrams/README.md) | Every SVG diagram, with an index |
+| [open-questions](open-questions.md) | What the code could not settle, where CLAUDE.md is stale, and possible defects |
 
 ## Keeping it honest
 
