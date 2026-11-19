@@ -1,0 +1,60 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 2000 760" width="2000" height="760" font-family="Inter, -apple-system, Segoe UI, Helvetica, Arial, sans-serif">
+<title>Account deletion: silent failure and the fixed flow</title><defs><marker id="m-orange" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#E08A3C"/></marker><marker id="m-red" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#D1495B"/></marker><marker id="m-green" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#2F9E6E"/></marker><marker id="m-teal" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#2A9AA8"/></marker><marker id="m-purple" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#5B54D6"/></marker><marker id="m-gray" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#64748B"/></marker><marker id="m-blue" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#3B82C4"/></marker></defs>
+<rect width="2000" height="760" fill="#FBFAF7"/>
+<text x="40" y="52" font-size="34" font-weight="800" fill="#1E293B">Account deletion: silent failure and the fixed flow</text>
+<text x="40" y="84" font-size="19" fill="#475569">Before the fix the job died on a foreign key and nobody was told; after it, authorship is nulled and a dead job raises an alarm.</text>
+<rect x="20" y="125" width="1960" height="290" rx="14" fill="none" stroke="#B8BEC8" stroke-width="1.5" stroke-dasharray="6 5"/>
+<text x="42" y="155" font-size="15" font-weight="700" letter-spacing="1" fill="#D1495B">BEFORE · EVERY DELETION REQUEST FAILED</text>
+<rect x="50" y="205" width="270" height="120" rx="8" fill="#4A5568"/>
+<text x="185.0" y="245.0" text-anchor="middle" font-size="19" font-weight="700" fill="#fff">Deletion requested</text>
+<text x="185.0" y="271.0" text-anchor="middle" font-size="15" fill="#fff">delete-account job, delayed 30</text>
+<text x="185.0" y="290.0" text-anchor="middle" font-size="15" fill="#fff">days</text>
+<rect x="370" y="205" width="270" height="120" rx="8" fill="#4A5568"/>
+<text x="505.0" y="245.0" text-anchor="middle" font-size="19" font-weight="700" fill="#fff">prisma.user.delete</text>
+<text x="505.0" y="271.0" text-anchor="middle" font-size="15" fill="#fff">worker, account-lifecycle</text>
+<text x="505.0" y="290.0" text-anchor="middle" font-size="15" fill="#fff">processor</text>
+<path d="M320,265 L370,265" fill="none" stroke="#D1495B" stroke-width="2.2" stroke-dasharray="7 6" stroke-linejoin="round" marker-end="url(#m-red)"/>
+<rect x="690" y="205" width="270" height="120" rx="8" fill="#D1495B"/>
+<text x="825.0" y="235.0" text-anchor="middle" font-size="19" font-weight="700" fill="#fff">Foreign key violation</text>
+<text x="825.0" y="261.0" text-anchor="middle" font-size="15" fill="#fff">activities_actor_id_fkey:</text>
+<text x="825.0" y="280.0" text-anchor="middle" font-size="15" fill="#fff">twelve User relations had no</text>
+<text x="825.0" y="299.0" text-anchor="middle" font-size="15" fill="#fff">onDelete</text>
+<path d="M640,265 L690,265" fill="none" stroke="#D1495B" stroke-width="2.2" stroke-dasharray="7 6" stroke-linejoin="round" marker-end="url(#m-red)"/>
+<rect x="1010" y="205" width="270" height="120" rx="8" fill="#E08A3C"/>
+<text x="1145.0" y="245.0" text-anchor="middle" font-size="19" font-weight="700" fill="#fff">BullMQ retries</text>
+<text x="1145.0" y="271.0" text-anchor="middle" font-size="15" fill="#fff">3 attempts, exponential</text>
+<text x="1145.0" y="290.0" text-anchor="middle" font-size="15" fill="#fff">backoff</text>
+<path d="M960,265 L1010,265" fill="none" stroke="#D1495B" stroke-width="2.2" stroke-dasharray="7 6" stroke-linejoin="round" marker-end="url(#m-red)"/>
+<rect x="1330" y="205" width="270" height="120" rx="8" fill="#D1495B"/>
+<text x="1465.0" y="235.0" text-anchor="middle" font-size="19" font-weight="700" fill="#fff">Gives up in silence</text>
+<text x="1465.0" y="261.0" text-anchor="middle" font-size="15" fill="#fff">failed set pruned after 7</text>
+<text x="1465.0" y="280.0" text-anchor="middle" font-size="15" fill="#fff">days; the user keeps the</text>
+<text x="1465.0" y="299.0" text-anchor="middle" font-size="15" fill="#fff">account</text>
+<path d="M1280,265 L1330,265" fill="none" stroke="#D1495B" stroke-width="2.2" stroke-dasharray="7 6" stroke-linejoin="round" marker-end="url(#m-red)"/>
+<rect x="20" y="445" width="1960" height="290" rx="14" fill="none" stroke="#B8BEC8" stroke-width="1.5" stroke-dasharray="6 5"/>
+<text x="42" y="475" font-size="15" font-weight="700" letter-spacing="1" fill="#2F9E6E">AFTER · 2026-09-20 AND 2026-09-21</text>
+<rect x="50" y="525" width="270" height="120" rx="8" fill="#4A5568"/>
+<text x="185.0" y="575.0" text-anchor="middle" font-size="19" font-weight="700" fill="#fff">Deletion requested</text>
+<text x="185.0" y="601.0" text-anchor="middle" font-size="15" fill="#fff">same job and delay</text>
+<rect x="370" y="525" width="270" height="120" rx="8" fill="#2F9E6E"/>
+<text x="505.0" y="565.0" text-anchor="middle" font-size="19" font-weight="700" fill="#fff">prisma.user.delete</text>
+<text x="505.0" y="591.0" text-anchor="middle" font-size="15" fill="#fff">authorship nullable, onDelete</text>
+<text x="505.0" y="610.0" text-anchor="middle" font-size="15" fill="#fff">SetNull</text>
+<path d="M320,585 L370,585" fill="none" stroke="#2F9E6E" stroke-width="2.2" stroke-dasharray="7 6" stroke-linejoin="round" marker-end="url(#m-green)"/>
+<rect x="690" y="525" width="270" height="120" rx="8" fill="#2F9E6E"/>
+<text x="825.0" y="565.0" text-anchor="middle" font-size="19" font-weight="700" fill="#fff">Content stays</text>
+<text x="825.0" y="591.0" text-anchor="middle" font-size="15" fill="#fff">shown as "Usuário removido"</text>
+<text x="825.0" y="610.0" text-anchor="middle" font-size="15" fill="#fff">and "Sem líder"</text>
+<path d="M640,585 L690,585" fill="none" stroke="#2F9E6E" stroke-width="2.2" stroke-dasharray="7 6" stroke-linejoin="round" marker-end="url(#m-green)"/>
+<rect x="1010" y="525" width="270" height="120" rx="8" fill="#E08A3C"/>
+<text x="1145.0" y="565.0" text-anchor="middle" font-size="19" font-weight="700" fill="#fff">If a job still dies</text>
+<text x="1145.0" y="591.0" text-anchor="middle" font-size="15" fill="#fff">queue.job.exhausted error log,</text>
+<text x="1145.0" y="610.0" text-anchor="middle" font-size="15" fill="#fff">once per death (dedup ledger)</text>
+<path d="M960,585 L1010,585" fill="none" stroke="#2F9E6E" stroke-width="2.2" stroke-dasharray="7 6" stroke-linejoin="round" marker-end="url(#m-green)"/>
+<rect x="1330" y="525" width="270" height="120" rx="8" fill="#4A5568"/>
+<text x="1465.0" y="555.0" text-anchor="middle" font-size="19" font-weight="700" fill="#fff">Slack alert</text>
+<text x="1465.0" y="581.0" text-anchor="middle" font-size="15" fill="#fff">sendSlackAlert; reason</text>
+<text x="1465.0" y="600.0" text-anchor="middle" font-size="15" fill="#fff">attempts_exhausted,</text>
+<text x="1465.0" y="619.0" text-anchor="middle" font-size="15" fill="#fff">unrecoverable or stalled</text>
+<path d="M1280,585 L1330,585" fill="none" stroke="#2F9E6E" stroke-width="2.2" stroke-dasharray="7 6" stroke-linejoin="round" marker-end="url(#m-green)"/>
+</svg>

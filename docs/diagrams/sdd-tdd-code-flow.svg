@@ -1,0 +1,78 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 2000 860" width="2000" height="860" font-family="Inter, -apple-system, Segoe UI, Helvetica, Arial, sans-serif">
+<title>SDD, TDD, Code: the order of a feature</title><defs><marker id="m-orange" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#E08A3C"/></marker><marker id="m-red" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#D1495B"/></marker><marker id="m-green" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#2F9E6E"/></marker><marker id="m-teal" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#2A9AA8"/></marker><marker id="m-purple" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#5B54D6"/></marker><marker id="m-gray" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#64748B"/></marker><marker id="m-blue" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#3B82C4"/></marker></defs>
+<rect width="2000" height="860" fill="#FBFAF7"/>
+<text x="40" y="52" font-size="34" font-weight="800" fill="#1E293B">SDD, TDD, Code: the order of a feature</text>
+<text x="40" y="84" font-size="19" fill="#475569">Design the contract, write the whole suite red, then implement layer by layer until it goes green.</text>
+<rect x="30" y="125" width="600" height="690" rx="14" fill="none" stroke="#B8BEC8" stroke-width="1.5" stroke-dasharray="6 5"/>
+<text x="52" y="155" font-size="15" font-weight="700" letter-spacing="1" fill="#7A5A2B">BLOCK 1 · SDD · CONTRACT FIRST</text>
+<rect x="70" y="175" width="520" height="70" rx="8" fill="#DCDAF2"/>
+<text x="330.0" y="207.0" text-anchor="middle" font-size="19" font-weight="700" fill="#3B37A8">0 · Domain contract</text>
+<text x="330.0" y="230.0" text-anchor="middle" font-size="15" fill="#3B37A8">fields, invariants, ownership, errors, LGPD</text>
+<rect x="70" y="267" width="520" height="70" rx="8" fill="#DCDAF2"/>
+<text x="330.0" y="299.0" text-anchor="middle" font-size="19" font-weight="700" fill="#3B37A8">1 · Zod schemas</text>
+<text x="330.0" y="322.0" text-anchor="middle" font-size="15" fill="#3B37A8">src/schemas/&lt;feature&gt;.schema.ts</text>
+<path d="M330.0,245 L330.0,267" fill="none" stroke="#5B54D6" stroke-width="2.2" stroke-dasharray="7 6" stroke-linejoin="round" marker-end="url(#m-purple)"/>
+<rect x="70" y="359" width="520" height="70" rx="8" fill="#DCDAF2"/>
+<text x="330.0" y="391.0" text-anchor="middle" font-size="19" font-weight="700" fill="#3B37A8">2 · Prisma model + migration</text>
+<text x="330.0" y="414.0" text-anchor="middle" font-size="15" fill="#3B37A8">prisma/schema.prisma</text>
+<path d="M330.0,337 L330.0,359" fill="none" stroke="#5B54D6" stroke-width="2.2" stroke-dasharray="7 6" stroke-linejoin="round" marker-end="url(#m-purple)"/>
+<rect x="70" y="451" width="520" height="70" rx="8" fill="#DCDAF2"/>
+<text x="330.0" y="483.0" text-anchor="middle" font-size="19" font-weight="700" fill="#3B37A8">3 · Error codes</text>
+<text x="330.0" y="506.0" text-anchor="middle" font-size="15" fill="#3B37A8">src/errors/codes.ts</text>
+<path d="M330.0,429 L330.0,451" fill="none" stroke="#5B54D6" stroke-width="2.2" stroke-dasharray="7 6" stroke-linejoin="round" marker-end="url(#m-purple)"/>
+<text x="330.0" y="790" text-anchor="middle" font-size="15" fill="#475569">only the schema tests are green</text>
+<rect x="700" y="125" width="600" height="690" rx="14" fill="none" stroke="#B8BEC8" stroke-width="1.5" stroke-dasharray="6 5"/>
+<text x="722" y="155" font-size="15" font-weight="700" letter-spacing="1" fill="#7A5A2B">BLOCK 2 · TDD · EVERYTHING RED</text>
+<rect x="740" y="175" width="520" height="70" rx="8" fill="#D1495B"/>
+<text x="1000.0" y="207.0" text-anchor="middle" font-size="19" font-weight="700" fill="#fff">4 · Test factory</text>
+<text x="1000.0" y="230.0" text-anchor="middle" font-size="15" fill="#fff">src/__tests__/factories/</text>
+<rect x="740" y="267" width="520" height="70" rx="8" fill="#D1495B"/>
+<text x="1000.0" y="299.0" text-anchor="middle" font-size="19" font-weight="700" fill="#fff">5 · Repository integration tests</text>
+<text x="1000.0" y="322.0" text-anchor="middle" font-size="15" fill="#fff">real Postgres + Redis</text>
+<path d="M1000.0,245 L1000.0,267" fill="none" stroke="#5B54D6" stroke-width="2.2" stroke-dasharray="7 6" stroke-linejoin="round" marker-end="url(#m-purple)"/>
+<rect x="740" y="359" width="520" height="70" rx="8" fill="#D1495B"/>
+<text x="1000.0" y="391.0" text-anchor="middle" font-size="19" font-weight="700" fill="#fff">6 · Mapper tests</text>
+<text x="1000.0" y="414.0" text-anchor="middle" font-size="15" fill="#fff">unit project</text>
+<path d="M1000.0,337 L1000.0,359" fill="none" stroke="#5B54D6" stroke-width="2.2" stroke-dasharray="7 6" stroke-linejoin="round" marker-end="url(#m-purple)"/>
+<rect x="740" y="451" width="520" height="70" rx="8" fill="#D1495B"/>
+<text x="1000.0" y="483.0" text-anchor="middle" font-size="19" font-weight="700" fill="#fff">7 · Service tests</text>
+<text x="1000.0" y="506.0" text-anchor="middle" font-size="15" fill="#fff">happy path, wrong userId, limits, codes</text>
+<path d="M1000.0,429 L1000.0,451" fill="none" stroke="#5B54D6" stroke-width="2.2" stroke-dasharray="7 6" stroke-linejoin="round" marker-end="url(#m-purple)"/>
+<rect x="740" y="543" width="520" height="70" rx="8" fill="#D1495B"/>
+<text x="1000.0" y="575.0" text-anchor="middle" font-size="19" font-weight="700" fill="#fff">8 · Route e2e tests</text>
+<text x="1000.0" y="598.0" text-anchor="middle" font-size="15" fill="#fff">app/api/&lt;feature&gt;/__tests__/</text>
+<path d="M1000.0,521 L1000.0,543" fill="none" stroke="#5B54D6" stroke-width="2.2" stroke-dasharray="7 6" stroke-linejoin="round" marker-end="url(#m-purple)"/>
+<text x="1000.0" y="790" text-anchor="middle" font-size="15" fill="#475569">imports files that do not exist yet</text>
+<rect x="1370" y="125" width="600" height="690" rx="14" fill="none" stroke="#B8BEC8" stroke-width="1.5" stroke-dasharray="6 5"/>
+<text x="1392" y="155" font-size="15" font-weight="700" letter-spacing="1" fill="#7A5A2B">BLOCK 3 · CODE · GREEN LAYER BY LAYER</text>
+<rect x="1410" y="175" width="520" height="70" rx="8" fill="#2F9E6E"/>
+<text x="1670.0" y="207.0" text-anchor="middle" font-size="19" font-weight="700" fill="#fff">9 · Repository</text>
+<text x="1670.0" y="230.0" text-anchor="middle" font-size="15" fill="#fff">pure Prisma, returns Result</text>
+<rect x="1410" y="267" width="520" height="70" rx="8" fill="#2F9E6E"/>
+<text x="1670.0" y="299.0" text-anchor="middle" font-size="19" font-weight="700" fill="#fff">10 · Mapper</text>
+<text x="1670.0" y="322.0" text-anchor="middle" font-size="15" fill="#fff">Prisma.&lt;X&gt; to &lt;X&gt;DTO</text>
+<path d="M1670.0,245 L1670.0,267" fill="none" stroke="#5B54D6" stroke-width="2.2" stroke-dasharray="7 6" stroke-linejoin="round" marker-end="url(#m-purple)"/>
+<rect x="1410" y="359" width="520" height="70" rx="8" fill="#2F9E6E"/>
+<text x="1670.0" y="391.0" text-anchor="middle" font-size="19" font-weight="700" fill="#fff">11 · Service</text>
+<text x="1670.0" y="414.0" text-anchor="middle" font-size="15" fill="#fff">rules, authorization, audit, Result</text>
+<path d="M1670.0,337 L1670.0,359" fill="none" stroke="#5B54D6" stroke-width="2.2" stroke-dasharray="7 6" stroke-linejoin="round" marker-end="url(#m-purple)"/>
+<rect x="1410" y="451" width="520" height="70" rx="8" fill="#2F9E6E"/>
+<text x="1670.0" y="483.0" text-anchor="middle" font-size="19" font-weight="700" fill="#fff">12 · HTTP routes</text>
+<text x="1670.0" y="506.0" text-anchor="middle" font-size="15" fill="#fff">app/api/&lt;feature&gt;/ and [id]</text>
+<path d="M1670.0,429 L1670.0,451" fill="none" stroke="#5B54D6" stroke-width="2.2" stroke-dasharray="7 6" stroke-linejoin="round" marker-end="url(#m-purple)"/>
+<rect x="1410" y="543" width="520" height="70" rx="8" fill="#2F9E6E"/>
+<text x="1670.0" y="575.0" text-anchor="middle" font-size="19" font-weight="700" fill="#fff">13 · Hook + frontend wiring</text>
+<text x="1670.0" y="598.0" text-anchor="middle" font-size="15" fill="#fff">src/hooks/use-&lt;feature&gt;.ts</text>
+<path d="M1670.0,521 L1670.0,543" fill="none" stroke="#5B54D6" stroke-width="2.2" stroke-dasharray="7 6" stroke-linejoin="round" marker-end="url(#m-purple)"/>
+<rect x="1410" y="635" width="520" height="70" rx="8" fill="#2F9E6E"/>
+<text x="1670.0" y="667.0" text-anchor="middle" font-size="19" font-weight="700" fill="#fff">14 · Observability + smoke</text>
+<text x="1670.0" y="690.0" text-anchor="middle" font-size="15" fill="#fff">Axiom, auditMutation, browser</text>
+<path d="M1670.0,613 L1670.0,635" fill="none" stroke="#5B54D6" stroke-width="2.2" stroke-dasharray="7 6" stroke-linejoin="round" marker-end="url(#m-purple)"/>
+<text x="1670.0" y="790" text-anchor="middle" font-size="15" fill="#475569">implement only what turns tests green</text>
+<path d="M630,470 L700,470" fill="none" stroke="#5B54D6" stroke-width="2.2" stroke-dasharray="7 6" stroke-linejoin="round" marker-end="url(#m-purple)"/>
+<rect x="604.6" y="426" width="120.80000000000001" height="28" rx="14" fill="#2F9E6E"/>
+<text x="665" y="445" text-anchor="middle" font-size="14" font-weight="700" fill="#fff">contract set</text>
+<path d="M1300,470 L1370,470" fill="none" stroke="#5B54D6" stroke-width="2.2" stroke-dasharray="7 6" stroke-linejoin="round" marker-end="url(#m-purple)"/>
+<rect x="1258.8" y="426" width="152.4" height="28" rx="14" fill="#5B54D6"/>
+<text x="1335" y="445" text-anchor="middle" font-size="14" font-weight="700" fill="#fff">tests drive code</text>
+</svg>

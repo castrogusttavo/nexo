@@ -1,0 +1,57 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 2000 820" width="2000" height="820" font-family="Inter, -apple-system, Segoe UI, Helvetica, Arial, sans-serif">
+<title>Where each signal goes</title><defs><marker id="m-orange" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#E08A3C"/></marker><marker id="m-red" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#D1495B"/></marker><marker id="m-green" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#2F9E6E"/></marker><marker id="m-teal" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#2A9AA8"/></marker><marker id="m-purple" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#5B54D6"/></marker><marker id="m-gray" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#64748B"/></marker><marker id="m-blue" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#3B82C4"/></marker></defs>
+<rect width="2000" height="820" fill="#FBFAF7"/>
+<text x="40" y="52" font-size="34" font-weight="800" fill="#1E293B">Where each signal goes</text>
+<text x="40" y="84" font-size="19" fill="#475569">Logs and traces go to Axiom and share a trace_id, uncaught errors go to Sentry, and status changes and dead jobs go to Slack.</text>
+<text x="40" y="150" font-size="15" font-weight="700" letter-spacing="1" fill="#7A5A2B">SOURCE</text>
+<text x="560" y="150" font-size="15" font-weight="700" letter-spacing="1" fill="#7A5A2B">CODE THAT EMITS IT</text>
+<text x="1230" y="150" font-size="15" font-weight="700" letter-spacing="1" fill="#7A5A2B">DESTINATION</text>
+<rect x="40" y="175" width="440" height="100" rx="8" fill="#4A5568"/>
+<text x="260.0" y="222.0" text-anchor="middle" font-size="19" font-weight="700" fill="#fff">API routes</text>
+<text x="260.0" y="245.0" text-anchor="middle" font-size="15" fill="#fff">withAxiom handlers; audit events</text>
+<rect x="560" y="175" width="560" height="100" rx="8" fill="#DCDAF2"/>
+<text x="840.0" y="222.0" text-anchor="middle" font-size="19" font-weight="700" fill="#3B37A8">withAxiom, auditMutation</text>
+<text x="840.0" y="245.0" text-anchor="middle" font-size="15" fill="#3B37A8">lib/axiom/logger.ts, server.ts, audit.ts</text>
+<rect x="1230" y="175" width="700" height="100" rx="8" fill="#2F9E6E"/>
+<text x="1580.0" y="222.0" text-anchor="middle" font-size="19" font-weight="700" fill="#fff">Axiom logs</text>
+<text x="1580.0" y="245.0" text-anchor="middle" font-size="15" fill="#fff">one line per request, audit trail, handled failures</text>
+<path d="M480,225 L560,225" fill="none" stroke="#5B54D6" stroke-width="2.2" stroke-dasharray="7 6" stroke-linejoin="round" marker-end="url(#m-purple)"/>
+<path d="M1120,225 L1230,225" fill="none" stroke="#5B54D6" stroke-width="2.2" stroke-dasharray="7 6" stroke-linejoin="round" marker-end="url(#m-purple)"/>
+<rect x="40" y="325" width="440" height="100" rx="8" fill="#4A5568"/>
+<text x="260.0" y="372.0" text-anchor="middle" font-size="19" font-weight="700" fill="#fff">Worker jobs</text>
+<text x="260.0" y="395.0" text-anchor="middle" font-size="15" fill="#fff">every BullMQ processor</text>
+<rect x="560" y="325" width="560" height="100" rx="8" fill="#DCDAF2"/>
+<text x="840.0" y="372.0" text-anchor="middle" font-size="19" font-weight="700" fill="#3B37A8">createJobTracing</text>
+<text x="840.0" y="395.0" text-anchor="middle" font-size="15" fill="#3B37A8">lib/otel/job-tracing.ts</text>
+<rect x="1230" y="325" width="700" height="100" rx="8" fill="#2F9E6E"/>
+<text x="1580.0" y="372.0" text-anchor="middle" font-size="19" font-weight="700" fill="#fff">Axiom traces</text>
+<text x="1580.0" y="395.0" text-anchor="middle" font-size="15" fill="#fff">one span per job, service nexo-worker; request spans sampled</text>
+<path d="M480,375 L560,375" fill="none" stroke="#3B82C4" stroke-width="2.2" stroke-dasharray="7 6" stroke-linejoin="round" marker-end="url(#m-blue)"/>
+<path d="M1120,375 L1230,375" fill="none" stroke="#3B82C4" stroke-width="2.2" stroke-dasharray="7 6" stroke-linejoin="round" marker-end="url(#m-blue)"/>
+<rect x="40" y="475" width="440" height="100" rx="8" fill="#4A5568"/>
+<text x="260.0" y="522.0" text-anchor="middle" font-size="19" font-weight="700" fill="#fff">Uncaught errors</text>
+<text x="260.0" y="545.0" text-anchor="middle" font-size="15" fill="#fff">render, route, action and browser crashes</text>
+<rect x="560" y="475" width="560" height="100" rx="8" fill="#DCDAF2"/>
+<text x="840.0" y="522.0" text-anchor="middle" font-size="19" font-weight="700" fill="#3B37A8">Sentry options and scrub</text>
+<text x="840.0" y="545.0" text-anchor="middle" font-size="15" fill="#3B37A8">lib/sentry/options.ts, scrub.ts</text>
+<rect x="1230" y="475" width="700" height="100" rx="8" fill="#D1495B"/>
+<text x="1580.0" y="522.0" text-anchor="middle" font-size="19" font-weight="700" fill="#fff">Sentry</text>
+<text x="1580.0" y="545.0" text-anchor="middle" font-size="15" fill="#fff">release is the commit SHA; handled AppError never arrives</text>
+<path d="M480,525 L560,525" fill="none" stroke="#D1495B" stroke-width="2.2" stroke-dasharray="7 6" stroke-linejoin="round" marker-end="url(#m-red)"/>
+<path d="M1120,525 L1230,525" fill="none" stroke="#D1495B" stroke-width="2.2" stroke-dasharray="7 6" stroke-linejoin="round" marker-end="url(#m-red)"/>
+<rect x="40" y="625" width="440" height="100" rx="8" fill="#4A5568"/>
+<text x="260.0" y="672.0" text-anchor="middle" font-size="19" font-weight="700" fill="#fff">Status and dead jobs</text>
+<text x="260.0" y="695.0" text-anchor="middle" font-size="15" fill="#fff">incident transitions, queue.job.exhausted</text>
+<rect x="560" y="625" width="560" height="100" rx="8" fill="#DCDAF2"/>
+<text x="840.0" y="672.0" text-anchor="middle" font-size="19" font-weight="700" fill="#3B37A8">sendSlackAlert</text>
+<text x="840.0" y="695.0" text-anchor="middle" font-size="15" fill="#3B37A8">src/lib/alerts/slack.ts</text>
+<rect x="1230" y="625" width="700" height="100" rx="8" fill="#E08A3C"/>
+<text x="1580.0" y="672.0" text-anchor="middle" font-size="19" font-weight="700" fill="#fff">Slack</text>
+<text x="1580.0" y="695.0" text-anchor="middle" font-size="15" fill="#fff">unset webhook is a logged no-op; 3 s timeout</text>
+<path d="M480,675 L560,675" fill="none" stroke="#E08A3C" stroke-width="2.2" stroke-dasharray="7 6" stroke-linejoin="round" marker-end="url(#m-orange)"/>
+<path d="M1120,675 L1230,675" fill="none" stroke="#E08A3C" stroke-width="2.2" stroke-dasharray="7 6" stroke-linejoin="round" marker-end="url(#m-orange)"/>
+<path d="M1580,275 L1580,325" fill="none" stroke="#64748B" stroke-width="2.2" stroke-dasharray="7 6" stroke-linejoin="round"/>
+<rect x="1515.65" y="286" width="128.7" height="28" rx="14" fill="#64748B"/>
+<text x="1580" y="305" text-anchor="middle" font-size="14" font-weight="700" fill="#fff">same trace_id</text>
+<text x="1000" y="780" text-anchor="middle" font-size="15" fill="#475569">Status page and Slack are independent of Axiom: if Axiom is down they still work. A failure swallowed into a Result reaches Axiom, not Sentry.</text>
+</svg>

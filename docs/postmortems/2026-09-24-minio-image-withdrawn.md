@@ -18,7 +18,9 @@ CI broke overnight with no change on our side: MinIO archived the open-source re
 - 2026-09-26, `697da691`: workflows with no job left are retired; the one-off migration workflow is not among the files in `.github/workflows/` today, so it was removed at some point (TODO: confirm when).
 - Date production completed the switch: not recorded in the repository (TODO: confirm). The status page copy was already updated on 2026-09-24.
 
-<!-- DIAGRAM NEEDED: minio-to-silo-migration: before/after of the object store in CI, dev and production, with the migrate and rollback steps of the one-off workflow; read docs/adr/0007-silo-storage.md, infra/dev.yml, infra/prod.yml and commit 8097fc7e -->
+![MinIO to Silo migration](../diagrams/minio-to-silo-migration.svg)
+
+*The object store before and after the move to Silo, and the steps of the one-off workflow.*
 
 ## Root cause
 

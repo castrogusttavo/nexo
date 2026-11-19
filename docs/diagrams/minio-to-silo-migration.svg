@@ -1,0 +1,54 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 2000 800" width="2000" height="800" font-family="Inter, -apple-system, Segoe UI, Helvetica, Arial, sans-serif">
+<title>Object store: from MinIO to Silo</title><defs><marker id="m-orange" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#E08A3C"/></marker><marker id="m-red" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#D1495B"/></marker><marker id="m-green" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#2F9E6E"/></marker><marker id="m-teal" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#2A9AA8"/></marker><marker id="m-purple" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#5B54D6"/></marker><marker id="m-gray" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#64748B"/></marker><marker id="m-blue" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#3B82C4"/></marker></defs>
+<rect width="2000" height="800" fill="#FBFAF7"/>
+<text x="40" y="52" font-size="34" font-weight="800" fill="#1E293B">Object store: from MinIO to Silo</text>
+<text x="40" y="84" font-size="19" fill="#475569">MinIO withdrew every public image; CI and dev switched on 2026-09-24, production moved by a one-off workflow with its own rollback.</text>
+<rect x="20" y="125" width="960" height="290" rx="14" fill="none" stroke="#B8BEC8" stroke-width="1.5" stroke-dasharray="6 5"/>
+<text x="42" y="155" font-size="15" font-weight="700" letter-spacing="1" fill="#D1495B">BEFORE · MINIO</text>
+<rect x="50" y="190" width="280" height="130" rx="8" fill="#D1495B"/>
+<text x="190.0" y="225.0" text-anchor="middle" font-size="19" font-weight="700" fill="#fff">CI</text>
+<text x="190.0" y="251.0" text-anchor="middle" font-size="15" fill="#fff">minio/minio image: quay.io</text>
+<text x="190.0" y="270.0" text-anchor="middle" font-size="15" fill="#fff">answers 401, Docker Hub</text>
+<text x="190.0" y="289.0" text-anchor="middle" font-size="15" fill="#fff">denies, dl.min.io 410</text>
+<rect x="350" y="190" width="280" height="130" rx="8" fill="#D1495B"/>
+<text x="490.0" y="245.0" text-anchor="middle" font-size="19" font-weight="700" fill="#fff">Local dev</text>
+<text x="490.0" y="271.0" text-anchor="middle" font-size="15" fill="#fff">same image, same pull failure</text>
+<rect x="650" y="190" width="300" height="130" rx="8" fill="#E08A3C"/>
+<text x="800.0" y="225.0" text-anchor="middle" font-size="19" font-weight="700" fill="#fff">Production</text>
+<text x="800.0" y="251.0" text-anchor="middle" font-size="15" fill="#fff">runs the old image from a local</text>
+<text x="800.0" y="270.0" text-anchor="middle" font-size="15" fill="#fff">cache; a recreation could never</text>
+<text x="800.0" y="289.0" text-anchor="middle" font-size="15" fill="#fff">pull it again</text>
+<text x="500" y="380" text-anchor="middle" font-size="15" fill="#475569">AIStor, the current MinIO product, starts without a license and denies every S3 operation: not a drop-in</text>
+<rect x="20" y="440" width="960" height="290" rx="14" fill="none" stroke="#B8BEC8" stroke-width="1.5" stroke-dasharray="6 5"/>
+<text x="42" y="470" font-size="15" font-weight="700" letter-spacing="1" fill="#2F9E6E">AFTER · SILO</text>
+<rect x="50" y="505" width="280" height="130" rx="8" fill="#2F9E6E"/>
+<text x="190.0" y="550.0" text-anchor="middle" font-size="19" font-weight="700" fill="#fff">CI</text>
+<text x="190.0" y="576.0" text-anchor="middle" font-size="15" fill="#fff">pgsty/silo pinned to a release</text>
+<text x="190.0" y="595.0" text-anchor="middle" font-size="15" fill="#fff">tag (93b55b4c)</text>
+<rect x="350" y="505" width="280" height="130" rx="8" fill="#2F9E6E"/>
+<text x="490.0" y="540.0" text-anchor="middle" font-size="19" font-weight="700" fill="#fff">Local dev</text>
+<text x="490.0" y="566.0" text-anchor="middle" font-size="15" fill="#fff">same pinned image; a MinIO</text>
+<text x="490.0" y="585.0" text-anchor="middle" font-size="15" fill="#fff">data directory mounts</text>
+<text x="490.0" y="604.0" text-anchor="middle" font-size="15" fill="#fff">unchanged</text>
+<rect x="650" y="505" width="300" height="130" rx="8" fill="#2F9E6E"/>
+<text x="800.0" y="550.0" text-anchor="middle" font-size="19" font-weight="700" fill="#fff">Production</text>
+<text x="800.0" y="576.0" text-anchor="middle" font-size="15" fill="#fff">one container stopped, the other</text>
+<text x="800.0" y="595.0" text-anchor="middle" font-size="15" fill="#fff">started; name nexo-minio-1 kept</text>
+<text x="500" y="695" text-anchor="middle" font-size="15" fill="#475569">MINIO_* variables and the /minio/health/live path stay on purpose: Silo reads them</text>
+<rect x="1020" y="125" width="960" height="605" rx="14" fill="none" stroke="#B8BEC8" stroke-width="1.5" stroke-dasharray="6 5"/>
+<text x="1042" y="155" font-size="15" font-weight="700" letter-spacing="1" fill="#7A5A2B">ONE-OFF WORKFLOW · 8097FC7E · 2026-09-24</text>
+<rect x="1060" y="190" width="880" height="100" rx="8" fill="#4A5568"/>
+<text x="1500.0" y="230.0" text-anchor="middle" font-size="19" font-weight="700" fill="#fff">inspect</text>
+<text x="1500.0" y="256.0" text-anchor="middle" font-size="15" fill="#fff">first mode of the workflow</text>
+<rect x="1060" y="330" width="880" height="120" rx="8" fill="#2F9E6E"/>
+<text x="1500.0" y="370.0" text-anchor="middle" font-size="19" font-weight="700" fill="#fff">migrate</text>
+<text x="1500.0" y="396.0" text-anchor="middle" font-size="15" fill="#fff">tar the data directory, swap the image, start Silo; if health does not</text>
+<text x="1500.0" y="415.0" text-anchor="middle" font-size="15" fill="#fff">answer in 60 s it rolls back by itself</text>
+<rect x="1060" y="490" width="880" height="100" rx="8" fill="#E08A3C"/>
+<text x="1500.0" y="530.0" text-anchor="middle" font-size="19" font-weight="700" fill="#fff">rollback</text>
+<text x="1500.0" y="556.0" text-anchor="middle" font-size="15" fill="#fff">last mode, for going back to the previous setup</text>
+<path d="M1500,290 L1500,330" fill="none" stroke="#5B54D6" stroke-width="2.2" stroke-dasharray="7 6" stroke-linejoin="round" marker-end="url(#m-purple)"/>
+<path d="M1500,450 L1500,490" fill="none" stroke="#5B54D6" stroke-width="2.2" stroke-dasharray="7 6" stroke-linejoin="round" marker-end="url(#m-purple)"/>
+<text x="1500" y="640" text-anchor="middle" font-size="15" fill="#475569">this workflow is no longer in .github/workflows (removed later, date to confirm)</text>
+<text x="1500" y="670" text-anchor="middle" font-size="15" fill="#475569">date production completed the switch: not recorded in the repository (to confirm)</text>
+</svg>

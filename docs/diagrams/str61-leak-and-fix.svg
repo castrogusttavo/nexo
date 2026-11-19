@@ -1,0 +1,60 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 2000 800" width="2000" height="800" font-family="Inter, -apple-system, Segoe UI, Helvetica, Arial, sans-serif">
+<title>STR-61: a redirect in a layout is not a gate</title><defs><marker id="m-orange" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#E08A3C"/></marker><marker id="m-red" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#D1495B"/></marker><marker id="m-green" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#2F9E6E"/></marker><marker id="m-teal" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#2A9AA8"/></marker><marker id="m-purple" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#5B54D6"/></marker><marker id="m-gray" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#64748B"/></marker><marker id="m-blue" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#3B82C4"/></marker></defs>
+<rect width="2000" height="800" fill="#FBFAF7"/>
+<text x="40" y="52" font-size="34" font-weight="800" fill="#1E293B">STR-61: a redirect in a layout is not a gate</text>
+<text x="40" y="84" font-size="19" fill="#475569">Layouts of one path render in parallel, so the redirect did not stop the ones below it from reading data. The gate now sits at the data read.</text>
+<rect x="20" y="125" width="1960" height="300" rx="14" fill="none" stroke="#B8BEC8" stroke-width="1.5" stroke-dasharray="6 5"/>
+<text x="42" y="155" font-size="15" font-weight="700" letter-spacing="1" fill="#D1495B">BEFORE · GATE IN THE (PRIVATE) LAYOUT</text>
+<rect x="50" y="190" width="280" height="150" rx="8" fill="#4A5568"/>
+<text x="190.0" y="235.0" text-anchor="middle" font-size="19" font-weight="700" fill="#fff">Request</text>
+<text x="190.0" y="261.0" text-anchor="middle" font-size="15" fill="#fff">signed-in member, terms not</text>
+<text x="190.0" y="280.0" text-anchor="middle" font-size="15" fill="#fff">accepted; the proxy could not</text>
+<text x="190.0" y="299.0" text-anchor="middle" font-size="15" fill="#fff">tell from the cookie cache</text>
+<rect x="400" y="190" width="300" height="150" rx="8" fill="#E08A3C"/>
+<text x="550.0" y="255.0" text-anchor="middle" font-size="19" font-weight="700" fill="#fff">(private) layout</text>
+<text x="550.0" y="281.0" text-anchor="middle" font-size="15" fill="#fff">consent missing: redirect</text>
+<rect x="780" y="190" width="360" height="150" rx="8" fill="#D1495B"/>
+<text x="960.0" y="245.0" text-anchor="middle" font-size="19" font-weight="700" fill="#fff">Child layouts and pages</text>
+<text x="960.0" y="271.0" text-anchor="middle" font-size="15" fill="#fff">already rendering in parallel; the</text>
+<text x="960.0" y="290.0" text-anchor="middle" font-size="15" fill="#fff">redirect does not cancel them</text>
+<rect x="1220" y="190" width="340" height="150" rx="8" fill="#D1495B"/>
+<text x="1390.0" y="255.0" text-anchor="middle" font-size="19" font-weight="700" fill="#fff">Data read</text>
+<text x="1390.0" y="281.0" text-anchor="middle" font-size="15" fill="#fff">workspace and user ids</text>
+<rect x="1630" y="190" width="320" height="150" rx="8" fill="#D1495B"/>
+<text x="1790.0" y="245.0" text-anchor="middle" font-size="19" font-weight="700" fill="#fff">RSC payload</text>
+<text x="1790.0" y="271.0" text-anchor="middle" font-size="15" fill="#fff">streamed to the unconsented</text>
+<text x="1790.0" y="290.0" text-anchor="middle" font-size="15" fill="#fff">member</text>
+<path d="M330,265 L400,265" fill="none" stroke="#D1495B" stroke-width="2.2" stroke-dasharray="7 6" stroke-linejoin="round" marker-end="url(#m-red)"/>
+<path d="M700,265 L780,265" fill="none" stroke="#D1495B" stroke-width="2.2" stroke-dasharray="7 6" stroke-linejoin="round" marker-end="url(#m-red)"/>
+<path d="M1140,265 L1220,265" fill="none" stroke="#D1495B" stroke-width="2.2" stroke-dasharray="7 6" stroke-linejoin="round" marker-end="url(#m-red)"/>
+<path d="M1560,265 L1630,265" fill="none" stroke="#D1495B" stroke-width="2.2" stroke-dasharray="7 6" stroke-linejoin="round" marker-end="url(#m-red)"/>
+<text x="1000" y="390" text-anchor="middle" font-size="15" fill="#475569">the redirect and the render race; what the siblings read can reach the response</text>
+<rect x="20" y="450" width="1960" height="300" rx="14" fill="none" stroke="#B8BEC8" stroke-width="1.5" stroke-dasharray="6 5"/>
+<text x="42" y="480" font-size="15" font-weight="700" letter-spacing="1" fill="#2F9E6E">AFTER · GATE AT THE DATA, IN SRC/LIB/DAL.TS</text>
+<rect x="50" y="515" width="280" height="150" rx="8" fill="#4A5568"/>
+<text x="190.0" y="560.0" text-anchor="middle" font-size="19" font-weight="700" fill="#fff">Request</text>
+<text x="190.0" y="586.0" text-anchor="middle" font-size="15" fill="#fff">the proxy optimistically sends</text>
+<text x="190.0" y="605.0" text-anchor="middle" font-size="15" fill="#fff">users without consent to</text>
+<text x="190.0" y="624.0" text-anchor="middle" font-size="15" fill="#fff">/onboarding/consent-setup</text>
+<rect x="400" y="515" width="300" height="150" rx="8" fill="#4A5568"/>
+<text x="550.0" y="570.0" text-anchor="middle" font-size="19" font-weight="700" fill="#fff">Server component</text>
+<text x="550.0" y="596.0" text-anchor="middle" font-size="15" fill="#fff">any page or context that reads</text>
+<text x="550.0" y="615.0" text-anchor="middle" font-size="15" fill="#fff">user or workspace data</text>
+<rect x="780" y="515" width="360" height="150" rx="8" fill="#2F9E6E"/>
+<text x="960.0" y="560.0" text-anchor="middle" font-size="19" font-weight="700" fill="#fff">DAL check first</text>
+<text x="960.0" y="586.0" text-anchor="middle" font-size="15" fill="#fff">getCurrentUser, requireConsentedUser,</text>
+<text x="960.0" y="605.0" text-anchor="middle" font-size="15" fill="#fff">requireMembership: use cache private,</text>
+<text x="960.0" y="624.0" text-anchor="middle" font-size="15" fill="#fff">redirect or 404</text>
+<rect x="1220" y="515" width="340" height="150" rx="8" fill="#2F9E6E"/>
+<text x="1390.0" y="580.0" text-anchor="middle" font-size="19" font-weight="700" fill="#fff">Data read</text>
+<text x="1390.0" y="606.0" text-anchor="middle" font-size="15" fill="#fff">only after the check passes</text>
+<rect x="1630" y="515" width="320" height="150" rx="8" fill="#5B54D6"/>
+<text x="1790.0" y="570.0" text-anchor="middle" font-size="19" font-weight="700" fill="#fff">access.e2e test</text>
+<text x="1790.0" y="596.0" text-anchor="middle" font-size="15" fill="#fff">every private page from outside;</text>
+<text x="1790.0" y="615.0" text-anchor="middle" font-size="15" fill="#fff">fails on a leaked id</text>
+<path d="M330,590 L400,590" fill="none" stroke="#2F9E6E" stroke-width="2.2" stroke-dasharray="7 6" stroke-linejoin="round" marker-end="url(#m-green)"/>
+<path d="M700,590 L780,590" fill="none" stroke="#2F9E6E" stroke-width="2.2" stroke-dasharray="7 6" stroke-linejoin="round" marker-end="url(#m-green)"/>
+<path d="M1140,590 L1220,590" fill="none" stroke="#2F9E6E" stroke-width="2.2" stroke-dasharray="7 6" stroke-linejoin="round" marker-end="url(#m-green)"/>
+<path d="M1560,590 L1630,590" fill="none" stroke="#5B54D6" stroke-width="2.2" stroke-dasharray="7 6" stroke-linejoin="round" marker-end="url(#m-purple)"/>
+<text x="1000" y="715" text-anchor="middle" font-size="15" fill="#475569">API routes keep getAuthSession(); the proxy check stays as an optimistic first line</text>
+</svg>

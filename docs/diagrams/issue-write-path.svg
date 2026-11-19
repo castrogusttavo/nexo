@@ -1,0 +1,71 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 2000 720" width="2000" height="720" font-family="Inter, -apple-system, Segoe UI, Helvetica, Arial, sans-serif">
+<title>The write path of an issue</title><defs><marker id="m-orange" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#E08A3C"/></marker><marker id="m-red" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#D1495B"/></marker><marker id="m-green" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#2F9E6E"/></marker><marker id="m-teal" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#2A9AA8"/></marker><marker id="m-purple" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#5B54D6"/></marker><marker id="m-gray" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#64748B"/></marker><marker id="m-blue" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#3B82C4"/></marker></defs>
+<rect width="2000" height="720" fill="#FBFAF7"/>
+<text x="40" y="52" font-size="34" font-weight="800" fill="#1E293B">The write path of an issue</text>
+<text x="40" y="84" font-size="19" fill="#475569">IssueService.create and update gate the actor, validate every reference against the project, write, then invalidate the list cache.</text>
+<rect x="20" y="125" width="440" height="560" rx="14" fill="none" stroke="#B8BEC8" stroke-width="1.5" stroke-dasharray="6 5"/>
+<text x="42" y="155" font-size="15" font-weight="700" letter-spacing="1" fill="#7A5A2B">1 · GATE</text>
+<rect x="45" y="170" width="390" height="76" rx="8" fill="#DCDAF2"/>
+<text x="240.0" y="205.0" text-anchor="middle" font-size="19" font-weight="700" fill="#3B37A8">resolveProject</text>
+<text x="240.0" y="228.0" text-anchor="middle" font-size="15" fill="#3B37A8">assertMember and project by slug, in parallel</text>
+<rect x="45" y="270" width="390" height="76" rx="8" fill="#DCDAF2"/>
+<text x="240.0" y="305.0" text-anchor="middle" font-size="19" font-weight="700" fill="#3B37A8">Project access</text>
+<text x="240.0" y="328.0" text-anchor="middle" font-size="15" fill="#3B37A8">OWNER/ADMIN, lead or project member</text>
+<path d="M240.0,246 L240.0,270" fill="none" stroke="#5B54D6" stroke-width="2.2" stroke-dasharray="7 6" stroke-linejoin="round" marker-end="url(#m-purple)"/>
+<rect x="45" y="370" width="390" height="76" rx="8" fill="#DCDAF2"/>
+<text x="240.0" y="405.0" text-anchor="middle" font-size="19" font-weight="700" fill="#3B37A8">Load the issue (update only)</text>
+<text x="240.0" y="428.0" text-anchor="middle" font-size="15" fill="#3B37A8">must belong to this project</text>
+<path d="M240.0,346 L240.0,370" fill="none" stroke="#5B54D6" stroke-width="2.2" stroke-dasharray="7 6" stroke-linejoin="round" marker-end="url(#m-purple)"/>
+<text x="240" y="480" text-anchor="middle" font-size="15" fill="#D1495B">else ISSUE_FORBIDDEN or not found</text>
+<rect x="480" y="125" width="560" height="560" rx="14" fill="none" stroke="#B8BEC8" stroke-width="1.5" stroke-dasharray="6 5"/>
+<text x="502" y="155" font-size="15" font-weight="700" letter-spacing="1" fill="#7A5A2B">2 · VALIDATE · EVERYTHING MUST BELONG TO THE PROJECT</text>
+<rect x="505" y="170" width="510" height="76" rx="8" fill="#DCDAF2"/>
+<text x="760.0" y="205.0" text-anchor="middle" font-size="19" font-weight="700" fill="#3B37A8">State</text>
+<text x="760.0" y="228.0" text-anchor="middle" font-size="15" fill="#3B37A8">stateId in this project (create always, update if sent)</text>
+<rect x="505" y="270" width="510" height="76" rx="8" fill="#DCDAF2"/>
+<text x="760.0" y="305.0" text-anchor="middle" font-size="19" font-weight="700" fill="#3B37A8">Issue type</text>
+<text x="760.0" y="328.0" text-anchor="middle" font-size="15" fill="#3B37A8">if sent; on create, default is the system Task type</text>
+<path d="M760.0,246 L760.0,270" fill="none" stroke="#5B54D6" stroke-width="2.2" stroke-dasharray="7 6" stroke-linejoin="round" marker-end="url(#m-purple)"/>
+<rect x="505" y="370" width="510" height="76" rx="8" fill="#DCDAF2"/>
+<text x="760.0" y="405.0" text-anchor="middle" font-size="19" font-weight="700" fill="#3B37A8">Dates</text>
+<text x="760.0" y="428.0" text-anchor="middle" font-size="15" fill="#3B37A8">due date not before start date</text>
+<path d="M760.0,346 L760.0,370" fill="none" stroke="#5B54D6" stroke-width="2.2" stroke-dasharray="7 6" stroke-linejoin="round" marker-end="url(#m-purple)"/>
+<rect x="505" y="470" width="510" height="76" rx="8" fill="#DCDAF2"/>
+<text x="760.0" y="505.0" text-anchor="middle" font-size="19" font-weight="700" fill="#3B37A8">Cycle, module, estimate value</text>
+<text x="760.0" y="528.0" text-anchor="middle" font-size="15" fill="#3B37A8">estimate value must be of this project settings</text>
+<path d="M760.0,446 L760.0,470" fill="none" stroke="#5B54D6" stroke-width="2.2" stroke-dasharray="7 6" stroke-linejoin="round" marker-end="url(#m-purple)"/>
+<rect x="505" y="570" width="510" height="76" rx="8" fill="#DCDAF2"/>
+<text x="760.0" y="605.0" text-anchor="middle" font-size="19" font-weight="700" fill="#3B37A8">Parent issue</text>
+<text x="760.0" y="628.0" text-anchor="middle" font-size="15" fill="#3B37A8">same project; update also walks up to refuse a cycle</text>
+<path d="M760.0,546 L760.0,570" fill="none" stroke="#5B54D6" stroke-width="2.2" stroke-dasharray="7 6" stroke-linejoin="round" marker-end="url(#m-purple)"/>
+<rect x="1060" y="125" width="450" height="560" rx="14" fill="none" stroke="#B8BEC8" stroke-width="1.5" stroke-dasharray="6 5"/>
+<text x="1082" y="155" font-size="15" font-weight="700" letter-spacing="1" fill="#7A5A2B">3 · WRITE</text>
+<rect x="1085" y="170" width="400" height="120" rx="8" fill="#D1495B"/>
+<text x="1285.0" y="227.0" text-anchor="middle" font-size="19" font-weight="700" fill="#fff">create: one transaction</text>
+<text x="1285.0" y="250.0" text-anchor="middle" font-size="15" fill="#fff">issueSequence +1, then Issue.create</text>
+<rect x="1085" y="330" width="400" height="96" rx="8" fill="#D1495B"/>
+<text x="1285.0" y="375.0" text-anchor="middle" font-size="19" font-weight="700" fill="#fff">update: prisma.issue.update</text>
+<text x="1285.0" y="398.0" text-anchor="middle" font-size="15" fill="#fff">only the fields sent</text>
+<text x="1285" y="480" text-anchor="middle" font-size="15" fill="#475569">a failed create is audited with outcome failure,</text>
+<text x="1285" y="500" text-anchor="middle" font-size="15" fill="#475569">the reason being the error code</text>
+<rect x="1530" y="125" width="450" height="560" rx="14" fill="none" stroke="#B8BEC8" stroke-width="1.5" stroke-dasharray="6 5"/>
+<text x="1552" y="155" font-size="15" font-weight="700" letter-spacing="1" fill="#7A5A2B">4 · AFTER THE WRITE</text>
+<rect x="1555" y="170" width="400" height="76" rx="8" fill="#DCDAF2"/>
+<text x="1755.0" y="205.0" text-anchor="middle" font-size="19" font-weight="700" fill="#3B37A8">IssueListCache.invalidate</text>
+<text x="1755.0" y="228.0" text-anchor="middle" font-size="15" fill="#3B37A8">keyed by project id, create, update and delete</text>
+<rect x="1555" y="270" width="400" height="76" rx="8" fill="#DCDAF2"/>
+<text x="1755.0" y="305.0" text-anchor="middle" font-size="19" font-weight="700" fill="#3B37A8">recordFieldChanges (update)</text>
+<text x="1755.0" y="328.0" text-anchor="middle" font-size="15" fill="#3B37A8">state, type, priority, dates, cycle, module, estimate, parent</text>
+<rect x="1555" y="370" width="400" height="76" rx="8" fill="#DCDAF2"/>
+<text x="1755.0" y="405.0" text-anchor="middle" font-size="19" font-weight="700" fill="#3B37A8">auditMutation</text>
+<text x="1755.0" y="428.0" text-anchor="middle" font-size="15" fill="#3B37A8">create or update; update lists the fields sent</text>
+<rect x="1555" y="470" width="400" height="76" rx="8" fill="#2F9E6E"/>
+<text x="1755.0" y="505.0" text-anchor="middle" font-size="19" font-weight="700" fill="#fff">toIssueDTO</text>
+<text x="1755.0" y="528.0" text-anchor="middle" font-size="15" fill="#fff">returned as the Result value</text>
+<path d="M1755,246 L1755,270" fill="none" stroke="#5B54D6" stroke-width="2.2" stroke-dasharray="7 6" stroke-linejoin="round" marker-end="url(#m-purple)"/>
+<path d="M1755,346 L1755,370" fill="none" stroke="#5B54D6" stroke-width="2.2" stroke-dasharray="7 6" stroke-linejoin="round" marker-end="url(#m-purple)"/>
+<path d="M1755,446 L1755,470" fill="none" stroke="#5B54D6" stroke-width="2.2" stroke-dasharray="7 6" stroke-linejoin="round" marker-end="url(#m-purple)"/>
+<path d="M460,430 L480,430" fill="none" stroke="#5B54D6" stroke-width="2.2" stroke-dasharray="7 6" stroke-linejoin="round" marker-end="url(#m-purple)"/>
+<path d="M1040,430 L1060,430" fill="none" stroke="#5B54D6" stroke-width="2.2" stroke-dasharray="7 6" stroke-linejoin="round" marker-end="url(#m-purple)"/>
+<path d="M1510,330 L1530,330" fill="none" stroke="#5B54D6" stroke-width="2.2" stroke-dasharray="7 6" stroke-linejoin="round" marker-end="url(#m-purple)"/>
+</svg>

@@ -21,7 +21,9 @@ DTOs (`CycleDTO`, `CycleMemberDTO` in `types/cycle`) are built by `src/mappers/c
 - `CycleMember`: `(userId, cycleId)` unique, cascade from both sides.
 - `Issue.cycleId` is `SetNull`, so deleting a cycle detaches its issues instead of deleting them.
 
-<!-- DIAGRAM NEEDED: project-access-matrix: a matrix of who (OWNER/ADMIN, project lead, project member, workspace member of a public project, VIEWER) can read or write each project-scoped resource (issues, cycles, modules, states, labels, estimates, updates, links); read src/services/_project-scope.ts and the services in src/services/ -->
+![Project access matrix](../diagrams/project-access-matrix.svg)
+
+*Who can read or write each project-scoped resource.*
 
 ## Service rules and authorization
 

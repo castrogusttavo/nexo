@@ -1,0 +1,88 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 2000 720" width="2000" height="720" font-family="Inter, -apple-system, Segoe UI, Helvetica, Arial, sans-serif">
+<title>Who can read or write inside a project</title><defs><marker id="m-orange" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#E08A3C"/></marker><marker id="m-red" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#D1495B"/></marker><marker id="m-green" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#2F9E6E"/></marker><marker id="m-teal" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#2A9AA8"/></marker><marker id="m-purple" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#5B54D6"/></marker><marker id="m-gray" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#64748B"/></marker><marker id="m-blue" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#3B82C4"/></marker></defs>
+<rect width="2000" height="720" fill="#FBFAF7"/>
+<text x="40" y="52" font-size="34" font-weight="800" fill="#1E293B">Who can read or write inside a project</text>
+<text x="40" y="84" font-size="19" fill="#475569">The rule is decided per service from the actor workspace role and their relation to the project: lead, member, or a public project.</text>
+<text x="655.0" y="160" text-anchor="middle" font-size="16" font-weight="700" fill="#1E293B">OWNER / ADMIN</text>
+<text x="935.0" y="160" text-anchor="middle" font-size="16" font-weight="700" fill="#1E293B">Project lead</text>
+<text x="1215.0" y="160" text-anchor="middle" font-size="16" font-weight="700" fill="#1E293B">Project member</text>
+<text x="1495.0" y="160" text-anchor="middle" font-size="16" font-weight="700" fill="#1E293B">Workspace member, public project</text>
+<text x="1775.0" y="160" text-anchor="middle" font-size="16" font-weight="700" fill="#1E293B">VIEWER role</text>
+<text x="40" y="160" font-size="15" font-weight="700" letter-spacing="1" fill="#7A5A2B">RESOURCE AND SERVICE</text>
+<text x="40" y="231.0" font-size="19" font-weight="700" fill="#1E293B">Issues, comments, issue labels</text>
+<text x="40" y="255.0" font-size="14" fill="#475569">issue, comment, issue-label services</text>
+<rect x="520" y="185" width="270" height="100" rx="8" fill="#2F9E6E"/>
+<text x="655.0" y="241.0" text-anchor="middle" font-size="18" font-weight="700" fill="#fff">read + write</text>
+<rect x="800" y="185" width="270" height="100" rx="8" fill="#2F9E6E"/>
+<text x="935.0" y="241.0" text-anchor="middle" font-size="18" font-weight="700" fill="#fff">read + write</text>
+<rect x="1080" y="185" width="270" height="100" rx="8" fill="#2F9E6E"/>
+<text x="1215.0" y="241.0" text-anchor="middle" font-size="18" font-weight="700" fill="#fff">read + write</text>
+<rect x="1360" y="185" width="270" height="100" rx="8" fill="#3B82C4"/>
+<text x="1495.0" y="235.0" text-anchor="middle" font-size="18" font-weight="700" fill="#fff">read</text>
+<text x="1495.0" y="259.0" text-anchor="middle" font-size="14" fill="#fff">list and get issues</text>
+<rect x="1640" y="185" width="270" height="100" rx="8" fill="#E7E5E0"/>
+<text x="1775.0" y="235.0" text-anchor="middle" font-size="18" font-weight="700" fill="#1E293B">no extra limit</text>
+<text x="1775.0" y="259.0" text-anchor="middle" font-size="14" fill="#1E293B">rule by project role</text>
+<text x="40" y="343.0" font-size="19" font-weight="700" fill="#1E293B">Cycles, modules, states and more</text>
+<text x="40" y="367.0" font-size="14" fill="#475569">cycle, module, state, label, issue-type, estimate</text>
+<rect x="520" y="297" width="270" height="100" rx="8" fill="#2F9E6E"/>
+<text x="655.0" y="353.0" text-anchor="middle" font-size="18" font-weight="700" fill="#fff">read + write</text>
+<rect x="800" y="297" width="270" height="100" rx="8" fill="#2F9E6E"/>
+<text x="935.0" y="353.0" text-anchor="middle" font-size="18" font-weight="700" fill="#fff">read + write</text>
+<rect x="1080" y="297" width="270" height="100" rx="8" fill="#3B82C4"/>
+<text x="1215.0" y="353.0" text-anchor="middle" font-size="18" font-weight="700" fill="#fff">read</text>
+<rect x="1360" y="297" width="270" height="100" rx="8" fill="#3B82C4"/>
+<text x="1495.0" y="353.0" text-anchor="middle" font-size="18" font-weight="700" fill="#fff">read</text>
+<rect x="1640" y="297" width="270" height="100" rx="8" fill="#E7E5E0"/>
+<text x="1775.0" y="347.0" text-anchor="middle" font-size="18" font-weight="700" fill="#1E293B">no extra limit</text>
+<text x="1775.0" y="371.0" text-anchor="middle" font-size="14" fill="#1E293B">rule by project role</text>
+<text x="40" y="455.0" font-size="19" font-weight="700" fill="#1E293B">Updates</text>
+<text x="40" y="479.0" font-size="14" fill="#475569">update.service; needs updatesEnabled</text>
+<rect x="520" y="409" width="270" height="100" rx="8" fill="#2F9E6E"/>
+<text x="655.0" y="459.0" text-anchor="middle" font-size="18" font-weight="700" fill="#fff">read + write</text>
+<text x="655.0" y="483.0" text-anchor="middle" font-size="14" fill="#fff">also moderates</text>
+<rect x="800" y="409" width="270" height="100" rx="8" fill="#2F9E6E"/>
+<text x="935.0" y="459.0" text-anchor="middle" font-size="18" font-weight="700" fill="#fff">read + write</text>
+<text x="935.0" y="483.0" text-anchor="middle" font-size="14" fill="#fff">also moderates</text>
+<rect x="1080" y="409" width="270" height="100" rx="8" fill="#2F9E6E"/>
+<text x="1215.0" y="459.0" text-anchor="middle" font-size="18" font-weight="700" fill="#fff">read + write</text>
+<text x="1215.0" y="483.0" text-anchor="middle" font-size="14" fill="#fff">edits own</text>
+<rect x="1360" y="409" width="270" height="100" rx="8" fill="#2F9E6E"/>
+<text x="1495.0" y="459.0" text-anchor="middle" font-size="18" font-weight="700" fill="#fff">read + write</text>
+<text x="1495.0" y="483.0" text-anchor="middle" font-size="14" fill="#fff">edits own</text>
+<rect x="1640" y="409" width="270" height="100" rx="8" fill="#3B82C4"/>
+<text x="1775.0" y="459.0" text-anchor="middle" font-size="18" font-weight="700" fill="#fff">read</text>
+<text x="1775.0" y="483.0" text-anchor="middle" font-size="14" fill="#fff">cannot write</text>
+<text x="40" y="567.0" font-size="19" font-weight="700" fill="#1E293B">Links, attachments, documents</text>
+<text x="40" y="591.0" font-size="14" fill="#475569">project-link, project-attachment, project-document</text>
+<rect x="520" y="521" width="270" height="100" rx="8" fill="#2F9E6E"/>
+<text x="655.0" y="577.0" text-anchor="middle" font-size="18" font-weight="700" fill="#fff">read + write</text>
+<rect x="800" y="521" width="270" height="100" rx="8" fill="#2F9E6E"/>
+<text x="935.0" y="577.0" text-anchor="middle" font-size="18" font-weight="700" fill="#fff">read + write</text>
+<rect x="1080" y="521" width="270" height="100" rx="8" fill="#3B82C4"/>
+<text x="1215.0" y="577.0" text-anchor="middle" font-size="18" font-weight="700" fill="#fff">read</text>
+<rect x="1360" y="521" width="270" height="100" rx="8" fill="#3B82C4"/>
+<text x="1495.0" y="577.0" text-anchor="middle" font-size="18" font-weight="700" fill="#fff">read</text>
+<rect x="1640" y="521" width="270" height="100" rx="8" fill="#E7E5E0"/>
+<text x="1775.0" y="571.0" text-anchor="middle" font-size="18" font-weight="700" fill="#1E293B">no extra limit</text>
+<text x="1775.0" y="595.0" text-anchor="middle" font-size="14" fill="#1E293B">rule by project role</text>
+<text x="40" y="679.0" font-size="19" font-weight="700" fill="#1E293B">Reactions</text>
+<text x="40" y="703.0" font-size="14" fill="#475569">project-reaction.service</text>
+<rect x="520" y="633" width="270" height="100" rx="8" fill="#2F9E6E"/>
+<text x="655.0" y="683.0" text-anchor="middle" font-size="18" font-weight="700" fill="#fff">read + write</text>
+<text x="655.0" y="707.0" text-anchor="middle" font-size="14" fill="#fff">react</text>
+<rect x="800" y="633" width="270" height="100" rx="8" fill="#2F9E6E"/>
+<text x="935.0" y="683.0" text-anchor="middle" font-size="18" font-weight="700" fill="#fff">read + write</text>
+<text x="935.0" y="707.0" text-anchor="middle" font-size="14" fill="#fff">react</text>
+<rect x="1080" y="633" width="270" height="100" rx="8" fill="#2F9E6E"/>
+<text x="1215.0" y="683.0" text-anchor="middle" font-size="18" font-weight="700" fill="#fff">read + write</text>
+<text x="1215.0" y="707.0" text-anchor="middle" font-size="14" fill="#fff">react</text>
+<rect x="1360" y="633" width="270" height="100" rx="8" fill="#2F9E6E"/>
+<text x="1495.0" y="683.0" text-anchor="middle" font-size="18" font-weight="700" fill="#fff">read + write</text>
+<text x="1495.0" y="707.0" text-anchor="middle" font-size="14" fill="#fff">react</text>
+<rect x="1640" y="633" width="270" height="100" rx="8" fill="#3B82C4"/>
+<text x="1775.0" y="683.0" text-anchor="middle" font-size="18" font-weight="700" fill="#fff">read</text>
+<text x="1775.0" y="707.0" text-anchor="middle" font-size="14" fill="#fff">cannot react</text>
+<text x="40" y="765" text-anchor="start" font-size="15" fill="#475569">Read for a public project reaches every workspace member; a private project reads for OWNER/ADMIN, the lead and project members only. The VIEWER role is checked only for updates and reactions.</text>
+<text x="40" y="791" text-anchor="start" font-size="15" fill="#475569">Workspace-level project states and project labels (project-state, project-label services) are OWNER/ADMIN only and are not part of this matrix.</text>
+</svg>

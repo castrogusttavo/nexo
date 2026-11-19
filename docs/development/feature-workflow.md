@@ -2,7 +2,9 @@
 
 A vertical-slice feature is built in three blocks, always in this order: **SDD** (design the contract), **TDD** (write the whole suite, red), **Code** (implement layer by layer until green). Some phases collapse when the domain is trivial; the block order never changes. The roadmap lives in the vault (`Resources/feature-creation-roadmap.md`, not in this repository: `TODO: confirm`); this page is derived from `CLAUDE.md` and checked against the code.
 
-<!-- DIAGRAM NEEDED: sdd-tdd-code-flow: the three blocks (SDD, TDD red, Code green) and the 14 numbered steps inside them, with the layer or file each step produces and which tests go green when; read docs/development/feature-workflow.md and the layer paths named in it -->
+![SDD, TDD and Code: the three blocks and 14 steps](../diagrams/sdd-tdd-code-flow.svg)
+
+*The three blocks of a feature and the 14 steps inside them.*
 
 ## Block 1: SDD, contract first
 

@@ -1,0 +1,61 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 2000 860" width="2000" height="860" font-family="Inter, -apple-system, Segoe UI, Helvetica, Arial, sans-serif">
+<title>Which X-Forwarded-For hop the app trusts</title><defs><marker id="m-orange" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#E08A3C"/></marker><marker id="m-red" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#D1495B"/></marker><marker id="m-green" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#2F9E6E"/></marker><marker id="m-teal" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#2A9AA8"/></marker><marker id="m-purple" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#5B54D6"/></marker><marker id="m-gray" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#64748B"/></marker><marker id="m-blue" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#3B82C4"/></marker></defs>
+<rect width="2000" height="860" fill="#FBFAF7"/>
+<text x="40" y="52" font-size="34" font-weight="800" fill="#1E293B">Which X-Forwarded-For hop the app trusts</text>
+<text x="40" y="84" font-size="19" fill="#475569">nginx appends to the header instead of replacing it, so only the rightmost entry was written by a proxy we control.</text>
+<rect x="20" y="125" width="1960" height="250" rx="14" fill="none" stroke="#B8BEC8" stroke-width="1.5" stroke-dasharray="6 5"/>
+<text x="42" y="155" font-size="15" font-weight="700" letter-spacing="1" fill="#7A5A2B">HOW THE HEADER IS BUILT</text>
+<rect x="50" y="185" width="330" height="150" rx="8" fill="#4A5568"/>
+<text x="215.0" y="240.0" text-anchor="middle" font-size="19" font-weight="700" fill="#fff">Client</text>
+<text x="215.0" y="266.0" text-anchor="middle" font-size="15" fill="#fff">may send its own X-Forwarded-For</text>
+<text x="215.0" y="285.0" text-anchor="middle" font-size="15" fill="#fff">entry</text>
+<rect x="470" y="185" width="380" height="150" rx="8" fill="#4A5568"/>
+<text x="660.0" y="240.0" text-anchor="middle" font-size="19" font-weight="700" fill="#fff">Cloudflare (since 2026-10-17)</text>
+<text x="660.0" y="266.0" text-anchor="middle" font-size="15" fill="#fff">nginx trusts CF-Connecting-IP only</text>
+<text x="660.0" y="285.0" text-anchor="middle" font-size="15" fill="#fff">from Cloudflare ranges (real_ip)</text>
+<rect x="940" y="185" width="400" height="150" rx="8" fill="#E08A3C"/>
+<text x="1140.0" y="230.0" text-anchor="middle" font-size="19" font-weight="700" fill="#fff">nginx</text>
+<text x="1140.0" y="256.0" text-anchor="middle" font-size="15" fill="#fff">X-Forwarded-For = what the client sent +</text>
+<text x="1140.0" y="275.0" text-anchor="middle" font-size="15" fill="#fff">the address nginx saw</text>
+<text x="1140.0" y="294.0" text-anchor="middle" font-size="15" fill="#fff">($proxy_add_x_forwarded_for)</text>
+<rect x="1430" y="185" width="520" height="150" rx="8" fill="#DCDAF2"/>
+<text x="1690.0" y="230.0" text-anchor="middle" font-size="19" font-weight="700" fill="#3B37A8">App</text>
+<text x="1690.0" y="256.0" text-anchor="middle" font-size="15" fill="#3B37A8">a request that already carried the header arrives</text>
+<text x="1690.0" y="275.0" text-anchor="middle" font-size="15" fill="#3B37A8">with two or more entries: client-written ones, then</text>
+<text x="1690.0" y="294.0" text-anchor="middle" font-size="15" fill="#3B37A8">the nginx-written one</text>
+<path d="M380,260 L470,260" fill="none" stroke="#64748B" stroke-width="2.2" stroke-dasharray="7 6" stroke-linejoin="round" marker-end="url(#m-gray)"/>
+<path d="M850,260 L940,260" fill="none" stroke="#64748B" stroke-width="2.2" stroke-dasharray="7 6" stroke-linejoin="round" marker-end="url(#m-gray)"/>
+<path d="M1340,260 L1430,260" fill="none" stroke="#64748B" stroke-width="2.2" stroke-dasharray="7 6" stroke-linejoin="round" marker-end="url(#m-gray)"/>
+<rect x="20" y="400" width="960" height="400" rx="14" fill="none" stroke="#B8BEC8" stroke-width="1.5" stroke-dasharray="6 5"/>
+<text x="42" y="430" font-size="15" font-weight="700" letter-spacing="1" fill="#D1495B">BEFORE · 590BFC8C</text>
+<rect x="50" y="460" width="430" height="130" rx="8" fill="#D1495B"/>
+<text x="265.0" y="495.0" text-anchor="middle" font-size="19" font-weight="700" fill="#fff">Better Auth, no trustedProxies</text>
+<text x="265.0" y="521.0" text-anchor="middle" font-size="15" fill="#fff">trusts only a single-entry header: with</text>
+<text x="265.0" y="540.0" text-anchor="middle" font-size="15" fill="#fff">two entries it falls back to one global</text>
+<text x="265.0" y="559.0" text-anchor="middle" font-size="15" fill="#fff">key</text>
+<rect x="510" y="460" width="440" height="130" rx="8" fill="#D1495B"/>
+<text x="730.0" y="505.0" text-anchor="middle" font-size="19" font-weight="700" fill="#fff">Shared sign-in bucket</text>
+<text x="730.0" y="531.0" text-anchor="middle" font-size="15" fill="#fff">unrelated users count against one rate</text>
+<text x="730.0" y="550.0" text-anchor="middle" font-size="15" fill="#fff">limit (3 per 10 s, operator-provided)</text>
+<rect x="50" y="630" width="900" height="120" rx="8" fill="#D1495B"/>
+<text x="500.0" y="670.0" text-anchor="middle" font-size="19" font-weight="700" fill="#fff">getClientIp took the first entry, then X-Real-IP</text>
+<text x="500.0" y="696.0" text-anchor="middle" font-size="15" fill="#fff">both client-controlled: a client chose the address that was rate limited and later stored</text>
+<text x="500.0" y="715.0" text-anchor="middle" font-size="15" fill="#fff">in consent records</text>
+<path d="M480,525 L510,525" fill="none" stroke="#D1495B" stroke-width="2.2" stroke-dasharray="7 6" stroke-linejoin="round" marker-end="url(#m-red)"/>
+<rect x="1020" y="400" width="960" height="400" rx="14" fill="none" stroke="#B8BEC8" stroke-width="1.5" stroke-dasharray="6 5"/>
+<text x="1042" y="430" font-size="15" font-weight="700" letter-spacing="1" fill="#2F9E6E">AFTER · 590BFC8C</text>
+<rect x="1050" y="460" width="430" height="130" rx="8" fill="#2F9E6E"/>
+<text x="1265.0" y="505.0" text-anchor="middle" font-size="19" font-weight="700" fill="#fff">TRUSTED_PROXIES</text>
+<text x="1265.0" y="531.0" text-anchor="middle" font-size="15" fill="#fff">default 127.0.0.1, ::1; set in</text>
+<text x="1265.0" y="550.0" text-anchor="middle" font-size="15" fill="#fff">advanced.ipAddress.trustedProxies</text>
+<rect x="1510" y="460" width="440" height="130" rx="8" fill="#2F9E6E"/>
+<text x="1730.0" y="495.0" text-anchor="middle" font-size="19" font-weight="700" fill="#fff">Rightmost untrusted hop</text>
+<text x="1730.0" y="521.0" text-anchor="middle" font-size="15" fill="#fff">getClientIp walks from the right</text>
+<text x="1730.0" y="540.0" text-anchor="middle" font-size="15" fill="#fff">(getIPFromHeader): the address nginx</text>
+<text x="1730.0" y="559.0" text-anchor="middle" font-size="15" fill="#fff">wrote</text>
+<rect x="1050" y="630" width="900" height="120" rx="8" fill="#2F9E6E"/>
+<text x="1500.0" y="670.0" text-anchor="middle" font-size="19" font-weight="700" fill="#fff">One resolver</text>
+<text x="1500.0" y="696.0" text-anchor="middle" font-size="15" fill="#fff">app limiter, Better Auth and consent records share it; unit tests with multi-hop headers</text>
+<text x="1500.0" y="715.0" text-anchor="middle" font-size="15" fill="#fff">in rate-limit-helpers.test.ts</text>
+<path d="M1480,525 L1510,525" fill="none" stroke="#2F9E6E" stroke-width="2.2" stroke-dasharray="7 6" stroke-linejoin="round" marker-end="url(#m-green)"/>
+</svg>

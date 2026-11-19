@@ -19,7 +19,9 @@ Vitest owns six file-level projects (`vite.config.ts`). Playwright owns the two 
 
 A sixth Vitest project, `redis-tls`, runs `src/lib/__tests__/*.smoke.test.ts` against a TLS Redis. It runs in its own CI job (`redis-tls-smoke` in `.github/workflows/ci.yml`) and is not part of the daily loop.
 
-<!-- DIAGRAM NEEDED: test-layers-map: the test layers (unit, integration, component, contract, e2e HTTP, browser, visual, mutation) as a pyramid or map, each with the question it answers, its runner and whether it needs infra; read docs/testing/README.md and vite.config.ts and playwright.config.ts -->
+![The test layers as a pyramid](../diagrams/test-layers-map.svg)
+
+*The test layers, the question each answers, its runner and what it needs.*
 
 ## Where a test file goes
 
@@ -66,7 +68,11 @@ pnpm vitest --project unit -t "creates a sticky note"
 
 ## How CI uses them
 
-`ci.yml` runs on push to `main` and gates deploys (see [ADR 0001](../adr/0001-trunk-based-development.md)). The required jobs in the `gate` job are `lint`, `contract-tests`, `e2e-tests` (matrix `api` and `browser`, the browser leg also runs the visual suite), `coverage-tests` (unit + integration), `component-tests` (three shards), `semgrep`, `gitleaks` and `redis-tls-smoke`. <!-- DIAGRAM NEEDED: ci-test-jobs-map: which CI jobs run which test projects and feed the gate job, Codecov and the weekly mutation workflow; read .github/workflows/ci.yml and .github/workflows/mutation.yml -->
+`ci.yml` runs on push to `main` and gates deploys (see [ADR 0001](../adr/0001-trunk-based-development.md)). The required jobs in the `gate` job are `lint`, `contract-tests`, `e2e-tests` (matrix `api` and `browser`, the browser leg also runs the visual suite), `coverage-tests` (unit + integration), `component-tests` (three shards), `semgrep`, `gitleaks` and `redis-tls-smoke`.
+
+![CI jobs mapped to test projects](../diagrams/ci-test-jobs-map.svg)
+
+*Which CI job runs which tests and feeds the gate, Codecov and the weekly mutation run.*
 
 Mutation testing is a separate weekly workflow, not part of the gate. See [mutation-and-coverage](./mutation-and-coverage.md).
 

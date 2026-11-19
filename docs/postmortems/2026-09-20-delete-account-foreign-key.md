@@ -17,7 +17,9 @@ Hard-deleting a user (`prisma.user.delete`) failed for anyone who had ever autho
 - 2026-09-21 11:22, `807fa5e8`: stalled jobs get reason `stalled` (BullMQ 5.79 fails them with `UnrecoverableError`), a `QueueEvents` backstop and a dedup ledger so a death alarms once.
 - 2026-09-22, `f40974bc`: Slack delivery for alerts, including dead jobs.
 
-<!-- DIAGRAM NEEDED: delete-account-failure: sequence of the delete-account job from enqueue to FK violation, retries and silent death, versus the fixed flow with SetNull and the exhausted alarm; read src/lib/queue/processors/account-lifecycle.ts, src/lib/queue/failure-alarm.ts, prisma/migrations/20260920201252_anonymize_deleted_user_content/migration.sql -->
+![Delete-account failure and fix](../diagrams/delete-account-failure.svg)
+
+*The silent foreign-key failure of the delete-account job, and the fixed flow with the exhausted-job alarm.*
 
 ## Root cause
 

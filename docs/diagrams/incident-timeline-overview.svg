@@ -1,0 +1,68 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 2000 700" width="2000" height="700" font-family="Inter, -apple-system, Segoe UI, Helvetica, Arial, sans-serif">
+<title>Five incidents, five guards</title><defs><marker id="m-orange" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#E08A3C"/></marker><marker id="m-red" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#D1495B"/></marker><marker id="m-green" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#2F9E6E"/></marker><marker id="m-teal" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#2A9AA8"/></marker><marker id="m-purple" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#5B54D6"/></marker><marker id="m-gray" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#64748B"/></marker><marker id="m-blue" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#3B82C4"/></marker></defs>
+<rect width="2000" height="700" fill="#FBFAF7"/>
+<text x="40" y="52" font-size="34" font-weight="800" fill="#1E293B">Five incidents, five guards</text>
+<text x="40" y="84" font-size="19" fill="#475569">From 2026-09-20 to 2026-10-17, each incident left a test, an alarm or a rule behind. The axis is not to scale.</text>
+<line x1="60" y1="350" x2="1940" y2="350" stroke="#94A3B8" stroke-width="3"/>
+<circle cx="230" cy="350" r="11" fill="#D1495B"/>
+<text x="230" y="388" text-anchor="middle" font-size="18" font-weight="700" fill="#1E293B">2026-09-20</text>
+<rect x="60" y="150" width="340" height="140" rx="8" fill="#D1495B"/>
+<text x="230.0" y="200.0" text-anchor="middle" font-size="19" font-weight="700" fill="#fff">Proxy missing from the image</text>
+<text x="230.0" y="226.0" text-anchor="middle" font-size="15" fill="#fff">proxy.ts in .dockerignore: no CSP,</text>
+<text x="230.0" y="245.0" text-anchor="middle" font-size="15" fill="#fff">HSTS or edge gate</text>
+<path d="M230,290 L230,336" fill="none" stroke="#D1495B" stroke-width="2.2" stroke-dasharray="7 6" stroke-linejoin="round" marker-end="url(#m-red)"/>
+<rect x="60" y="440" width="340" height="140" rx="8" fill="#2F9E6E"/>
+<text x="230.0" y="484.0" text-anchor="middle" font-size="19" font-weight="700" fill="#fff">Guard</text>
+<text x="230.0" y="510.0" text-anchor="middle" font-size="15" fill="#fff">Contract test on .dockerignore;</text>
+<text x="230.0" y="529.0" text-anchor="middle" font-size="15" fill="#fff">browser suite on the standalone</text>
+<text x="230.0" y="548.0" text-anchor="middle" font-size="15" fill="#fff">build</text>
+<path d="M230,400 L230,440" fill="none" stroke="#2F9E6E" stroke-width="2.2" stroke-dasharray="7 6" stroke-linejoin="round" marker-end="url(#m-green)"/>
+<circle cx="610" cy="350" r="11" fill="#D1495B"/>
+<text x="610" y="388" text-anchor="middle" font-size="18" font-weight="700" fill="#1E293B">2026-09-20</text>
+<rect x="440" y="150" width="340" height="140" rx="8" fill="#D1495B"/>
+<text x="610.0" y="200.0" text-anchor="middle" font-size="19" font-weight="700" fill="#fff">Account deletion fails silently</text>
+<text x="610.0" y="226.0" text-anchor="middle" font-size="15" fill="#fff">foreign key violation, retries,</text>
+<text x="610.0" y="245.0" text-anchor="middle" font-size="15" fill="#fff">then silence</text>
+<path d="M610,290 L610,336" fill="none" stroke="#D1495B" stroke-width="2.2" stroke-dasharray="7 6" stroke-linejoin="round" marker-end="url(#m-red)"/>
+<rect x="440" y="440" width="340" height="140" rx="8" fill="#2F9E6E"/>
+<text x="610.0" y="490.0" text-anchor="middle" font-size="19" font-weight="700" fill="#fff">Guard</text>
+<text x="610.0" y="516.0" text-anchor="middle" font-size="15" fill="#fff">Authorship SetNull;</text>
+<text x="610.0" y="535.0" text-anchor="middle" font-size="15" fill="#fff">queue.job.exhausted alarm</text>
+<path d="M610,400 L610,440" fill="none" stroke="#2F9E6E" stroke-width="2.2" stroke-dasharray="7 6" stroke-linejoin="round" marker-end="url(#m-green)"/>
+<circle cx="990" cy="350" r="11" fill="#D1495B"/>
+<text x="990" y="388" text-anchor="middle" font-size="18" font-weight="700" fill="#1E293B">2026-09-24</text>
+<rect x="820" y="150" width="340" height="140" rx="8" fill="#D1495B"/>
+<text x="990.0" y="206.0" text-anchor="middle" font-size="19" font-weight="700" fill="#fff">MinIO withdraws its images</text>
+<text x="990.0" y="232.0" text-anchor="middle" font-size="15" fill="#fff">CI breaks overnight</text>
+<path d="M990,290 L990,336" fill="none" stroke="#D1495B" stroke-width="2.2" stroke-dasharray="7 6" stroke-linejoin="round" marker-end="url(#m-red)"/>
+<rect x="820" y="440" width="340" height="140" rx="8" fill="#2F9E6E"/>
+<text x="990.0" y="496.0" text-anchor="middle" font-size="19" font-weight="700" fill="#fff">Guard</text>
+<text x="990.0" y="522.0" text-anchor="middle" font-size="15" fill="#fff">Move to Silo; images pinned by tag</text>
+<path d="M990,400 L990,440" fill="none" stroke="#2F9E6E" stroke-width="2.2" stroke-dasharray="7 6" stroke-linejoin="round" marker-end="url(#m-green)"/>
+<circle cx="1370" cy="350" r="11" fill="#D1495B"/>
+<text x="1370" y="388" text-anchor="middle" font-size="18" font-weight="700" fill="#1E293B">2026-10-15</text>
+<rect x="1200" y="150" width="340" height="140" rx="8" fill="#D1495B"/>
+<text x="1370.0" y="200.0" text-anchor="middle" font-size="19" font-weight="700" fill="#fff">Shared sign-in rate bucket</text>
+<text x="1370.0" y="226.0" text-anchor="middle" font-size="15" fill="#fff">client-controlled X-Forwarded-For</text>
+<text x="1370.0" y="245.0" text-anchor="middle" font-size="15" fill="#fff">entry</text>
+<path d="M1370,290 L1370,336" fill="none" stroke="#D1495B" stroke-width="2.2" stroke-dasharray="7 6" stroke-linejoin="round" marker-end="url(#m-red)"/>
+<rect x="1200" y="440" width="340" height="140" rx="8" fill="#2F9E6E"/>
+<text x="1370.0" y="490.0" text-anchor="middle" font-size="19" font-weight="700" fill="#fff">Guard</text>
+<text x="1370.0" y="516.0" text-anchor="middle" font-size="15" fill="#fff">Rightmost untrusted hop; nginx</text>
+<text x="1370.0" y="535.0" text-anchor="middle" font-size="15" fill="#fff">real_ip from Cloudflare only</text>
+<path d="M1370,400 L1370,440" fill="none" stroke="#2F9E6E" stroke-width="2.2" stroke-dasharray="7 6" stroke-linejoin="round" marker-end="url(#m-green)"/>
+<circle cx="1750" cy="350" r="11" fill="#D1495B"/>
+<text x="1750" y="388" text-anchor="middle" font-size="18" font-weight="700" fill="#1E293B">2026-10-17</text>
+<rect x="1580" y="150" width="340" height="140" rx="8" fill="#D1495B"/>
+<text x="1750.0" y="206.0" text-anchor="middle" font-size="19" font-weight="700" fill="#fff">STR-61: ids leaked</text>
+<text x="1750.0" y="232.0" text-anchor="middle" font-size="15" fill="#fff">a layout redirect is not a gate</text>
+<path d="M1750,290 L1750,336" fill="none" stroke="#D1495B" stroke-width="2.2" stroke-dasharray="7 6" stroke-linejoin="round" marker-end="url(#m-red)"/>
+<rect x="1580" y="440" width="340" height="140" rx="8" fill="#2F9E6E"/>
+<text x="1750.0" y="490.0" text-anchor="middle" font-size="19" font-weight="700" fill="#fff">Guard</text>
+<text x="1750.0" y="516.0" text-anchor="middle" font-size="15" fill="#fff">DAL checks at the data read;</text>
+<text x="1750.0" y="535.0" text-anchor="middle" font-size="15" fill="#fff">access.e2e test</text>
+<path d="M1750,400 L1750,440" fill="none" stroke="#2F9E6E" stroke-width="2.2" stroke-dasharray="7 6" stroke-linejoin="round" marker-end="url(#m-green)"/>
+<text x="60" y="135" font-size="15" font-weight="700" letter-spacing="1" fill="#D1495B">INCIDENT</text>
+<text x="60" y="625" font-size="15" font-weight="700" letter-spacing="1" fill="#2F9E6E">GUARD IT PRODUCED</text>
+<text x="1000" y="670" text-anchor="middle" font-size="15" fill="#475569">Impact figures (users affected, minutes of downtime) are not recorded in the repository and are not shown.</text>
+</svg>

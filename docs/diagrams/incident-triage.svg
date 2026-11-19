@@ -1,0 +1,54 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 2000 760" width="2000" height="760" font-family="Inter, -apple-system, Segoe UI, Helvetica, Arial, sans-serif">
+<title>Incident triage</title><defs><marker id="m-orange" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#E08A3C"/></marker><marker id="m-red" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#D1495B"/></marker><marker id="m-green" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#2F9E6E"/></marker><marker id="m-teal" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#2A9AA8"/></marker><marker id="m-purple" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#5B54D6"/></marker><marker id="m-gray" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#64748B"/></marker><marker id="m-blue" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#3B82C4"/></marker></defs>
+<rect width="2000" height="760" fill="#FBFAF7"/>
+<text x="40" y="52" font-size="34" font-weight="800" fill="#1E293B">Incident triage</text>
+<text x="40" y="84" font-size="19" fill="#475569">From the symptom you see to the first check and the action, for the four failures the repository can detect.</text>
+<text x="40" y="150" font-size="15" font-weight="700" letter-spacing="1" fill="#7A5A2B">SYMPTOM</text>
+<text x="620" y="150" font-size="15" font-weight="700" letter-spacing="1" fill="#7A5A2B">FIRST CHECK</text>
+<text x="1300" y="150" font-size="15" font-weight="700" letter-spacing="1" fill="#7A5A2B">ACTION</text>
+<rect x="40" y="175" width="500" height="100" rx="8" fill="#D1495B"/>
+<text x="290.0" y="222.0" text-anchor="middle" font-size="19" font-weight="700" fill="#fff">1 · Background job died</text>
+<text x="290.0" y="245.0" text-anchor="middle" font-size="15" fill="#fff">Slack or Axiom: queue.job.exhausted</text>
+<rect x="620" y="175" width="600" height="100" rx="8" fill="#DCDAF2"/>
+<text x="920.0" y="222.0" text-anchor="middle" font-size="19" font-weight="700" fill="#3B37A8">Axiom log by jobId: stack and reason</text>
+<text x="920.0" y="245.0" text-anchor="middle" font-size="15" fill="#3B37A8">attempts_exhausted, unrecoverable or stalled</text>
+<rect x="1300" y="175" width="650" height="100" rx="8" fill="#2F9E6E"/>
+<text x="1625.0" y="222.0" text-anchor="middle" font-size="19" font-weight="700" fill="#fff">Fix the cause, retry from the failed set</text>
+<text x="1625.0" y="245.0" text-anchor="middle" font-size="15" fill="#fff">kept 7 days; stalled: was nexo-worker restarted or starved?</text>
+<path d="M540,225 L620,225" fill="none" stroke="#D1495B" stroke-width="2.2" stroke-dasharray="7 6" stroke-linejoin="round" marker-end="url(#m-red)"/>
+<path d="M1220,225 L1300,225" fill="none" stroke="#2F9E6E" stroke-width="2.2" stroke-dasharray="7 6" stroke-linejoin="round" marker-end="url(#m-green)"/>
+<rect x="40" y="315" width="500" height="100" rx="8" fill="#D1495B"/>
+<text x="290.0" y="362.0" text-anchor="middle" font-size="19" font-weight="700" fill="#fff">2 · Status component down</text>
+<text x="290.0" y="385.0" text-anchor="middle" font-size="15" fill="#fff">/status incident or Slack transition</text>
+<rect x="620" y="315" width="600" height="100" rx="8" fill="#DCDAF2"/>
+<text x="920.0" y="362.0" text-anchor="middle" font-size="19" font-weight="700" fill="#3B37A8">Which component, which probe reason</text>
+<text x="920.0" y="385.0" text-anchor="middle" font-size="15" fill="#3B37A8">pnpm status:collect, or GET /api/health</text>
+<rect x="1300" y="315" width="650" height="100" rx="8" fill="#2F9E6E"/>
+<text x="1625.0" y="362.0" text-anchor="middle" font-size="19" font-weight="700" fill="#fff">By component, with server-ops modes</text>
+<text x="1625.0" y="385.0" text-anchor="middle" font-size="15" fill="#fff">app-up, nginx-upstream, db-pool-status, env-sync; jobs: see 3</text>
+<path d="M540,365 L620,365" fill="none" stroke="#D1495B" stroke-width="2.2" stroke-dasharray="7 6" stroke-linejoin="round" marker-end="url(#m-red)"/>
+<path d="M1220,365 L1300,365" fill="none" stroke="#2F9E6E" stroke-width="2.2" stroke-dasharray="7 6" stroke-linejoin="round" marker-end="url(#m-green)"/>
+<rect x="40" y="455" width="500" height="100" rx="8" fill="#D1495B"/>
+<text x="290.0" y="502.0" text-anchor="middle" font-size="19" font-weight="700" fill="#fff">3 · Queue backlog or no worker</text>
+<text x="290.0" y="525.0" text-anchor="middle" font-size="15" fill="#fff">jobs probe: waiting &gt; 25, or no worker</text>
+<rect x="620" y="455" width="600" height="100" rx="8" fill="#DCDAF2"/>
+<text x="920.0" y="502.0" text-anchor="middle" font-size="19" font-weight="700" fill="#3B37A8">Is nexo-worker running and connected?</text>
+<text x="920.0" y="525.0" text-anchor="middle" font-size="15" fill="#3B37A8">queue.worker.* and redis.connection_error logs</text>
+<rect x="1300" y="455" width="650" height="100" rx="8" fill="#2F9E6E"/>
+<text x="1625.0" y="502.0" text-anchor="middle" font-size="19" font-weight="700" fill="#fff">server-ops app-up, or redeploy</text>
+<text x="1625.0" y="525.0" text-anchor="middle" font-size="15" fill="#fff">the worker re-registers its schedulers idempotently</text>
+<path d="M540,505 L620,505" fill="none" stroke="#D1495B" stroke-width="2.2" stroke-dasharray="7 6" stroke-linejoin="round" marker-end="url(#m-red)"/>
+<path d="M1220,505 L1300,505" fill="none" stroke="#2F9E6E" stroke-width="2.2" stroke-dasharray="7 6" stroke-linejoin="round" marker-end="url(#m-green)"/>
+<rect x="40" y="595" width="500" height="100" rx="8" fill="#D1495B"/>
+<text x="290.0" y="642.0" text-anchor="middle" font-size="19" font-weight="700" fill="#fff">4 · Deploy stopped mid-rollout</text>
+<text x="290.0" y="665.0" text-anchor="middle" font-size="15" fill="#fff">Slack "Deploy failed", CD log error</text>
+<rect x="620" y="595" width="600" height="100" rx="8" fill="#DCDAF2"/>
+<text x="920.0" y="642.0" text-anchor="middle" font-size="19" font-weight="700" fill="#3B37A8">The 50 log lines of nexo-app-N</text>
+<text x="920.0" y="665.0" text-anchor="middle" font-size="15" fill="#3B37A8">unhealthy after 90 s; the migration already ran</text>
+<rect x="1300" y="595" width="650" height="100" rx="8" fill="#2F9E6E"/>
+<text x="1625.0" y="642.0" text-anchor="middle" font-size="19" font-weight="700" fill="#fff">Fix forward with a new commit</text>
+<text x="1625.0" y="665.0" text-anchor="middle" font-size="15" fill="#fff">no scripted rollback, see the rollback diagram</text>
+<path d="M540,645 L620,645" fill="none" stroke="#D1495B" stroke-width="2.2" stroke-dasharray="7 6" stroke-linejoin="round" marker-end="url(#m-red)"/>
+<path d="M1220,645 L1300,645" fill="none" stroke="#2F9E6E" stroke-width="2.2" stroke-dasharray="7 6" stroke-linejoin="round" marker-end="url(#m-green)"/>
+<text x="1000" y="735" text-anchor="middle" font-size="15" fill="#475569">Redis is both the queue and a status component: an outage there can raise symptoms 2 and 3 together.</text>
+</svg>

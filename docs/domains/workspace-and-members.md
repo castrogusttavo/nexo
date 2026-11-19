@@ -23,7 +23,9 @@ All in `prisma/schema.prisma`:
 
 ![Core data model](../diagrams/er-model.svg)
 
-<!-- DIAGRAM NEEDED: invitation-lifecycle: state diagram of WorkspaceInvitation (PENDING, ACCEPTED, EXPIRED, REVOKED) with the create/resend/revoke/accept transitions and the seat-limit checks; read src/services/invitation.service.ts and src/repositories/invitation.repository.ts -->
+![WorkspaceInvitation state diagram](../diagrams/invitation-lifecycle.svg)
+
+*WorkspaceInvitation states and the transitions between them.*
 
 ## Service rules and authorization
 

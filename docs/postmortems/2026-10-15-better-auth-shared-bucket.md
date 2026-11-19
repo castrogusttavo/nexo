@@ -19,7 +19,9 @@ Behind nginx, Better Auth resolved the client IP from `X-Forwarded-For` but, wit
 - 2026-10-17, `5fd075fa`: consent records use the resolved address (`clientIp()`), `null` when there is none.
 - 2026-10-18, `da4ba764`: consent records keep the whole IPv6 address.
 
-<!-- DIAGRAM NEEDED: xff-resolution: how X-Forwarded-For is built (client, Cloudflare, nginx) and which hop is chosen before and after 590bfc8c, including the shared bucket failure; read src/lib/rate-limit-helpers.ts, src/lib/auth.ts, infra/nginx/cloudflare-realip.conf, infra/nginx/nexo-ratelimit.conf -->
+![X-Forwarded-For resolution](../diagrams/xff-resolution.svg)
+
+*How the header is built and which hop the app trusted before and after the fix.*
 
 ## Root cause
 

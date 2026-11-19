@@ -24,7 +24,9 @@ Plans are bought per workspace through AbacatePay (a Brazilian payment gateway).
 - Only two entitlements are enforced in services today: the seat limit (`limitOf(plan, 'seats')` in `invitation.service.ts`) and `importMembersCsv` (`member.service.ts`). Other features such as `wiki` are declared as `PRO` in the catalog, but a search of `src/`, `app/`, `components/` and `lib/` finds no `can(..., 'wiki')` call. TODO: confirm where the rest of the catalog is enforced, if anywhere.
 - The `LIMITS` table gives `FREE` and `BUSINESS` both `seats: 12` and `PRO` `null` (unlimited). That looks odd for a higher tier; TODO: confirm it is intended.
 
-<!-- DIAGRAM NEEDED: billing-checkout-webhook: sequence of checkout (POST /api/payment/plan -> SubscriptionService.create -> AbacatePay -> PENDING Subscription), the webhook (app/api/payment/webhook/route.ts -> handleWebhookEvent -> activateWithPlan/deactivateByBillId) and the hourly trial revert job (src/lib/queue/processors/trial-lifecycle.ts); read src/services/subscription.service.ts and src/repositories/subscription.repository.ts -->
+![Checkout, webhook and trial revert](../diagrams/billing-checkout-webhook.svg)
+
+*Checkout creates a PENDING subscription, the AbacatePay webhook activates or ends it, and an hourly job reverts expired trials.*
 
 ## Checkout (`SubscriptionService.create`)
 

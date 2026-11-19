@@ -1,0 +1,101 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 2000 960" width="2000" height="960" font-family="Inter, -apple-system, Segoe UI, Helvetica, Arial, sans-serif">
+<title>Which CI job runs which tests</title><defs><marker id="m-orange" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#E08A3C"/></marker><marker id="m-red" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#D1495B"/></marker><marker id="m-green" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#2F9E6E"/></marker><marker id="m-teal" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#2A9AA8"/></marker><marker id="m-purple" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#5B54D6"/></marker><marker id="m-gray" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#64748B"/></marker><marker id="m-blue" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#3B82C4"/></marker></defs>
+<rect width="2000" height="960" fill="#FBFAF7"/>
+<text x="40" y="52" font-size="34" font-weight="800" fill="#1E293B">Which CI job runs which tests</text>
+<text x="40" y="84" font-size="19" fill="#475569">Eight jobs feed the gate; the coverage jobs also feed Codecov; mutation testing runs weekly, outside the gate.</text>
+<rect x="40" y="400" width="210" height="80" rx="8" fill="#4A5568"/>
+<text x="145.0" y="437.0" text-anchor="middle" font-size="19" font-weight="700" fill="#fff">push to main</text>
+<text x="145.0" y="460.0" text-anchor="middle" font-size="15" fill="#fff">ci.yml</text>
+<rect x="330" y="170" width="400" height="52" rx="8" fill="#DCDAF2"/>
+<text x="530.0" y="193.0" text-anchor="middle" font-size="19" font-weight="700" fill="#3B37A8">lint</text>
+<text x="530.0" y="216.0" text-anchor="middle" font-size="15" fill="#3B37A8">tsc + biome, no test project</text>
+<path d="M290,196 L330,196" fill="none" stroke="#5B54D6" stroke-width="2.2" stroke-dasharray="7 6" stroke-linejoin="round" marker-end="url(#m-purple)"/>
+<path d="M730,196 L780,196" fill="none" stroke="#5B54D6" stroke-width="2.2" stroke-dasharray="7 6" stroke-linejoin="round"/>
+<rect x="330" y="232" width="400" height="52" rx="8" fill="#DCDAF2"/>
+<text x="530.0" y="255.0" text-anchor="middle" font-size="19" font-weight="700" fill="#3B37A8">contract-tests</text>
+<text x="530.0" y="278.0" text-anchor="middle" font-size="15" fill="#3B37A8">Vitest contract</text>
+<path d="M290,258 L330,258" fill="none" stroke="#5B54D6" stroke-width="2.2" stroke-dasharray="7 6" stroke-linejoin="round" marker-end="url(#m-purple)"/>
+<path d="M730,258 L780,258" fill="none" stroke="#5B54D6" stroke-width="2.2" stroke-dasharray="7 6" stroke-linejoin="round"/>
+<rect x="330" y="294" width="400" height="52" rx="8" fill="#DCDAF2"/>
+<text x="530.0" y="317.0" text-anchor="middle" font-size="19" font-weight="700" fill="#3B37A8">e2e-tests (api)</text>
+<text x="530.0" y="340.0" text-anchor="middle" font-size="15" fill="#3B37A8">Vitest e2e, running server</text>
+<path d="M290,320 L330,320" fill="none" stroke="#5B54D6" stroke-width="2.2" stroke-dasharray="7 6" stroke-linejoin="round" marker-end="url(#m-purple)"/>
+<path d="M730,320 L780,320" fill="none" stroke="#5B54D6" stroke-width="2.2" stroke-dasharray="7 6" stroke-linejoin="round"/>
+<rect x="330" y="356" width="400" height="52" rx="8" fill="#DCDAF2"/>
+<text x="530.0" y="379.0" text-anchor="middle" font-size="19" font-weight="700" fill="#3B37A8">e2e-tests (browser)</text>
+<text x="530.0" y="402.0" text-anchor="middle" font-size="15" fill="#3B37A8">Playwright browser + visual</text>
+<path d="M290,382 L330,382" fill="none" stroke="#5B54D6" stroke-width="2.2" stroke-dasharray="7 6" stroke-linejoin="round" marker-end="url(#m-purple)"/>
+<path d="M730,382 L780,382" fill="none" stroke="#5B54D6" stroke-width="2.2" stroke-dasharray="7 6" stroke-linejoin="round"/>
+<rect x="330" y="418" width="400" height="52" rx="8" fill="#DCDAF2"/>
+<text x="530.0" y="441.0" text-anchor="middle" font-size="19" font-weight="700" fill="#3B37A8">coverage-tests</text>
+<text x="530.0" y="464.0" text-anchor="middle" font-size="15" fill="#3B37A8">Vitest unit + integration</text>
+<path d="M290,444 L330,444" fill="none" stroke="#5B54D6" stroke-width="2.2" stroke-dasharray="7 6" stroke-linejoin="round" marker-end="url(#m-purple)"/>
+<path d="M730,444 L780,444" fill="none" stroke="#5B54D6" stroke-width="2.2" stroke-dasharray="7 6" stroke-linejoin="round"/>
+<rect x="330" y="480" width="400" height="52" rx="8" fill="#DCDAF2"/>
+<text x="530.0" y="503.0" text-anchor="middle" font-size="19" font-weight="700" fill="#3B37A8">component-tests</text>
+<text x="530.0" y="526.0" text-anchor="middle" font-size="15" fill="#3B37A8">Vitest component, 3 shards</text>
+<path d="M290,506 L330,506" fill="none" stroke="#5B54D6" stroke-width="2.2" stroke-dasharray="7 6" stroke-linejoin="round" marker-end="url(#m-purple)"/>
+<path d="M730,506 L780,506" fill="none" stroke="#5B54D6" stroke-width="2.2" stroke-dasharray="7 6" stroke-linejoin="round"/>
+<rect x="330" y="542" width="400" height="52" rx="8" fill="#DCDAF2"/>
+<text x="530.0" y="565.0" text-anchor="middle" font-size="19" font-weight="700" fill="#3B37A8">redis-tls-smoke</text>
+<text x="530.0" y="588.0" text-anchor="middle" font-size="15" fill="#3B37A8">Vitest redis-tls</text>
+<path d="M290,568 L330,568" fill="none" stroke="#5B54D6" stroke-width="2.2" stroke-dasharray="7 6" stroke-linejoin="round" marker-end="url(#m-purple)"/>
+<path d="M730,568 L780,568" fill="none" stroke="#5B54D6" stroke-width="2.2" stroke-dasharray="7 6" stroke-linejoin="round"/>
+<rect x="330" y="604" width="400" height="52" rx="8" fill="#DCDAF2"/>
+<text x="530.0" y="627.0" text-anchor="middle" font-size="19" font-weight="700" fill="#3B37A8">semgrep</text>
+<text x="530.0" y="650.0" text-anchor="middle" font-size="15" fill="#3B37A8">static analysis</text>
+<path d="M290,630 L330,630" fill="none" stroke="#5B54D6" stroke-width="2.2" stroke-dasharray="7 6" stroke-linejoin="round" marker-end="url(#m-purple)"/>
+<path d="M730,630 L780,630" fill="none" stroke="#5B54D6" stroke-width="2.2" stroke-dasharray="7 6" stroke-linejoin="round"/>
+<rect x="330" y="666" width="400" height="52" rx="8" fill="#DCDAF2"/>
+<text x="530.0" y="689.0" text-anchor="middle" font-size="19" font-weight="700" fill="#3B37A8">gitleaks</text>
+<text x="530.0" y="712.0" text-anchor="middle" font-size="15" fill="#3B37A8">secret scan</text>
+<path d="M290,692 L330,692" fill="none" stroke="#5B54D6" stroke-width="2.2" stroke-dasharray="7 6" stroke-linejoin="round" marker-end="url(#m-purple)"/>
+<path d="M730,692 L780,692" fill="none" stroke="#5B54D6" stroke-width="2.2" stroke-dasharray="7 6" stroke-linejoin="round"/>
+<path d="M250,440 L290,440" fill="none" stroke="#5B54D6" stroke-width="2.2" stroke-dasharray="7 6" stroke-linejoin="round"/>
+<path d="M290,196 L290,692" fill="none" stroke="#5B54D6" stroke-width="2.2" stroke-dasharray="7 6" stroke-linejoin="round"/>
+<path d="M780,196 L780,692" fill="none" stroke="#5B54D6" stroke-width="2.2" stroke-dasharray="7 6" stroke-linejoin="round"/>
+<rect x="900" y="200" width="260" height="90" rx="8" fill="#2F9E6E"/>
+<text x="1030.0" y="242.0" text-anchor="middle" font-size="19" font-weight="700" fill="#fff">CI Gate</text>
+<text x="1030.0" y="265.0" text-anchor="middle" font-size="15" fill="#fff">needs the 8 required jobs</text>
+<path d="M780,245 L900,245" fill="none" stroke="#2F9E6E" stroke-width="2.2" stroke-dasharray="7 6" stroke-linejoin="round" marker-end="url(#m-green)"/>
+<rect x="900" y="330" width="260" height="80" rx="8" fill="#4A5568"/>
+<text x="1030.0" y="367.0" text-anchor="middle" font-size="19" font-weight="700" fill="#fff">Test Report</text>
+<text x="1030.0" y="390.0" text-anchor="middle" font-size="15" fill="#fff">needs the same 8, never fails</text>
+<path d="M780,370 L900,370" fill="none" stroke="#64748B" stroke-width="2.2" stroke-dasharray="7 6" stroke-linejoin="round" marker-end="url(#m-gray)"/>
+<rect x="1260" y="200" width="260" height="90" rx="8" fill="#4A5568"/>
+<text x="1390.0" y="242.0" text-anchor="middle" font-size="19" font-weight="700" fill="#fff">cd.yml</text>
+<text x="1390.0" y="265.0" text-anchor="middle" font-size="15" fill="#fff">deploys only after a green CI</text>
+<path d="M1160,245 L1260,245" fill="none" stroke="#2F9E6E" stroke-width="2.2" stroke-dasharray="7 6" stroke-linejoin="round" marker-end="url(#m-green)"/>
+<rect x="1260" y="330" width="260" height="56" rx="8" fill="#4A5568"/>
+<text x="1390.0" y="355.0" text-anchor="middle" font-size="19" font-weight="700" fill="#fff">Axiom ci-runs</text>
+<text x="1390.0" y="378.0" text-anchor="middle" font-size="15" fill="#fff">run summary, failed tests</text>
+<rect x="1260" y="410" width="260" height="56" rx="8" fill="#4A5568"/>
+<text x="1390.0" y="435.0" text-anchor="middle" font-size="19" font-weight="700" fill="#fff">Slack</text>
+<text x="1390.0" y="458.0" text-anchor="middle" font-size="15" fill="#fff">result, green or red</text>
+<path d="M1160,370 L1260,370" fill="none" stroke="#64748B" stroke-width="2.2" stroke-dasharray="7 6" stroke-linejoin="round" marker-end="url(#m-gray)"/>
+<path d="M1210,370 L1210,438 L1260,438" fill="none" stroke="#64748B" stroke-width="2.2" stroke-dasharray="7 6" stroke-linejoin="round" marker-end="url(#m-gray)"/>
+<rect x="900" y="419" width="260" height="50" rx="8" fill="#2A9AA8"/>
+<text x="1030.0" y="441.0" text-anchor="middle" font-size="19" font-weight="700" fill="#fff">Codecov</text>
+<text x="1030.0" y="464.0" text-anchor="middle" font-size="15" fill="#fff">flag backend</text>
+<rect x="900" y="481" width="260" height="50" rx="8" fill="#2A9AA8"/>
+<text x="1030.0" y="503.0" text-anchor="middle" font-size="19" font-weight="700" fill="#fff">Codecov</text>
+<text x="1030.0" y="526.0" text-anchor="middle" font-size="15" fill="#fff">flag frontend</text>
+<path d="M730,444 L900,444" fill="none" stroke="#3B82C4" stroke-width="2.2" stroke-dasharray="7 6" stroke-linejoin="round" marker-end="url(#m-blue)"/>
+<path d="M730,506 L900,506" fill="none" stroke="#3B82C4" stroke-width="2.2" stroke-dasharray="7 6" stroke-linejoin="round" marker-end="url(#m-blue)"/>
+<text x="1260" y="510" text-anchor="start" font-size="15" fill="#475569">Codecov frontend status waits for all</text>
+<text x="1260" y="530" text-anchor="start" font-size="15" fill="#475569">uploads of the commit (codecov.yml)</text>
+<text x="1050" y="560" text-anchor="middle" font-size="15" fill="#475569">advisory jobs (audit, snyk, LPA2v) are not in the gate</text>
+<rect x="330" y="760" width="1190" height="150" rx="14" fill="none" stroke="#B8BEC8" stroke-width="1.5" stroke-dasharray="6 5"/>
+<text x="352" y="790" font-size="15" font-weight="700" letter-spacing="1" fill="#64748B">OUTSIDE THE GATE · MUTATION.YML</text>
+<rect x="360" y="805" width="300" height="70" rx="8" fill="#4A5568"/>
+<text x="510.0" y="837.0" text-anchor="middle" font-size="19" font-weight="700" fill="#fff">schedule + manual</text>
+<text x="510.0" y="860.0" text-anchor="middle" font-size="15" fill="#fff">Mondays 04:00 UTC</text>
+<rect x="760" y="805" width="340" height="70" rx="8" fill="#DCDAF2"/>
+<text x="930.0" y="837.0" text-anchor="middle" font-size="19" font-weight="700" fill="#3B37A8">Stryker</text>
+<text x="930.0" y="860.0" text-anchor="middle" font-size="15" fill="#3B37A8">pnpm test:mutation, ~25 min</text>
+<rect x="1200" y="805" width="290" height="70" rx="8" fill="#4A5568"/>
+<text x="1345.0" y="837.0" text-anchor="middle" font-size="19" font-weight="700" fill="#fff">mutation-report</text>
+<text x="1345.0" y="860.0" text-anchor="middle" font-size="15" fill="#fff">uploaded artifact</text>
+<path d="M660,840 L760,840" fill="none" stroke="#E08A3C" stroke-width="2.2" stroke-dasharray="7 6" stroke-linejoin="round" marker-end="url(#m-orange)"/>
+<path d="M1100,840 L1200,840" fill="none" stroke="#E08A3C" stroke-width="2.2" stroke-dasharray="7 6" stroke-linejoin="round" marker-end="url(#m-orange)"/>
+</svg>

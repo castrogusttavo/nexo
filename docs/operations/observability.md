@@ -60,7 +60,9 @@ Errors are scrubbed before sending (`lib/sentry/scrub.ts`): cookies, authorizati
 3. For a user-reported action, search `audit.*` by `actorId`.
 4. For a crash, find the matching Sentry issue by release (commit SHA).
 
-<!-- DIAGRAM NEEDED: observability-map: where each signal goes (route and worker to Axiom logs, spans to Axiom traces, uncaught errors to Sentry, status and dead jobs to Slack, trace_id linking logs and traces); read lib/axiom/logger.ts, lib/otel/job-tracing.ts, lib/sentry/options.ts, src/lib/alerts/slack.ts -->
+![Observability map](../diagrams/observability-map.svg)
+
+*Where each signal goes: Axiom logs and traces, Sentry and Slack.*
 
 ## Gotchas
 

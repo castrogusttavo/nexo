@@ -70,7 +70,9 @@ UI entry points:
 - Pickers for state, type, priority, assignees, labels, cycle, module, parent, dates, dependencies and relations are in `issue/picker/`.
 - Client state: `src/hooks/use-issue.ts`, `use-issue-assignee.ts`, `use-issue-label.ts`, `use-issue-dependency.ts`, `use-issue-relation.ts`.
 
-<!-- DIAGRAM NEEDED: issue-write-path: the write path of IssueService.create/update (resolveProject, project-member check, state/type/association/parent-cycle validation, number sequence transaction, IssueListCache.invalidate, recordFieldChanges, auditMutation); read src/services/issue.service.ts, src/repositories/issue.repository.ts, src/cache/issue-list.cache.ts -->
+![Issue write path](../diagrams/issue-write-path.svg)
+
+*The write path of IssueService.create and update, from the gate to the cache invalidation.*
 
 ## Caching
 

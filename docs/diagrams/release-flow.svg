@@ -1,0 +1,65 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 2000 660" width="2000" height="660" font-family="Inter, -apple-system, Segoe UI, Helvetica, Arial, sans-serif">
+<title>From push to a tagged release</title><defs><marker id="m-orange" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#E08A3C"/></marker><marker id="m-red" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#D1495B"/></marker><marker id="m-green" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#2F9E6E"/></marker><marker id="m-teal" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#2A9AA8"/></marker><marker id="m-purple" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#5B54D6"/></marker><marker id="m-gray" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#64748B"/></marker><marker id="m-blue" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#3B82C4"/></marker></defs>
+<rect width="2000" height="660" fill="#FBFAF7"/>
+<text x="40" y="52" font-size="34" font-weight="800" fill="#1E293B">From push to a tagged release</text>
+<text x="40" y="84" font-size="19" fill="#475569">No one cuts a release: a green CI on main makes CD deploy, and the release job tags the commit with a CalVer date.</text>
+<rect x="20" y="125" width="560" height="480" rx="14" fill="none" stroke="#B8BEC8" stroke-width="1.5" stroke-dasharray="6 5"/>
+<text x="42" y="155" font-size="15" font-weight="700" letter-spacing="1" fill="#7A5A2B">CI · CI.YML</text>
+<rect x="50" y="290" width="200" height="80" rx="8" fill="#4A5568"/>
+<text x="150.0" y="327.0" text-anchor="middle" font-size="19" font-weight="700" fill="#fff">push to main</text>
+<text x="150.0" y="350.0" text-anchor="middle" font-size="15" fill="#fff">git push</text>
+<rect x="340" y="290" width="210" height="80" rx="8" fill="#2F9E6E"/>
+<text x="445.0" y="327.0" text-anchor="middle" font-size="19" font-weight="700" fill="#fff">CI Gate</text>
+<text x="445.0" y="350.0" text-anchor="middle" font-size="15" fill="#fff">needs the 8 required jobs</text>
+<path d="M250,330 L340,330" fill="none" stroke="#5B54D6" stroke-width="2.2" stroke-dasharray="7 6" stroke-linejoin="round" marker-end="url(#m-purple)"/>
+<rect x="278.05" y="286" width="33.9" height="28" rx="14" fill="#5B54D6"/>
+<text x="295" y="305" text-anchor="middle" font-size="14" font-weight="700" fill="#fff">1</text>
+<text x="445" y="410" text-anchor="middle" font-size="15" fill="#D1495B">red or cancelled gate:</text>
+<text x="445" y="432" text-anchor="middle" font-size="15" fill="#D1495B">CD jobs are skipped</text>
+<rect x="620" y="125" width="1110" height="480" rx="14" fill="none" stroke="#B8BEC8" stroke-width="1.5" stroke-dasharray="6 5"/>
+<text x="642" y="155" font-size="15" font-weight="700" letter-spacing="1" fill="#7A5A2B">CD · CD.YML · CONCURRENCY CD-PRODUCTION</text>
+<rect x="650" y="290" width="200" height="80" rx="8" fill="#DCDAF2"/>
+<text x="750.0" y="327.0" text-anchor="middle" font-size="19" font-weight="700" fill="#3B37A8">workflow_run</text>
+<text x="750.0" y="350.0" text-anchor="middle" font-size="15" fill="#3B37A8">CI completed, success</text>
+<path d="M550,330 L650,330" fill="none" stroke="#2F9E6E" stroke-width="2.2" stroke-dasharray="7 6" stroke-linejoin="round" marker-end="url(#m-green)"/>
+<rect x="583.05" y="286" width="33.9" height="28" rx="14" fill="#2F9E6E"/>
+<text x="600" y="305" text-anchor="middle" font-size="14" font-weight="700" fill="#fff">2</text>
+<rect x="930" y="200" width="260" height="80" rx="8" fill="#DCDAF2"/>
+<text x="1060.0" y="237.0" text-anchor="middle" font-size="19" font-weight="700" fill="#3B37A8">migrate</text>
+<text x="1060.0" y="260.0" text-anchor="middle" font-size="15" fill="#3B37A8">prisma migrate deploy</text>
+<rect x="930" y="380" width="260" height="80" rx="8" fill="#DCDAF2"/>
+<text x="1060.0" y="417.0" text-anchor="middle" font-size="19" font-weight="700" fill="#3B37A8">deploy</text>
+<text x="1060.0" y="440.0" text-anchor="middle" font-size="15" fill="#3B37A8">build, scan, push, rolling restart</text>
+<path d="M850,330 L890,330 L890,240 L930,240" fill="none" stroke="#5B54D6" stroke-width="2.2" stroke-dasharray="7 6" stroke-linejoin="round" marker-end="url(#m-purple)"/>
+<path d="M850,330 L890,330 L890,420 L930,420" fill="none" stroke="#5B54D6" stroke-width="2.2" stroke-dasharray="7 6" stroke-linejoin="round" marker-end="url(#m-purple)"/>
+<rect x="873.05" y="316" width="33.9" height="28" rx="14" fill="#5B54D6"/>
+<text x="890" y="335" text-anchor="middle" font-size="14" font-weight="700" fill="#fff">3</text>
+<text x="1000" y="510" text-anchor="middle" font-size="15" fill="#475569">queued, never cancelled: two deploys</text>
+<text x="1000" y="530" text-anchor="middle" font-size="15" fill="#475569">never touch the server at once</text>
+<rect x="1430" y="230" width="260" height="80" rx="8" fill="#DCDAF2"/>
+<text x="1560.0" y="267.0" text-anchor="middle" font-size="19" font-weight="700" fill="#3B37A8">release</text>
+<text x="1560.0" y="290.0" text-anchor="middle" font-size="15" fill="#3B37A8">needs migrate + deploy</text>
+<rect x="1430" y="350" width="260" height="80" rx="8" fill="#DCDAF2"/>
+<text x="1560.0" y="387.0" text-anchor="middle" font-size="19" font-weight="700" fill="#3B37A8">notify-slack</text>
+<text x="1560.0" y="410.0" text-anchor="middle" font-size="15" fill="#3B37A8">needs both, even on failure</text>
+<path d="M1190,240 L1250,240 L1250,420 L1190,420" fill="none" stroke="#5B54D6" stroke-width="2.2" stroke-dasharray="7 6" stroke-linejoin="round"/>
+<path d="M1250,270 L1430,270" fill="none" stroke="#5B54D6" stroke-width="2.2" stroke-dasharray="7 6" stroke-linejoin="round" marker-end="url(#m-purple)"/>
+<path d="M1250,390 L1430,390" fill="none" stroke="#64748B" stroke-width="2.2" stroke-dasharray="7 6" stroke-linejoin="round" marker-end="url(#m-gray)"/>
+<rect x="1323.05" y="256" width="33.9" height="28" rx="14" fill="#5B54D6"/>
+<text x="1340" y="275" text-anchor="middle" font-size="14" font-weight="700" fill="#fff">4</text>
+<rect x="1760" y="190" width="220" height="80" rx="8" fill="#2F9E6E"/>
+<text x="1870.0" y="227.0" text-anchor="middle" font-size="19" font-weight="700" fill="#fff">CalVer tag</text>
+<text x="1870.0" y="250.0" text-anchor="middle" font-size="15" fill="#fff">YYYY.MM.DD[.N]</text>
+<rect x="1760" y="300" width="220" height="80" rx="8" fill="#2F9E6E"/>
+<text x="1870.0" y="337.0" text-anchor="middle" font-size="19" font-weight="700" fill="#fff">GitHub Release</text>
+<text x="1870.0" y="360.0" text-anchor="middle" font-size="15" fill="#fff">--generate-notes</text>
+<rect x="1760" y="410" width="220" height="80" rx="8" fill="#4A5568"/>
+<text x="1870.0" y="447.0" text-anchor="middle" font-size="19" font-weight="700" fill="#fff">Slack</text>
+<text x="1870.0" y="470.0" text-anchor="middle" font-size="15" fill="#fff">status and commit</text>
+<path d="M1690,260 L1725,260 L1725,230 L1760,230" fill="none" stroke="#2F9E6E" stroke-width="2.2" stroke-dasharray="7 6" stroke-linejoin="round" marker-end="url(#m-green)"/>
+<path d="M1690,280 L1725,280 L1725,340 L1760,340" fill="none" stroke="#2F9E6E" stroke-width="2.2" stroke-dasharray="7 6" stroke-linejoin="round" marker-end="url(#m-green)"/>
+<path d="M1690,390 L1725,390 L1725,450 L1760,450" fill="none" stroke="#64748B" stroke-width="2.2" stroke-dasharray="7 6" stroke-linejoin="round" marker-end="url(#m-gray)"/>
+<text x="1870" y="540" text-anchor="middle" font-size="15" fill="#475569">tag: UTC date, suffix .1 .2 for</text>
+<text x="1870" y="560" text-anchor="middle" font-size="15" fill="#475569">later deploys the same day</text>
+<text x="1870" y="590" text-anchor="middle" font-size="15" fill="#475569">created at the CI head SHA</text>
+</svg>

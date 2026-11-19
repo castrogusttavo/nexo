@@ -92,7 +92,9 @@ No Redis cache for projects. The server reads go through the DAL's private cache
 - Deleting a project state moves its projects to another state of the same group instead of failing (see the other page).
 - Slug changes alter every URL that embeds the slug; `slug` is editable through `UpdateProjectSchema`.
 
-<!-- DIAGRAM NEEDED: project-bootstrap: what ProjectRepository.create seeds inside its transaction (default project state, EstimateSettings and values, lead member, default States, Labels, system IssueTypes) and the identifier retry loop in ProjectService.create; read src/repositories/project.repository.ts and src/services/project.service.ts -->
+![Project bootstrap](../diagrams/project-bootstrap.svg)
+
+*What creating a project seeds in one transaction, and the identifier retry loop.*
 
 ## Tests
 

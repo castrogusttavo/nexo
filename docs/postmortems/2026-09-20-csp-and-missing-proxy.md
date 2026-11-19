@@ -17,7 +17,9 @@
 - 2026-09-20 15:06, `08512633`: Playwright browser suite against the standalone artifact, the layer that exposed the CSP problem.
 - 2026-09-21, `fc78ddc6` and `28ceb262`: follow-ups once the proxy ran for real: excalidraw fonts moved to our origin, and fonts excluded from the proxy matcher (they were hitting the auth gate and getting a 307).
 
-<!-- DIAGRAM NEEDED: csp-proxy-timeline: timeline from 54a2123d (dockerignore) to 1d3f61bb with what production sent at each stage (no proxy, proxy with nonce CSP blocking 27 scripts, final CSP); read .dockerignore history, proxy.ts, docs/adr/0006-standalone-output-and-browser-tests.md -->
+![CSP and proxy timeline](../diagrams/csp-proxy-timeline.svg)
+
+*From proxy.ts entering .dockerignore to the final CSP, and what production sent at each stage.*
 
 ## Root cause
 

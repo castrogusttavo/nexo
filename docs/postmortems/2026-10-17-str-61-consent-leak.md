@@ -19,7 +19,9 @@ Access to a workspace was enforced by a redirect in the `(private)` layout. Layo
 - 2026-10-17 15:34, `bad53505`: the `(private)` layout gate is removed; the workspace layout renders its frame at once and waits for the viewer inside boundaries.
 - Tags that deployed these commits: `2026.10.17` and `.1` to `.5` (inferred from the date; not matched commit by commit).
 
-<!-- DIAGRAM NEEDED: str61-leak-and-fix: parallel layout rendering before (layout redirect, child layouts still render and stream ids) versus after (DAL check at the data read); read src/lib/dal.ts, docs/adr/0003-dal-instead-of-layout-gates.md and docs/diagrams/private-access.svg for style -->
+![STR-61 leak and fix](../diagrams/str61-leak-and-fix.svg)
+
+*Layout redirect before, DAL check at the data read after.*
 
 ## Root cause
 

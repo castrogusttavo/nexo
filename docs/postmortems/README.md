@@ -26,7 +26,9 @@ Title, Summary, Impact, Timeline (dates from commits), Root cause, Detection, Re
 - **Test the artifact, not the idea of it.** The standalone browser suite ([ADR 0006](../adr/0006-standalone-output-and-browser-tests.md)) exists because the CSP defect only appears in a real browser against the real build.
 - **Dependencies you do not control disappear** (MinIO) and **headers you do not control lie** (`X-Forwarded-For`).
 
-<!-- DIAGRAM NEEDED: incident-timeline-overview: horizontal timeline of the five incidents (2026-09-20 to 2026-10-17) with the guard each produced; read the commits cited in docs/postmortems/*.md -->
+![Incident timeline](../diagrams/incident-timeline-overview.svg)
+
+*The five incidents from 2026-09-20 to 2026-10-17 and the guard each produced.*
 
 ## Related files
 
