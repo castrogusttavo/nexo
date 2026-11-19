@@ -20,7 +20,7 @@ There are two `lib` directories: root `lib/` (axiom, env, abacatepay, legal, pos
 - **Folders:** `components/` is generic and never imports from `app/` (`components/ui` holds shadcn primitives). `app/_components/` nests by domain ownership (for example `workspace/project/issue/`, with feature subfolders such as `filter` and `layout`), never by kind.
 - Exceptions: brand casing (`posthog-tracker.tsx` exports `PostHogTracker`), the barrel kit `navigation/sidebar-context/`, and the existing `user/modal/`.
 
-Source: `CLAUDE.md` (which cites a vault page, `Resources/conventions.md`, that is not in this repository: `TODO: confirm` against the vault).
+Source: `CLAUDE.md` (which cites a vault page, `Resources/conventions.md`, that is outside this repository; its content is not defined in this repository, so this page is checked against the code instead).
 
 ## Route colocation
 
@@ -44,7 +44,7 @@ Config: `biome.json`. Run `pnpm check` (fix) or `pnpm check:ci` (no writes; what
 - Formatter has two blocks on purpose: top-level `indentStyle: tab`, but `javascript.formatter` sets 2 spaces, single quotes, `semicolons: asNeeded`, trailing commas `all`, line width 80, and `jsxQuoteStyle: single`. CSS uses double quotes.
 - `noParameterAssign`, `useAsConstAssertion`, `useDefaultParameterLast`, `useSelfClosingElements`, `noUselessElse` and several other `style` rules are errors; `noUnusedImports` is a warning that auto-fixes.
 - Several rules are off (`noExplicitAny`, `noForEach`, several `a11y` rules).
-- **Scope:** `files.includes` covers `app/`, `src/`, `worker/`, `e2e/` and `playwright.config.ts`. Root `lib/`, `components/`, `utils/` and `realtime/` are not listed. This differs from what `CLAUDE.md` implies (Biome across the repo); whether it is intended is `TODO: confirm`.
+- **Scope:** `files.includes` covers `app/`, `src/`, `worker/`, `e2e/` and `playwright.config.ts`. Root `lib/`, `components/`, `utils/` and `realtime/` are not listed. Known behaviour: `CLAUDE.md` states this same scope (its Biome convention says `lib/`, `components/` and `utils/` are not linted), so the exclusion is documented, not accidental; the repository does not record why.
 - `pnpm lint`, `pnpm format` (also `prisma format`), `pnpm format:check`, `pnpm check:staged` exist.
 
 ## Commits and hooks

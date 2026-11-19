@@ -50,10 +50,10 @@ Specs create their own uniquely named data, so `fullyParallel` is on. CI uses 2 
 
 ## Gotchas
 
-- Both suites need Postgres and Redis (and, in CI, MinIO-compatible storage) up; see [getting-started](../development/getting-started.md).
+- Both suites need Postgres and Redis (and, in CI, Silo, the S3-compatible object store) up; see [getting-started](../development/getting-started.md).
 - The browser tests and the visual tests both want port 3000, so CI runs them one after the other.
 - `pnpm tsc --noEmit -p e2e` type-checks the specs (separate `e2e/tsconfig.json`, so Playwright's types stay out of the main program). The pre-commit hook runs it.
-- CLAUDE.md says the vitest e2e suite runs against `next start` in production mode; CI starts it with `pnpm start`, which wraps `next start` (`scripts/next-banner.mjs`). The Playwright config comment says `next start` refuses `output: 'standalone'`. Whether the HTTP suite's server is the standalone artifact is `TODO: confirm`.
+- CLAUDE.md says the vitest e2e suite runs against `next start` in production mode; CI starts it with `pnpm start`, which wraps `next start` (`scripts/next-banner.mjs`). The Playwright config comment says `next start` refuses `output: 'standalone'`. Known behaviour: the HTTP suite does not use the standalone artifact. The `e2e` project in `vite.config.ts` only sends requests to `E2E_BASE_URL` (default `http://localhost:3000`, `src/__tests__/setup.e2e.ts`) and starts nothing; the `ci.yml` `api` matrix job starts `pnpm start` (`next start`) after `pnpm build`. With `output: 'standalone'`, Next 16 does not refuse: `next start` only logs a warning (`node_modules/next/dist/server/next.js`: "does not work with output: standalone"), so that suite runs against `next start`, whereas the browser suite runs `node .next/standalone/server.js`.
 
 ## Related files
 

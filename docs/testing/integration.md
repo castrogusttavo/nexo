@@ -30,13 +30,13 @@ TRUNCATE TABLE sessions, accounts, verifications, subscriptions, memberships,
 
 `CASCADE` also empties every table with a foreign key into those (for example sticky notes, through `users`). It is not a literal "all tables" truncate: a table with no foreign-key path to the listed ones is not cleared. The HTTP e2e setup truncates the same set plus `consent_events`.
 
-Consequence: never run this project against a database holding data you want. CI uses a throwaway `postgres:16` service with database `nexo_test` (`DATABASE_URL: postgresql://test:test@localhost:5432/nexo_test` in `.github/workflows/ci.yml`). Locally, run the project with `DATABASE_URL` pointed at a disposable database such as `nexo_test` rather than your live dev database. How to create that local database is not scripted in the repository: `TODO: confirm`.
+Consequence: never run this project against a database holding data you want. CI uses a throwaway `postgres:16` service with database `nexo_test` (`DATABASE_URL: postgresql://test:test@localhost:5432/nexo_test` in `.github/workflows/ci.yml`). Locally, run the project with `DATABASE_URL` pointed at a disposable database such as `nexo_test` rather than your live dev database. How to create that local database is not scripted in the repository: no script, `infra/dev.yml` init file (`infra/docker/postgres-init/` only creates the replicator role) or `.env.example` creates `nexo_test`; only CI creates it, through the `POSTGRES_DB: nexo_test` env of its `postgres:16` service. Locally, create it by hand in the dev Postgres container (for example `CREATE DATABASE nexo_test;`), apply migrations to it (`prisma migrate`) and point `DATABASE_URL` at it.
 
 ## Redis
 
 `src/__tests__/setup.redis.ts` always deletes `REDIS_SENTINEL_HOSTS`, forcing a single-instance client. If `REDIS_URL` is unset (local dev) it builds `rediss://[:password@]localhost:6379` and sets `REDIS_TLS_ENABLED=true`, because the dev Redis container serves TLS only. In CI `REDIS_URL` is a plain `redis://localhost:6379` and is left alone.
 
-Cache tests under `src/cache/` use this live Redis. The table truncation does not clear Redis keys; `setup.integration.ts` has no Redis cleanup. Whether cache tests clean up their own keys is `TODO: confirm` per file.
+Cache tests under `src/cache/` use this live Redis. The table truncation does not clear Redis keys; `setup.integration.ts` has no Redis cleanup. Each cache test file does clean up its own keys: all six files under `src/cache/__tests__/` (`issue-list`, `notification-setting`, `status`, `user`, `user-preference`, `workspace`) delete their key prefixes in an `afterEach` (`redis.del`).
 
 ## The repository test pattern
 
