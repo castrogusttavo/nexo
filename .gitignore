@@ -73,7 +73,6 @@ k6/results/
 # AI Agents & Skills
 .agents*
 .claude
-CLAUDE.md
 .aider*
 
 # Not /scripts: the five files there are tracked on purpose (seeds, the
