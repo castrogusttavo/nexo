@@ -68,7 +68,7 @@ Read outside the schema: `DISABLE_AUTH_RATE_LIMIT` (`src/lib/auth.ts`, set by e2
 - `NEXT_PUBLIC_*` are fixed at build time: changing one needs a new image, not `env-sync`.
 - The Axiom token in `NEXT_PUBLIC_AXIOM_TOKEN` is public by design (ingest only); the lint config acknowledges this in a comment.
 - Format constraints are enforced (for example `BETTER_AUTH_SECRET` must start with `ba_`); a wrong shape fails boot, not a request.
-- Which secrets exist in GitHub beyond those named in the workflows: TODO: confirm.
+- The list of secrets stored in GitHub is not defined in this repository; the workflows reference these names: `HUGEICONS_TOKEN`, `SOPS_AGE_KEY`, `DATABASE_URL_MIGRATE`, `SLACK_WEBHOOK_URL`, `NEXT_PUBLIC_AXIOM_TOKEN`, `NEXT_PUBLIC_AXIOM_DATASET`, `NEXT_PUBLIC_POSTHOG_KEY`, `NEXT_PUBLIC_SENTRY_DSN`, `SENTRY_ORG`, `SENTRY_PROJECT`, `SENTRY_AUTH_TOKEN`, `SNYK_TOKEN`, `SEMGREP_APP_TOKEN`, `CODECOV_TOKEN`, `AXIOM_CI_TOKEN`, `LOAD_TEST_MANIFEST`, `LOAD_TEST_TOKEN` (plus the automatic `GITHUB_TOKEN`). Any other secret in the GitHub settings is not visible from the code.
 
 ## Related files
 

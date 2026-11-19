@@ -28,7 +28,7 @@ gh release create "$TAG" --target "$SHA" --title "$TAG" --generate-notes
 
 A tag is a deploy, not a decision. Because every green push to `main` that is not docs-only deploys, tags accrue as often as commits. A tag exists only if migrate and deploy both succeeded (`needs: [migrate, deploy]`).
 
-The running application knows its commit: `NEXT_DEPLOYMENT_ID` and `NEXT_PUBLIC_SENTRY_RELEASE` are the head SHA, baked at build time. Sentry releases therefore match commits, not CalVer tags. TODO: confirm whether the tag is exposed anywhere at runtime.
+The running application knows its commit: `NEXT_DEPLOYMENT_ID` and `NEXT_PUBLIC_SENTRY_RELEASE` are the head SHA, baked at build time. Sentry releases therefore match commits, not CalVer tags. The tag is not exposed at runtime: the `release` job runs after the image is built and pushed, and the only version build args in `cd.yml` (lines 108-109) and the `Dockerfile` are the SHA.
 
 ## Cutting a release
 

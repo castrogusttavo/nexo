@@ -15,8 +15,8 @@ CI broke overnight with no change on our side: MinIO archived the open-source re
 - 2026-09-24 10:41, `93b55b4c`: CI and dev switch to `pgsty/silo` pinned to a release tag, after verifying every S3 call the app makes and that a MinIO `RELEASE.2025-02-28` data directory mounts unchanged.
 - 2026-09-24 12:03 to 12:14, `8097fc7e`, `189b9f8d`, `145a0282`, `11158e2d`: one-off storage migration workflow (modes `inspect`, `migrate`, `rollback`; `migrate` tars the data directory, swaps the image and rolls back by itself if health does not answer in 60 s), purge of leftover MinIO images, naming cleanup. The status probe stopped calling the store "AWS S3" (`98df9245`, 2026-09-23).
 - 2026-09-24 16:22, `c41a5887`: production infra compose versioned (container names kept), RabbitMQ dropped.
-- 2026-09-26, `697da691`: workflows with no job left are retired; the one-off migration workflow is not among the files in `.github/workflows/` today, so it was removed at some point (TODO: confirm when).
-- Date production completed the switch: not recorded in the repository (TODO: confirm). The status page copy was already updated on 2026-09-24.
+- 2026-09-26, `697da691`: workflows with no job left are retired; that same commit deleted the one-off migration workflow `.github/workflows/storage-migrate.yml` (and the unused `release.yml`).
+- Date production completed the switch: 2026-09-25. The `697da691` message says the migration workflow "did its one job yesterday: production runs Silo and the MinIO image was deleted from the server". The status page copy was already updated on 2026-09-24.
 
 ![MinIO to Silo migration](../diagrams/minio-to-silo-migration.svg)
 

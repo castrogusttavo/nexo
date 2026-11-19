@@ -21,8 +21,8 @@ The `MINIO_*` environment variables and the `/minio/health/live` endpoint stay o
 - No app code changed beyond naming; the storage client is unchanged.
 - The `MINIO_*` names remain in code and config and may confuse readers; they are not leftovers.
 - The project depends on a small upstream (the Pigsty project) for fixes; the pinned tag must be bumped deliberately.
-- Production moved separately from CI, with a backup and someone watching (`93b55b4c`), through the migration workflow `8097fc7e`. TODO: confirm the exact date production completed the switch (the status page copy was already updated on 2026-09-24).
-- Operator-provided fact (MinIO withdrew its public images) is corroborated by `93b55b4c`. Production hosting details beyond the commits are not covered here. TODO: confirm.
+- Production moved separately from CI, with a backup and someone watching (`93b55b4c`), through the migration workflow `8097fc7e`. The date production completed the switch is given by the commit that retired the workflow, `697da691` (2026-09-26): the migration workflow "did its one job yesterday", so production ran Silo and the MinIO image was deleted from the server on 2026-09-25 (the status page copy was already updated on 2026-09-24, `11158e2d`).
+- Operator-provided fact (MinIO withdrew its public images) is corroborated by `93b55b4c`. Production hosting details beyond the commits and `infra/prod.yml` are not defined in this repository.
 
 ## Alternatives considered
 

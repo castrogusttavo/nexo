@@ -2,7 +2,7 @@
 
 ## Purpose
 
-How Nexo is built into an image, deployed and run in production, and what each part of the stack is. Statements marked **(operator-provided)** come from the project owner and are not verifiable from the repository. Anything else cites the file that shows it. Where the repo is silent, the text says `TODO: confirm`.
+How Nexo is built into an image, deployed and run in production, and what each part of the stack is. Statements marked **(operator-provided)** come from the project owner and are not verifiable from the repository. Anything else cites the file that shows it. Where the repo is silent, the text says "not defined in this repository".
 
 ## Overview
 
@@ -31,7 +31,7 @@ Two compose files in `infra/`, both copied to `/var/www/nexo` on the server (rel
 - Containers resolve `nexopm.com` and `storage.nexopm.com` to `host-gateway`, because the router does not hairpin; nginx terminates TLS there. Never use the LAN address (the host changed address once and self-calls broke for 17 days).
 - Public, non-secret env (`NEXT_PUBLIC_URL`, `BETTER_AUTH_URL`, `NEXT_PUBLIC_REALTIME_URL`) is set in the file; everything else comes from `.env`.
 
-**`infra/prod.yml`** (stateful services, copied as `docker-compose.infra.yml`): Postgres 17 (`nexo-db-1`), Redis with TLS (`nexo-redis`), a streaming read replica (`nexo-db-replica`), PgBouncer in transaction mode bound to loopback `127.0.0.1:6432`, and Silo (`nexo-minio-1`, image `pgsty/silo`). Container names are kept deliberately: the nightly backup calls `docker exec nexo-db-1 pg_dump`. The file records that RabbitMQ was removed because nothing speaks AMQP; queues are BullMQ over Redis. Whether the app currently points at the replica or PgBouncer is not declared here (`src/lib/prisma-replica.ts` exists; TODO: confirm the live wiring).
+**`infra/prod.yml`** (stateful services, copied as `docker-compose.infra.yml`): Postgres 17 (`nexo-db-1`), Redis with TLS (`nexo-redis`), a streaming read replica (`nexo-db-replica`), PgBouncer in transaction mode bound to loopback `127.0.0.1:6432`, and Silo (`nexo-minio-1`, image `pgsty/silo`). Container names are kept deliberately: the nightly backup calls `docker exec nexo-db-1 pg_dump`. The file records that RabbitMQ was removed because nothing speaks AMQP; queues are BullMQ over Redis. Whether the app currently points at the replica or PgBouncer is not declared in the compose files: `infra/app.yml` takes `DATABASE_URL_POOLED` and `DATABASE_URL_REPLICA` from the host `.env` (decrypted from sops, not in the repository). What the code does with them: `src/lib/prisma.ts` uses `DATABASE_URL_POOLED ?? DATABASE_URL`, and `getPrismaReplica()` (`src/lib/prisma-replica.ts`) falls back to the primary when `DATABASE_URL_REPLICA` is unset; its only caller is `src/repositories/issue.repository.ts` (issue reads). `infra/loadtest.yml` sets all three.
 
 The infra file is **copied but not applied** by CD: recreating Postgres or Redis is a human decision, done through the `server-ops` workflow.
 
@@ -45,7 +45,7 @@ Production nginx is installed on the host; the repo keeps the source of truth fo
 - `cloudflare-realip.conf`: `real_ip_header CF-Connecting-IP` honoured only from Cloudflare's published ranges, so `$remote_addr`, `X-Real-IP` and the `X-Forwarded-For` hop the app reads see the visitor. A direct hit to the origin cannot spoof the header.
 - `nginx.conf` is only for the local load-test stack (`infra/loadtest.yml`).
 
-The server blocks, certificates and `/realtime` location are not in the repo (TODO: confirm).
+The server blocks, certificates and `/realtime` location are not defined in this repository.
 
 ## CI/CD
 
@@ -80,7 +80,7 @@ Other workflows: `server-ops.yml` (manual `workflow_dispatch` with specific mode
 - Migrations run before the new image is up; keep them backward compatible with the instances still serving.
 - `nexo-minio-1` still carries the MinIO name; the server is Silo because MinIO withdrew its public images ([ADR 0007](../adr/0007-silo-storage.md)).
 - nginx config changes in `infra/nginx/` do nothing until installed on the host; nginx refuses to change an existing zone's key on reload (hence the `_lt` zone names).
-- Server layout beyond `/var/www/nexo` (backup script, cron, certificates) is not in the repo: TODO: confirm.
+- Server layout beyond `/var/www/nexo` (backup script, cron, certificates) is not defined in this repository. `server-ops.yml` modes `backup-inspect` and `backup-run` read and run the backup script on the host, but the script itself is not versioned.
 
 ## Related files
 

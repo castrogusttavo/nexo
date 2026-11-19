@@ -43,7 +43,7 @@ The container health check is `wget --spider http://127.0.0.1:3000/api/health` e
 
 There is no rollback job in the repository. What the code supports (see [runbooks.md](./runbooks.md)):
 
-- Every deploy pushes an image tagged by commit SHA next to `latest`, but `infra/app.yml` pins `latest`. Reverting means pushing a revert commit to `main` and letting CI and CD run, or editing the compose tag on the host by hand (not scripted: TODO: confirm the manual procedure).
+- Every deploy pushes an image tagged by commit SHA next to `latest`, but `infra/app.yml` pins `latest`. Reverting means pushing a revert commit to `main` and letting CI and CD run, or editing the compose tag on the host by hand (not scripted and not defined in this repository; `server-ops` has no mode for it).
 - Migrations are forward-only (`prisma migrate deploy`); there are no down migrations. A schema rollback is a new migration.
 - `server-ops` has `app-up` (bring the app stack up from the current compose file, no rebuild) and `env-sync` (rewrite `.env` from sops and restart), not an image rollback.
 

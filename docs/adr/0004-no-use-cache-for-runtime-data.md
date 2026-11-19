@@ -2,7 +2,7 @@
 
 - Status: Accepted
 - Date: 2026-10-17
-- Commits: `a0227ae5` (DAL on `use cache: private`, 2026-10-17); `24e609b1` (run seven app instances, 2026-10-25). The wording of the rule was not traced to a single commit. TODO: confirm the commit that introduced the paragraph in `CLAUDE.md`.
+- Commits: `a0227ae5` (DAL on `use cache: private`, 2026-10-17); `24e609b1` (run seven app instances, 2026-10-25). The paragraph in `CLAUDE.md` ("Do not reach for `'use cache'` on data that changes at runtime...") first appears in git history in `42bc710f` (2026-11-19), which re-tracked `CLAUDE.md` after it had been dropped from the repository on 2026-05-14 (`6fdd2f18`); the file's intermediate edits were not versioned, so the original wording date is not recoverable.
 
 ## Context
 

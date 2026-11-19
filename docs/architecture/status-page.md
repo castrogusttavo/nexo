@@ -31,7 +31,7 @@ Each probe is raced against its timeout. A failure is retried once after 250 ms 
 
 ### Collection
 
-`StatusService.collect(tier)` (`src/services/status/status.service.ts`) is called by two authenticated routes, `POST /api/status/collect/core` and `POST /api/status/collect/peripheral` (shared handler `app/api/status/collect/_handler.ts`). They require the `x-status-secret` header to match `STATUS_COLLECTOR_SECRET`, compared in constant time. The scheduler that calls them once a minute is outside this repository (TODO: confirm: the code and `worker/status-collect.ts` refer to "production's cron" with a 60 s interval). For one run:
+`StatusService.collect(tier)` (`src/services/status/status.service.ts`) is called by two authenticated routes, `POST /api/status/collect/core` and `POST /api/status/collect/peripheral` (shared handler `app/api/status/collect/_handler.ts`). They require the `x-status-secret` header to match `STATUS_COLLECTOR_SECRET`, compared in constant time. The scheduler that calls them once a minute is not defined in this repository: no workflow, compose file or worker job in `.github/`, `infra/` or `worker/` calls these routes (only `ci.yml` sets the secret for tests). The code only refers to it: `worker/status-collect.ts` says "like the production cron" with `INTERVAL_MS = 60_000`. For one run:
 
 1. Probe the tier's components in parallel.
 2. Read the last 3 hours of `health_checks` for alert history.

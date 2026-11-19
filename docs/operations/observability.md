@@ -35,7 +35,7 @@ A `failure` outcome logs at `warn`, a success at `info`. The union types in `aud
 
 | Event | Where | Who depends on it |
 | --- | --- | --- |
-| `queue.job.exhausted` and its fields (`queue`, `jobName`, `jobId`, `attemptsMade`, `maxAttempts`, `reason`, `message`, `stack`, `payload`) | `src/lib/queue/failure-alarm.ts` | An Axiom monitor. The code comment says renaming silently disables the alarm; change the monitor in the same commit. The monitor is not in the repository: TODO: confirm where it is defined |
+| `queue.job.exhausted` and its fields (`queue`, `jobName`, `jobId`, `attemptsMade`, `maxAttempts`, `reason`, `message`, `stack`, `payload`) | `src/lib/queue/failure-alarm.ts` | An Axiom monitor. The code comment says renaming silently disables the alarm; change the monitor in the same commit. The monitor is not defined in this repository |
 | `alerts.slack.failed` | `src/lib/alerts/slack.ts` | Visibility of a broken alert channel; never contains the webhook URL |
 | `audit.*` names | `lib/axiom/audit.ts` | Compliance queries |
 

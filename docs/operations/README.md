@@ -27,7 +27,7 @@ A push to `main` runs CI; on green, CD migrates the database, builds and scans o
 ## Gotchas
 
 - Production access is workflow-only. There are no SSH procedures here, and nothing in this folder should be taken as permission to run commands on the host outside `server-ops`.
-- Several things live outside the repository (backup script and cron, nginx server blocks, the collector's scheduler, the Axiom monitor); pages mark them `TODO: confirm`.
+- Several things live outside the repository (backup script and cron, nginx server blocks, the collector's scheduler, the Axiom monitor); pages say "not defined in this repository" where they depend on one of them.
 
 ## Related files
 

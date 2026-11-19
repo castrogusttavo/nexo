@@ -6,9 +6,9 @@ Hard-deleting a user (`prisma.user.delete`) failed for anyone who had ever autho
 
 ## Impact
 
-- Users who requested deletion kept their account and data after the 30-day grace period. This is an LGPD obligation the feature exists to meet, which is why the commit calls it out. How many requests were pending is not recorded: TODO: confirm.
+- Users who requested deletion kept their account and data after the 30-day grace period. This is an LGPD obligation the feature exists to meet, which is why the commit calls it out. How many requests were pending is not recorded in this repository.
 - No data loss; the failure was in the other direction (not deleting).
-- Duration: the whole life of the feature (commit message). The date the feature shipped is TODO: confirm.
+- Duration: the whole life of the feature (commit message). The feature was committed on 2026-05-18 (`8f0f3be0`, "add account deletion with 30-day grace period"; UI and atomic enqueue in `14b001f5`). The date it reached production is not recorded in this repository.
 
 ## Timeline
 
@@ -29,7 +29,7 @@ Hard-deleting a user (`prisma.user.delete`) failed for anyone who had ever autho
 
 ## Detection
 
-Found by reading the production error; the commit message quotes the exact constraint name. The existence of the Postgres error in a log or the failed set is implied. How it was first noticed: TODO: confirm.
+Found by reading the production error; the commit message quotes the exact constraint name. The existence of the Postgres error in a log or the failed set is implied. How it was first noticed is not recorded in this repository.
 
 ## Resolution
 

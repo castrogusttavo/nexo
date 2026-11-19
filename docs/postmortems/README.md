@@ -4,7 +4,7 @@
 
 Blameless records of real incidents, reconstructed from git history and code comments. Each page says what happened, why, how it was found, what fixed it and which guard now exists. They exist so the same class of failure is recognised early, and so that tests and rules cited in other docs have their origin written down.
 
-Everything here is verifiable from commit messages (cited by hash and date) or code comments. Facts that came from the project owner rather than the repository are marked **(operator-provided)**, and gaps are marked `TODO: confirm` or "inferred". Impact figures (users affected, minutes of downtime) are not in the repository and are not invented.
+Everything here is verifiable from commit messages (cited by hash and date) or code comments. Facts that came from the project owner rather than the repository are marked **(operator-provided)**, and gaps are stated as "not recorded in this repository" or "inferred". Impact figures (users affected, minutes of downtime) are not in the repository and are not invented.
 
 ## Index
 

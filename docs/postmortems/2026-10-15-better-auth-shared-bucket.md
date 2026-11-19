@@ -29,7 +29,7 @@ Trusting a header whose leftmost value is written by the client, and a library d
 
 ## Detection
 
-Not stated in the commit (its body is empty). **(Operator-provided)** it was seen in production as a global sign-in limit; TODO: confirm how it was noticed.
+Not stated in the commit (its body is empty). **(Operator-provided)** it was seen in production as a global sign-in limit; how it was noticed is not recorded in this repository.
 
 ## Resolution
 

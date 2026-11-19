@@ -49,7 +49,7 @@ Why it exists: `delete-account` once threw a foreign-key violation on every run,
 
 **Reasons** (`JobExhaustedReason`): `attempts_exhausted`, `unrecoverable` (BullMQ `UnrecoverableError`, skips remaining attempts) and `stalled` (job exceeded `maxStalledCount`; BullMQ fails it on its next pickup with the message `job stalled more than allowable limit`, which is why that string is matched in code).
 
-**Stable contract.** An Axiom monitor alerts on the event name `queue.job.exhausted` and reads the fields of `JobExhaustedFields` (`queue`, `jobName`, `jobId`, `attemptsMade`, `maxAttempts`, `reason`, `message`, `stack`, `payload`). Renaming the event or a field silently disables the alarm. If you must change it, change the monitor in the same commit. The monitor itself is not in this repository (TODO: confirm where it is defined).
+**Stable contract.** An Axiom monitor alerts on the event name `queue.job.exhausted` and reads the fields of `JobExhaustedFields` (`queue`, `jobName`, `jobId`, `attemptsMade`, `maxAttempts`, `reason`, `message`, `stack`, `payload`). Renaming the event or a field silently disables the alarm. If you must change it, change the monitor in the same commit. The monitor itself is not defined in this repository; the only trace of it is the contract comment in `src/lib/queue/failure-alarm.ts`.
 
 **Two independent reporters, one alert.** `createJobFailureAlarm()` is created once in `worker/index.ts` and shared:
 
@@ -72,7 +72,7 @@ Why it exists: `delete-account` once threw a foreign-key violation on every run,
 
 - BullMQ rejects `:` in custom job ids; `delete-account-<userId>` is used (`deleteAccountJobId`).
 - A custom `jobId` makes BullMQ drop a second `add()`. `scheduleAccountDeletion` therefore removes any pending job first so rescheduling moves the deadline. `queue.remove` answers success for a missing job and `0` for a locked one, so existence is read separately.
-- The dedup ledger is in memory and per process. With a single worker this is enough; a second worker process would not share it (TODO: confirm the worker always runs as a single container; `infra/app.yml` defines one).
+- The dedup ledger is in memory and per process. With a single worker this is enough; a second worker process would not share it (`infra/app.yml` defines exactly one `nexo-worker` service with a fixed `container_name`, so it cannot be scaled by compose without editing the file; `worker/index.ts` is also started by `pnpm worker:dev` locally).
 - The worker imports `server-only` modules through `worker/server-only.shim.ts`, since it runs outside Next.
 - Failed jobs are removed after 7 days, so the failed set is not a permanent record. The Axiom log line and the Slack message are.
 

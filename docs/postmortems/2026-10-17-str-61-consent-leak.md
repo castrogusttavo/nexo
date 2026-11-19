@@ -6,9 +6,9 @@ Access to a workspace was enforced by a redirect in the `(private)` layout. Layo
 
 ## Impact
 
-- Exposure: workspace and user ids in the RSC payload, to a member who had not consented (`86408ed6`). Not page content or other data as far as the commit says; the full extent is TODO: confirm.
+- Exposure: workspace and user ids in the RSC payload, to a member who had not consented (`86408ed6`). Not page content or other data as far as the commit says; nothing else in the repository measures what was served.
 - Who: members without consent for a workspace they belonged to. The condition "the proxy could not tell from the cookie cache" describes when the proxy's optimistic check did not catch it.
-- Duration: since the layout gate existed; not recorded in the repository (TODO: confirm).
+- Duration: at most since the consent redirect was added to the `(private)` layout (`afc53911`, 2026-05-18) until the fix on 2026-10-17. Whether the leaking home layout and the cookie-cache condition existed for that whole span is not recorded.
 
 ## Timeline
 
@@ -29,7 +29,7 @@ Treating a layout redirect as a security boundary. In the App Router, redirectin
 
 ## Detection
 
-Not stated in the commits; the fix and its test arrived within hours of each other. **(Operator-provided)** the issue was tracked as STR-61 in the project tracker; TODO: confirm how it was found.
+Not stated in the commits; the fix and its test arrived within hours of each other. **(Operator-provided)** the issue was tracked as STR-61 in the project tracker; how it was found is not recorded in this repository.
 
 ## Resolution
 

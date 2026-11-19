@@ -6,7 +6,7 @@
 
 ## Impact
 
-- From the commit message: live `nexopm.com` sent no CSP and no HSTS from the app, and "a private URL answered 200 for an anonymous visitor instead of redirecting to sign-in". The page-level gate in the DAL was a separate layer, so the extent of what an anonymous visitor could read is not stated: TODO: confirm.
+- From the commit message: live `nexopm.com` sent no CSP and no HSTS from the app, and "a private URL answered 200 for an anonymous visitor instead of redirecting to sign-in". The page-level gate in the DAL was a separate layer, so the extent of what an anonymous visitor could read is not stated. What the code at the parent commit (`1d3f61bb^`) shows: the `(private)` layout already redirected to `/sign-in` without a session and to `/onboarding/consent-setup` without consent, but a layout redirect does not stop sibling layouts and pages from rendering (see [the STR-61 postmortem](./2026-10-17-str-61-consent-leak.md)). No test or log in the repository measures what was served.
 - Duration (inferred): `.dockerignore` gained the `proxy.ts` line in `54a2123d` (2026-03-15, "optimize image size and build context"); the file already existed under that name in that tree. The defect therefore plausibly lasted from March to 2026-09-20, about six months, assuming images were built from that context throughout.
 - Users affected: not recorded.
 

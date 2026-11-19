@@ -2,7 +2,7 @@
 
 ## Purpose
 
-Symptom, check, action, for the failures the repository itself can detect or fix. Every step is backed by a script, workflow, probe or code comment cited next to it. Anything the repository does not show is marked `TODO: confirm`; this page does not describe server procedures that live only on the host (backup script internals, nginx server blocks, certificates).
+Symptom, check, action, for the failures the repository itself can detect or fix. Every step is backed by a script, workflow, probe or code comment cited next to it. Anything the repository does not show is stated as "not defined in this repository"; this page does not describe server procedures that live only on the host (backup script internals, nginx server blocks, certificates).
 
 Access note: production work goes through the `server-ops` workflow (`workflow_dispatch`, `.github/workflows/server-ops.yml`), because the self-hosted runner is the server and every action leaves a log. There is no SSH-based procedure in the repository.
 
@@ -12,7 +12,7 @@ Access note: production work goes through the `server-ops` workflow (`workflow_d
 
 - **Symptom.** A Slack message from the worker alarm, or an Axiom monitor hit on the event `queue.job.exhausted` (`src/lib/queue/failure-alarm.ts`).
 - **Check.** The message and log fields name `queue`, `jobName`, `jobId`, `attemptsMade`, `maxAttempts`, `reason` (`attempts_exhausted`, `unrecoverable`, `stalled`) and the sanitized error. Payload ids are only `userId` and `workspaceId`. Look up the cause in Axiom (log has the stack, Slack does not) by `jobId`, and the job's trace in the traces dataset by `trace_id` ([observability.md](./observability.md)).
-- **Action.** Fix the cause first (the classic case was a foreign key, see [the delete-account postmortem](../postmortems/2026-09-20-delete-account-foreign-key.md)), then retry the job from the BullMQ failed set; a manual retry that dies again counts as a new death and alerts again. Failed jobs are kept 7 days (`src/lib/queue/queues.ts`), so act inside that window. How to retry operationally (the queue workbench, `WORKBENCH_USER`/`WORKBENCH_PASS` exist in `lib/env/_server-admin.ts`): TODO: confirm.
+- **Action.** Fix the cause first (the classic case was a foreign key, see [the delete-account postmortem](../postmortems/2026-09-20-delete-account-foreign-key.md)), then retry the job from the BullMQ failed set; a manual retry that dies again counts as a new death and alerts again. Failed jobs are kept 7 days (`src/lib/queue/queues.ts`), so act inside that window. To retry, use the queue dashboard mounted at `/admin/queues` (`app/(private)/admin/queues/[[...workbench]]/route.ts`): it needs a platform admin with 2FA plus basic auth with `WORKBENCH_USER`/`WORKBENCH_PASS` (`lib/env/_server-admin.ts`), and can retry, remove and promote jobs (see [admin](../domains/admin.md)).
 - **Reason `stalled`.** The worker lost its lock; check whether `nexo-worker` was restarted or starved of CPU.
 
 ## 2. `/status` shows a component down or degraded
@@ -25,7 +25,7 @@ Access note: production work goes through the `server-ops` workflow (`workflow_d
   - `payment` / `email`: HTTP 401 or 403 from the provider counts as an outage on purpose: the key was rejected. Check the key in sops, then `env-sync`.
   - `storage`: S3 `ListBuckets` with our credentials fails. See the [MinIO postmortem](../postmortems/2026-09-24-minio-image-withdrawn.md) for the image history.
   - `jobs`: a queue has no connected worker, or more than 25 waiting jobs. See runbook 3.
-- **Action, collector itself.** If no new checks appear, the scheduler that calls `POST /api/status/collect/{core,peripheral}` is outside the repository: TODO: confirm. A held outage with the 6 h reminder is expected behaviour, not a loop.
+- **Action, collector itself.** If no new checks appear, the scheduler that calls `POST /api/status/collect/{core,peripheral}` is not defined in this repository (see [status-page.md](../architecture/status-page.md)); check it on the host. A held outage with the 6 h reminder is expected behaviour, not a loop.
 - **No alert is sent when the database is down** because incidents cannot be written; instead `status.collect_failed` and `status.collect_recovered` post once per edge.
 
 ## 3. Queue backlog or no worker
