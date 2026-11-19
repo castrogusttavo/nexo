@@ -8,47 +8,31 @@ Language: English. User-facing product copy stays in pt-BR, but this folder is d
 
 | If you want to... | Read |
 |---|---|
-| Understand the system in ten minutes | [architecture/overview.md](architecture/overview.md) |
-| Follow one request from the browser to the database | [architecture/request-flow.md](architecture/request-flow.md) |
-| Know why we decided something | [adr/README.md](adr/README.md) |
+| Understand the system in ten minutes | [architecture/overview](architecture/overview.md) |
+| Follow one request from the browser to the database | [architecture/request-flow](architecture/request-flow.md) |
+| Set up the project and ship a feature | [development/](development/README.md) |
+| Know why we decided something | [adr/](adr/README.md) |
+| Debug production | [operations/runbooks](operations/runbooks.md) |
 | See the data model | [diagrams/er-model.svg](diagrams/er-model.svg) |
 
-## Architecture
+## Sections
 
-| Page | Covers |
+| Section | Covers |
 |---|---|
-| [overview](architecture/overview.md) | Layers, stack, repository layout |
-| [request-flow](architecture/request-flow.md) | Route, service, repository, `Result`, error envelope |
-| [multi-tenancy](architecture/multi-tenancy.md) | Workspace slug, membership, isolation |
-| [auth](architecture/auth.md) | Better Auth, sessions, OTP, 2FA, cookie cache, consent |
-| [caching](architecture/caching.md) | Cache Components, `use cache: private`, Redis read-through |
-| [background-jobs](architecture/background-jobs.md) | BullMQ queues, scheduler, failure alarm |
-| [status-page](architecture/status-page.md) | Probes, incidents, Slack alerts |
-| [security](architecture/security.md) | `proxy.ts`, DAL, CSP, rate limits, audit, secrets |
-| [infrastructure](architecture/infrastructure.md) | Image, compose files, nginx, CI/CD |
-
-## Architecture decision records
-
-Index, template and status values live in [adr/README.md](adr/README.md). Current records: 0001 trunk-based development, 0002 `Result` instead of throw, 0003 DAL instead of layout gates, 0004 no `use cache` for runtime data, 0005 Better Auth, 0006 standalone output and browser tests, 0007 Silo storage, 0008 job failure alarm with dedup.
-
-## Diagrams
-
-SVG, generated from scripts so they can be regenerated when the architecture changes. See [diagrams/_tools/README.md](diagrams/_tools/README.md).
-
-| Diagram | Shows |
-|---|---|
-| [request-flow.svg](diagrams/request-flow.svg) | A request through proxy, route, service, repository |
-| [private-access.svg](diagrams/private-access.svg) | Optimistic proxy check versus the real DAL gate |
-| [er-model.svg](diagrams/er-model.svg) | Core Prisma models (a subset of the schema) |
-| [background-jobs.svg](diagrams/background-jobs.svg) | Queues, worker, failure alarm |
-| [deploy-pipeline.svg](diagrams/deploy-pipeline.svg) | Local hooks, CI gate, CD |
-
-## Not written yet
-
-`domains/` (one page per feature area), `api/`, `testing/`, `development/`, `operations/` (runbooks) and `changelog/`. The rules for how tests, features and commits are organised currently live in the root `CLAUDE.md`.
+| [architecture/](architecture/overview.md) | Layers, request flow, multi-tenancy, auth, caching, background jobs, status page, security, infrastructure |
+| [domains/](domains/README.md) | One page per feature area: issues, cycles, modules, projects, wiki, billing, workspace, account, admin and more |
+| [api/](api/README.md) | Response envelope, 111 error codes, the endpoint inventory, how `public/openapi.json` is guarded |
+| [development/](development/README.md) | Getting started, conventions, the SDD, TDD, Code feature workflow |
+| [testing/](testing/README.md) | The test layers, what each one answers, coverage and mutation testing |
+| [operations/](operations/README.md) | Deploy, runbooks, observability, environments, releases |
+| [adr/](adr/README.md) | Architecture decision records (0001 to 0008) |
+| [postmortems/](postmortems/README.md) | Five incidents, with timelines and what changed |
+| [changelog/](changelog/README.md) | Where release notes live |
+| [diagrams/](diagrams/README.md) | Every SVG diagram, with an index |
 
 ## Keeping it honest
 
 - A decision that changes gets a new ADR that supersedes the old one; do not rewrite history.
-- A diagram changes by editing its script in `diagrams/_tools/` and regenerating, not by editing the SVG.
-- If a page and the code disagree, the code wins and the page is a bug.
+- If a page and the code disagree, the code wins and the page is a bug. Fix the page in the same commit as the code.
+- The SVGs in `diagrams/` are the versioned source. The generator that produced them is a local tool (`diagrams/_tools/` is git-ignored).
+- Items marked `TODO: confirm` are facts the repository cannot settle (production layout, scheduler, Axiom monitor, and similar). Resolve them with the operator and remove the marker.

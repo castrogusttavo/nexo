@@ -1,8 +1,10 @@
 # Diagrams
 
-Generated SVGs, one per topic. Each one is produced by a script in
-[`_tools/`](_tools/README.md) (Python 3 standard library only); edit the script and
-regenerate, never the SVG.
+One SVG per topic, in a single visual style (colour by role, dashed orthogonal arrows,
+numbered pill labels on flows). The SVGs are the versioned source. They were produced by
+a local Python generator that is kept out of the repository (`docs/diagrams/_tools/` is
+git-ignored), so to change a diagram edit the SVG by hand or regenerate it from a local
+copy of the generator.
 
 | Diagram | What it shows |
 | --- | --- |
@@ -19,30 +21,23 @@ regenerate, never the SVG.
 | [test-layers-map.svg](test-layers-map.svg) | The test layers and the question each one answers. |
 | [ci-test-jobs-map.svg](ci-test-jobs-map.svg) | Which CI job runs which tests, and what feeds the gate and Codecov. |
 | [sdd-tdd-code-flow.svg](sdd-tdd-code-flow.svg) | The SDD, TDD, Code order of building a feature. |
+| [billing-checkout-webhook.svg](billing-checkout-webhook.svg) | Checkout, the payment webhook and what it changes on the subscription. |
+| [invitation-lifecycle.svg](invitation-lifecycle.svg) | Creating, accepting, expiring and revoking a workspace invitation. |
+| [issue-write-path.svg](issue-write-path.svg) | The write path of an issue through route, service, repository, cache and activity. |
+| [project-access-matrix.svg](project-access-matrix.svg) | Who may do what inside a project, by role. |
+| [project-bootstrap.svg](project-bootstrap.svg) | What is created when a project is created. |
+| [release-flow.svg](release-flow.svg) | How `cd.yml` migrates, deploys and cuts the release tag. |
+| [rollback-options.svg](rollback-options.svg) | What rolling back actually means in this setup. |
+| [incident-triage.svg](incident-triage.svg) | From symptom to the first check, as in the runbooks. |
+| [observability-map.svg](observability-map.svg) | Where logs, audit events, traces and alerts go. |
+| [incident-timeline-overview.svg](incident-timeline-overview.svg) | The five postmortem incidents on one axis (not to scale). |
+| [csp-proxy-timeline.svg](csp-proxy-timeline.svg) | The missing `proxy.ts` and the CSP that blocked hydration. |
+| [delete-account-failure.svg](delete-account-failure.svg) | Why `delete-account` failed silently on a foreign key. |
+| [minio-to-silo-migration.svg](minio-to-silo-migration.svg) | The MinIO image withdrawal and the move to Silo. |
+| [xff-resolution.svg](xff-resolution.svg) | How `X-Forwarded-For` ended up in one shared sign-in bucket. |
+| [str61-leak-and-fix.svg](str61-leak-and-fix.svg) | The consent leak in the RSC payload and the DAL fix. |
+
 
 Items marked "to confirm" inside a diagram are things the repository does not
 settle on its own (for example, whether production points the app at the read
 replica or PgBouncer).
-
-## Regenerate
-
-From the repository root:
-
-```bash
-# one diagram
-python3 docs/diagrams/_tools/auth-flow.py
-
-# all of them
-for f in docs/diagrams/_tools/*.py; do
-  [ "$(basename "$f")" = lib.py ] || python3 "$f"
-done
-```
-
-Preview a diagram as a PNG (keep the PNG out of the repo):
-
-```bash
-rsvg-convert -w 1600 docs/diagrams/auth-flow.svg -o /tmp/auth-flow.png
-```
-
-To add a new diagram, create `_tools/<name>.py` that uses `lib.py`, add it to the
-two lists above and to the table.
