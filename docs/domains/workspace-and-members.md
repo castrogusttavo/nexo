@@ -42,7 +42,7 @@ Authorization lives in the services, through `assertMember` / `assertPrivileged`
 - `list`: privileged only. Filtering is done in the repository, sorting and paging in memory.
 - `import` (CSV): privileged only and gated by `can(plan, 'importMembersCsv')` (`PRO` and above, `src/config/plans.ts`), else `FEATURE_NOT_IN_PLAN`. Rows are invited one by one, sequentially, so the seat check cannot race. `INVITATION_DUPLICATE` and `INVITATION_ALREADY_MEMBER` become `skipped`; other failures become `error` rows. The CSV is parsed by `src/lib/csv/member-import-parser.ts` (papaparse; required headers `email,username,name,role`).
 - `MembershipService` is read-only (`getByUserAndSlug`, `listByUser`, `countByWorkspace`).
-- There is no route to change a member's role or remove a member: `app/api/workspaces/[id]/members/` has only `GET` and `import`. TODO: confirm whether that is intentional.
+- There is no route to change a member's role or remove a member: `app/api/workspaces/[id]/members/` has only `GET` and `import`. No service or repository method changes or removes a membership either (the only role update is `InvitationService.updateRole`, for pending invitations), so no code path changes a role after the membership exists, and a membership goes away only by cascade when its user or workspace is deleted. Whether that is intentional is not defined in this repository.
 
 **Invitations** (`invitation.service.ts`)
 - Workspace invites (create, list, revoke, resend, change role): privileged only. Project invites (`createForProject`, ...): the workspace admin or the project lead (`assertProjectManager`); an existing workspace member is added to the project directly instead of invited.
@@ -87,7 +87,7 @@ UI entry points: `app/onboarding/{profile,role,goals,workspace,consent}-setup`, 
 
 ## Queues
 
-None directly. Workspace data is not touched by the BullMQ processors on this page's paths. TODO: confirm for the account-deletion processor (see [user-and-account.md](./user-and-account.md)).
+None directly. The account-deletion processor (`src/lib/queue/processors/account-lifecycle.ts`) only hard-deletes the user row (`UserRepository.deleteHard`); `Membership` cascades from the user, but no workspace is deleted. Scheduling is blocked only for a workspace where the user is OWNER, other members exist and no other OWNER does (`countBlockingSoleOwnerWorkspaces`), so a workspace where the user was the only member is not blocked and stays without members (see [user-and-account.md](./user-and-account.md)).
 
 ## Gotchas
 

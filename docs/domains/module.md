@@ -30,7 +30,7 @@ DTOs are built by `src/mappers/module.mapper.ts` (`toModuleDTO`, `toModuleMember
 - **Lead** is the actor on create. `removeMember` refuses to remove the lead (`MODULE_FORBIDDEN`, "Não é possível remover o lead do módulo").
 - A module from another project answers `MODULE_NOT_FOUND`.
 - `addMember` does not verify that the target belongs to the project (same as cycles). A duplicate becomes `MODULE_MEMBER_ALREADY_EXISTS` through `P2002` in `src/repositories/module.repository.ts`.
-- `progress` is writable data, not derived from issue states. The project-level progress view is derived separately (see [project.md](./project.md)). `TODO: confirm` whether module progress is meant to be computed later.
+- `progress` is writable data, not derived from issue states. The project-level progress view is derived separately (see [project.md](./project.md)). Nothing in the code computes it: it is set only through `UpdateModuleSchema` (`progress`, integer 0 to 100) and `module.service.ts`. A plan to compute it is not defined in this repository.
 - Activity: `update` records `status`, `startDate`, `endDate` and `progress` with entity type `MODULE`.
 - Audit: `auditMutation` with `entity: 'module'`.
 
@@ -59,7 +59,7 @@ None.
 ## Gotchas
 
 - `modulesEnabled` is not enforced server-side; it only hides the tab.
-- No date-order validation (`endDate` before `startDate`). `TODO: confirm`.
+- No date-order validation (`endDate` before `startDate`). Known behaviour: a module can be saved with `endDate` before `startDate`.
 - Deleting a module hard-deletes it and detaches its issues; no activity entry is written for delete.
 
 ## Tests

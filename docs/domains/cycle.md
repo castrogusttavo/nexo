@@ -34,11 +34,11 @@ DTOs (`CycleDTO`, `CycleMemberDTO` in `types/cycle`) are built by `src/mappers/c
 - **One active cycle**: creating or updating a cycle to `IN_PROGRESS` fails with `CYCLE_ALREADY_ACTIVE` (409) when another cycle of the project is already `IN_PROGRESS` (`CycleRepository.findActiveByProject`). Updating the active cycle itself is fine. The check is a read before the write, not a database constraint, so two concurrent requests can both pass it.
 - **Lead**: `create` sets `leadId` to the actor.
 - **Ownership**: a cycle whose `projectId` differs from the resolved project answers `CYCLE_NOT_FOUND`, so ids from other projects or tenants reveal nothing.
-- **Members**: `addMember` inserts a `CycleMember`; a duplicate (Prisma `P2002`) becomes `CYCLE_MEMBER_ALREADY_EXISTS`. The service does not check that the target user is a member of the project or workspace. `TODO: confirm` whether that is intended. `removeMember` refuses to remove the lead (`CYCLE_FORBIDDEN`, "Não é possível remover o lead do ciclo").
+- **Members**: `addMember` inserts a `CycleMember`; a duplicate (Prisma `P2002`) becomes `CYCLE_MEMBER_ALREADY_EXISTS`. The service does not check that the target user is a member of the project or workspace; only the database constraints apply (`CycleMember` foreign keys). Known behaviour: unlike project members (`PROJECT_MEMBER_NOT_IN_WORKSPACE`), any existing user id can be added to a cycle. `removeMember` refuses to remove the lead (`CYCLE_FORBIDDEN`, "Não é possível remover o lead do ciclo").
 - **Activity**: `update` records changes to `status`, `startDate` and `endDate` through `recordFieldChanges` with entity type `CYCLE`; read them back via `GET .../activities?entityType=CYCLE&entityId=...` (see [activity-and-notifications.md](./activity-and-notifications.md)).
 - **Audit**: `auditMutation` with `entity: 'cycle'` on create (also on failure), update, delete and member changes (`reason: 'member_added'` and similar).
 
-There is no date-order validation (`endDate` before `startDate`) in the cycle service or schema, unlike issues and projects. `TODO: confirm`.
+There is no date-order validation (`endDate` before `startDate`) in the cycle service or schema, unlike projects (`project.schema.ts` refines `startDate <= dueDate`). Known behaviour: a cycle can be saved with `endDate` before `startDate`.
 
 ## Error codes
 

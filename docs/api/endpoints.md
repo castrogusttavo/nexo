@@ -264,7 +264,7 @@ A flat inventory of the HTTP surface under `app/api/**/route.ts`: method, path, 
 - The 182 operations include `GET /health` and `POST /payment/webhook`, which are deliberately not enveloped (`NON_ENVELOPE_OPERATIONS` in `src/__tests__/contract/openapi-spec.contract.test.ts`).
 - `GET /status` is public and rate limited by IP (`apiLimiter`, `app/api/status/route.ts`); `GET /health` is public and unlimited; `POST /status/collect/*` pass the proxy as public but fail without `x-status-secret`.
 - Some GET list endpoints accept paging parameters that the spec only partly documents; see "Pagination" in [README.md](./README.md).
-- `GET /workspaces/{id}/projects/{slug}/issues` reads `cursor` and `limit` through `ListIssuesQuerySchema`, but `public/openapi.json` does not document them (TODO: confirm whether that is intentional).
+- `GET /workspaces/{id}/projects/{slug}/issues` reads `cursor` and `limit` through `ListIssuesQuerySchema`, but `public/openapi.json` does not document them (that operation lists only the `id` and `slug` path parameters). Known issue: the spec lags the route, and the contract suite does not compare query parameters. The pagination arrived in `8ba2c60b`.
 
 ## Related files
 

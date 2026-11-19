@@ -21,7 +21,7 @@ Where release and changelog content lives, so nothing is duplicated here. This f
 - The body is the "Novidades" part; `improvements` and `fixes` are one-liners kept in the frontmatter so they render as collapsible lists. The slug `page` is reserved for pagination (5 entries per page, `CHANGELOG_PAGE_SIZE`).
 - Reads are cached with `'use cache'` and `cacheLife('max')`, so a new file needs a new build and deploy to appear.
 - Entries are written in pt-BR (product copy). `/changelog` is a public route in `proxy.ts`.
-- The folder `content/changelog/` does not exist in the repository today; `listEntryFiles` treats a missing folder as empty (`ENOENT`), so the page renders with no entries. The feature arrived in `68eed4ff` (2026-10-29). Whether entries are meant to be committed to this repository or kept elsewhere: TODO: confirm.
+- The folder `content/changelog/` does not exist in the repository today; `listEntryFiles` treats a missing folder as empty (`ENOENT`), so the page renders with no entries. The feature arrived in `68eed4ff` (2026-10-29). Whether entries are meant to be committed to this repository or kept elsewhere is not defined in this repository: `content/` holds only `blog/` and no commit ever added `content/changelog/`.
 - Blog posts live beside it in `content/blog/`.
 
 ## Adding an entry

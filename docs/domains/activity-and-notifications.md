@@ -19,7 +19,7 @@ Notification settings are also summarised in [user-and-account.md](./user-and-ac
 - `comment.schema.ts`: `CreateCommentSchema` (`content` is a rich-text object, max 100,000 serialized chars, optional `parentId`), `UpdateCommentSchema` (`content`).
 - `update.schema.ts`: `CreateUpdateSchema` (`status` `ON_TRACK | AT_RISK | OFF_TRACK`, optional `content` max 2000), `EditUpdateSchema` (same shape), `CreateUpdateReplySchema` (`content` trimmed, 1 to 2000), `UpdateEmojiSchema` (a single grapheme that starts with an emoji, max 32 chars, via `isSingleEmoji`), `ListUpdatesQuerySchema` (`cursor` string, `limit` 1 to 50, default 20).
 - `issue-vote.schema.ts`: `{ type: UP | DOWN }`.
-- `attachment.schema.ts`: `CreateAttachmentSchema` (`fileName`, `contentType`, `size` up to 25 MB). The issue upload route reads multipart `formData` with a `file` field, so that schema is metadata-shaped, not the request body. `TODO: confirm` where it is used.
+- `attachment.schema.ts`: `CreateAttachmentSchema` (`fileName`, `contentType`, `size` up to 25 MB). The issue upload route reads multipart `formData` with a `file` field, so that schema is metadata-shaped, not the request body. No route or service imports it; only `src/schemas/__tests__/attachment.schema.test.ts` uses it.
 - `notification-settings.schema.ts`: `UpdateNotificationSettingSchema`, booleans `priorityChanges`, `stateChanges`, `comments`, `mentions`, at least one key required.
 
 ## Data model
@@ -100,9 +100,9 @@ UI:
 
 ## Gotchas
 
-- **Notification settings are stored but nothing consumes them.** A search of `src/`, `app/`, `lib/`, `components/` and `worker/` finds `priorityChanges`, `stateChanges`, `comments` and `mentions` only in the settings schema, repository, cache, service, route and UI. No email, push or in-app delivery reads them, and there is no `Notification` model. `TODO: confirm` the delivery plan.
+- **Notification settings are stored but nothing consumes them.** A search of `src/`, `app/`, `lib/`, `components/` and `worker/` finds `priorityChanges`, `stateChanges`, `comments` and `mentions` only in the settings schema, repository, cache, service, route and UI. No email, push or in-app delivery reads them, and there is no `Notification` model. Known issue: the settings have no effect today. A delivery plan is not defined in this repository.
 - The activity feed does not include assignee, label, title or description changes, and cycle/module delete is not recorded.
-- `Activity.entityId` is not a foreign key; rows survive when the entity is deleted and are never cleaned up by a cascade. `TODO: confirm` retention.
+- `Activity.entityId` is not a foreign key; rows survive when the entity is deleted and are never cleaned up by a cascade. The `data-retention` processor (`src/lib/queue/processors/data-retention.ts`) only cleans sessions, verifications, invitations and career applications, so activities are kept indefinitely and no retention period is defined.
 - Issue subscribers exist (`IssueSubscriber`, subscribe route) and assigning subscribes the assignee, but there is no sender that uses them yet.
 - Comment and update write access differs: comments need project membership; updates also admit readers of a public project (except `VIEWER`).
 

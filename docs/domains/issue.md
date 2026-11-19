@@ -29,7 +29,7 @@ The human identifier shown in the UI is `<project.identifier>-<number>` (for exa
 Everything is in `src/services/issue.service.ts` unless noted. Every method first calls `resolveProject` (`src/services/_project-scope.ts`), which checks workspace membership and loads the project with its members.
 
 - **Read** (`list`, `getById`, `getByIdentifier`, `listChildren`, `count`): allowed when the project is public, or the actor is OWNER/ADMIN, the project lead, or a project member. Otherwise `PROJECT_FORBIDDEN`.
-- **Write** (`create`, `update`, `delete`): the actor must be OWNER/ADMIN, the lead, or a project member, otherwise `ISSUE_FORBIDDEN`. A project member with workspace role `VIEWER` is not excluded by the service; the check is on project membership only. `TODO: confirm` whether that is intended.
+- **Write** (`create`, `update`, `delete`): the actor must be OWNER/ADMIN, the lead, or a project member, otherwise `ISSUE_FORBIDDEN`. A project member with workspace role `VIEWER` is not excluded by the service; the check is on project membership only (`isPrivileged`, `isLead` or `isMember` in `IssueService.create`, `update` and `delete`). Known behaviour: a `VIEWER` who is a project member can write issues, unlike updates (`update.service.ts`) and reactions (`_project-scope.ts`), which exclude `VIEWER`.
 - **Create**: the state must belong to the same project (`ISSUE_STATE_INVALID`), the type too (`ISSUE_TYPE_INVALID`). With no `typeId`, the system type named `Task` is used. `dueDate` before `startDate` is a `VALIDATION_ERROR`. A cycle, module or estimate value from another project answers as not found. A parent must live in the same project.
 - **Numbering**: `IssueRepository.create` increments `Project.issueSequence` and creates the issue in one transaction, so concurrent creates do not collide.
 - **Update**: same validations, plus a walk up the `parentId` chain to refuse loops (`ISSUE_PARENT_CYCLE`, 409). Changed fields are written to the activity feed through `recordFieldChanges` (`src/services/_activity-diff.ts`), fire-and-forget.
@@ -80,7 +80,7 @@ UI entry points:
 
 ## Gotchas
 
-- Changing assignees or labels does not invalidate the list cache, and a cached page carries `labelIds` and `assigneeIds`, so a paginated list can show stale associations for up to 30 seconds. `TODO: confirm` whether the association services should call `IssueListCache.invalidate`.
+- Changing assignees or labels does not invalidate the list cache, and a cached page carries `labelIds` and `assigneeIds`, so a paginated list can show stale associations for up to 30 seconds. Known issue: `issue-assignee.service.ts` and `issue-label.service.ts` never call `IssueListCache.invalidate`; only `issue.service.ts` does.
 - Activity is recorded only for the fields in `IssueService.update` (state, type, priority, dates, cycle, module, estimate, parent). Title, description, assignee and label changes are not in the feed.
 - Cursor pagination is by `number` ascending, not by id.
 - The `issueTypesEnabled`, `modulesEnabled`, `cyclesEnabled` and `estimatesEnabled` project switches are not checked in the issue service; see [project.md](./project.md).

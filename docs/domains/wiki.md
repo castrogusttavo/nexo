@@ -19,12 +19,12 @@ A workspace-wide knowledge base: a tree of pages written in a rich-text (Plate) 
 
 ## Service rules and authorization
 
-Everything is in `src/services/` and every call starts with `assertMember` (`_authz.ts`): any member of the workspace may read and write the wiki. There is no `VIEWER` restriction in the service. TODO: confirm that viewers are meant to edit.
+Everything is in `src/services/` and every call starts with `assertMember` (`_authz.ts`): any member of the workspace may read and write the wiki. There is no `VIEWER` restriction in the service. Known behaviour: a workspace `VIEWER` can create, edit, move and archive wiki pages, unlike project updates and reactions, which exclude `VIEWER`.
 
 **Pages** (`wiki-page.service.ts`)
 - Each method loads the page and compares `page.workspaceId` to the workspace in the URL, returning `WIKI_PAGE_FORBIDDEN` on a mismatch (so a page id from another tenant never resolves).
 - `create` validates the parent belongs to the same workspace. `update` autosaves content; a content-only update is deliberately not audited (it would flood the trail), metadata edits and all failures are.
-- `move` rejects a page becoming its own parent. It does not check that the new parent is not one of the page's own descendants; the service shows no such check. TODO: confirm whether the UI prevents it.
+- `move` rejects a page becoming its own parent. It does not check that the new parent is not one of the page's own descendants; the service shows no such check. Known issue: no UI prevents it either, since no component or hook in `app/`, `components/` or `src/hooks/` calls the move route, so a cycle can be created through the API.
 - `archive` is a soft delete done in a transaction by `WikiPageRepository.archive`: the page and its entire subtree get one shared `archivedAt`, so a future restore can bring back exactly what went away together. Lists exclude archived pages (`archivedAt: null`). No restore endpoint exists in `app/api`.
 
 **Comments** (`wiki-comment.service.ts`)
@@ -35,7 +35,7 @@ Everything is in `src/services/` and every call starts with `assertMember` (`_au
 **Media** (`wiki-media.service.ts`, `_wiki-media.ts`)
 - Upload to bucket `wiki-media`, key `<workspaceId>/<cuid><ext>`. Size limits by type: image 10 MB, video 200 MB, audio 50 MB, anything else 25 MB; an empty file is rejected. Allowed image types include `image/svg+xml`.
 - The response carries a presigned download URL valid for one hour. `getDownloadUrl` re-issues one and rejects keys that do not start with the caller's `workspaceId/`.
-- There is no content-type allowlist for the generic "file" category: any type is accepted up to 25 MB. TODO: confirm this is intended.
+- There is no content-type allowlist for the generic "file" category: any type is accepted up to 25 MB (`maxBytesFor` in `src/services/_wiki-media.ts` falls through to `MAX_FILE_BYTES`). Known behaviour: no allowlist applies to that category.
 
 **Project editor media and embeds** (project-scoped, not wiki)
 - `editor-media.service.ts` (bucket `issue-editor-media`, key `<projectId>/...`): images and videos only. Upload requires a privileged member, the project lead or a project member; download also allows any member for a public project. It uses `resolveProject` from `_project-scope.ts`.
@@ -43,7 +43,7 @@ Everything is in `src/services/` and every call starts with `assertMember` (`_au
 
 ## Real-time collaboration
 
-`realtime/index.ts` is a separate Hocuspocus server (`@hocuspocus/server`, Redis extension) that authenticates the session, runs `assertMember`, and loads and stores the Yjs state through `WikiPageRepository` (`yjsState`). The HTTP `PATCH` of `content` and the Yjs state are two persistence paths for the same page. TODO: confirm how they are reconciled.
+`realtime/index.ts` is a separate Hocuspocus server (`@hocuspocus/server`, Redis extension) that authenticates the session, runs `assertMember`, and loads and stores the Yjs state through `WikiPageRepository` (`yjsState`). The HTTP `PATCH` of `content` and the Yjs state are two persistence paths for the same page, and the code does not reconcile them: the editor autosaves `content` only as a flat JSON snapshot for listing and search (comment in `wiki-page-editor.tsx`), while the realtime server loads and stores only `yjsState`. A `PATCH` of `content` therefore does not change what live editors see.
 
 ## Error codes
 

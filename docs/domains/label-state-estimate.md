@@ -39,7 +39,7 @@ Seeds at project creation (`ProjectRepository.create`): default states `Backlog`
 
 All per-project services use `resolveProject` and the common rule: **read** for readers (public project, OWNER/ADMIN, lead or project member), **write** for OWNER/ADMIN or the project lead.
 
-- `state.service.ts`: a state from another project is `STATE_NOT_FOUND`. Delete refuses the default state (`STATE_IS_DEFAULT`, 409) and the last state of its group (`STATE_LAST_IN_GROUP`, 409). `setDefault` swaps the flag in one transaction (`updateMany` to false, then set true). The service does not check whether issues still use the state being deleted, and `Issue.stateId` is restrictive, so deleting a used state surfaces as a database error. `TODO: confirm` the user-visible behavior.
+- `state.service.ts`: a state from another project is `STATE_NOT_FOUND`. Delete refuses the default state (`STATE_IS_DEFAULT`, 409) and the last state of its group (`STATE_LAST_IN_GROUP`, 409). `setDefault` swaps the flag in one transaction (`updateMany` to false, then set true). The service does not check whether issues still use the state being deleted, and `Issue.stateId` is restrictive, so deleting a used state surfaces as a database error. Known behaviour: `StateRepository.delete` wraps any failure in `dbError`, so the user gets a generic `DATABASE_ERROR` (500) instead of a dedicated code.
 - `label.service.ts`: CRUD with `LABEL_FORBIDDEN` / `LABEL_NOT_FOUND`. Deleting a label cascades its `IssueLabel` rows.
 - `issue-type.service.ts`: system types (`isSystem`) cannot be edited or deleted (`ISSUE_TYPE_SYSTEM_PROTECTED`, 409). `reorder` takes the full id list. New issues default to the system type named `Task`.
 - `estimate.service.ts`: `get` returns settings with values. Changing `system`/`model` updates the settings only; it does not regenerate or convert values. Deleting the last value is refused (`ESTIMATE_VALUE_LAST_REMAINING`, 409). A value that is not part of the project's settings is `ESTIMATE_VALUE_FORBIDDEN`. Write denial is `ESTIMATE_SETTINGS_FORBIDDEN`.
@@ -68,7 +68,7 @@ Per workspace, under `app/api/workspaces/[id]/`: `project-states` (GET, POST), `
 
 UI:
 
-- Project settings pages `states`, `labels` and `estimates` under `app/(private)/[workspace-slug]/projects/[slug]/settings/`. There is no settings page for issue types; the hook `src/hooks/use-issue-type.ts` is consumed by `issue/picker/type-picker.tsx`. `TODO: confirm` whether a management UI is planned.
+- Project settings pages `states`, `labels` and `estimates` under `app/(private)/[workspace-slug]/projects/[slug]/settings/`. There is no settings page for issue types; the hook `src/hooks/use-issue-type.ts` is consumed by `issue/picker/type-picker.tsx`. Whether a management UI is planned is not defined in this repository.
 - Workspace-level project states and labels: `app/(private)/[workspace-slug]/settings/resources/project-configuration/` (`workspace-settings-project-states-*`, `workspace-settings-project-labels-*`).
 - Pickers in `app/_components/workspace/project/issue/picker/` (`state-picker`, `label-picker`, `type-picker`).
 - Hooks: `use-state.ts`, `use-label.ts`, `use-issue-type.ts`, `use-estimate.ts`, `use-project-state.ts`, `use-project-label.ts`.

@@ -1,6 +1,6 @@
 # Domain pages
 
-One page per feature area. Each follows the same outline: contract (Zod schemas), data model (Prisma), service rules and authorization, error codes, routes and UI entry points, caching, gotchas, tests, related files. They describe the code as it is; where the code did not show the answer the page says `TODO: confirm`. For how a request travels through the layers, read [../architecture/request-flow.md](../architecture/request-flow.md); for tenancy, [../architecture/multi-tenancy.md](../architecture/multi-tenancy.md).
+One page per feature area. Each follows the same outline: contract (Zod schemas), data model (Prisma), service rules and authorization, error codes, routes and UI entry points, caching, gotchas, tests, related files. They describe the code as it is; where the repository cannot answer a question (infrastructure, external services, product decisions) the page says `Not defined in this repository.`, and a behaviour that looks like a defect is stated as `Known issue:`. For how a request travels through the layers, read [../architecture/request-flow.md](../architecture/request-flow.md); for tenancy, [../architecture/multi-tenancy.md](../architecture/multi-tenancy.md).
 
 ## Index
 

@@ -45,7 +45,7 @@ The worker (`src/lib/queue/processors/account-lifecycle.ts`, queue `account-life
 
 ## Data export
 
-`POST /api/users/me/export` calls `AccountLifecycleService.requestExport`: it consumes `exportLimiter` (keyed by user id), enqueues a job with `enqueueUserExport` and audits the request; an enqueue failure returns a database error. The processor (`src/lib/queue/processors/data-export.ts`) builds a JSON payload from Postgres (profile, sessions without tokens, linked accounts without secrets, consent events) plus up to `AUDIT_LOG_MAX_ENTRIES` (5000) audit entries read from the Axiom dataset, validates it with `UserExportPayloadSchema`, uploads it to bucket `user-exports`, and e-mails a presigned link valid `SIGNED_URL_TTL_SECONDS` (7 days). Workspace content such as issues or wiki pages is not part of the export. TODO: confirm that is intended under the LGPD access right.
+`POST /api/users/me/export` calls `AccountLifecycleService.requestExport`: it consumes `exportLimiter` (keyed by user id), enqueues a job with `enqueueUserExport` and audits the request; an enqueue failure returns a database error. The processor (`src/lib/queue/processors/data-export.ts`) builds a JSON payload from Postgres (profile, sessions without tokens, linked accounts without secrets, consent events) plus up to `AUDIT_LOG_MAX_ENTRIES` (5000) audit entries read from the Axiom dataset, validates it with `UserExportPayloadSchema`, uploads it to bucket `user-exports`, and e-mails a presigned link valid `SIGNED_URL_TTL_SECONDS` (7 days). Workspace content such as issues or wiki pages is not part of the export. Whether that satisfies the LGPD access right is a legal decision not defined in this repository; the code only exports the sources listed above.
 
 ## LGPD handling
 

@@ -12,7 +12,7 @@ Two small, user-scoped features that belong to a person and not to a workspace: 
 - `StickyColorSchema`: `RED | YELLOW | BLUE | GREEN | PURPLE | ZINC`.
 - `CreateStickyNoteSchema`: optional `content` (a TipTap JSON object, at most 100,000 serialized characters) and optional `color`. `UpdateStickyNoteSchema` is the partial.
 
-Despite the name, a short link does not shorten anything or redirect: it stores a title and a target URL. No public `/s/<code>` route exists in `app/`. TODO: confirm there is no redirect feature planned.
+Despite the name, a short link does not shorten anything or redirect: it stores a title and a target URL. No public `/s/<code>` route exists in `app/`. Whether a redirect feature is planned is not defined in this repository.
 
 ## Data model
 
@@ -31,7 +31,7 @@ Both disappear with the user, so account deletion needs no special step for them
 - `getById`, `update` and `delete` load the row and compare `row.userId` with the actor, returning `forbidden()` otherwise. A foreign id answers 403, not 404, so it confirms the id exists.
 - `create` stamps `userId` from the session, never from the body.
 - Every mutation emits `auditMutation` (`entity: short_link` / `sticky_note`), including failures; the ownership failure is recorded with reason `not_owner`.
-- There are no per-user count limits in the services or schemas. TODO: confirm none is intended.
+- There are no per-user count limits in the services or schemas, so none is enforced today.
 
 ## Error codes
 

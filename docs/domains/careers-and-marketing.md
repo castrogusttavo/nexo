@@ -16,7 +16,7 @@ The public, logged-out side of the product: job posts and applications, the ente
 
 ### Service rules
 
-- Public read: `CareerJobService.listPublic` returns `OPEN` and `CLOSED` jobs, open first (`CareerJobRepository.listPublic`). `getBySlug` calls `findBySlug`, which filters nothing by status. `app/(web)/careers/[slug]/page.tsx` only calls `notFound()` when the lookup fails, so a `DRAFT` job appears to be reachable by its slug. TODO: confirm; this may leak unpublished posts.
+- Public read: `CareerJobService.listPublic` returns `OPEN` and `CLOSED` jobs, open first (`CareerJobRepository.listPublic`). `getBySlug` calls `findBySlug`, which filters nothing by status. `app/(web)/careers/[slug]/page.tsx` only calls `notFound()` when the lookup fails, so a `DRAFT` job is reachable by its slug. Known issue: the page never checks `job.status` (it only reads it for `validThrough`), so an unpublished post renders for anyone who knows or guesses the slug.
 - Admin operations (`getById`, `listAll`, `create`, `update`, `changeStatus`) call `assertPlatformAdmin` and are audited. See [admin.md](./admin.md). Slug conflicts return `CAREER_JOB_SLUG_TAKEN`.
 - `CareerApplicationService.submit` (`src/services/career-application.service.ts`): job must be `OPEN` (else `CAREER_JOB_CLOSED`, 409); the resume must be a PDF, at most 10 MB, starting with the `%PDF-` magic bytes (`src/services/career/_resume.ts`); it is stored in bucket `career-applications` under `<jobId>/<cuid>.pdf`; the row is written with consent time and IP; an audit event with `actorId: null` is emitted; then an e-mail to staff with a presigned resume link valid 7 days (`sendCareerApplicationEmail`). An e-mail failure is logged (`career_application.notification_failed`) and does not fail the submission.
 

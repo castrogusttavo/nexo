@@ -2,7 +2,7 @@
 
 ## Purpose
 
-Every error the API returns carries a `code` from one registry, `src/errors/codes.ts` (`ERROR_CODES`). The registry is the single source of truth for the HTTP status of each code; nothing else decides it. This page lists all 111 codes grouped by domain. The status column is read straight from the registry; the meaning column is derived from the code name and, where a service uses the code, from that service (cited). Codes whose rule is not visible in the code say `TODO: confirm`.
+Every error the API returns carries a `code` from one registry, `src/errors/codes.ts` (`ERROR_CODES`). The registry is the single source of truth for the HTTP status of each code; nothing else decides it. This page lists all 111 codes grouped by domain. The status column is read straight from the registry; the meaning column is derived from the code name and, where a service uses the code, from that service (cited). Codes whose rule is not visible in the code say so.
 
 ## How it works
 
@@ -76,7 +76,7 @@ Every error the API returns carries a `code` from one registry, `src/errors/code
 
 | Code | HTTP | Meaning |
 | --- | --- | --- |
-| `CAREER_JOB_FORBIDDEN` | 403 | The caller may not manage career jobs (TODO: confirm exact rule). |
+| `CAREER_JOB_FORBIDDEN` | 403 | The caller may not manage career jobs: their e-mail is not on the platform admin allowlist (`assertPlatformAdmin` in `src/services/career-job.service.ts`). |
 | `CAREER_JOB_NOT_FOUND` | 404 | The career job does not exist or is not visible to the caller. |
 | `CAREER_JOB_CLOSED` | 409 | The job is closed to applications. |
 | `CAREER_JOB_SLUG_TAKEN` | 409 | Another career job already uses the slug. |

@@ -21,8 +21,8 @@ Plans are bought per workspace through AbacatePay (a Brazilian payment gateway).
 
 - `src/config/plans.ts`: per-tier boolean features (`FEATURE_MIN_TIER`, monotonic: a feature unlocked on a tier stays unlocked above it), numeric limits (`LIMITS`, `null` = unlimited) and graded capabilities. Read it through `can`, `limitOf`, `capabilityOf` in `src/lib/plans.ts`.
 - `src/config/plan-prices.ts`: `PAID_PLAN_PRICES` in cents (BRL), the single source of truth that checkout validation compares against. `ENTERPRISE` has no public price (talk to sales, see [careers-and-marketing.md](./careers-and-marketing.md)).
-- Only two entitlements are enforced in services today: the seat limit (`limitOf(plan, 'seats')` in `invitation.service.ts`) and `importMembersCsv` (`member.service.ts`). Other features such as `wiki` are declared as `PRO` in the catalog, but a search of `src/`, `app/`, `components/` and `lib/` finds no `can(..., 'wiki')` call. TODO: confirm where the rest of the catalog is enforced, if anywhere.
-- The `LIMITS` table gives `FREE` and `BUSINESS` both `seats: 12` and `PRO` `null` (unlimited). That looks odd for a higher tier; TODO: confirm it is intended.
+- Only two entitlements are enforced in services today: the seat limit (`limitOf(plan, 'seats')` in `invitation.service.ts`) and `importMembersCsv` (`member.service.ts`). Other features such as `wiki` are declared as `PRO` in the catalog, but a search of `src/`, `app/`, `components/` and `lib/` finds no `can(..., 'wiki')` call. The only other readers of the catalog are display code: `limitOf(plan, 'seats')` in `app/(private)/[workspace-slug]/settings/billing/page.tsx` and the pricing table (`app/(web)/_components/pricing/table/pricing-table-data.ts`). Every other catalog entry is therefore not enforced anywhere in the code today.
+- The `LIMITS` table gives `FREE` and `BUSINESS` both `seats: 12` and `PRO` `null` (unlimited). The code does not say why: `src/lib/__tests__/plans.test.ts` asserts the seat limit only for `FREE`, `PRO` and `ENTERPRISE`, so nothing pins `BUSINESS`. In practice an invitation on a `BUSINESS` workspace stops at 12 seats (`invitation.service.ts`) while `PRO` has no cap. Whether that is intended is not defined in this repository.
 
 ![Checkout, webhook and trial revert](../diagrams/billing-checkout-webhook.svg)
 
@@ -49,7 +49,7 @@ The route also calls `requireConsent(userId, 'page:(private)')` (`src/lib/consen
 - `SubscriptionService.handleWebhookEvent(event, billId)`:
   - `subscription.completed`: `SubscriptionRepository.activateWithPlan` sets the subscription to `PAID` and the workspace's `activePlan` to the subscribed plan in one transaction.
   - `subscription.cancelled` / `subscription.expired`: `deactivateByBillId` sets `CANCELLED` or `EXPIRED` and puts the workspace back on `FREE`, also in one transaction.
-  - Other events are acknowledged and ignored. `REFUNDED` exists in the enum but no handler sets it. TODO: confirm.
+  - Other events are acknowledged and ignored. `REFUNDED` exists in the enum (`SubscriptionStatus` in `prisma/schema.prisma`) but nothing in `src/`, `app/`, `lib/` or `worker/` sets it, so a refund is never reflected in the subscription.
 - After a state change `WorkspaceCache` is invalidated and an `auditMutation` with `actorId: null` and `source: 'webhook'` is written.
 - A service failure returns a flat 500 on purpose: the gateway retries on 5xx, which covers a webhook that arrives before our own write lands. This is the one place that does not use the usual per-code error mapping.
 

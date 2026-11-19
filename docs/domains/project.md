@@ -43,7 +43,7 @@ The shared helpers are in `src/services/_project-scope.ts`: `resolveProject` (wo
 - **reactions** (`project-reaction.service.ts`): readers except `VIEWER` may react.
 - **links and attachments** (`project-link.service.ts`, `project-attachment.service.ts`): read for readers, mutate with `manage`. Limits are 20 links and 20 attachments per project (`PROJECT_LINK_LIMIT_REACHED`, `PROJECT_ATTACHMENT_LIMIT_REACHED`).
 - **progress** (`project-progress.service.ts`): counts issues per state group; `completionPercentage` is `COMPLETED / (total - CANCELLED)` rounded.
-- **document** (`project-document.service.ts`): readers read; only lead or OWNER/ADMIN write the autosaved snapshot. Live editing runs over Yjs and is authorized by `authorizeRealtime`. `TODO: confirm` where the realtime server lives.
+- **document** (`project-document.service.ts`): readers read; only lead or OWNER/ADMIN write the autosaved snapshot. Live editing runs over Yjs and is authorized by `authorizeRealtime`. The realtime server is `realtime/index.ts`, a separate Hocuspocus process (built by `pnpm realtime:build` into `dist/realtime.cjs`, started by `pnpm realtime`, port `REALTIME_PORT`) that serves both project documents and wiki pages; the `Dockerfile` builds it.
 
 Every mutation calls `auditMutation` with `entity: 'project'`; denials record `reason: 'insufficient_role'`.
 

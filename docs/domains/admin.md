@@ -41,7 +41,7 @@ The route handler denies non-admins itself (404, or `ADMIN_TWO_FACTOR_REQUIRED` 
 | `app/api/admin/careers/[id]/route.ts` | GET, PATCH |
 | `app/api/admin/careers/[id]/status/route.ts` | PATCH (`DRAFT`, `OPEN`, `CLOSED`) |
 
-None of these use `apiLimiter`. TODO: confirm whether the allowlist makes that acceptable. There is no admin endpoint to list or read career applications; they reach staff by e-mail (see the careers page).
+None of these use `apiLimiter`; the only gate is `resolvePlatformAdmin` (`src/lib/admin-access.ts`: e-mail on the platform admin allowlist, verified e-mail, two-factor on). Whether that is enough without a rate limit is a decision not defined in this repository. There is no admin endpoint to list or read career applications; they reach staff by e-mail (see the careers page).
 
 ## Error codes
 

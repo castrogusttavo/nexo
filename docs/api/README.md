@@ -29,7 +29,7 @@ Documented exceptions, which answer to a caller outside the product:
 - `proxy.ts` rejects `/api/*` requests without the cookie with `401 UNAUTHORIZED`, except paths in `PUBLIC_ROUTES` (for the API: `/api/auth`, `/api/status`, `/api/payment/webhook`, `/api/talk-to-sales`, `/api/careers`, `/api/health`). That check is optimistic; each route resolves the session with `getAuthSession()` and the services enforce roles and ownership.
 - Two shared-secret schemes exist for machines: `x-webhook-secret` (AbacatePay webhook, env `ABACATE_PAY_WEBHOOK_SECRET`) and `x-status-secret` (status collector, env `STATUS_COLLECTOR_SECRET`, constant-time comparison).
 - Platform admin routes (`/api/admin/**`) additionally require an admin; admins must have two-factor on (`ADMIN_TWO_FACTOR_REQUIRED`).
-- There are no API keys or bearer tokens for third parties in the code. TODO: confirm if a public API program is planned.
+- There are no API keys or bearer tokens for third parties in the code. A public API program is not defined in this repository.
 
 ## Rate limits
 
