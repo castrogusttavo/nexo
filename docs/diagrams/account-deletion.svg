@@ -1,0 +1,153 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 2000 1160" width="2000" height="1160" font-family="Inter, -apple-system, Segoe UI, Helvetica, Arial, sans-serif">
+<title>Account deletion and data export</title><defs><marker id="m-orange" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#E08A3C"/></marker><marker id="m-red" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#D1495B"/></marker><marker id="m-green" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#2F9E6E"/></marker><marker id="m-teal" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#2A9AA8"/></marker><marker id="m-purple" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#5B54D6"/></marker><marker id="m-gray" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#64748B"/></marker><marker id="m-blue" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#3B82C4"/></marker></defs>
+<rect width="2000" height="1160" fill="#FBFAF7"/>
+<text x="40" y="52" font-size="34" font-weight="800" fill="#1E293B">Account deletion and data export</text>
+<text x="40" y="84" font-size="19" fill="#475569">Deletion is scheduled 30 days out as a delayed job and can be cancelled until it fires; export is a separate on-demand job.</text>
+<text x="40" y="130" font-size="15" font-weight="700" letter-spacing="1" fill="#7A5A2B">SCHEDULE</text>
+<rect x="40" y="160" width="260" height="80" rx="8" fill="#4A5568"/>
+<text x="170.0" y="197.0" text-anchor="middle" font-size="19" font-weight="700" fill="#fff">User</text>
+<text x="170.0" y="220.0" text-anchor="middle" font-size="15" fill="#fff">account settings</text>
+<rect x="380" y="160" width="260" height="80" rx="8" fill="#DCDAF2"/>
+<text x="510.0" y="197.0" text-anchor="middle" font-size="19" font-weight="700" fill="#3B37A8">DELETE /api/users/me</text>
+<text x="510.0" y="220.0" text-anchor="middle" font-size="15" fill="#3B37A8">session + rate limit</text>
+<rect x="720" y="160" width="260" height="80" rx="8" fill="#DCDAF2"/>
+<text x="850.0" y="197.0" text-anchor="middle" font-size="19" font-weight="700" fill="#3B37A8">deleteAccount</text>
+<text x="850.0" y="220.0" text-anchor="middle" font-size="15" fill="#3B37A8">AccountLifecycleService</text>
+<rect x="1060" y="160" width="260" height="80" rx="8" fill="#D1495B"/>
+<text x="1190.0" y="197.0" text-anchor="middle" font-size="19" font-weight="700" fill="#fff">deletionScheduledAt</text>
+<text x="1190.0" y="220.0" text-anchor="middle" font-size="15" fill="#fff">now + 30 days · User row</text>
+<rect x="1400" y="160" width="320" height="80" rx="8" fill="#E08A3C"/>
+<text x="1560.0" y="197.0" text-anchor="middle" font-size="19" font-weight="700" fill="#fff">account-lifecycle queue</text>
+<text x="1560.0" y="220.0" text-anchor="middle" font-size="15" fill="#fff">delayed delete-account job</text>
+<path d="M300,200 L380,200" fill="none" stroke="#5B54D6" stroke-width="2.2" stroke-dasharray="7 6" stroke-linejoin="round" marker-end="url(#m-purple)"/>
+<rect x="323.05" y="166" width="33.9" height="28" rx="14" fill="#5B54D6"/>
+<text x="340" y="185" text-anchor="middle" font-size="14" font-weight="700" fill="#fff">1</text>
+<path d="M640,200 L720,200" fill="none" stroke="#5B54D6" stroke-width="2.2" stroke-dasharray="7 6" stroke-linejoin="round" marker-end="url(#m-purple)"/>
+<rect x="663.05" y="166" width="33.9" height="28" rx="14" fill="#5B54D6"/>
+<text x="680" y="185" text-anchor="middle" font-size="14" font-weight="700" fill="#fff">2</text>
+<path d="M980,200 L1060,200" fill="none" stroke="#5B54D6" stroke-width="2.2" stroke-dasharray="7 6" stroke-linejoin="round" marker-end="url(#m-purple)"/>
+<rect x="1003.05" y="166" width="33.9" height="28" rx="14" fill="#5B54D6"/>
+<text x="1020" y="185" text-anchor="middle" font-size="14" font-weight="700" fill="#fff">3</text>
+<path d="M1320,200 L1400,200" fill="none" stroke="#E08A3C" stroke-width="2.2" stroke-dasharray="7 6" stroke-linejoin="round" marker-end="url(#m-orange)"/>
+<rect x="1343.05" y="166" width="33.9" height="28" rx="14" fill="#E08A3C"/>
+<text x="1360" y="185" text-anchor="middle" font-size="14" font-weight="700" fill="#fff">4</text>
+<text x="850.0" y="262" text-anchor="middle" font-size="15" fill="#3B37A8">sole OWNER of a shared workspace: 409</text>
+<text x="1190.0" y="262" text-anchor="middle" font-size="15" fill="#3B37A8">sessions deleted · UserCache invalidated</text>
+<text x="1190.0" y="282" text-anchor="middle" font-size="15" fill="#3B37A8">confirmation e-mail sent</text>
+<text x="1530" y="262" text-anchor="middle" font-size="15" fill="#3B37A8">jobId per user</text>
+<text x="1530" y="282" text-anchor="middle" font-size="15" fill="#3B37A8">enqueue fails: schedule cleared</text>
+<text x="380" y="338" font-size="15" font-weight="700" letter-spacing="1" fill="#7A5A2B">GRACE PERIOD ENDS · WORKER</text>
+<rect x="40" y="360" width="260" height="80" rx="8" fill="#E08A3C"/>
+<text x="170.0" y="397.0" text-anchor="middle" font-size="19" font-weight="700" fill="#fff">Delay elapsed</text>
+<text x="170.0" y="420.0" text-anchor="middle" font-size="15" fill="#fff">scheduledAt reached</text>
+<path d="M1700,240 L1700,305 L170.0,305 L170.0,360" fill="none" stroke="#E08A3C" stroke-width="2.2" stroke-dasharray="7 6" stroke-linejoin="round" marker-end="url(#m-orange)"/>
+<rect x="827.75" y="291" width="144.5" height="28" rx="14" fill="#E08A3C"/>
+<text x="900" y="310" text-anchor="middle" font-size="14" font-weight="700" fill="#fff">5 after 30 days</text>
+<rect x="380" y="360" width="260" height="80" rx="8" fill="#DCDAF2"/>
+<text x="510.0" y="397.0" text-anchor="middle" font-size="19" font-weight="700" fill="#3B37A8">processDeleteAccount</text>
+<text x="510.0" y="420.0" text-anchor="middle" font-size="15" fill="#3B37A8">reads the user</text>
+<rect x="720" y="360" width="260" height="80" rx="8" fill="#DCDAF2"/>
+<text x="850.0" y="397.0" text-anchor="middle" font-size="19" font-weight="700" fill="#3B37A8">Still scheduled?</text>
+<text x="850.0" y="420.0" text-anchor="middle" font-size="15" fill="#3B37A8">deletionScheduledAt set</text>
+<rect x="1060" y="360" width="260" height="80" rx="8" fill="#DCDAF2"/>
+<text x="1190.0" y="397.0" text-anchor="middle" font-size="19" font-weight="700" fill="#3B37A8">deleteHard</text>
+<text x="1190.0" y="420.0" text-anchor="middle" font-size="15" fill="#3B37A8">prisma.user.delete</text>
+<rect x="1400" y="360" width="320" height="80" rx="8" fill="#D1495B"/>
+<text x="1560.0" y="397.0" text-anchor="middle" font-size="19" font-weight="700" fill="#fff">Postgres</text>
+<text x="1560.0" y="420.0" text-anchor="middle" font-size="15" fill="#fff">user row gone · onDelete Cascade</text>
+<path d="M300,400 L380,400" fill="none" stroke="#5B54D6" stroke-width="2.2" stroke-dasharray="7 6" stroke-linejoin="round" marker-end="url(#m-purple)"/>
+<path d="M640,400 L720,400" fill="none" stroke="#5B54D6" stroke-width="2.2" stroke-dasharray="7 6" stroke-linejoin="round" marker-end="url(#m-purple)"/>
+<path d="M980,400 L1060,400" fill="none" stroke="#5B54D6" stroke-width="2.2" stroke-dasharray="7 6" stroke-linejoin="round" marker-end="url(#m-purple)"/>
+<rect x="995.15" y="366" width="49.7" height="28" rx="14" fill="#5B54D6"/>
+<text x="1020" y="385" text-anchor="middle" font-size="14" font-weight="700" fill="#fff">yes</text>
+<path d="M1320,400 L1400,400" fill="none" stroke="#5B54D6" stroke-width="2.2" stroke-dasharray="7 6" stroke-linejoin="round" marker-end="url(#m-purple)"/>
+<rect x="1343.05" y="366" width="33.9" height="28" rx="14" fill="#5B54D6"/>
+<text x="1360" y="385" text-anchor="middle" font-size="14" font-weight="700" fill="#fff">6</text>
+<rect x="720" y="490" width="260" height="70" rx="8" fill="#4A5568"/>
+<text x="850.0" y="522.0" text-anchor="middle" font-size="19" font-weight="700" fill="#fff">Skipped</text>
+<text x="850.0" y="545.0" text-anchor="middle" font-size="15" fill="#fff">deletion_canceled · user_not_found</text>
+<path d="M850.0,440 L850.0,490" fill="none" stroke="#64748B" stroke-width="2.2" stroke-dasharray="7 6" stroke-linejoin="round" marker-end="url(#m-gray)"/>
+<rect x="829.1" y="451" width="41.8" height="28" rx="14" fill="#64748B"/>
+<text x="850.0" y="470" text-anchor="middle" font-size="14" font-weight="700" fill="#fff">no</text>
+<text x="1190.0" y="462" text-anchor="middle" font-size="15" fill="#3B37A8">UserCache invalidated, then logged</text>
+<rect x="30" y="600" width="1940" height="220" rx="14" fill="none" stroke="#B8BEC8" stroke-width="1.5" stroke-dasharray="6 5"/>
+<text x="52" y="630" font-size="15" font-weight="700" letter-spacing="1" fill="#7A5A2B">CANCEL PATH · BEFORE THE JOB FIRES</text>
+<rect x="60" y="640" width="320" height="70" rx="8" fill="#DCDAF2"/>
+<text x="220.0" y="672.0" text-anchor="middle" font-size="19" font-weight="700" fill="#3B37A8">DELETE /api/users/me/deletion</text>
+<text x="220.0" y="695.0" text-anchor="middle" font-size="15" fill="#3B37A8">explicit cancel</text>
+<rect x="60" y="730" width="320" height="70" rx="8" fill="#DCDAF2"/>
+<text x="220.0" y="762.0" text-anchor="middle" font-size="19" font-weight="700" fill="#3B37A8">Sign in again</text>
+<text x="220.0" y="785.0" text-anchor="middle" font-size="15" fill="#3B37A8">session.create hook</text>
+<rect x="480" y="685" width="280" height="80" rx="8" fill="#DCDAF2"/>
+<text x="620.0" y="722.0" text-anchor="middle" font-size="19" font-weight="700" fill="#3B37A8">cancelDeletion</text>
+<text x="620.0" y="745.0" text-anchor="middle" font-size="15" fill="#3B37A8">AccountLifecycleService</text>
+<path d="M380,675 L430,675 L430,715 L480,715" fill="none" stroke="#3B82C4" stroke-width="2.2" stroke-dasharray="7 6" stroke-linejoin="round" marker-end="url(#m-blue)"/>
+<path d="M380,765 L430,765 L430,735 L480,735" fill="none" stroke="#3B82C4" stroke-width="2.2" stroke-dasharray="7 6" stroke-linejoin="round" marker-end="url(#m-blue)"/>
+<rect x="413.05" y="681" width="33.9" height="28" rx="14" fill="#3B82C4"/>
+<text x="430" y="700" text-anchor="middle" font-size="14" font-weight="700" fill="#fff">a</text>
+<rect x="413.05" y="741" width="33.9" height="28" rx="14" fill="#3B82C4"/>
+<text x="430" y="760" text-anchor="middle" font-size="14" font-weight="700" fill="#fff">b</text>
+<rect x="860" y="685" width="290" height="80" rx="8" fill="#E08A3C"/>
+<text x="1005.0" y="722.0" text-anchor="middle" font-size="19" font-weight="700" fill="#fff">Delayed job removed</text>
+<text x="1005.0" y="745.0" text-anchor="middle" font-size="15" fill="#fff">cancelAccountDeletion</text>
+<rect x="1230" y="685" width="290" height="80" rx="8" fill="#D1495B"/>
+<text x="1375.0" y="722.0" text-anchor="middle" font-size="19" font-weight="700" fill="#fff">deletionScheduledAt</text>
+<text x="1375.0" y="745.0" text-anchor="middle" font-size="15" fill="#fff">set back to null</text>
+<rect x="1600" y="685" width="340" height="80" rx="8" fill="#DCDAF2"/>
+<text x="1770.0" y="722.0" text-anchor="middle" font-size="19" font-weight="700" fill="#3B37A8">UserCache.invalidate</text>
+<text x="1770.0" y="745.0" text-anchor="middle" font-size="15" fill="#3B37A8">audit user cancel</text>
+<path d="M760,725 L860,725" fill="none" stroke="#3B82C4" stroke-width="2.2" stroke-dasharray="7 6" stroke-linejoin="round" marker-end="url(#m-blue)"/>
+<rect x="793.05" y="691" width="33.9" height="28" rx="14" fill="#3B82C4"/>
+<text x="810" y="710" text-anchor="middle" font-size="14" font-weight="700" fill="#fff">1</text>
+<path d="M1150,725 L1230,725" fill="none" stroke="#3B82C4" stroke-width="2.2" stroke-dasharray="7 6" stroke-linejoin="round" marker-end="url(#m-blue)"/>
+<rect x="1173.05" y="691" width="33.9" height="28" rx="14" fill="#3B82C4"/>
+<text x="1190" y="710" text-anchor="middle" font-size="14" font-weight="700" fill="#fff">2</text>
+<path d="M1520,725 L1600,725" fill="none" stroke="#3B82C4" stroke-width="2.2" stroke-dasharray="7 6" stroke-linejoin="round" marker-end="url(#m-blue)"/>
+<rect x="1543.05" y="691" width="33.9" height="28" rx="14" fill="#3B82C4"/>
+<text x="1560" y="710" text-anchor="middle" font-size="14" font-weight="700" fill="#fff">3</text>
+<text x="1000" y="790" text-anchor="middle" font-size="15" fill="#3B37A8">a login during the grace period cancels silently; the processor still re-checks the schedule</text>
+<text x="40" y="880" font-size="15" font-weight="700" letter-spacing="1" fill="#7A5A2B">DATA EXPORT · SEPARATE JOB</text>
+<rect x="40" y="910" width="260" height="80" rx="8" fill="#4A5568"/>
+<text x="170.0" y="947.0" text-anchor="middle" font-size="19" font-weight="700" fill="#fff">User</text>
+<text x="170.0" y="970.0" text-anchor="middle" font-size="15" fill="#fff">POST /api/users/me/export</text>
+<rect x="380" y="910" width="260" height="80" rx="8" fill="#DCDAF2"/>
+<text x="510.0" y="947.0" text-anchor="middle" font-size="19" font-weight="700" fill="#3B37A8">requestExport</text>
+<text x="510.0" y="970.0" text-anchor="middle" font-size="15" fill="#3B37A8">exportLimiter per user</text>
+<rect x="720" y="910" width="260" height="80" rx="8" fill="#E08A3C"/>
+<text x="850.0" y="947.0" text-anchor="middle" font-size="19" font-weight="700" fill="#fff">data-export queue</text>
+<text x="850.0" y="970.0" text-anchor="middle" font-size="15" fill="#fff">export-user-data</text>
+<rect x="1060" y="910" width="260" height="80" rx="8" fill="#DCDAF2"/>
+<text x="1190.0" y="947.0" text-anchor="middle" font-size="19" font-weight="700" fill="#3B37A8">processDataExport</text>
+<text x="1190.0" y="970.0" text-anchor="middle" font-size="15" fill="#3B37A8">worker</text>
+<path d="M300,950 L380,950" fill="none" stroke="#2A9AA8" stroke-width="2.2" stroke-dasharray="7 6" stroke-linejoin="round" marker-end="url(#m-teal)"/>
+<rect x="323.05" y="916" width="33.9" height="28" rx="14" fill="#2A9AA8"/>
+<text x="340" y="935" text-anchor="middle" font-size="14" font-weight="700" fill="#fff">1</text>
+<path d="M640,950 L720,950" fill="none" stroke="#E08A3C" stroke-width="2.2" stroke-dasharray="7 6" stroke-linejoin="round" marker-end="url(#m-orange)"/>
+<rect x="663.05" y="916" width="33.9" height="28" rx="14" fill="#E08A3C"/>
+<text x="680" y="935" text-anchor="middle" font-size="14" font-weight="700" fill="#fff">2</text>
+<path d="M980,950 L1060,950" fill="none" stroke="#E08A3C" stroke-width="2.2" stroke-dasharray="7 6" stroke-linejoin="round" marker-end="url(#m-orange)"/>
+<rect x="1003.05" y="916" width="33.9" height="28" rx="14" fill="#E08A3C"/>
+<text x="1020" y="935" text-anchor="middle" font-size="14" font-weight="700" fill="#fff">3</text>
+<rect x="1400" y="900" width="300" height="60" rx="8" fill="#D1495B"/>
+<text x="1550.0" y="927.0" text-anchor="middle" font-size="19" font-weight="700" fill="#fff">Postgres</text>
+<text x="1550.0" y="950.0" text-anchor="middle" font-size="15" fill="#fff">profile · sessions · accounts · consents</text>
+<rect x="1760" y="900" width="200" height="60" rx="8" fill="#4A5568"/>
+<text x="1860.0" y="927.0" text-anchor="middle" font-size="19" font-weight="700" fill="#fff">Axiom</text>
+<text x="1860.0" y="950.0" text-anchor="middle" font-size="15" fill="#fff">audit, max 5000</text>
+<path d="M1320,940 L1400,930" fill="none" stroke="#2A9AA8" stroke-width="2.2" stroke-dasharray="7 6" stroke-linejoin="round" marker-end="url(#m-teal)"/>
+<rect x="1343.05" y="896" width="33.9" height="28" rx="14" fill="#2A9AA8"/>
+<text x="1360" y="915" text-anchor="middle" font-size="14" font-weight="700" fill="#fff">4</text>
+<path d="M1220,910 L1220,880 L1860,880 L1860,900" fill="none" stroke="#2A9AA8" stroke-width="2.2" stroke-dasharray="7 6" stroke-linejoin="round" marker-end="url(#m-teal)"/>
+<rect x="1060" y="1040" width="260" height="80" rx="8" fill="#4A5568"/>
+<text x="1190.0" y="1077.0" text-anchor="middle" font-size="19" font-weight="700" fill="#fff">Silo</text>
+<text x="1190.0" y="1100.0" text-anchor="middle" font-size="15" fill="#fff">bucket user-exports</text>
+<path d="M1190,990 L1190,1040" fill="none" stroke="#2A9AA8" stroke-width="2.2" stroke-dasharray="7 6" stroke-linejoin="round" marker-end="url(#m-teal)"/>
+<rect x="1137.5" y="1001" width="105.0" height="28" rx="14" fill="#2A9AA8"/>
+<text x="1190" y="1020" text-anchor="middle" font-size="14" font-weight="700" fill="#fff">5 put JSON</text>
+<rect x="1400" y="1040" width="260" height="80" rx="8" fill="#4A5568"/>
+<text x="1530.0" y="1077.0" text-anchor="middle" font-size="19" font-weight="700" fill="#fff">E-mail (Resend)</text>
+<text x="1530.0" y="1100.0" text-anchor="middle" font-size="15" fill="#fff">presigned link, 7 days</text>
+<path d="M1320,1080 L1400,1080" fill="none" stroke="#2A9AA8" stroke-width="2.2" stroke-dasharray="7 6" stroke-linejoin="round" marker-end="url(#m-teal)"/>
+<rect x="1343.05" y="1046" width="33.9" height="28" rx="14" fill="#2A9AA8"/>
+<text x="1360" y="1065" text-anchor="middle" font-size="14" font-weight="700" fill="#fff">6</text>
+</svg>

@@ -1,0 +1,105 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 2000 1030" width="2000" height="1030" font-family="Inter, -apple-system, Segoe UI, Helvetica, Arial, sans-serif">
+<title>Status collection and alerting</title><defs><marker id="m-orange" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#E08A3C"/></marker><marker id="m-red" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#D1495B"/></marker><marker id="m-green" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#2F9E6E"/></marker><marker id="m-teal" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#2A9AA8"/></marker><marker id="m-purple" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#5B54D6"/></marker><marker id="m-gray" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#64748B"/></marker><marker id="m-blue" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#3B82C4"/></marker></defs>
+<rect width="2000" height="1030" fill="#FBFAF7"/>
+<text x="40" y="52" font-size="34" font-weight="800" fill="#1E293B">Status collection and alerting</text>
+<text x="40" y="84" font-size="19" fill="#475569">Every minute eight components are probed, stored, turned into incidents, and only the useful transitions reach Slack.</text>
+<text x="40" y="130" font-size="15" font-weight="700" letter-spacing="1" fill="#7A5A2B">PROBES · StatusService.collect(tier)</text>
+<rect x="40" y="170" width="230" height="90" rx="8" fill="#4A5568"/>
+<text x="155.0" y="212.0" text-anchor="middle" font-size="19" font-weight="700" fill="#fff">Scheduler</text>
+<text x="155.0" y="235.0" text-anchor="middle" font-size="15" fill="#fff">to confirm: outside the repo</text>
+<rect x="360" y="170" width="300" height="90" rx="8" fill="#DCDAF2"/>
+<text x="510.0" y="212.0" text-anchor="middle" font-size="19" font-weight="700" fill="#3B37A8">POST /api/status/collect</text>
+<text x="510.0" y="235.0" text-anchor="middle" font-size="15" fill="#3B37A8">/core and /peripheral</text>
+<text x="510" y="282" text-anchor="middle" font-size="15" fill="#3B37A8">x-status-secret, constant-time compare</text>
+<path d="M270,215 L360,215" fill="none" stroke="#5B54D6" stroke-width="2.2" stroke-dasharray="7 6" stroke-linejoin="round" marker-end="url(#m-purple)"/>
+<rect x="298.05" y="181" width="33.9" height="28" rx="14" fill="#5B54D6"/>
+<text x="315" y="200" text-anchor="middle" font-size="14" font-weight="700" fill="#fff">1</text>
+<rect x="760" y="130" width="760" height="330" rx="14" fill="none" stroke="#B8BEC8" stroke-width="1.5" stroke-dasharray="6 5"/>
+<text x="782" y="160" font-size="15" font-weight="700" letter-spacing="1" fill="#7A5A2B">EIGHT COMPONENTS · 2 TIERS</text>
+<text x="960" y="188" text-anchor="middle" font-size="15" fill="#3B37A8">core</text>
+<text x="1330" y="188" text-anchor="middle" font-size="15" fill="#3B37A8">peripheral</text>
+<rect x="790" y="205" width="340" height="50" rx="8" fill="#DCDAF2"/>
+<text x="960.0" y="227.0" text-anchor="middle" font-size="19" font-weight="700" fill="#3B37A8">app</text>
+<text x="960.0" y="250.0" text-anchor="middle" font-size="15" fill="#3B37A8">GET /api/health</text>
+<rect x="790" y="265" width="340" height="50" rx="8" fill="#DCDAF2"/>
+<text x="960.0" y="287.0" text-anchor="middle" font-size="19" font-weight="700" fill="#3B37A8">database</text>
+<text x="960.0" y="310.0" text-anchor="middle" font-size="15" fill="#3B37A8">SELECT 1</text>
+<rect x="790" y="325" width="340" height="50" rx="8" fill="#DCDAF2"/>
+<text x="960.0" y="347.0" text-anchor="middle" font-size="19" font-weight="700" fill="#3B37A8">cache</text>
+<text x="960.0" y="370.0" text-anchor="middle" font-size="15" fill="#3B37A8">Redis PING</text>
+<rect x="790" y="385" width="340" height="50" rx="8" fill="#DCDAF2"/>
+<text x="960.0" y="407.0" text-anchor="middle" font-size="19" font-weight="700" fill="#3B37A8">auth</text>
+<text x="960.0" y="430.0" text-anchor="middle" font-size="15" fill="#3B37A8">getSession</text>
+<rect x="1150" y="205" width="340" height="50" rx="8" fill="#DCDAF2"/>
+<text x="1320.0" y="227.0" text-anchor="middle" font-size="19" font-weight="700" fill="#3B37A8">payment</text>
+<text x="1320.0" y="250.0" text-anchor="middle" font-size="15" fill="#3B37A8">AbacatePay list</text>
+<rect x="1150" y="265" width="340" height="50" rx="8" fill="#DCDAF2"/>
+<text x="1320.0" y="287.0" text-anchor="middle" font-size="19" font-weight="700" fill="#3B37A8">email</text>
+<text x="1320.0" y="310.0" text-anchor="middle" font-size="15" fill="#3B37A8">Resend domains</text>
+<rect x="1150" y="325" width="340" height="50" rx="8" fill="#DCDAF2"/>
+<text x="1320.0" y="347.0" text-anchor="middle" font-size="19" font-weight="700" fill="#3B37A8">storage</text>
+<text x="1320.0" y="370.0" text-anchor="middle" font-size="15" fill="#3B37A8">S3 ListBuckets</text>
+<rect x="1150" y="385" width="340" height="50" rx="8" fill="#DCDAF2"/>
+<text x="1320.0" y="407.0" text-anchor="middle" font-size="19" font-weight="700" fill="#3B37A8">jobs</text>
+<text x="1320.0" y="430.0" text-anchor="middle" font-size="15" fill="#3B37A8">workers + backlog</text>
+<path d="M660,215 L790,215" fill="none" stroke="#5B54D6" stroke-width="2.2" stroke-dasharray="7 6" stroke-linejoin="round" marker-end="url(#m-purple)"/>
+<text x="1140" y="482" text-anchor="middle" font-size="15" fill="#3B37A8">per-component budgets · timeout 5 to 8 s · one retry</text>
+<rect x="1620" y="205" width="340" height="90" rx="8" fill="#DCDAF2"/>
+<text x="1790.0" y="247.0" text-anchor="middle" font-size="19" font-weight="700" fill="#3B37A8">Smoothing</text>
+<text x="1790.0" y="270.0" text-anchor="middle" font-size="15" fill="#3B37A8">3 slow samples in a row: DEGRADED</text>
+<path d="M1520,250 L1620,250" fill="none" stroke="#5B54D6" stroke-width="2.2" stroke-dasharray="7 6" stroke-linejoin="round" marker-end="url(#m-purple)"/>
+<rect x="1553.05" y="211" width="33.9" height="28" rx="14" fill="#5B54D6"/>
+<text x="1570" y="230" text-anchor="middle" font-size="14" font-weight="700" fill="#fff">2</text>
+<rect x="1620" y="400" width="340" height="90" rx="8" fill="#D1495B"/>
+<text x="1790.0" y="442.0" text-anchor="middle" font-size="19" font-weight="700" fill="#fff">HealthCheck</text>
+<text x="1790.0" y="465.0" text-anchor="middle" font-size="15" fill="#fff">one row per component per run</text>
+<path d="M1790,295 L1790,400" fill="none" stroke="#5B54D6" stroke-width="2.2" stroke-dasharray="7 6" stroke-linejoin="round" marker-end="url(#m-purple)"/>
+<rect x="1773.05" y="334" width="33.9" height="28" rx="14" fill="#5B54D6"/>
+<text x="1790" y="353" text-anchor="middle" font-size="14" font-weight="700" fill="#fff">3</text>
+<text x="40" y="540" font-size="15" font-weight="700" letter-spacing="1" fill="#7A5A2B">PERSIST AND INCIDENTS</text>
+<rect x="1620" y="560" width="340" height="90" rx="8" fill="#D1495B"/>
+<text x="1790.0" y="602.0" text-anchor="middle" font-size="19" font-weight="700" fill="#fff">ComponentDaily</text>
+<text x="1790.0" y="625.0" text-anchor="middle" font-size="15" fill="#fff">upsert day aggregate · prune 7 d</text>
+<path d="M1790,490 L1790,560" fill="none" stroke="#5B54D6" stroke-width="2.2" stroke-dasharray="7 6" stroke-linejoin="round" marker-end="url(#m-purple)"/>
+<rect x="1250" y="560" width="280" height="90" rx="8" fill="#D1495B"/>
+<text x="1390.0" y="602.0" text-anchor="middle" font-size="19" font-weight="700" fill="#fff">Incident</text>
+<text x="1390.0" y="625.0" text-anchor="middle" font-size="15" fill="#fff">open · raise severity · resolve</text>
+<rect x="850" y="560" width="300" height="90" rx="8" fill="#DCDAF2"/>
+<text x="1000.0" y="602.0" text-anchor="middle" font-size="19" font-weight="700" fill="#3B37A8">evaluateIncidentFor</text>
+<text x="1000.0" y="625.0" text-anchor="middle" font-size="15" fill="#3B37A8">compare with previous check</text>
+<path d="M1250,605 L1150,605" fill="none" stroke="#E08A3C" stroke-width="2.2" stroke-dasharray="7 6" stroke-linejoin="round" marker-end="url(#m-orange)"/>
+<path d="M1620,475 L1390,475 L1390,560" fill="none" stroke="#E08A3C" stroke-width="2.2" stroke-dasharray="7 6" stroke-linejoin="round" marker-end="url(#m-orange)"/>
+<rect x="1373.05" y="504" width="33.9" height="28" rx="14" fill="#E08A3C"/>
+<text x="1390" y="523" text-anchor="middle" font-size="14" font-weight="700" fill="#fff">4</text>
+<rect x="1250" y="700" width="280" height="80" rx="8" fill="#E08A3C"/>
+<text x="1390.0" y="737.0" text-anchor="middle" font-size="19" font-weight="700" fill="#fff">StatusCache</text>
+<text x="1390.0" y="760.0" text-anchor="middle" font-size="15" fill="#fff">read by /status · reset each run</text>
+<path d="M1790,650 L1790,740 L1530,740" fill="none" stroke="#E08A3C" stroke-width="2.2" stroke-dasharray="7 6" stroke-linejoin="round" marker-end="url(#m-orange)"/>
+<text x="40" y="700" font-size="15" font-weight="700" letter-spacing="1" fill="#7A5A2B">ALERTS</text>
+<rect x="40" y="810" width="300" height="90" rx="8" fill="#DCDAF2"/>
+<text x="190.0" y="852.0" text-anchor="middle" font-size="19" font-weight="700" fill="#3B37A8">decideComponentAlert</text>
+<text x="190.0" y="875.0" text-anchor="middle" font-size="15" fill="#3B37A8">replays 3 h of HealthCheck</text>
+<path d="M1000,650 L1000,700 L190,700 L190,810" fill="none" stroke="#E08A3C" stroke-width="2.2" stroke-dasharray="7 6" stroke-linejoin="round" marker-end="url(#m-orange)"/>
+<rect x="539.6" y="686" width="120.80000000000001" height="28" rx="14" fill="#E08A3C"/>
+<text x="600" y="705" text-anchor="middle" font-size="14" font-weight="700" fill="#fff">5 transition</text>
+<rect x="440" y="810" width="330" height="90" rx="8" fill="#DCDAF2"/>
+<text x="605.0" y="852.0" text-anchor="middle" font-size="19" font-weight="700" fill="#3B37A8">Flap suppression</text>
+<text x="605.0" y="875.0" text-anchor="middle" font-size="15" fill="#3B37A8">4th change in 30 min: unstable</text>
+<path d="M340,855 L440,855" fill="none" stroke="#E08A3C" stroke-width="2.2" stroke-dasharray="7 6" stroke-linejoin="round" marker-end="url(#m-orange)"/>
+<rect x="870" y="810" width="330" height="90" rx="8" fill="#DCDAF2"/>
+<text x="1035.0" y="852.0" text-anchor="middle" font-size="19" font-weight="700" fill="#3B37A8">Outage reminder</text>
+<text x="1035.0" y="875.0" text-anchor="middle" font-size="15" fill="#3B37A8">every 6 h while incident is open</text>
+<path d="M770,855 L870,855" fill="none" stroke="#E08A3C" stroke-width="2.2" stroke-dasharray="7 6" stroke-linejoin="round" marker-end="url(#m-orange)"/>
+<rect x="1330" y="810" width="280" height="90" rx="8" fill="#4A5568"/>
+<text x="1470.0" y="852.0" text-anchor="middle" font-size="19" font-weight="700" fill="#fff">Slack</text>
+<text x="1470.0" y="875.0" text-anchor="middle" font-size="15" fill="#fff">webhook, 3 s timeout, never throws</text>
+<path d="M1200,855 L1330,855" fill="none" stroke="#D1495B" stroke-width="2.2" stroke-dasharray="7 6" stroke-linejoin="round" marker-end="url(#m-red)"/>
+<rect x="1248.05" y="821" width="33.9" height="28" rx="14" fill="#D1495B"/>
+<text x="1265" y="840" text-anchor="middle" font-size="14" font-weight="700" fill="#fff">6</text>
+<path d="M605,900 L605,990 L1470,990 L1470,900" fill="none" stroke="#D1495B" stroke-width="2.2" stroke-dasharray="7 6" stroke-linejoin="round" marker-end="url(#m-red)"/>
+<rect x="904.05" y="976" width="191.9" height="28" rx="14" fill="#D1495B"/>
+<text x="1000" y="995" text-anchor="middle" font-size="14" font-weight="700" fill="#fff">unstable / stabilized</text>
+<text x="40" y="930" text-anchor="start" font-size="15" fill="#3B37A8">"stabilized" after 15 min in one state</text>
+<text x="40" y="950" text-anchor="start" font-size="15" fill="#3B37A8">at most five messages per flapping episode</text>
+<text x="1960" y="860" text-anchor="end" font-size="15" fill="#3B37A8">a failed collect (DB down) also alerts</text>
+</svg>

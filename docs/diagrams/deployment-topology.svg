@@ -1,0 +1,129 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 2000 900" width="2000" height="900" font-family="Inter, -apple-system, Segoe UI, Helvetica, Arial, sans-serif">
+<title>Deployment topology</title><defs><marker id="m-orange" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#E08A3C"/></marker><marker id="m-red" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#D1495B"/></marker><marker id="m-green" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#2F9E6E"/></marker><marker id="m-teal" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#2A9AA8"/></marker><marker id="m-purple" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#5B54D6"/></marker><marker id="m-gray" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#64748B"/></marker><marker id="m-blue" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#3B82C4"/></marker></defs>
+<rect width="2000" height="900" fill="#FBFAF7"/>
+<text x="40" y="52" font-size="34" font-weight="800" fill="#1E293B">Deployment topology</text>
+<text x="40" y="84" font-size="19" fill="#475569">One host runs nginx, seven app instances, the worker, realtime and the stateful services; Cloudflare sits in front.</text>
+<text x="40" y="130" font-size="15" font-weight="700" letter-spacing="1" fill="#7A5A2B">REQUEST PATH</text>
+<rect x="40" y="330" width="200" height="80" rx="8" fill="#4A5568"/>
+<text x="140.0" y="367.0" text-anchor="middle" font-size="19" font-weight="700" fill="#fff">Browser</text>
+<text x="140.0" y="390.0" text-anchor="middle" font-size="15" fill="#fff">nexopm.com</text>
+<rect x="300" y="330" width="220" height="80" rx="8" fill="#4A5568"/>
+<text x="410.0" y="367.0" text-anchor="middle" font-size="19" font-weight="700" fill="#fff">Cloudflare</text>
+<text x="410.0" y="390.0" text-anchor="middle" font-size="15" fill="#fff">DNS + proxy</text>
+<rect x="580" y="330" width="230" height="80" rx="8" fill="#DCDAF2"/>
+<text x="695.0" y="367.0" text-anchor="middle" font-size="19" font-weight="700" fill="#3B37A8">nginx</text>
+<text x="695.0" y="390.0" text-anchor="middle" font-size="15" fill="#3B37A8">host · TLS · least_conn</text>
+<path d="M240,370 L300,370" fill="none" stroke="#5B54D6" stroke-width="2.2" stroke-dasharray="7 6" stroke-linejoin="round" marker-end="url(#m-purple)"/>
+<rect x="253.05" y="336" width="33.9" height="28" rx="14" fill="#5B54D6"/>
+<text x="270" y="355" text-anchor="middle" font-size="14" font-weight="700" fill="#fff">1</text>
+<path d="M520,370 L580,370" fill="none" stroke="#5B54D6" stroke-width="2.2" stroke-dasharray="7 6" stroke-linejoin="round" marker-end="url(#m-purple)"/>
+<rect x="533.05" y="336" width="33.9" height="28" rx="14" fill="#5B54D6"/>
+<text x="550" y="355" text-anchor="middle" font-size="14" font-weight="700" fill="#fff">2</text>
+<text x="410" y="432" text-anchor="middle" font-size="15" fill="#475569">client IP restored from CF ranges</text>
+<text x="695" y="432" text-anchor="middle" font-size="15" fill="#475569">limit_req per IP · /realtime proxied</text>
+<rect x="880" y="120" width="1080" height="560" rx="14" fill="none" stroke="#B8BEC8" stroke-width="1.5" stroke-dasharray="6 5"/>
+<text x="902" y="150" font-size="15" font-weight="700" letter-spacing="1" fill="#7A5A2B">ONE HOST · DOCKER NETWORK nexo_default</text>
+<rect x="936" y="174" width="300" height="120" rx="8" fill="#DCDAF2" stroke="#fff" stroke-width="2"/>
+<rect x="928" y="182" width="300" height="120" rx="8" fill="#DCDAF2" stroke="#fff" stroke-width="2"/>
+<rect x="920" y="190" width="300" height="120" rx="8" fill="#DCDAF2"/>
+<text x="1070.0" y="247.0" text-anchor="middle" font-size="19" font-weight="700" fill="#3B37A8">nexo-app-1 .. 7</text>
+<text x="1070.0" y="270.0" text-anchor="middle" font-size="15" fill="#3B37A8">7 identical instances · 127.0.0.1:3001-3007</text>
+<text x="1070" y="335" text-anchor="middle" font-size="15" fill="#3B37A8">1.5 GB cap each · any instance serves any request</text>
+<rect x="920" y="370" width="300" height="90" rx="8" fill="#DCDAF2"/>
+<text x="1070.0" y="412.0" text-anchor="middle" font-size="19" font-weight="700" fill="#3B37A8">nexo-worker</text>
+<text x="1070.0" y="435.0" text-anchor="middle" font-size="15" fill="#3B37A8">BullMQ processors · dist/worker.cjs</text>
+<rect x="920" y="490" width="300" height="90" rx="8" fill="#DCDAF2"/>
+<text x="1070.0" y="532.0" text-anchor="middle" font-size="19" font-weight="700" fill="#3B37A8">nexo-realtime</text>
+<text x="1070.0" y="555.0" text-anchor="middle" font-size="15" fill="#3B37A8">Hocuspocus · 127.0.0.1:1234</text>
+<path d="M810,360 L850,360 L850,250 L920,250" fill="none" stroke="#5B54D6" stroke-width="2.2" stroke-dasharray="7 6" stroke-linejoin="round" marker-end="url(#m-purple)"/>
+<rect x="833.05" y="291" width="33.9" height="28" rx="14" fill="#5B54D6"/>
+<text x="850" y="310" text-anchor="middle" font-size="14" font-weight="700" fill="#fff">3</text>
+<path d="M810,390 L850,390 L850,535 L920,535" fill="none" stroke="#3B82C4" stroke-width="2.2" stroke-dasharray="7 6" stroke-linejoin="round" marker-end="url(#m-blue)"/>
+<rect x="801.45" y="446" width="97.10000000000001" height="28" rx="14" fill="#3B82C4"/>
+<text x="850" y="465" text-anchor="middle" font-size="14" font-weight="700" fill="#fff">/realtime</text>
+<rect x="1400" y="190" width="270" height="100" rx="8" fill="#D1495B"/>
+<text x="1535.0" y="237.0" text-anchor="middle" font-size="19" font-weight="700" fill="#fff">Postgres 17</text>
+<text x="1535.0" y="260.0" text-anchor="middle" font-size="15" fill="#fff">nexo-db-1 · primary</text>
+<rect x="1400" y="330" width="270" height="100" rx="8" fill="#D1495B"/>
+<text x="1535.0" y="377.0" text-anchor="middle" font-size="19" font-weight="700" fill="#fff">Redis</text>
+<text x="1535.0" y="400.0" text-anchor="middle" font-size="15" fill="#fff">nexo-redis · TLS</text>
+<rect x="1400" y="470" width="270" height="100" rx="8" fill="#2F9E6E"/>
+<text x="1535.0" y="517.0" text-anchor="middle" font-size="19" font-weight="700" fill="#fff">Silo</text>
+<text x="1535.0" y="540.0" text-anchor="middle" font-size="15" fill="#fff">nexo-minio-1 · S3 API :9000</text>
+<text x="1535" y="592" text-anchor="middle" font-size="15" fill="#3B37A8">storage.nexopm.com</text>
+<path d="M1220,250 L1310,250" fill="none" stroke="#64748B" stroke-width="2.2" stroke-dasharray="7 6" stroke-linejoin="round"/>
+<path d="M1220,415 L1310,415" fill="none" stroke="#64748B" stroke-width="2.2" stroke-dasharray="7 6" stroke-linejoin="round"/>
+<path d="M1220,535 L1310,535" fill="none" stroke="#64748B" stroke-width="2.2" stroke-dasharray="7 6" stroke-linejoin="round"/>
+<path d="M1310,240 L1310,560" fill="none" stroke="#64748B" stroke-width="2.2" stroke-dasharray="7 6" stroke-linejoin="round"/>
+<path d="M1310,240 L1400,240" fill="none" stroke="#64748B" stroke-width="2.2" stroke-dasharray="7 6" stroke-linejoin="round" marker-end="url(#m-gray)"/>
+<path d="M1310,380 L1400,380" fill="none" stroke="#64748B" stroke-width="2.2" stroke-dasharray="7 6" stroke-linejoin="round" marker-end="url(#m-gray)"/>
+<path d="M1310,550 L1400,550" fill="none" stroke="#64748B" stroke-width="2.2" stroke-dasharray="7 6" stroke-linejoin="round" marker-end="url(#m-gray)"/>
+<rect x="1330.15" y="226" width="49.7" height="28" rx="14" fill="#64748B"/>
+<text x="1355" y="245" text-anchor="middle" font-size="14" font-weight="700" fill="#fff">SQL</text>
+<rect x="1330.15" y="366" width="49.7" height="28" rx="14" fill="#64748B"/>
+<text x="1355" y="385" text-anchor="middle" font-size="14" font-weight="700" fill="#fff">TLS</text>
+<rect x="1334.1" y="536" width="41.8" height="28" rx="14" fill="#64748B"/>
+<text x="1355" y="555" text-anchor="middle" font-size="14" font-weight="700" fill="#fff">S3</text>
+<text x="1100" y="630" text-anchor="middle" font-size="15" fill="#3B37A8">app, worker and realtime reach the stateful services over the network</text>
+<rect x="1740" y="190" width="200" height="100" rx="8" fill="#7B8794"/>
+<text x="1840.0" y="237.0" text-anchor="middle" font-size="19" font-weight="700" fill="#fff">PgBouncer</text>
+<text x="1840.0" y="260.0" text-anchor="middle" font-size="15" fill="#fff">127.0.0.1:6432 · pool</text>
+<rect x="1740" y="330" width="200" height="100" rx="8" fill="#7B8794"/>
+<text x="1840.0" y="377.0" text-anchor="middle" font-size="19" font-weight="700" fill="#fff">Read replica</text>
+<text x="1840.0" y="400.0" text-anchor="middle" font-size="15" fill="#fff">nexo-db-replica</text>
+<path d="M1740,240 L1670,240" fill="none" stroke="#64748B" stroke-width="2.2" stroke-dasharray="7 6" stroke-linejoin="round" marker-end="url(#m-gray)"/>
+<path d="M1640,290 L1640,310 L1840,310 L1840,330" fill="none" stroke="#64748B" stroke-width="2.2" stroke-dasharray="7 6" stroke-linejoin="round" marker-end="url(#m-gray)"/>
+<rect x="1691.45" y="296" width="97.10000000000001" height="28" rx="14" fill="#64748B"/>
+<text x="1740" y="315" text-anchor="middle" font-size="14" font-weight="700" fill="#fff">streaming</text>
+<text x="1840" y="460" text-anchor="middle" font-size="15" fill="#3B37A8">provisioned in prod.yml</text>
+<text x="1840" y="480" text-anchor="middle" font-size="15" fill="#3B37A8">optional DATABASE_URL_REPLICA</text>
+<text x="1840" y="500" text-anchor="middle" font-size="15" fill="#3B37A8">live wiring: to confirm</text>
+<text x="40" y="730" font-size="15" font-weight="700" letter-spacing="1" fill="#7A5A2B">DEPLOY · cd.yml AFTER A GREEN ci.yml</text>
+<rect x="40" y="770" width="170" height="80" rx="8" fill="#4A5568"/>
+<text x="125.0" y="807.0" text-anchor="middle" font-size="19" font-weight="700" fill="#fff">push to main</text>
+<text x="125.0" y="830.0" text-anchor="middle" font-size="15" fill="#fff">trunk</text>
+<rect x="260" y="770" width="170" height="80" rx="8" fill="#DCDAF2"/>
+<text x="345.0" y="807.0" text-anchor="middle" font-size="19" font-weight="700" fill="#3B37A8">ci.yml</text>
+<text x="345.0" y="830.0" text-anchor="middle" font-size="15" fill="#3B37A8">must pass first</text>
+<rect x="480" y="770" width="210" height="80" rx="8" fill="#DCDAF2"/>
+<text x="585.0" y="807.0" text-anchor="middle" font-size="19" font-weight="700" fill="#3B37A8">cd.yml</text>
+<text x="585.0" y="830.0" text-anchor="middle" font-size="15" fill="#3B37A8">self-hosted runner</text>
+<rect x="740" y="770" width="200" height="80" rx="8" fill="#4A5568"/>
+<text x="840.0" y="807.0" text-anchor="middle" font-size="19" font-weight="700" fill="#fff">GHCR image</text>
+<text x="840.0" y="830.0" text-anchor="middle" font-size="15" fill="#fff">Trivy scan, then push</text>
+<rect x="1000" y="770" width="280" height="80" rx="8" fill="#DCDAF2"/>
+<text x="1140.0" y="807.0" text-anchor="middle" font-size="19" font-weight="700" fill="#3B37A8">docker compose up</text>
+<text x="1140.0" y="830.0" text-anchor="middle" font-size="15" fill="#3B37A8">one app instance at a time</text>
+<path d="M210,810 L260,810" fill="none" stroke="#E08A3C" stroke-width="2.2" stroke-dasharray="7 6" stroke-linejoin="round" marker-end="url(#m-orange)"/>
+<rect x="218.05" y="776" width="33.9" height="28" rx="14" fill="#E08A3C"/>
+<text x="235.0" y="795" text-anchor="middle" font-size="14" font-weight="700" fill="#fff">1</text>
+<path d="M430,810 L480,810" fill="none" stroke="#E08A3C" stroke-width="2.2" stroke-dasharray="7 6" stroke-linejoin="round" marker-end="url(#m-orange)"/>
+<rect x="438.05" y="776" width="33.9" height="28" rx="14" fill="#E08A3C"/>
+<text x="455.0" y="795" text-anchor="middle" font-size="14" font-weight="700" fill="#fff">2</text>
+<path d="M690,810 L740,810" fill="none" stroke="#E08A3C" stroke-width="2.2" stroke-dasharray="7 6" stroke-linejoin="round" marker-end="url(#m-orange)"/>
+<rect x="698.05" y="776" width="33.9" height="28" rx="14" fill="#E08A3C"/>
+<text x="715.0" y="795" text-anchor="middle" font-size="14" font-weight="700" fill="#fff">3</text>
+<path d="M940,810 L1000,810" fill="none" stroke="#E08A3C" stroke-width="2.2" stroke-dasharray="7 6" stroke-linejoin="round" marker-end="url(#m-orange)"/>
+<rect x="953.05" y="776" width="33.9" height="28" rx="14" fill="#E08A3C"/>
+<text x="970.0" y="795" text-anchor="middle" font-size="14" font-weight="700" fill="#fff">4</text>
+<path d="M1140,770 L1140,680" fill="none" stroke="#E08A3C" stroke-width="2.2" stroke-dasharray="7 6" stroke-linejoin="round" marker-end="url(#m-orange)"/>
+<text x="1340" y="730" font-size="15" font-weight="700" letter-spacing="1" fill="#7A5A2B">THIRD PARTIES</text>
+<path d="M1650,680 L1650,750" fill="none" stroke="#64748B" stroke-width="2.2" stroke-dasharray="7 6" stroke-linejoin="round"/>
+<path d="M1410,750 L1890,750" fill="none" stroke="#64748B" stroke-width="2.2" stroke-dasharray="7 6" stroke-linejoin="round"/>
+<rect x="1340" y="780" width="140" height="70" rx="8" fill="#4A5568"/>
+<text x="1410.0" y="812.0" text-anchor="middle" font-size="19" font-weight="700" fill="#fff">Axiom</text>
+<text x="1410.0" y="835.0" text-anchor="middle" font-size="15" fill="#fff">logs · audit</text>
+<path d="M1410,750 L1410,780" fill="none" stroke="#64748B" stroke-width="2.2" stroke-dasharray="7 6" stroke-linejoin="round" marker-end="url(#m-gray)"/>
+<rect x="1500" y="780" width="140" height="70" rx="8" fill="#4A5568"/>
+<text x="1570.0" y="812.0" text-anchor="middle" font-size="19" font-weight="700" fill="#fff">Resend</text>
+<text x="1570.0" y="835.0" text-anchor="middle" font-size="15" fill="#fff">e-mail</text>
+<path d="M1570,750 L1570,780" fill="none" stroke="#64748B" stroke-width="2.2" stroke-dasharray="7 6" stroke-linejoin="round" marker-end="url(#m-gray)"/>
+<rect x="1660" y="780" width="140" height="70" rx="8" fill="#4A5568"/>
+<text x="1730.0" y="812.0" text-anchor="middle" font-size="19" font-weight="700" fill="#fff">AbacatePay</text>
+<text x="1730.0" y="835.0" text-anchor="middle" font-size="15" fill="#fff">payments</text>
+<path d="M1730,750 L1730,780" fill="none" stroke="#64748B" stroke-width="2.2" stroke-dasharray="7 6" stroke-linejoin="round" marker-end="url(#m-gray)"/>
+<rect x="1820" y="780" width="140" height="70" rx="8" fill="#4A5568"/>
+<text x="1890.0" y="812.0" text-anchor="middle" font-size="19" font-weight="700" fill="#fff">Slack</text>
+<text x="1890.0" y="835.0" text-anchor="middle" font-size="15" fill="#fff">alerts · CD</text>
+<path d="M1890,750 L1890,780" fill="none" stroke="#64748B" stroke-width="2.2" stroke-dasharray="7 6" stroke-linejoin="round" marker-end="url(#m-gray)"/>
+</svg>

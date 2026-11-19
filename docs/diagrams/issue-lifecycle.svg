@@ -1,0 +1,156 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 2000 1080" width="2000" height="1080" font-family="Inter, -apple-system, Segoe UI, Helvetica, Arial, sans-serif">
+<title>Issue lifecycle</title><defs><marker id="m-orange" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#E08A3C"/></marker><marker id="m-red" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#D1495B"/></marker><marker id="m-green" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#2F9E6E"/></marker><marker id="m-teal" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#2A9AA8"/></marker><marker id="m-purple" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#5B54D6"/></marker><marker id="m-gray" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#64748B"/></marker><marker id="m-blue" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#3B82C4"/></marker></defs>
+<rect width="2000" height="1080" fill="#FBFAF7"/>
+<text x="40" y="52" font-size="34" font-weight="800" fill="#1E293B">Issue lifecycle</text>
+<text x="40" y="84" font-size="19" fill="#475569">An issue is created and changed through IssueService; every changed field lands in the activity log, and the issue points at its state, cycle, module and people.</text>
+<text x="40" y="130" font-size="15" font-weight="700" letter-spacing="1" fill="#7A5A2B">CREATE</text>
+<rect x="40" y="160" width="200" height="80" rx="8" fill="#4A5568"/>
+<text x="140.0" y="197.0" text-anchor="middle" font-size="19" font-weight="700" fill="#fff">Project member</text>
+<text x="140.0" y="220.0" text-anchor="middle" font-size="15" fill="#fff">privileged, lead or member</text>
+<rect x="300" y="160" width="230" height="80" rx="8" fill="#DCDAF2"/>
+<text x="415.0" y="197.0" text-anchor="middle" font-size="19" font-weight="700" fill="#3B37A8">POST .../issues</text>
+<text x="415.0" y="220.0" text-anchor="middle" font-size="15" fill="#3B37A8">withAxiom · rate limit</text>
+<rect x="590" y="160" width="260" height="80" rx="8" fill="#DCDAF2"/>
+<text x="720.0" y="197.0" text-anchor="middle" font-size="19" font-weight="700" fill="#3B37A8">IssueService.create</text>
+<text x="720.0" y="220.0" text-anchor="middle" font-size="15" fill="#3B37A8">authz + validation</text>
+<rect x="910" y="160" width="260" height="80" rx="8" fill="#DCDAF2"/>
+<text x="1040.0" y="197.0" text-anchor="middle" font-size="19" font-weight="700" fill="#3B37A8">IssueRepository.create</text>
+<text x="1040.0" y="220.0" text-anchor="middle" font-size="15" fill="#3B37A8">one transaction</text>
+<rect x="1230" y="160" width="260" height="80" rx="8" fill="#D1495B"/>
+<text x="1360.0" y="197.0" text-anchor="middle" font-size="19" font-weight="700" fill="#fff">Issue</text>
+<text x="1360.0" y="220.0" text-anchor="middle" font-size="15" fill="#fff">number = issueSequence + 1</text>
+<path d="M240,200 L300,200" fill="none" stroke="#5B54D6" stroke-width="2.2" stroke-dasharray="7 6" stroke-linejoin="round" marker-end="url(#m-purple)"/>
+<rect x="253.05" y="166" width="33.9" height="28" rx="14" fill="#5B54D6"/>
+<text x="270.0" y="185" text-anchor="middle" font-size="14" font-weight="700" fill="#fff">1</text>
+<path d="M530,200 L590,200" fill="none" stroke="#5B54D6" stroke-width="2.2" stroke-dasharray="7 6" stroke-linejoin="round" marker-end="url(#m-purple)"/>
+<rect x="543.05" y="166" width="33.9" height="28" rx="14" fill="#5B54D6"/>
+<text x="560.0" y="185" text-anchor="middle" font-size="14" font-weight="700" fill="#fff">2</text>
+<path d="M850,200 L910,200" fill="none" stroke="#5B54D6" stroke-width="2.2" stroke-dasharray="7 6" stroke-linejoin="round" marker-end="url(#m-purple)"/>
+<rect x="863.05" y="166" width="33.9" height="28" rx="14" fill="#5B54D6"/>
+<text x="880.0" y="185" text-anchor="middle" font-size="14" font-weight="700" fill="#fff">3</text>
+<path d="M1170,200 L1230,200" fill="none" stroke="#5B54D6" stroke-width="2.2" stroke-dasharray="7 6" stroke-linejoin="round" marker-end="url(#m-purple)"/>
+<rect x="1183.05" y="166" width="33.9" height="28" rx="14" fill="#5B54D6"/>
+<text x="1200.0" y="185" text-anchor="middle" font-size="14" font-weight="700" fill="#fff">4</text>
+<text x="720" y="266" text-anchor="middle" font-size="15" fill="#3B37A8">state, type, cycle, module: same project</text>
+<text x="720" y="286" text-anchor="middle" font-size="15" fill="#3B37A8">type defaults to the system "Task"</text>
+<text x="720" y="306" text-anchor="middle" font-size="15" fill="#3B37A8">parent: same project, no cycle</text>
+<text x="720" y="326" text-anchor="middle" font-size="15" fill="#3B37A8">dueDate not before startDate</text>
+<text x="1360" y="266" text-anchor="middle" font-size="15" fill="#3B37A8">then IssueListCache.invalidate</text>
+<text x="1360" y="286" text-anchor="middle" font-size="15" fill="#3B37A8">and auditMutation (issue create)</text>
+<text x="40" y="370" font-size="15" font-weight="700" letter-spacing="1" fill="#7A5A2B">CHANGE · THE ACTIVITY LOG</text>
+<rect x="40" y="400" width="200" height="80" rx="8" fill="#4A5568"/>
+<text x="140.0" y="437.0" text-anchor="middle" font-size="19" font-weight="700" fill="#fff">Project member</text>
+<text x="140.0" y="460.0" text-anchor="middle" font-size="15" fill="#fff">PATCH issue</text>
+<rect x="300" y="400" width="230" height="80" rx="8" fill="#DCDAF2"/>
+<text x="415.0" y="437.0" text-anchor="middle" font-size="19" font-weight="700" fill="#3B37A8">PATCH .../issues/:id</text>
+<text x="415.0" y="460.0" text-anchor="middle" font-size="15" fill="#3B37A8">withAxiom · rate limit</text>
+<rect x="590" y="400" width="260" height="80" rx="8" fill="#DCDAF2"/>
+<text x="720.0" y="437.0" text-anchor="middle" font-size="19" font-weight="700" fill="#3B37A8">IssueService.update</text>
+<text x="720.0" y="460.0" text-anchor="middle" font-size="15" fill="#3B37A8">same checks as create</text>
+<rect x="910" y="400" width="260" height="80" rx="8" fill="#DCDAF2"/>
+<text x="1040.0" y="437.0" text-anchor="middle" font-size="19" font-weight="700" fill="#3B37A8">recordFieldChanges</text>
+<text x="1040.0" y="460.0" text-anchor="middle" font-size="15" fill="#3B37A8">diff before / after</text>
+<rect x="1230" y="400" width="260" height="80" rx="8" fill="#D1495B"/>
+<text x="1360.0" y="437.0" text-anchor="middle" font-size="19" font-weight="700" fill="#fff">Activity</text>
+<text x="1360.0" y="460.0" text-anchor="middle" font-size="15" fill="#fff">ISSUE · field · old · new</text>
+<path d="M240,440 L300,440" fill="none" stroke="#E08A3C" stroke-width="2.2" stroke-dasharray="7 6" stroke-linejoin="round" marker-end="url(#m-orange)"/>
+<rect x="253.05" y="406" width="33.9" height="28" rx="14" fill="#E08A3C"/>
+<text x="270.0" y="425" text-anchor="middle" font-size="14" font-weight="700" fill="#fff">1</text>
+<path d="M530,440 L590,440" fill="none" stroke="#E08A3C" stroke-width="2.2" stroke-dasharray="7 6" stroke-linejoin="round" marker-end="url(#m-orange)"/>
+<rect x="543.05" y="406" width="33.9" height="28" rx="14" fill="#E08A3C"/>
+<text x="560.0" y="425" text-anchor="middle" font-size="14" font-weight="700" fill="#fff">2</text>
+<path d="M850,440 L910,440" fill="none" stroke="#E08A3C" stroke-width="2.2" stroke-dasharray="7 6" stroke-linejoin="round" marker-end="url(#m-orange)"/>
+<rect x="863.05" y="406" width="33.9" height="28" rx="14" fill="#E08A3C"/>
+<text x="880.0" y="425" text-anchor="middle" font-size="14" font-weight="700" fill="#fff">3</text>
+<path d="M1170,440 L1230,440" fill="none" stroke="#E08A3C" stroke-width="2.2" stroke-dasharray="7 6" stroke-linejoin="round" marker-end="url(#m-orange)"/>
+<rect x="1183.05" y="406" width="33.9" height="28" rx="14" fill="#E08A3C"/>
+<text x="1200.0" y="425" text-anchor="middle" font-size="14" font-weight="700" fill="#fff">4</text>
+<text x="720" y="506" text-anchor="middle" font-size="15" fill="#3B37A8">Issue row updated first</text>
+<text x="1040" y="506" text-anchor="middle" font-size="15" fill="#3B37A8">one entry per changed field:</text>
+<text x="1040" y="526" text-anchor="middle" font-size="15" fill="#3B37A8">state · type · priority · dates</text>
+<text x="1040" y="546" text-anchor="middle" font-size="15" fill="#3B37A8">cycle · module · estimate · parent</text>
+<text x="1360" y="506" text-anchor="middle" font-size="15" fill="#3B37A8">assign / unassign: audit only,</text>
+<text x="1360" y="526" text-anchor="middle" font-size="15" fill="#3B37A8">not written to Activity</text>
+<text x="1740" y="440" text-anchor="middle" font-size="15" fill="#3B37A8">delete is soft: Issue.deletedAt</text>
+<text x="40" y="590" font-size="15" font-weight="700" letter-spacing="1" fill="#7A5A2B">WHAT AN ISSUE POINTS TO</text>
+<rect x="40" y="665" width="300" height="216" rx="8" fill="#5B54D6"/>
+<text x="54" y="691" font-size="18" font-weight="700" fill="#fff">Issue</text>
+<line x1="50" y1="701" x2="330" y2="701" stroke="#fff" stroke-opacity="0.35"/>
+<text x="54" y="723" font-size="14" fill="#fff" fill-opacity="0.92">stateId  (required)</text>
+<text x="54" y="744" font-size="14" fill="#fff" fill-opacity="0.92">typeId</text>
+<text x="54" y="765" font-size="14" fill="#fff" fill-opacity="0.92">priority  NONE..URGENT</text>
+<text x="54" y="786" font-size="14" fill="#fff" fill-opacity="0.92">cycleId?  moduleId?</text>
+<text x="54" y="807" font-size="14" fill="#fff" fill-opacity="0.92">estimateValueId?</text>
+<text x="54" y="828" font-size="14" fill="#fff" fill-opacity="0.92">parentId?  (sub-issues)</text>
+<text x="54" y="849" font-size="14" fill="#fff" fill-opacity="0.92">authorId?</text>
+<text x="54" y="870" font-size="14" fill="#fff" fill-opacity="0.92">deletedAt?  (soft delete)</text>
+<rect x="440" y="665" width="280" height="153" rx="8" fill="#2F9E6E"/>
+<text x="454" y="691" font-size="18" font-weight="700" fill="#fff">State</text>
+<line x1="450" y1="701" x2="710" y2="701" stroke="#fff" stroke-opacity="0.35"/>
+<text x="454" y="723" font-size="14" fill="#fff" fill-opacity="0.92">name</text>
+<text x="454" y="744" font-size="14" fill="#fff" fill-opacity="0.92">group  (5 groups)</text>
+<text x="454" y="765" font-size="14" fill="#fff" fill-opacity="0.92">isDefault</text>
+<text x="454" y="786" font-size="14" fill="#fff" fill-opacity="0.92">order</text>
+<text x="454" y="807" font-size="14" fill="#fff" fill-opacity="0.92">projectId</text>
+<rect x="780" y="665" width="280" height="132" rx="8" fill="#3B82C4"/>
+<text x="794" y="691" font-size="18" font-weight="700" fill="#fff">Cycle</text>
+<line x1="790" y1="701" x2="1050" y2="701" stroke="#fff" stroke-opacity="0.35"/>
+<text x="794" y="723" font-size="14" fill="#fff" fill-opacity="0.92">name</text>
+<text x="794" y="744" font-size="14" fill="#fff" fill-opacity="0.92">status</text>
+<text x="794" y="765" font-size="14" fill="#fff" fill-opacity="0.92">startDate · endDate</text>
+<text x="794" y="786" font-size="14" fill="#fff" fill-opacity="0.92">leadId?</text>
+<rect x="1120" y="665" width="280" height="132" rx="8" fill="#3B82C4"/>
+<text x="1134" y="691" font-size="18" font-weight="700" fill="#fff">Module</text>
+<line x1="1130" y1="701" x2="1390" y2="701" stroke="#fff" stroke-opacity="0.35"/>
+<text x="1134" y="723" font-size="14" fill="#fff" fill-opacity="0.92">name</text>
+<text x="1134" y="744" font-size="14" fill="#fff" fill-opacity="0.92">status · progress</text>
+<text x="1134" y="765" font-size="14" fill="#fff" fill-opacity="0.92">startDate · endDate</text>
+<text x="1134" y="786" font-size="14" fill="#fff" fill-opacity="0.92">leadId?</text>
+<rect x="1460" y="665" width="240" height="111" rx="8" fill="#64748B"/>
+<text x="1474" y="691" font-size="18" font-weight="700" fill="#fff">IssueAssignee</text>
+<line x1="1470" y1="701" x2="1690" y2="701" stroke="#fff" stroke-opacity="0.35"/>
+<text x="1474" y="723" font-size="14" fill="#fff" fill-opacity="0.92">issueId</text>
+<text x="1474" y="744" font-size="14" fill="#fff" fill-opacity="0.92">userId</text>
+<text x="1474" y="765" font-size="14" fill="#fff" fill-opacity="0.92">unique (issueId, userId)</text>
+<rect x="1740" y="665" width="220" height="111" rx="8" fill="#64748B"/>
+<text x="1754" y="691" font-size="18" font-weight="700" fill="#fff">IssueSubscriber</text>
+<line x1="1750" y1="701" x2="1950" y2="701" stroke="#fff" stroke-opacity="0.35"/>
+<text x="1754" y="723" font-size="14" fill="#fff" fill-opacity="0.92">issueId</text>
+<text x="1754" y="744" font-size="14" fill="#fff" fill-opacity="0.92">userId</text>
+<text x="1754" y="765" font-size="14" fill="#fff" fill-opacity="0.92">unique (issueId, userId)</text>
+<path d="M190,665 L190,640 L580,640 L580,665" fill="none" stroke="#5B54D6" stroke-width="2.2" stroke-dasharray="7 6" stroke-linejoin="round" marker-end="url(#m-purple)"/>
+<path d="M580,640 L920,640 L920,665" fill="none" stroke="#5B54D6" stroke-width="2.2" stroke-dasharray="7 6" stroke-linejoin="round" marker-end="url(#m-purple)"/>
+<path d="M920,640 L1260,640 L1260,665" fill="none" stroke="#5B54D6" stroke-width="2.2" stroke-dasharray="7 6" stroke-linejoin="round" marker-end="url(#m-purple)"/>
+<path d="M1260,640 L1580,640 L1580,665" fill="none" stroke="#5B54D6" stroke-width="2.2" stroke-dasharray="7 6" stroke-linejoin="round" marker-end="url(#m-purple)"/>
+<path d="M1580,640 L1850,640 L1850,665" fill="none" stroke="#5B54D6" stroke-width="2.2" stroke-dasharray="7 6" stroke-linejoin="round" marker-end="url(#m-purple)"/>
+<rect x="539.35" y="626" width="81.30000000000001" height="28" rx="14" fill="#5B54D6"/>
+<text x="580" y="645" text-anchor="middle" font-size="14" font-weight="700" fill="#fff">stateId</text>
+<rect x="879.35" y="626" width="81.30000000000001" height="28" rx="14" fill="#5B54D6"/>
+<text x="920" y="645" text-anchor="middle" font-size="14" font-weight="700" fill="#fff">cycleId</text>
+<rect x="1215.4" y="626" width="89.2" height="28" rx="14" fill="#5B54D6"/>
+<text x="1260" y="645" text-anchor="middle" font-size="14" font-weight="700" fill="#fff">moduleId</text>
+<rect x="1531.45" y="626" width="97.10000000000001" height="28" rx="14" fill="#5B54D6"/>
+<text x="1580" y="645" text-anchor="middle" font-size="14" font-weight="700" fill="#fff">assignees</text>
+<rect x="1793.55" y="626" width="112.9" height="28" rx="14" fill="#5B54D6"/>
+<text x="1850" y="645" text-anchor="middle" font-size="14" font-weight="700" fill="#fff">subscribers</text>
+<text x="580" y="860" text-anchor="middle" font-size="15" fill="#3B37A8">BACKLOG · UNSTARTED · STARTED</text>
+<text x="580" y="880" text-anchor="middle" font-size="15" fill="#3B37A8">COMPLETED · CANCELLED</text>
+<text x="920" y="830" text-anchor="middle" font-size="15" fill="#3B37A8">at most one cycle, one module</text>
+<text x="920" y="850" text-anchor="middle" font-size="15" fill="#3B37A8">deleting either sets the field to null</text>
+<text x="1580" y="800" text-anchor="middle" font-size="15" fill="#3B37A8">assignee must be a project member</text>
+<text x="1580" y="820" text-anchor="middle" font-size="15" fill="#3B37A8">assigning also subscribes them</text>
+<text x="1440" y="880" font-size="15" font-weight="700" letter-spacing="1" fill="#7A5A2B">NOTIFICATIONS</text>
+<rect x="1440" y="900" width="300" height="132" rx="8" fill="#64748B"/>
+<text x="1454" y="926" font-size="18" font-weight="700" fill="#fff">NotificationSetting</text>
+<line x1="1450" y1="936" x2="1730" y2="936" stroke="#fff" stroke-opacity="0.35"/>
+<text x="1454" y="958" font-size="14" fill="#fff" fill-opacity="0.92">priorityChanges</text>
+<text x="1454" y="979" font-size="14" fill="#fff" fill-opacity="0.92">stateChanges</text>
+<text x="1454" y="1000" font-size="14" fill="#fff" fill-opacity="0.92">comments</text>
+<text x="1454" y="1021" font-size="14" fill="#fff" fill-opacity="0.92">mentions</text>
+<rect x="1780" y="910" width="180" height="100" rx="8" fill="#4A5568"/>
+<text x="1870.0" y="957.0" text-anchor="middle" font-size="19" font-weight="700" fill="#fff">Delivery</text>
+<text x="1870.0" y="980.0" text-anchor="middle" font-size="15" fill="#fff">to confirm</text>
+<path d="M1850,780 L1850,910" fill="none" stroke="#64748B" stroke-width="2.2" stroke-dasharray="7 6" stroke-linejoin="round" marker-end="url(#m-gray)"/>
+<text x="1600" y="1050" text-anchor="middle" font-size="15" fill="#3B37A8">per-user preferences exist; nothing in the repo sends issue notifications yet</text>
+<path d="M1740,960 L1780,960" fill="none" stroke="#64748B" stroke-width="2.2" stroke-dasharray="7 6" stroke-linejoin="round" marker-end="url(#m-gray)"/>
+</svg>

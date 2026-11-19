@@ -14,6 +14,11 @@ python3 docs/diagrams/_tools/request-flow.py
 python3 docs/diagrams/_tools/private-access.py
 python3 docs/diagrams/_tools/er-model.py
 python3 docs/diagrams/_tools/deploy-pipeline.py
+python3 docs/diagrams/_tools/auth-flow.py
+python3 docs/diagrams/_tools/status-collection.py
+python3 docs/diagrams/_tools/account-deletion.py
+python3 docs/diagrams/_tools/deployment-topology.py
+python3 docs/diagrams/_tools/issue-lifecycle.py
 ```
 
 ## Preview
