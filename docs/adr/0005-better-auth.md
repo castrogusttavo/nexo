@@ -14,7 +14,7 @@ Use Better Auth (`src/lib/auth.ts`) with the Prisma adapter, argon2 password has
 
 - API routes and server actions read the session through `getAuthSession()` (returns a `Result`); rendering reads go through the DAL ([ADR-0003](0003-dal-instead-of-layout-gates.md)).
 - `proxy.ts` gates by the `better-auth.session_token` cookie and reads Better Auth's signed cookie cache for an optimistic consent check.
-- The app runs its own Redis-backed rate limiter on auth routes (`cd1861ba`, STR-15); Better Auth's limiter is on only in production and off when `DISABLE_AUTH_RATE_LIMIT=true` (set during e2e).
+- The app runs its own Redis-backed rate limiter on auth routes (`cd1861ba`, STR-15); Better Auth's own limiter is on only in production and off when `DISABLE_AUTH_RATE_LIMIT=true` (set during e2e); when on, it counts in Redis through `customStorage` (`betterAuthRateLimitStorage`), so every app instance shares one bucket per client.
 
 ## Consequences
 

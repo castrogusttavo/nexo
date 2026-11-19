@@ -12,7 +12,7 @@ The project is built by a very small team. A `develop` branch plus per-feature o
 
 `main` is the trunk and the only working branch; commits go straight to it. The CI gate replaces the PR review window:
 
-- `ci.yml` runs on `push: [main]` (lint, typecheck, unit, integration, coverage, build, and the security jobs: audit, snyk, semgrep, gitleaks).
+- `ci.yml` runs on `push: [main]`. A single `gate` job waits for `lint` (Biome and `tsc`), `contract-tests`, `e2e-tests` (the browser and visual suites, as a matrix), `coverage-tests` (unit and integration), `component-tests`, `redis-tls-smoke`, `semgrep` and `gitleaks`. `audit` and `snyk` run as advisory jobs outside the gate.
 - `cd.yml` deploys only through `workflow_run` of a successful CI run on `main`, so a red CI never reaches production.
 - Locally, the pre-commit hook (`pnpm check && pnpm tsc --noEmit`) and `commit-msg` (commitlint) fail fast.
 - Commits are small, thematic Conventional Commits. `git push --force` to `main` is never used; release tags are immutable.

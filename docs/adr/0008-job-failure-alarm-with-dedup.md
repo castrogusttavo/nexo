@@ -23,7 +23,7 @@ The first version assumed a job that runs out of stall retries reaches `failed` 
 
 - A permanently failing queue is visible the first time it dies.
 - The event schema is frozen; changing it is a coordinated change with the monitor.
-- The ledger is bounded and in-process: after a worker restart a death could in principle alarm again. This is inferred from "bounded ledger"; TODO: confirm whether the ledger is persisted.
+- The ledger is a bounded in-memory `Map` (`DeathLedger` in `failure-alarm.ts`, capacity 1000): it is not persisted, so after a worker restart a death still sitting in the `failed` set and reported again by the `QueueEvents` backstop could alarm a second time.
 - An integration test against real Redis covers both `maxStalledCount` cases (one stalled alarm, or a requeue with only a warning).
 
 ## Alternatives considered

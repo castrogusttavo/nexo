@@ -8,7 +8,7 @@ Things found while writing these docs that the repository cannot settle, or that
 - Where the Axiom monitor on `queue.job.exhausted` is defined. See [background-jobs](architecture/background-jobs.md).
 - Whether production points the app at the read replica or at PgBouncer (both are provisioned in `infra/prod.yml`). See [infrastructure](architecture/infrastructure.md).
 - Server layout outside the repo: nginx server blocks, certificates, the backup cron, the route to Silo.
-- Whether the worker always runs as one container (the failure alarm's dedup ledger is per process) and whether the ledger survives a restart. See [ADR-0008](adr/0008-job-failure-alarm-with-dedup.md).
+- Whether the worker always runs as one container. The failure alarm's dedup ledger is an in-memory `Map` (confirmed in `failure-alarm.ts`), so it is per process and lost on restart. See [ADR-0008](adr/0008-job-failure-alarm-with-dedup.md).
 - The date production finished the MinIO to Silo switch. See [ADR-0007](adr/0007-silo-storage.md).
 - The real reasons behind ADR-0001, 0002 and 0005 (the history shows when, not why), and which "alternatives considered" were really weighed.
 - How to create the local `nexo_test` database (no script does it). See [integration tests](testing/integration.md).
