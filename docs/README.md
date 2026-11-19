@@ -29,11 +29,11 @@ Language: English. User-facing product copy stays in pt-BR, but this folder is d
 | [postmortems/](postmortems/README.md) | Five incidents, with timelines and what changed |
 | [changelog/](changelog/README.md) | Where release notes live |
 | [diagrams/](diagrams/README.md) | Every SVG diagram, with an index |
-| [open-questions](open-questions.md) | What the code could not settle, where CLAUDE.md is stale, and possible defects |
+| [open-questions](open-questions.md) | What the repository cannot answer, and known issues in the code |
 
 ## Keeping it honest
 
 - A decision that changes gets a new ADR that supersedes the old one; do not rewrite history.
 - If a page and the code disagree, the code wins and the page is a bug. Fix the page in the same commit as the code.
 - The SVGs in `diagrams/` are the versioned source. The generator that produced them is a local tool (`diagrams/_tools/` is git-ignored).
-- Items marked `TODO: confirm` are facts the repository cannot settle (production layout, scheduler, Axiom monitor, and similar). Resolve them with the operator and remove the marker.
+- Where a page says "Not defined in this repository", the fact lives outside the code (production host, external services, decisions). It is listed in [open-questions](open-questions.md); resolve it there and in the page together.
