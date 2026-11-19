@@ -73,7 +73,6 @@ k6/results/
 # AI Agents & Skills
 .agents*
 .claude
-/docs
 CLAUDE.md
 .aider*
 
