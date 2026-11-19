@@ -94,3 +94,6 @@ CLAUDE.md
 
 # CI test report inputs (scripts/test-report.ts reads them, the workflow uploads them)
 /reports/
+
+# Local generator for docs/diagrams (scripts stay on the machine, the SVGs are what we version)
+/docs/diagrams/_tools/
