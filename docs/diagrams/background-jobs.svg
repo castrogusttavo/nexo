@@ -1,0 +1,99 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 2000 990" width="2000" height="990" font-family="Inter, -apple-system, Segoe UI, Helvetica, Arial, sans-serif">
+<title>Background jobs and failure alarm</title><defs><marker id="m-orange" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#E08A3C"/></marker><marker id="m-red" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#D1495B"/></marker><marker id="m-green" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#2F9E6E"/></marker><marker id="m-teal" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#2A9AA8"/></marker><marker id="m-purple" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#5B54D6"/></marker><marker id="m-gray" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#64748B"/></marker><marker id="m-blue" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#3B82C4"/></marker></defs>
+<rect width="2000" height="990" fill="#FBFAF7"/>
+<text x="40" y="52" font-size="34" font-weight="800" fill="#1E293B">Background jobs and failure alarm</text>
+<text x="40" y="84" font-size="19" fill="#475569">Four BullMQ queues, one worker process; every job that dies for good is reported once, by two independent paths.</text>
+<rect x="330" y="120" width="360" height="400" rx="14" fill="none" stroke="#B8BEC8" stroke-width="1.5" stroke-dasharray="6 5"/>
+<text x="352" y="150" font-size="15" font-weight="700" letter-spacing="1" fill="#7A5A2B">REDIS · BULLMQ</text>
+<rect x="800" y="120" width="520" height="500" rx="14" fill="none" stroke="#B8BEC8" stroke-width="1.5" stroke-dasharray="6 5"/>
+<text x="822" y="150" font-size="15" font-weight="700" letter-spacing="1" fill="#7A5A2B">WORKER · SEPARATE PROCESS</text>
+<rect x="40" y="245" width="220" height="80" rx="8" fill="#4A5568"/>
+<text x="150.0" y="282.0" text-anchor="middle" font-size="19" font-weight="700" fill="#fff">Next app</text>
+<text x="150.0" y="305.0" text-anchor="middle" font-size="15" fill="#fff">7 instances</text>
+<rect x="360" y="160" width="300" height="70" rx="8" fill="#E08A3C"/>
+<text x="510.0" y="192.0" text-anchor="middle" font-size="19" font-weight="700" fill="#fff">data-retention</text>
+<text x="510.0" y="215.0" text-anchor="middle" font-size="15" fill="#fff">cron · 4 jobs</text>
+<rect x="830" y="160" width="240" height="70" rx="8" fill="#DCDAF2"/>
+<text x="950.0" y="192.0" text-anchor="middle" font-size="19" font-weight="700" fill="#3B37A8">Processor</text>
+<text x="950.0" y="215.0" text-anchor="middle" font-size="15" fill="#3B37A8">data-retention</text>
+<path d="M660,195 L830,195" fill="none" stroke="#E08A3C" stroke-width="2.2" stroke-dasharray="7 6" stroke-linejoin="round" marker-end="url(#m-orange)"/>
+<path d="M1070,195 L1420,195" fill="none" stroke="#5B54D6" stroke-width="2.2" stroke-dasharray="7 6" stroke-linejoin="round" marker-end="url(#m-purple)"/>
+<rect x="360" y="250" width="300" height="70" rx="8" fill="#E08A3C"/>
+<text x="510.0" y="282.0" text-anchor="middle" font-size="19" font-weight="700" fill="#fff">account-lifecycle</text>
+<text x="510.0" y="305.0" text-anchor="middle" font-size="15" fill="#fff">delete-account</text>
+<rect x="830" y="250" width="240" height="70" rx="8" fill="#DCDAF2"/>
+<text x="950.0" y="282.0" text-anchor="middle" font-size="19" font-weight="700" fill="#3B37A8">Processor</text>
+<text x="950.0" y="305.0" text-anchor="middle" font-size="15" fill="#3B37A8">account-lifecycle</text>
+<path d="M660,285 L830,285" fill="none" stroke="#E08A3C" stroke-width="2.2" stroke-dasharray="7 6" stroke-linejoin="round" marker-end="url(#m-orange)"/>
+<path d="M1070,285 L1420,285" fill="none" stroke="#5B54D6" stroke-width="2.2" stroke-dasharray="7 6" stroke-linejoin="round" marker-end="url(#m-purple)"/>
+<rect x="360" y="340" width="300" height="70" rx="8" fill="#E08A3C"/>
+<text x="510.0" y="372.0" text-anchor="middle" font-size="19" font-weight="700" fill="#fff">data-export</text>
+<text x="510.0" y="395.0" text-anchor="middle" font-size="15" fill="#fff">export-user-data</text>
+<rect x="830" y="340" width="240" height="70" rx="8" fill="#DCDAF2"/>
+<text x="950.0" y="372.0" text-anchor="middle" font-size="19" font-weight="700" fill="#3B37A8">Processor</text>
+<text x="950.0" y="395.0" text-anchor="middle" font-size="15" fill="#3B37A8">data-export</text>
+<path d="M660,375 L830,375" fill="none" stroke="#E08A3C" stroke-width="2.2" stroke-dasharray="7 6" stroke-linejoin="round" marker-end="url(#m-orange)"/>
+<path d="M1070,375 L1420,375" fill="none" stroke="#5B54D6" stroke-width="2.2" stroke-dasharray="7 6" stroke-linejoin="round" marker-end="url(#m-purple)"/>
+<rect x="360" y="430" width="300" height="70" rx="8" fill="#E08A3C"/>
+<text x="510.0" y="462.0" text-anchor="middle" font-size="19" font-weight="700" fill="#fff">trial-lifecycle</text>
+<text x="510.0" y="485.0" text-anchor="middle" font-size="15" fill="#fff">revert-expired-trials</text>
+<rect x="830" y="430" width="240" height="70" rx="8" fill="#DCDAF2"/>
+<text x="950.0" y="462.0" text-anchor="middle" font-size="19" font-weight="700" fill="#3B37A8">Processor</text>
+<text x="950.0" y="485.0" text-anchor="middle" font-size="15" fill="#3B37A8">trial-lifecycle</text>
+<path d="M660,465 L830,465" fill="none" stroke="#E08A3C" stroke-width="2.2" stroke-dasharray="7 6" stroke-linejoin="round" marker-end="url(#m-orange)"/>
+<path d="M1070,465 L1420,465" fill="none" stroke="#5B54D6" stroke-width="2.2" stroke-dasharray="7 6" stroke-linejoin="round" marker-end="url(#m-purple)"/>
+<rect x="1420" y="160" width="240" height="340" rx="8" fill="#D1495B"/>
+<text x="1540.0" y="336.0" text-anchor="middle" font-size="19" font-weight="700" fill="#fff"></text>
+<text x="1540" y="210" text-anchor="middle" font-size="22" font-weight="700" fill="#fff">Postgres</text>
+<text x="1540" y="262" text-anchor="middle" font-size="15" fill="#fff">expired sessions and tokens</text>
+<text x="1540" y="288" text-anchor="middle" font-size="15" fill="#fff">stale invitations</text>
+<text x="1540" y="314" text-anchor="middle" font-size="15" fill="#fff">career applications purge</text>
+<text x="1540" y="340" text-anchor="middle" font-size="15" fill="#fff">hard delete of a user</text>
+<text x="1540" y="366" text-anchor="middle" font-size="15" fill="#fff">user data read for export</text>
+<text x="1540" y="392" text-anchor="middle" font-size="15" fill="#fff">expired trials reverted</text>
+<path d="M260,285 L360,285" fill="none" stroke="#E08A3C" stroke-width="2.2" stroke-dasharray="7 6" stroke-linejoin="round" marker-end="url(#m-orange)"/>
+<path d="M260,285 L300,285 L300,375 L360,375" fill="none" stroke="#E08A3C" stroke-width="2.2" stroke-dasharray="7 6" stroke-linejoin="round" marker-end="url(#m-orange)"/>
+<rect x="269.35" y="251" width="81.30000000000001" height="28" rx="14" fill="#E08A3C"/>
+<text x="310" y="270" text-anchor="middle" font-size="14" font-weight="700" fill="#fff">enqueue</text>
+<rect x="830" y="530" width="240" height="70" rx="8" fill="#DCDAF2"/>
+<text x="950.0" y="562.0" text-anchor="middle" font-size="19" font-weight="700" fill="#3B37A8">Scheduler</text>
+<text x="950.0" y="585.0" text-anchor="middle" font-size="15" fill="#3B37A8">crons set at boot</text>
+<path d="M830,565 L510,565 L510,520" fill="none" stroke="#E08A3C" stroke-width="2.2" stroke-dasharray="7 6" stroke-linejoin="round" marker-end="url(#m-orange)"/>
+<rect x="601.7" y="551" width="136.60000000000002" height="28" rx="14" fill="#E08A3C"/>
+<text x="670" y="570" text-anchor="middle" font-size="14" font-weight="700" fill="#fff">cron schedules</text>
+<text x="1195" y="538" text-anchor="middle" font-size="15" fill="#3B37A8">one Worker per queue</text>
+<text x="1195" y="558" text-anchor="middle" font-size="15" fill="#3B37A8">span per job in Axiom</text>
+<text x="1195" y="578" text-anchor="middle" font-size="15" fill="#3B37A8">completed → queue.job.completed</text>
+<text x="1195" y="598" text-anchor="middle" font-size="15" fill="#3B37A8">UserCache invalidated on delete</text>
+<text x="40" y="660" font-size="15" font-weight="700" letter-spacing="1" fill="#B13A4A">FAILURE PATH</text>
+<path d="M1200,620 L1200,690 L165,690 L165,775" fill="none" stroke="#D1495B" stroke-width="2.2" stroke-dasharray="7 6" stroke-linejoin="round" marker-end="url(#m-red)"/>
+<rect x="536.65" y="676" width="286.7" height="28" rx="14" fill="#D1495B"/>
+<text x="680" y="695" text-anchor="middle" font-size="14" font-weight="700" fill="#fff">throws · 3 attempts · backoff 5 s</text>
+<rect x="40" y="775" width="250" height="100" rx="8" fill="#E08A3C"/>
+<text x="165.0" y="822.0" text-anchor="middle" font-size="19" font-weight="700" fill="#fff">Failed set</text>
+<text x="165.0" y="845.0" text-anchor="middle" font-size="15" fill="#fff">kept 7 days</text>
+<rect x="360" y="720" width="280" height="70" rx="8" fill="#DCDAF2"/>
+<text x="500.0" y="752.0" text-anchor="middle" font-size="19" font-weight="700" fill="#3B37A8">Worker failed event</text>
+<text x="500.0" y="775.0" text-anchor="middle" font-size="15" fill="#3B37A8">each Worker</text>
+<rect x="360" y="850" width="280" height="70" rx="8" fill="#DCDAF2"/>
+<text x="500.0" y="882.0" text-anchor="middle" font-size="19" font-weight="700" fill="#3B37A8">QueueEvents backstop</text>
+<text x="500.0" y="905.0" text-anchor="middle" font-size="15" fill="#3B37A8">one per queue</text>
+<text x="500" y="938" text-anchor="middle" font-size="15" fill="#475569">covers a failed emit lost to a dropped connection</text>
+<path d="M290,825 L325,825 L325,755 L360,755" fill="none" stroke="#D1495B" stroke-width="2.2" stroke-dasharray="7 6" stroke-linejoin="round" marker-end="url(#m-red)"/>
+<path d="M325,825 L325,885 L360,885" fill="none" stroke="#D1495B" stroke-width="2.2" stroke-dasharray="7 6" stroke-linejoin="round" marker-end="url(#m-red)"/>
+<rect x="800" y="775" width="300" height="100" rx="8" fill="#D1495B"/>
+<text x="950.0" y="822.0" text-anchor="middle" font-size="19" font-weight="700" fill="#fff">failureAlarm</text>
+<text x="950.0" y="845.0" text-anchor="middle" font-size="15" fill="#fff">dedup ledger</text>
+<text x="950" y="900" text-anchor="middle" font-size="15" fill="#475569">one death seen twice → one alert</text>
+<path d="M640,755 L720,755 L720,810 L800,810" fill="none" stroke="#D1495B" stroke-width="2.2" stroke-dasharray="7 6" stroke-linejoin="round" marker-end="url(#m-red)"/>
+<path d="M640,885 L720,885 L720,840 L800,840" fill="none" stroke="#D1495B" stroke-width="2.2" stroke-dasharray="7 6" stroke-linejoin="round" marker-end="url(#m-red)"/>
+<rect x="1250" y="720" width="300" height="80" rx="8" fill="#4A5568"/>
+<text x="1400.0" y="757.0" text-anchor="middle" font-size="19" font-weight="700" fill="#fff">Axiom</text>
+<text x="1400.0" y="780.0" text-anchor="middle" font-size="15" fill="#fff">queue.job.exhausted → monitor</text>
+<text x="1400" y="824" text-anchor="middle" font-size="15" fill="#475569">the event name is a contract with the monitor</text>
+<rect x="1250" y="850" width="300" height="80" rx="8" fill="#4A5568"/>
+<text x="1400.0" y="887.0" text-anchor="middle" font-size="19" font-weight="700" fill="#fff">Slack</text>
+<text x="1400.0" y="910.0" text-anchor="middle" font-size="15" fill="#fff">alert on every exhausted job</text>
+<path d="M1100,810 L1175,810 L1175,760 L1250,760" fill="none" stroke="#D1495B" stroke-width="2.2" stroke-dasharray="7 6" stroke-linejoin="round" marker-end="url(#m-red)"/>
+<path d="M1100,840 L1175,840 L1175,890 L1250,890" fill="none" stroke="#D1495B" stroke-width="2.2" stroke-dasharray="7 6" stroke-linejoin="round" marker-end="url(#m-red)"/>
+</svg>

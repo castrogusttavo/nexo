@@ -1,0 +1,143 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 2000 900" width="2000" height="900" font-family="Inter, -apple-system, Segoe UI, Helvetica, Arial, sans-serif">
+<title>From commit to production</title><defs><marker id="m-orange" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#E08A3C"/></marker><marker id="m-red" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#D1495B"/></marker><marker id="m-green" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#2F9E6E"/></marker><marker id="m-teal" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#2A9AA8"/></marker><marker id="m-purple" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#5B54D6"/></marker><marker id="m-gray" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#64748B"/></marker><marker id="m-blue" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#3B82C4"/></marker></defs>
+<rect width="2000" height="900" fill="#FBFAF7"/>
+<text x="40" y="52" font-size="34" font-weight="800" fill="#1E293B">From commit to production</text>
+<text x="40" y="84" font-size="19" fill="#475569">Trunk-based: hooks fail fast on the machine, CI is the gate on main, and CD only runs after a green CI.</text>
+<rect x="20" y="125" width="340" height="620" rx="14" fill="none" stroke="#B8BEC8" stroke-width="1.5" stroke-dasharray="6 5"/>
+<text x="42" y="155" font-size="15" font-weight="700" letter-spacing="1" fill="#7A5A2B">LOCAL · HUSKY HOOKS</text>
+<rect x="40" y="170" width="300" height="70" rx="8" fill="#4A5568"/>
+<text x="190.0" y="202.0" text-anchor="middle" font-size="19" font-weight="700" fill="#fff">git commit</text>
+<text x="190.0" y="225.0" text-anchor="middle" font-size="15" fill="#fff">straight on main</text>
+<rect x="40" y="310" width="300" height="90" rx="8" fill="#DCDAF2"/>
+<text x="190.0" y="352.0" text-anchor="middle" font-size="19" font-weight="700" fill="#3B37A8">pre-commit</text>
+<text x="190.0" y="375.0" text-anchor="middle" font-size="15" fill="#3B37A8">biome check:staged · tsc x2</text>
+<rect x="40" y="470" width="300" height="80" rx="8" fill="#DCDAF2"/>
+<text x="190.0" y="507.0" text-anchor="middle" font-size="19" font-weight="700" fill="#3B37A8">commit-msg</text>
+<text x="190.0" y="530.0" text-anchor="middle" font-size="15" fill="#3B37A8">commitlint</text>
+<rect x="40" y="620" width="300" height="70" rx="8" fill="#4A5568"/>
+<text x="190.0" y="652.0" text-anchor="middle" font-size="19" font-weight="700" fill="#fff">git push origin main</text>
+<text x="190.0" y="675.0" text-anchor="middle" font-size="15" fill="#fff">a pull request also runs CI</text>
+<path d="M190,240 L190,310" fill="none" stroke="#5B54D6" stroke-width="2.2" stroke-dasharray="7 6" stroke-linejoin="round" marker-end="url(#m-purple)"/>
+<rect x="149.35" y="261" width="81.30000000000001" height="28" rx="14" fill="#5B54D6"/>
+<text x="190" y="280" text-anchor="middle" font-size="14" font-weight="700" fill="#fff">1. hook</text>
+<path d="M190,400 L190,470" fill="none" stroke="#5B54D6" stroke-width="2.2" stroke-dasharray="7 6" stroke-linejoin="round" marker-end="url(#m-purple)"/>
+<rect x="149.35" y="421" width="81.30000000000001" height="28" rx="14" fill="#5B54D6"/>
+<text x="190" y="440" text-anchor="middle" font-size="14" font-weight="700" fill="#fff">2. hook</text>
+<path d="M190,550 L190,620" fill="none" stroke="#5B54D6" stroke-width="2.2" stroke-dasharray="7 6" stroke-linejoin="round" marker-end="url(#m-purple)"/>
+<rect x="141.45" y="571" width="97.10000000000001" height="28" rx="14" fill="#5B54D6"/>
+<text x="190" y="590" text-anchor="middle" font-size="14" font-weight="700" fill="#fff">3. passed</text>
+<rect x="420" y="125" width="870" height="720" rx="14" fill="none" stroke="#B8BEC8" stroke-width="1.5" stroke-dasharray="6 5"/>
+<text x="442" y="155" font-size="15" font-weight="700" letter-spacing="1" fill="#7A5A2B">CI · CI.YML · PUSH TO MAIN AND PULL REQUEST</text>
+<rect x="480" y="185" width="250" height="54" rx="8" fill="#DCDAF2"/>
+<text x="605.0" y="209.0" text-anchor="middle" font-size="19" font-weight="700" fill="#3B37A8">Lint &amp; Type Check</text>
+<text x="605.0" y="232.0" text-anchor="middle" font-size="15" fill="#3B37A8">tsc x2 · biome lint</text>
+<path d="M455,212 L480,212" fill="none" stroke="#5B54D6" stroke-width="2.2" stroke-dasharray="7 6" stroke-linejoin="round" marker-end="url(#m-purple)"/>
+<path d="M730,212 L760,212" fill="none" stroke="#5B54D6" stroke-width="2.2" stroke-dasharray="7 6" stroke-linejoin="round"/>
+<rect x="480" y="251" width="250" height="54" rx="8" fill="#DCDAF2"/>
+<text x="605.0" y="275.0" text-anchor="middle" font-size="19" font-weight="700" fill="#3B37A8">OpenAPI Contract Tests</text>
+<text x="605.0" y="298.0" text-anchor="middle" font-size="15" fill="#3B37A8">reads files only</text>
+<path d="M455,278 L480,278" fill="none" stroke="#5B54D6" stroke-width="2.2" stroke-dasharray="7 6" stroke-linejoin="round" marker-end="url(#m-purple)"/>
+<path d="M730,278 L760,278" fill="none" stroke="#5B54D6" stroke-width="2.2" stroke-dasharray="7 6" stroke-linejoin="round"/>
+<rect x="480" y="317" width="250" height="54" rx="8" fill="#DCDAF2"/>
+<text x="605.0" y="341.0" text-anchor="middle" font-size="19" font-weight="700" fill="#3B37A8">E2E Tests</text>
+<text x="605.0" y="364.0" text-anchor="middle" font-size="15" fill="#3B37A8">api and browser suites</text>
+<path d="M455,344 L480,344" fill="none" stroke="#5B54D6" stroke-width="2.2" stroke-dasharray="7 6" stroke-linejoin="round" marker-end="url(#m-purple)"/>
+<path d="M730,344 L760,344" fill="none" stroke="#5B54D6" stroke-width="2.2" stroke-dasharray="7 6" stroke-linejoin="round"/>
+<rect x="480" y="383" width="250" height="54" rx="8" fill="#DCDAF2"/>
+<text x="605.0" y="407.0" text-anchor="middle" font-size="19" font-weight="700" fill="#3B37A8">Unit &amp; Integration</text>
+<text x="605.0" y="430.0" text-anchor="middle" font-size="15" fill="#3B37A8">test:coverage</text>
+<path d="M455,410 L480,410" fill="none" stroke="#5B54D6" stroke-width="2.2" stroke-dasharray="7 6" stroke-linejoin="round" marker-end="url(#m-purple)"/>
+<path d="M730,410 L760,410" fill="none" stroke="#5B54D6" stroke-width="2.2" stroke-dasharray="7 6" stroke-linejoin="round"/>
+<rect x="480" y="449" width="250" height="54" rx="8" fill="#DCDAF2"/>
+<text x="605.0" y="473.0" text-anchor="middle" font-size="19" font-weight="700" fill="#3B37A8">Component Tests</text>
+<text x="605.0" y="496.0" text-anchor="middle" font-size="15" fill="#3B37A8">3 shards</text>
+<path d="M455,476 L480,476" fill="none" stroke="#5B54D6" stroke-width="2.2" stroke-dasharray="7 6" stroke-linejoin="round" marker-end="url(#m-purple)"/>
+<path d="M730,476 L760,476" fill="none" stroke="#5B54D6" stroke-width="2.2" stroke-dasharray="7 6" stroke-linejoin="round"/>
+<rect x="480" y="515" width="250" height="54" rx="8" fill="#DCDAF2"/>
+<text x="605.0" y="539.0" text-anchor="middle" font-size="19" font-weight="700" fill="#3B37A8">Redis TLS Smoke</text>
+<text x="605.0" y="562.0" text-anchor="middle" font-size="15" fill="#3B37A8">vitest redis-tls project</text>
+<path d="M455,542 L480,542" fill="none" stroke="#5B54D6" stroke-width="2.2" stroke-dasharray="7 6" stroke-linejoin="round" marker-end="url(#m-purple)"/>
+<path d="M730,542 L760,542" fill="none" stroke="#5B54D6" stroke-width="2.2" stroke-dasharray="7 6" stroke-linejoin="round"/>
+<rect x="480" y="581" width="250" height="54" rx="8" fill="#DCDAF2"/>
+<text x="605.0" y="605.0" text-anchor="middle" font-size="19" font-weight="700" fill="#3B37A8">Semgrep SAST</text>
+<text x="605.0" y="628.0" text-anchor="middle" font-size="15" fill="#3B37A8">static analysis</text>
+<path d="M455,608 L480,608" fill="none" stroke="#5B54D6" stroke-width="2.2" stroke-dasharray="7 6" stroke-linejoin="round" marker-end="url(#m-purple)"/>
+<path d="M730,608 L760,608" fill="none" stroke="#5B54D6" stroke-width="2.2" stroke-dasharray="7 6" stroke-linejoin="round"/>
+<rect x="480" y="647" width="250" height="54" rx="8" fill="#DCDAF2"/>
+<text x="605.0" y="671.0" text-anchor="middle" font-size="19" font-weight="700" fill="#3B37A8">Secret Scan</text>
+<text x="605.0" y="694.0" text-anchor="middle" font-size="15" fill="#3B37A8">gitleaks</text>
+<path d="M455,674 L480,674" fill="none" stroke="#5B54D6" stroke-width="2.2" stroke-dasharray="7 6" stroke-linejoin="round" marker-end="url(#m-purple)"/>
+<path d="M730,674 L760,674" fill="none" stroke="#5B54D6" stroke-width="2.2" stroke-dasharray="7 6" stroke-linejoin="round"/>
+<path d="M455,212 L455,655" fill="none" stroke="#5B54D6" stroke-width="2.2" stroke-dasharray="7 6" stroke-linejoin="round"/>
+<path d="M340,655 L455,655" fill="none" stroke="#5B54D6" stroke-width="2.2" stroke-dasharray="7 6" stroke-linejoin="round"/>
+<path d="M760,212 L760,674" fill="none" stroke="#5B54D6" stroke-width="2.2" stroke-dasharray="7 6" stroke-linejoin="round"/>
+<path d="M760,295 L830,295" fill="none" stroke="#5B54D6" stroke-width="2.2" stroke-dasharray="7 6" stroke-linejoin="round" marker-end="url(#m-purple)"/>
+<rect x="830" y="250" width="220" height="90" rx="8" fill="#2F9E6E"/>
+<text x="940.0" y="292.0" text-anchor="middle" font-size="19" font-weight="700" fill="#fff">CI Gate</text>
+<text x="940.0" y="315.0" text-anchor="middle" font-size="15" fill="#fff">needs the 8 jobs</text>
+<rect x="830" y="400" width="220" height="70" rx="8" fill="#4A5568"/>
+<text x="940.0" y="432.0" text-anchor="middle" font-size="19" font-weight="700" fill="#fff">Slack</text>
+<text x="940.0" y="455.0" text-anchor="middle" font-size="15" fill="#fff">alert if the gate fails</text>
+<path d="M940,340 L940,400" fill="none" stroke="#D1495B" stroke-width="2.2" stroke-dasharray="7 6" stroke-linejoin="round" marker-end="url(#m-red)"/>
+<rect x="883.55" y="356" width="112.9" height="28" rx="14" fill="#D1495B"/>
+<text x="940" y="375" text-anchor="middle" font-size="14" font-weight="700" fill="#fff">if it fails</text>
+<rect x="780" y="530" width="490" height="285" rx="14" fill="none" stroke="#B8BEC8" stroke-width="1.5" stroke-dasharray="6 5"/>
+<text x="802" y="560" font-size="15" font-weight="700" letter-spacing="1" fill="#64748B">ADVISORY · NOT IN THE GATE</text>
+<rect x="810" y="585" width="300" height="54" rx="8" fill="#DCDAF2"/>
+<text x="960.0" y="609.0" text-anchor="middle" font-size="19" font-weight="700" fill="#3B37A8">Dependency Audit</text>
+<text x="960.0" y="632.0" text-anchor="middle" font-size="15" fill="#3B37A8">pnpm audit · continue-on-error</text>
+<rect x="810" y="655" width="300" height="54" rx="8" fill="#DCDAF2"/>
+<text x="960.0" y="679.0" text-anchor="middle" font-size="19" font-weight="700" fill="#3B37A8">Snyk Security Scan</text>
+<text x="960.0" y="702.0" text-anchor="middle" font-size="15" fill="#3B37A8">continue-on-error</text>
+<rect x="810" y="725" width="300" height="54" rx="8" fill="#DCDAF2"/>
+<text x="960.0" y="749.0" text-anchor="middle" font-size="19" font-weight="700" fill="#3B37A8">LPA2v Triage</text>
+<text x="960.0" y="772.0" text-anchor="middle" font-size="15" fill="#3B37A8">after Semgrep · continue-on-error</text>
+<rect x="1330" y="125" width="660" height="745" rx="14" fill="none" stroke="#B8BEC8" stroke-width="1.5" stroke-dasharray="6 5"/>
+<text x="1352" y="155" font-size="15" font-weight="700" letter-spacing="1" fill="#7A5A2B">CD · CD.YML · ONLY AFTER A GREEN CI RUN</text>
+<path d="M1050,295 L1310,295 L1310,205 L1360,205" fill="none" stroke="#2F9E6E" stroke-width="2.2" stroke-dasharray="7 6" stroke-linejoin="round" marker-end="url(#m-green)"/>
+<rect x="1107.75" y="281" width="144.5" height="28" rx="14" fill="#2F9E6E"/>
+<text x="1180" y="300" text-anchor="middle" font-size="14" font-weight="700" fill="#fff">4. CI succeeded</text>
+<rect x="1360" y="170" width="280" height="70" rx="8" fill="#DCDAF2"/>
+<text x="1500.0" y="202.0" text-anchor="middle" font-size="19" font-weight="700" fill="#3B37A8">workflow_run</text>
+<text x="1500.0" y="225.0" text-anchor="middle" font-size="15" fill="#3B37A8">CI completed on main, success</text>
+<rect x="1360" y="310" width="280" height="70" rx="8" fill="#DCDAF2"/>
+<text x="1500.0" y="342.0" text-anchor="middle" font-size="19" font-weight="700" fill="#3B37A8">migrate</text>
+<text x="1500.0" y="365.0" text-anchor="middle" font-size="15" fill="#3B37A8">prisma migrate deploy</text>
+<path d="M1500,240 L1500,310" fill="none" stroke="#5B54D6" stroke-width="2.2" stroke-dasharray="7 6" stroke-linejoin="round" marker-end="url(#m-purple)"/>
+<rect x="1360" y="610" width="280" height="70" rx="8" fill="#DCDAF2"/>
+<text x="1500.0" y="642.0" text-anchor="middle" font-size="19" font-weight="700" fill="#3B37A8">Tag &amp; Release</text>
+<text x="1500.0" y="665.0" text-anchor="middle" font-size="15" fill="#3B37A8">CalVer tag + GitHub Release</text>
+<path d="M1500,380 L1500,610" fill="none" stroke="#5B54D6" stroke-width="2.2" stroke-dasharray="7 6" stroke-linejoin="round" marker-end="url(#m-purple)"/>
+<text x="1515" y="490" text-anchor="start" font-size="15" fill="#475569">release waits for</text>
+<text x="1515" y="510" text-anchor="start" font-size="15" fill="#475569">migrate and deploy</text>
+<rect x="1700" y="170" width="260" height="70" rx="8" fill="#DCDAF2"/>
+<text x="1830.0" y="202.0" text-anchor="middle" font-size="19" font-weight="700" fill="#3B37A8">Build image</text>
+<text x="1830.0" y="225.0" text-anchor="middle" font-size="15" fill="#3B37A8">Docker, NEXT_PUBLIC build args</text>
+<rect x="1700" y="280" width="260" height="70" rx="8" fill="#DCDAF2"/>
+<text x="1830.0" y="312.0" text-anchor="middle" font-size="19" font-weight="700" fill="#3B37A8">Trivy scan</text>
+<text x="1830.0" y="335.0" text-anchor="middle" font-size="15" fill="#3B37A8">fails on fixable CRITICAL</text>
+<rect x="1700" y="390" width="260" height="70" rx="8" fill="#DCDAF2"/>
+<text x="1830.0" y="422.0" text-anchor="middle" font-size="19" font-weight="700" fill="#3B37A8">Push to GHCR</text>
+<text x="1830.0" y="445.0" text-anchor="middle" font-size="15" fill="#3B37A8">sha and latest tags</text>
+<rect x="1700" y="500" width="260" height="70" rx="8" fill="#DCDAF2"/>
+<text x="1830.0" y="532.0" text-anchor="middle" font-size="19" font-weight="700" fill="#3B37A8">Decrypt secrets</text>
+<text x="1830.0" y="555.0" text-anchor="middle" font-size="15" fill="#3B37A8">sops, production env file</text>
+<rect x="1700" y="610" width="260" height="70" rx="8" fill="#DCDAF2"/>
+<text x="1830.0" y="642.0" text-anchor="middle" font-size="19" font-weight="700" fill="#3B37A8">Rolling restart</text>
+<text x="1830.0" y="665.0" text-anchor="middle" font-size="15" fill="#3B37A8">worker, realtime, app 1 to 7</text>
+<path d="M1830,240 L1830,280" fill="none" stroke="#5B54D6" stroke-width="2.2" stroke-dasharray="7 6" stroke-linejoin="round" marker-end="url(#m-purple)"/>
+<path d="M1830,350 L1830,390" fill="none" stroke="#5B54D6" stroke-width="2.2" stroke-dasharray="7 6" stroke-linejoin="round" marker-end="url(#m-purple)"/>
+<path d="M1830,460 L1830,500" fill="none" stroke="#5B54D6" stroke-width="2.2" stroke-dasharray="7 6" stroke-linejoin="round" marker-end="url(#m-purple)"/>
+<path d="M1830,570 L1830,610" fill="none" stroke="#5B54D6" stroke-width="2.2" stroke-dasharray="7 6" stroke-linejoin="round" marker-end="url(#m-purple)"/>
+<path d="M1640,205 L1700,205" fill="none" stroke="#5B54D6" stroke-width="2.2" stroke-dasharray="7 6" stroke-linejoin="round" marker-end="url(#m-purple)"/>
+<path d="M1700,645 L1640,645" fill="none" stroke="#5B54D6" stroke-width="2.2" stroke-dasharray="7 6" stroke-linejoin="round" marker-end="url(#m-purple)"/>
+<rect x="1700" y="750" width="260" height="80" rx="8" fill="#2F9E6E"/>
+<text x="1830.0" y="787.0" text-anchor="middle" font-size="19" font-weight="700" fill="#fff">Production</text>
+<text x="1830.0" y="810.0" text-anchor="middle" font-size="15" fill="#fff">nexopm.com</text>
+<path d="M1830,680 L1830,750" fill="none" stroke="#2F9E6E" stroke-width="2.2" stroke-dasharray="7 6" stroke-linejoin="round" marker-end="url(#m-green)"/>
+<rect x="1789.35" y="701" width="81.30000000000001" height="28" rx="14" fill="#2F9E6E"/>
+<text x="1830" y="720" text-anchor="middle" font-size="14" font-weight="700" fill="#fff">5. live</text>
+<text x="1500" y="760" text-anchor="middle" font-size="15" fill="#475569">each app instance must turn healthy</text>
+<text x="1500" y="780" text-anchor="middle" font-size="15" fill="#475569">within 90 s or the rollout stops</text>
+<text x="1500" y="810" text-anchor="middle" font-size="15" fill="#475569">notify-slack reports migrate and deploy</text>
+</svg>
